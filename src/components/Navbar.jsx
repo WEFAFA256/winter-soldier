@@ -109,13 +109,13 @@ const Navbar = () => {
 
             {/* Sidebar */}
             <div className={`sidebar ${sidebarOpen ? 'open' : ''}`}>
-                <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                <div style={{ display: 'flex', justifyContent: 'flex-end', width: '100%', position: 'absolute', top: '2rem', right: '2rem' }}>
                     <button
                         onClick={closeSidebar}
                         style={{
                             background: 'transparent',
                             border: 'none',
-                            fontSize: '2rem',
+                            fontSize: '3rem',
                             cursor: 'pointer',
                             color: 'var(--color-primary)'
                         }}
@@ -123,7 +123,13 @@ const Navbar = () => {
                         &times;
                     </button>
                 </div>
-                <ul style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+
+                {/* Sidebar Image */}
+                <div className="sidebar-image-container">
+                    <img src="/assets/logo.jpg" alt="Serenity Spa Logo" className="sidebar-image" />
+                </div>
+
+                <ul style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', textAlign: 'center' }}>
                     {links.map((item) => (
                         <li key={item.name}>
                             <Link
