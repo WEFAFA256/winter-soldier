@@ -33,19 +33,22 @@ const ServiceCard = ({ title, image, description, delay, fullImage, onLearnMore,
 
     return (
         <div
+            className="service-card"
             style={{
                 backgroundColor: 'var(--color-white)',
                 borderRadius: '10px',
                 overflow: 'hidden',
                 boxShadow: '0 5px 15px rgba(0,0,0,0.05)',
                 transition: 'transform 0.3s ease',
+                width: '100%',
+                maxWidth: '100%',
             }}
             onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-10px)'}
             onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
         >
             <div
                 ref={imageRef}
-                className={`animate-on-scroll ${delay}`}
+                className={`animate-on-scroll ${delay} service-card-image`}
                 style={{ height: '250px', overflow: 'hidden' }}
             >
                 <img
@@ -58,11 +61,11 @@ const ServiceCard = ({ title, image, description, delay, fullImage, onLearnMore,
             </div>
             <div
                 ref={textRef}
-                className={`animate-on-scroll ${delay}`}
+                className={`animate-on-scroll ${delay} service-card-content`}
                 style={{ padding: '2rem' }}
             >
-                <h3 style={{ marginBottom: '1rem', fontSize: '1.5rem' }}>{title}</h3>
-                <p style={{ color: 'var(--color-text-light)', marginBottom: '1.5rem' }}>{description}</p>
+                <h3 className="service-card-title" style={{ marginBottom: '1rem', fontSize: '1.5rem' }}>{title}</h3>
+                <p className="service-card-description" style={{ color: 'var(--color-text-light)', marginBottom: '1.5rem' }}>{description}</p>
                 <a
                     href="#"
                     onClick={(e) => {
@@ -247,6 +250,7 @@ const Services = () => {
                     </p>
                 </div>
                 <div
+                    className="services-grid"
                     style={{
                         display: 'grid',
                         gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
