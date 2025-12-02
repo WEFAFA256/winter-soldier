@@ -64,14 +64,14 @@ const Hero = () => {
             <div className="container" style={{ position: 'relative', zIndex: 2 }}>
                 <h1
                     ref={titleRef}
-                    className="animate-on-scroll"
+                    className="animate-on-scroll hero-title"
                     style={{ fontSize: '4rem', marginBottom: '1rem', textShadow: '0 2px 4px rgba(0,0,0,0.2)' }}
                 >
                     OASIS OF RELAXATION
                 </h1>
                 <p
                     ref={textRef}
-                    className="animate-on-scroll delay-200"
+                    className="animate-on-scroll delay-200 hero-text"
                     style={{ fontSize: '1.2rem', marginBottom: '2rem', maxWidth: '600px', margin: '0 auto 2rem' }}
                 >
                     Experience the ultimate relaxation and rejuvenation at Serenity Spa.
