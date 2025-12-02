@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useScrollAnimation } from '../hooks/useScrollAnimation';
 
 const Hero = () => {
@@ -6,15 +6,39 @@ const Hero = () => {
     const textRef = useScrollAnimation('animate-float-up');
     const btnRef = useScrollAnimation('animate-float-up');
 
+    const slides = [
+        '/assets/hero_spa.png',
+        'https://images.unsplash.com/photo-1540555700478-4be289fbecef?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80', // Massage
+        'https://images.unsplash.com/photo-1544161515-4ab6ce6db874?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80', // Facial
+        'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80', // Spa stones
+        'https://images.unsplash.com/photo-1600334089648-b0d9d3028eb2?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80', // Relaxing pool
+        'https://images.unsplash.com/photo-1515377905703-c4788e51af15?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80'  // Candles
+    ];
+
+    const [currentSlide, setCurrentSlide] = useState(0);
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setCurrentSlide((prev) => (prev + 1) % slides.length);
+        }, 5000); // Change slide every 5 seconds
+
+        return () => clearInterval(interval);
+    }, [slides.length]);
+
+    const getSlideClass = (index) => {
+        if (index === currentSlide) return 'active';
+        const prevSlide = (currentSlide - 1 + slides.length) % slides.length;
+        if (index === prevSlide) return 'prev';
+        return '';
+    };
+
     return (
         <section
             id="home"
             style={{
                 height: '100vh',
                 width: '100%',
-                backgroundImage: 'linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url(/assets/hero_spa.png)',
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
+                position: 'relative',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -22,13 +46,28 @@ const Hero = () => {
                 color: 'var(--color-white)',
             }}
         >
-            <div className="container">
+            <div className="hero-slideshow">
+                {slides.map((slide, index) => (
+                    <div
+                        key={index}
+                        className={`hero-slide ${getSlideClass(index)}`}
+                    >
+                        <div
+                            className="hero-slide-image"
+                            style={{ backgroundImage: `url(${slide})` }}
+                        />
+                    </div>
+                ))}
+                <div className="hero-overlay"></div>
+            </div>
+
+            <div className="container" style={{ position: 'relative', zIndex: 2 }}>
                 <h1
                     ref={titleRef}
                     className="animate-on-scroll"
                     style={{ fontSize: '4rem', marginBottom: '1rem', textShadow: '0 2px 4px rgba(0,0,0,0.2)' }}
                 >
-                    Find Your Inner Peace
+                    OASIS OF RELAXATION
                 </h1>
                 <p
                     ref={textRef}
