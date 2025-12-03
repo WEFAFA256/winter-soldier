@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useScrollAnimation } from '../hooks/useScrollAnimation';
 import ImageModal from './ImageModal';
 
-const ServiceCard = ({ title, image, description, delay, fullImage, onLearnMore, imageOnly }) => {
+const ServiceCard = ({ title, image, description, delay, fullImage, onLearnMore, imageOnly, showBookNow }) => {
     const cardRef = useScrollAnimation('animate-float-up');
     const imageRef = useScrollAnimation('animate-slide-scale');
     const textRef = useScrollAnimation('animate-float-up');
@@ -43,6 +43,7 @@ const ServiceCard = ({ title, image, description, delay, fullImage, onLearnMore,
                 transition: 'transform 0.3s ease',
                 width: '100%',
                 maxWidth: '100%',
+                position: 'relative',
             }}
             onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-10px)'}
             onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
@@ -63,20 +64,36 @@ const ServiceCard = ({ title, image, description, delay, fullImage, onLearnMore,
             <div
                 ref={textRef}
                 className={`animate-on-scroll ${delay} service-card-content`}
-                style={{ padding: '2rem' }}
+                style={{ padding: '2rem', position: 'relative' }}
             >
                 <h3 className="service-card-title" style={{ marginBottom: '1rem', fontSize: '1.5rem' }}>{title}</h3>
                 <p className="service-card-description" style={{ color: 'var(--color-text-light)', marginBottom: '1.5rem' }}>{description}</p>
-                <a
-                    href="#"
-                    onClick={(e) => {
-                        e.preventDefault();
-                        if (onLearnMore) onLearnMore();
-                    }}
-                    style={{ color: 'var(--color-primary)', fontWeight: '600', fontSize: '0.9rem', textTransform: 'uppercase', cursor: 'pointer' }}
-                >
-                    Learn More &rarr;
-                </a>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <a
+                        href="#"
+                        onClick={(e) => {
+                            e.preventDefault();
+                            if (onLearnMore) onLearnMore();
+                        }}
+                        style={{ color: 'var(--color-primary)', fontWeight: '600', fontSize: '0.9rem', textTransform: 'uppercase', cursor: 'pointer' }}
+                    >
+                        Learn More &rarr;
+                    </a>
+                    {showBookNow && (
+                        <button
+                            className="btn"
+                            style={{
+                                padding: '0.5rem 1rem',
+                                fontSize: '0.85rem',
+                                border: 'none',
+                                cursor: 'pointer',
+                            }}
+                            onClick={() => window.open('https://wa.me/256764001922', '_blank')}
+                        >
+                            Book Now
+                        </button>
+                    )}
+                </div>
             </div>
         </div>
     );
@@ -206,6 +223,7 @@ const Services = () => {
                             key={index}
                             {...service}
                             onLearnMore={() => openModal(service.fullImage, service.title)}
+                            showBookNow={index < 9}
                         />
                     ))}
                 </div>

@@ -31,7 +31,7 @@ const SocialMediaIcons = () => {
                 transform: 'translateX(-50%)',
                 display: 'flex',
                 flexDirection: 'row',
-                gap: '1.5rem',
+                gap: '1rem',
                 zIndex: 1000,
             }}
         >
@@ -43,8 +43,8 @@ const SocialMediaIcons = () => {
                     rel="noopener noreferrer"
                     className="social-icon"
                     style={{
-                        width: '60px',
-                        height: '60px',
+                        width: '40px',
+                        height: '40px',
                         borderRadius: '50%',
                         display: 'flex',
                         alignItems: 'center',

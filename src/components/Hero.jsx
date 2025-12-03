@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { useScrollAnimation } from '../hooks/useScrollAnimation';
 
 const Hero = () => {
@@ -78,9 +79,9 @@ const Hero = () => {
                     Where calmness meets luxury.
                 </p>
                 <div ref={btnRef} className="animate-on-scroll delay-400">
-                    <a href="#services" className="btn">
+                    <Link to="/services" className="btn">
                         Book an Appointment
-                    </a>
+                    </Link>
                 </div>
             </div>
         </section>
