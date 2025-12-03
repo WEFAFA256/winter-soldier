@@ -300,9 +300,10 @@ img {
   width: 100%;
   /* Full width */
   height: 100vh;
-  background-color: var(--color-white);
-  box-shadow: none;
-  /* Full screen doesn't need shadow usually, but kept if needed */
+  background: linear-gradient(to bottom right, var(--color-white), var(--color-secondary));
+  /* Gradient background */
+  box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1);
+  /* Subtle shadow */
   z-index: 1001;
   /* Above Navbar */
   transition: right 0.4s cubic-bezier(0.77, 0, 0.175, 1);
@@ -310,11 +311,16 @@ img {
   padding: 2rem;
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  gap: 1rem;
+  /* Reduced gap since we have separator */
   justify-content: center;
   /* Center content vertically */
   align-items: center;
   /* Center content horizontally */
+  font-family: "Times New Roman", Times, serif;
+  /* Ensure font applies to sidebar */
+  border-left: 5px solid var(--color-accent);
+  /* Decorative border */
 }
 
 .sidebar.open {
@@ -324,6 +330,48 @@ img {
 .sidebar-overlay {
   display: none;
   /* Not needed for full screen sidebar */
+}
+
+/* Sidebar Close Button */
+.sidebar-close-btn {
+  position: absolute;
+  top: 2rem;
+  right: 2rem;
+  background: transparent;
+  border: 2px solid var(--color-primary);
+  color: var(--color-primary);
+  font-size: 2rem;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  z-index: 3;
+}
+
+.sidebar-close-btn:hover {
+  background: var(--color-primary);
+  color: var(--color-white);
+  transform: rotate(90deg);
+}
+
+/* Sidebar Separator */
+.sidebar-separator {
+  width: 100px;
+  height: 2px;
+  background-color: var(--color-accent);
+  margin: 1rem 0 2rem;
+  opacity: 0;
+  transform: scaleX(0);
+  transition: all 0.5s ease 0.4s;
+}
+
+.sidebar.open .sidebar-separator {
+  opacity: 1;
+  transform: scaleX(1);
 }
 
 /* Sidebar Text Animation */
@@ -350,11 +398,36 @@ img {
   opacity: 0;
   /* Hidden initially */
   transform: translateY(20px);
-  transition: color 0.3s ease;
+  transition: all 0.3s ease;
+  position: relative;
+  display: inline-block;
+}
+
+.sidebar-link::after {
+  content: '';
+  position: absolute;
+  width: 0;
+  height: 2px;
+  bottom: -5px;
+  left: 50%;
+  background-color: var(--color-primary);
+  transition: all 0.3s ease;
+  transform: translateX(-50%);
 }
 
 .sidebar.open .sidebar-link {
   animation: sidebarTextFloatIn 0.5s ease-out forwards;
+}
+
+.sidebar-link:hover {
+  color: var(--color-primary);
+  transform: translateY(-2px);
+  /* Slight lift */
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.sidebar-link:hover::after {
+  width: 100%;
 }
 
 /* Sidebar Image Animation */
@@ -372,28 +445,92 @@ img {
   }
 }
 
+/* Sidebar Logo Wrapper */
+.sidebar-logo-wrapper {
+  position: relative;
+  width: 250px;
+  height: 250px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
 .sidebar-image-container {
-  width: 200px;
-  height: 200px;
-  margin-bottom: 1rem;
+  width: 140px;
+  /* Adjusted size */
+  height: 140px;
   border-radius: 50%;
   overflow: hidden;
   border: 4px solid var(--color-primary);
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
   opacity: 0;
   /* Hidden initially */
+  z-index: 2;
+  position: relative;
 }
 
 .sidebar.open .sidebar-image-container {
   animation: imageReveal 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
   animation-delay: 0.2s;
-  /* Start slightly after sidebar opens */
 }
 
 .sidebar-image {
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+/* Circular Text Animation */
+.circular-text-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 10;
+  /* Ensure it's on top */
+  opacity: 0;
+  pointer-events: none;
+  /* Allow clicks to pass through to image if needed */
+}
+
+.sidebar.open .circular-text-container {
+  animation: fadeIn 1s ease forwards;
+  animation-delay: 0.5s;
+}
+
+.circular-text-svg {
+  width: 100%;
+  height: 100%;
+  animation: rotateText 20s linear infinite;
+}
+
+.circular-text-content {
+  font-size: 16px;
+  /* Slightly larger */
+  font-weight: 600;
+  /* Bolder */
+  letter-spacing: 3px;
+  /* More spacing */
+  fill: var(--color-primary);
+  text-transform: uppercase;
+}
+
+@keyframes rotateText {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes fadeIn {
+  to {
+    opacity: 1;
+  }
 }
 
 /* Stagger delays for sidebar links (adjusted for image) */
@@ -533,12 +670,12 @@ img {
     margin-bottom: 0.75rem !important;
   }
 
-  #services > .container > div:first-child {
+  #services>.container>div:first-child {
     margin-bottom: 2rem !important;
     padding: 0 0.5rem !important;
   }
 
-  #services > .container > div:first-child p {
+  #services>.container>div:first-child p {
     font-size: 0.9rem !important;
     padding: 0 0.5rem !important;
   }

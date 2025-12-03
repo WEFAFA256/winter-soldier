@@ -54,10 +54,11 @@ const Navbar = () => {
                     backgroundColor: isTransparent ? 'transparent' : 'rgba(255, 255, 255, 0.95)',
                     boxShadow: isTransparent ? 'none' : '0 2px 10px rgba(0,0,0,0.1)',
                     backdropFilter: isTransparent ? 'none' : 'blur(10px)',
+                    fontFamily: '"Times New Roman", Times, serif', // Added font family
                 }}
             >
                 <div className="container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', fontSize: '1.5rem', fontWeight: '700', color: isTransparent ? 'var(--color-white)' : 'var(--color-primary)', fontFamily: 'var(--font-heading)', textDecoration: 'none' }}>
+                    <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', fontSize: '1.5rem', fontWeight: '700', color: isTransparent ? 'var(--color-white)' : 'var(--color-primary)', fontFamily: 'inherit', textDecoration: 'none' }}>
                         <img
                             src="/assets/logo.jpg"
                             alt="Serenity Spa Logo"
@@ -68,7 +69,7 @@ const Navbar = () => {
                                 borderRadius: '50%'
                             }}
                         />
-                        SERENITY SPA
+                        THE SERENITY SPA
                     </Link>
 
                     {/* Desktop Navigation */}
@@ -81,6 +82,7 @@ const Navbar = () => {
                                         color: isTransparent ? 'var(--color-white)' : 'var(--color-text)',
                                         fontWeight: '500',
                                         fontSize: '1rem',
+                                        fontFamily: 'inherit', // Inherit Times New Roman
                                     }}
                                 >
                                     {item.name}
@@ -109,27 +111,33 @@ const Navbar = () => {
 
             {/* Sidebar */}
             <div className={`sidebar ${sidebarOpen ? 'open' : ''}`}>
-                <div style={{ display: 'flex', justifyContent: 'flex-end', width: '100%', position: 'absolute', top: '2rem', right: '2rem' }}>
-                    <button
-                        onClick={closeSidebar}
-                        style={{
-                            background: 'transparent',
-                            border: 'none',
-                            fontSize: '3rem',
-                            cursor: 'pointer',
-                            color: 'var(--color-primary)'
-                        }}
-                    >
-                        &times;
-                    </button>
+                <button
+                    className="sidebar-close-btn"
+                    onClick={closeSidebar}
+                >
+                    &times;
+                </button>
+
+                {/* Sidebar Logo with Circular Text */}
+                <div className="sidebar-logo-wrapper">
+                    <div className="sidebar-image-container">
+                        <img src="/assets/logo.jpg" alt="Serenity Spa Logo" className="sidebar-image" />
+                    </div>
+                    <div className="circular-text-container">
+                        <svg viewBox="0 0 200 200" className="circular-text-svg">
+                            <path id="circlePath" d="M 100, 100 m -75, 0 a 75,75 0 1,1 150,0 a 75,75 0 1,1 -150,0" fill="transparent" />
+                            <text>
+                                <textPath href="#circlePath" startOffset="50%" textAnchor="middle" className="circular-text-content">
+                                    oasis of relaxation • oasis of relaxation •
+                                </textPath>
+                            </text>
+                        </svg>
+                    </div>
                 </div>
 
-                {/* Sidebar Image */}
-                <div className="sidebar-image-container">
-                    <img src="/assets/logo.jpg" alt="Serenity Spa Logo" className="sidebar-image" />
-                </div>
+                <div className="sidebar-separator"></div>
 
-                <ul style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', textAlign: 'center' }}>
+                <ul style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', textAlign: 'center', width: '100%' }}>
                     {links.map((item) => (
                         <li key={item.name}>
                             <Link
