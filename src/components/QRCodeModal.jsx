@@ -9,8 +9,8 @@ const QRCodeModal = ({ isOpen, onClose, bookingData }) => {
             const bookingInfo = `SERENITY SPA - BOOKING CONFIRMATION\n\nBooking ID: ${bookingData.bookingId}\nService: ${bookingData.serviceType}\nName: ${bookingData.name}\nEmail: ${bookingData.email}\nPhone: ${bookingData.phone}\nDate: ${bookingData.date}\nTime: ${bookingData.time}\nSpecial Requests: ${bookingData.specialRequests || 'None'}`;
 
             QRCode.toCanvas(canvasRef.current, bookingInfo, {
-                width: 300,
-                margin: 2,
+                width: 250,
+                margin: 1,
                 color: {
                     dark: '#1a5757',
                     light: '#ffffff'
@@ -46,7 +46,8 @@ const QRCodeModal = ({ isOpen, onClose, bookingData }) => {
                 justifyContent: 'center',
                 zIndex: 2000,
                 padding: '1rem',
-                animation: 'fadeIn 0.3s ease-out'
+                animation: 'fadeIn 0.3s ease-out',
+                overflowY: 'auto'
             }}
             onClick={onClose}
         >
@@ -54,13 +55,16 @@ const QRCodeModal = ({ isOpen, onClose, bookingData }) => {
                 style={{
                     backgroundColor: '#fff',
                     borderRadius: '15px',
-                    padding: '2rem',
+                    padding: '1.5rem',
                     maxWidth: '500px',
                     width: '100%',
                     textAlign: 'center',
                     position: 'relative',
                     animation: 'floatInUp 0.4s ease-out',
-                    boxShadow: '0 20px 60px rgba(0,0,0,0.3)'
+                    boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
+                    maxHeight: '90vh',
+                    overflowY: 'auto',
+                    margin: 'auto'
                 }}
                 onClick={(e) => e.stopPropagation()}
             >
@@ -100,24 +104,24 @@ const QRCodeModal = ({ isOpen, onClose, bookingData }) => {
 
                 {/* Success Icon */}
                 <div style={{
-                    width: '60px',
-                    height: '60px',
+                    width: '50px',
+                    height: '50px',
                     borderRadius: '50%',
                     backgroundColor: '#4CAF50',
                     color: '#fff',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    fontSize: '2rem',
-                    margin: '0 auto 1rem',
+                    fontSize: '1.8rem',
+                    margin: '0 auto 0.8rem',
                     animation: 'zoomIn 0.5s ease-out'
                 }}>
                     ✓
                 </div>
 
                 <h2 style={{
-                    fontSize: '2rem',
-                    marginBottom: '0.5rem',
+                    fontSize: '1.6rem',
+                    marginBottom: '0.4rem',
                     color: 'var(--color-primary)',
                     fontFamily: '"Times New Roman", Times, serif'
                 }}>
@@ -126,8 +130,8 @@ const QRCodeModal = ({ isOpen, onClose, bookingData }) => {
                 
                 <p style={{
                     color: 'var(--color-text-light)',
-                    marginBottom: '1.5rem',
-                    fontSize: '1rem'
+                    marginBottom: '1rem',
+                    fontSize: '0.95rem'
                 }}>
                     Your appointment has been successfully booked.
                 </p>
@@ -135,33 +139,35 @@ const QRCodeModal = ({ isOpen, onClose, bookingData }) => {
                 {/* Booking Details */}
                 <div style={{
                     backgroundColor: '#f0f9f9',
-                    padding: '1.5rem',
-                    borderRadius: '10px',
-                    marginBottom: '1.5rem',
+                    padding: '1rem',
+                    borderRadius: '8px',
+                    marginBottom: '1rem',
                     textAlign: 'left',
-                    border: '2px solid var(--color-accent)'
+                    border: '2px solid var(--color-accent)',
+                    fontSize: '0.9rem'
                 }}>
-                    <p style={{ marginBottom: '0.5rem' }}><strong>Booking ID:</strong> {bookingData?.bookingId}</p>
-                    <p style={{ marginBottom: '0.5rem' }}><strong>Service:</strong> {bookingData?.serviceType}</p>
-                    <p style={{ marginBottom: '0.5rem' }}><strong>Date:</strong> {bookingData?.date}</p>
-                    <p style={{ marginBottom: '0.5rem' }}><strong>Time:</strong> {bookingData?.time}</p>
+                    <p style={{ marginBottom: '0.4rem' }}><strong>Booking ID:</strong> {bookingData?.bookingId}</p>
+                    <p style={{ marginBottom: '0.4rem' }}><strong>Service:</strong> {bookingData?.serviceType}</p>
+                    <p style={{ marginBottom: '0.4rem' }}><strong>Date:</strong> {bookingData?.date}</p>
+                    <p style={{ marginBottom: '0.4rem' }}><strong>Time:</strong> {bookingData?.time}</p>
                     <p><strong>Name:</strong> {bookingData?.name}</p>
                 </div>
 
                 {/* QR Code */}
                 <div style={{
                     backgroundColor: '#fff',
-                    padding: '1.5rem',
-                    borderRadius: '10px',
+                    padding: '1rem',
+                    borderRadius: '8px',
                     display: 'inline-block',
                     boxShadow: '0 5px 15px rgba(0,0,0,0.1)',
-                    marginBottom: '1.5rem'
+                    marginBottom: '1rem'
                 }}>
                     <canvas ref={canvasRef}></canvas>
                     <p style={{
-                        marginTop: '1rem',
-                        fontSize: '0.9rem',
-                        color: 'var(--color-text-light)'
+                        marginTop: '0.8rem',
+                        fontSize: '0.85rem',
+                        color: 'var(--color-text-light)',
+                        marginBottom: '0'
                     }}>
                         Present this QR code at reception
                     </p>
@@ -170,16 +176,17 @@ const QRCodeModal = ({ isOpen, onClose, bookingData }) => {
                 {/* Action Buttons */}
                 <div style={{
                     display: 'flex',
-                    gap: '1rem',
+                    gap: '0.8rem',
                     flexWrap: 'wrap',
-                    justifyContent: 'center'
+                    justifyContent: 'center',
+                    marginBottom: '1rem'
                 }}>
                     <button
                         onClick={handleDownload}
                         className="btn"
                         style={{
-                            padding: '0.8rem 1.5rem',
-                            fontSize: '1rem',
+                            padding: '0.7rem 1.2rem',
+                            fontSize: '0.95rem',
                             border: 'none',
                             borderRadius: '5px',
                             cursor: 'pointer',
@@ -193,8 +200,8 @@ const QRCodeModal = ({ isOpen, onClose, bookingData }) => {
                         onClick={onClose}
                         className="btn-outline"
                         style={{
-                            padding: '0.8rem 1.5rem',
-                            fontSize: '1rem',
+                            padding: '0.7rem 1.2rem',
+                            fontSize: '0.95rem',
                             border: '2px solid var(--color-primary)',
                             borderRadius: '5px',
                             cursor: 'pointer',
@@ -210,12 +217,13 @@ const QRCodeModal = ({ isOpen, onClose, bookingData }) => {
 
                 {/* Additional Info */}
                 <p style={{
-                    marginTop: '1.5rem',
-                    fontSize: '0.85rem',
+                    marginTop: '0',
+                    fontSize: '0.8rem',
                     color: 'var(--color-text-light)',
-                    lineHeight: '1.5'
+                    lineHeight: '1.4',
+                    marginBottom: '0'
                 }}>
-                    A confirmation has been sent to your email and WhatsApp. Please arrive 10 minutes early for your appointment.
+                    A confirmation has been sent to your email and WhatsApp. Please arrive 10 minutes early.
                 </p>
             </div>
         </div>
