@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useScrollAnimation } from '../hooks/useScrollAnimation';
+import ImageModal from './ImageModal';
 
 const ServiceCard = ({ title, image, description, delay, fullImage, onLearnMore, imageOnly }) => {
     const cardRef = useScrollAnimation('animate-float-up');
@@ -76,66 +77,6 @@ const ServiceCard = ({ title, image, description, delay, fullImage, onLearnMore,
                 >
                     Learn More &rarr;
                 </a>
-            </div>
-        </div>
-    );
-};
-
-const ImageModal = ({ isOpen, onClose, imageSrc, title }) => {
-    if (!isOpen) return null;
-
-    return (
-        <div
-            onClick={onClose}
-            style={{
-                position: 'fixed',
-                top: 0,
-                left: 0,
-                width: '100%',
-                height: '100%',
-                backgroundColor: 'rgba(0, 0, 0, 0.9)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                zIndex: 9999,
-                cursor: 'pointer',
-            }}
-        >
-            <div
-                onClick={(e) => e.stopPropagation()}
-                style={{
-                    position: 'relative',
-                    maxWidth: '90%',
-                    maxHeight: '90%',
-                    cursor: 'default',
-                }}
-            >
-                <button
-                    onClick={onClose}
-                    style={{
-                        position: 'absolute',
-                        top: '-40px',
-                        right: '0',
-                        background: 'transparent',
-                        border: 'none',
-                        color: 'white',
-                        fontSize: '2rem',
-                        cursor: 'pointer',
-                        padding: '0.5rem',
-                    }}
-                >
-                    ✕
-                </button>
-                <img
-                    src={imageSrc}
-                    alt={title}
-                    style={{
-                        maxWidth: '100%',
-                        maxHeight: '90vh',
-                        objectFit: 'contain',
-                        borderRadius: '10px',
-                    }}
-                />
             </div>
         </div>
     );
@@ -223,6 +164,7 @@ const Services = () => {
             fullImage: '/assets/affluent-pack.jpg',
             description: 'Tantra Full Pack, Scrubs & Waxing, Turkish Hammam, Jacuzzi & Steam, Ped & Manicure. (600K)',
             delay: 'delay-100',
+            imageOnly: true,
         },
         {
             title: 'Premium Body Care Pack',
@@ -230,6 +172,7 @@ const Services = () => {
             fullImage: '/assets/premium-pack.jpg',
             description: 'Aromatherapy, Body Waxing, Steam Bath, Jacuzzi, Wines & Drinks, Ped & Manicure. (400K)',
             delay: 'delay-200',
+            imageOnly: true,
         },
         {
             title: 'Classical Body Care Pack',
@@ -237,6 +180,7 @@ const Services = () => {
             fullImage: '/assets/classical-pack.jpg',
             description: 'Nuru Full Pack, Waxing & Scrubs, Turkish Hammam, Foam Massage, Steam Facials, Ped & Manicure. (500K)',
             delay: 'delay-300',
+            imageOnly: true,
         },
     ];
 

@@ -8,6 +8,7 @@ import Contact from './components/Contact';
 import Branches from './components/Branches';
 import Gallery from './components/Gallery';
 import SocialMediaIcons from './components/SocialMediaIcons';
+import PriceList from './components/PriceList';
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
           <Route path="/" element={
             <>
               <Hero />
+              <PriceList />
               <Contact />
               <SocialMediaIcons />
             </>
