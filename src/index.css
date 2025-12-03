@@ -653,6 +653,12 @@ img {
 
 /* Media Queries */
 @media (max-width: 768px) {
+  /* Navbar Mobile Background - Match Gallery Page */
+  nav {
+    background-color: var(--color-secondary) !important;
+    backdrop-filter: none !important;
+  }
+
   .desktop-nav {
     display: none !important;
   }
