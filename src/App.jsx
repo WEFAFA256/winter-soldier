@@ -9,6 +9,7 @@ import Branches from './components/Branches';
 import Gallery from './components/Gallery';
 import SocialMediaIcons from './components/SocialMediaIcons';
 import PriceList from './components/PriceList';
+import Booking from './components/Booking';
 
 function App() {
   return (
@@ -36,6 +37,7 @@ function App() {
           } />
           <Route path="/branches" element={<Branches />} />
           <Route path="/gallery" element={<Gallery />} />
+          <Route path="/booking" element={<Booking />} />
         </Routes>
         <footer style={{ backgroundColor: 'var(--color-primary)', color: 'var(--color-white)', padding: '2rem 0', textAlign: 'center' }}>
           <div className="container">

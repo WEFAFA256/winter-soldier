@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useScrollAnimation } from '../hooks/useScrollAnimation';
 import ImageModal from './ImageModal';
 
-const ServiceCard = ({ title, image, description, delay, fullImage, onLearnMore, imageOnly, showBookNow }) => {
+const ServiceCard = ({ title, image, description, delay, fullImage, onLearnMore, imageOnly, showBookNow, onBookNow }) => {
     const cardRef = useScrollAnimation('animate-float-up');
     const imageRef = useScrollAnimation('animate-slide-scale');
     const textRef = useScrollAnimation('animate-float-up');
@@ -88,7 +89,7 @@ const ServiceCard = ({ title, image, description, delay, fullImage, onLearnMore,
                                 border: 'none',
                                 cursor: 'pointer',
                             }}
-                            onClick={() => window.open('https://wa.me/256764001922', '_blank')}
+                            onClick={onBookNow}
                         >
                             Book Now
                         </button>
@@ -100,6 +101,7 @@ const ServiceCard = ({ title, image, description, delay, fullImage, onLearnMore,
 };
 
 const Services = () => {
+    const navigate = useNavigate();
     const headerRef = useScrollAnimation('animate-float-up');
     const [modalState, setModalState] = useState({ isOpen: false, imageSrc: '', title: '' });
 
@@ -109,6 +111,10 @@ const Services = () => {
 
     const closeModal = () => {
         setModalState({ isOpen: false, imageSrc: '', title: '' });
+    };
+
+    const handleBookNow = (serviceName) => {
+        navigate('/booking', { state: { serviceName } });
     };
 
     const services = [
@@ -224,6 +230,7 @@ const Services = () => {
                             {...service}
                             onLearnMore={() => openModal(service.fullImage, service.title)}
                             showBookNow={index < 9}
+                            onBookNow={() => handleBookNow(service.title)}
                         />
                     ))}
                 </div>
