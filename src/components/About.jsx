@@ -6,7 +6,7 @@ const About = () => {
     const imgRef = useScrollAnimation('animate-float-left');
 
     return (
-        <section id="about" className="section-padding">
+        <section id="about" className="section-padding" style={{ backgroundColor: 'var(--color-secondary)' }}>
             <div className="container">
                 <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '4rem' }}>
                     <div style={{ flex: '1 1 400px' }}>

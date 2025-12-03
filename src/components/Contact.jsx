@@ -17,11 +17,11 @@ const Contact = () => {
                         <div ref={infoRef} className="animate-on-scroll">
                             <div style={{ marginBottom: '2rem' }}>
                                 <h4 style={{ marginBottom: '0.5rem' }}>Visit Us</h4>
-                                <p style={{ color: 'var(--color-text-light)' }}>123 Serenity Lane, Wellness City, WC 12345</p>
+                                <p style={{ color: 'var(--color-text-light)' }}>Makerere Hill Road, Kiyindi, 2 Close, Kampala</p>
                             </div>
                             <div style={{ marginBottom: '2rem' }}>
                                 <h4 style={{ marginBottom: '0.5rem' }}>Call Us</h4>
-                                <p style={{ color: 'var(--color-text-light)' }}>+1 (555) 123-4567</p>
+                                <p style={{ color: 'var(--color-text-light)' }}>0764 001922</p>
                             </div>
                             <div style={{ marginBottom: '2rem' }}>
                                 <h4 style={{ marginBottom: '0.5rem' }}>Email Us</h4>
@@ -29,8 +29,7 @@ const Contact = () => {
                             </div>
                             <div style={{ marginBottom: '2rem' }}>
                                 <h4 style={{ marginBottom: '0.5rem' }}>Opening Hours</h4>
-                                <p style={{ color: 'var(--color-text-light)' }}>Mon - Fri: 9:00 AM - 8:00 PM</p>
-                                <p style={{ color: 'var(--color-text-light)' }}>Sat - Sun: 10:00 AM - 6:00 PM</p>
+                                <p style={{ color: 'var(--color-text-light)' }}>Open 24/7 - We're always here for you</p>
                             </div>
                         </div>
                     </div>

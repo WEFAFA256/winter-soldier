@@ -125,7 +125,7 @@ const Navbar = () => {
                     </div>
                     <div className="circular-text-container">
                         <svg viewBox="0 0 200 200" className="circular-text-svg">
-                            <path id="circlePath" d="M 100, 100 m -90, 0 a 90,90 0 1,1 180,0 a 90,90 0 1,1 -180,0" fill="transparent" />
+                            <path id="circlePath" d="M 100, 100 m -95, 0 a 95,95 0 1,1 190,0 a 95,95 0 1,1 -190,0" fill="transparent" />
                             <text>
                                 <textPath href="#circlePath" startOffset="50%" textAnchor="middle" className="circular-text-content">
                                     oasis of relaxation • oasis of relaxation •

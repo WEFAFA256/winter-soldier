@@ -54,7 +54,7 @@ const Gallery = () => {
     ];
 
     return (
-        <section className="section-padding" style={{ marginTop: '80px' }}>
+        <section className="section-padding" style={{ marginTop: '80px', backgroundColor: 'var(--color-secondary)' }}>
             <div className="container">
                 <div style={{ textAlign: 'center', marginBottom: '4rem' }}>
                     <h2 ref={headerRef} className="animate-on-scroll" style={{ fontSize: '3rem', marginBottom: '1rem' }}>Our Gallery</h2>
