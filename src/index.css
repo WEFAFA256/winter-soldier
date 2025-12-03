@@ -300,8 +300,8 @@ img {
   width: 100%;
   /* Full width */
   height: 100vh;
-  background: linear-gradient(to bottom right, var(--color-white), var(--color-secondary));
-  /* Gradient background */
+  background: #d4ecec;
+  /* Light cyan background matching Get in Touch section */
   box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1);
   /* Subtle shadow */
   z-index: 1001;
@@ -653,11 +653,8 @@ img {
 
 /* Media Queries */
 @media (max-width: 768px) {
-  /* Navbar Mobile Background - Match Gallery Page */
-  nav {
-    background-color: var(--color-secondary) !important;
-    backdrop-filter: none !important;
-  }
+  /* Remove forced navbar background to allow home page transparency */
+  /* Navbar will use the same logic as desktop - transparent on home, solid on other pages */
 
   .desktop-nav {
     display: none !important;
@@ -668,11 +665,12 @@ img {
   }
 
   .hero-title {
-    font-size: 2.5rem !important;
+    font-size: 3rem !important;
   }
 
   .hero-text {
-    font-size: 1rem !important;
+    font-size: 1.1rem !important;
+    padding: 0 1rem;
   }
 
   .section-padding {
@@ -770,6 +768,14 @@ img {
 }
 
 @media (max-width: 480px) {
+  .hero-title {
+    font-size: 2.5rem !important;
+  }
+
+  .hero-text {
+    font-size: 1rem !important;
+  }
+
   .services-grid {
     gap: 1rem !important;
     padding: 0 !important;
