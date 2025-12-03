@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import QRCodeModal from './QRCodeModal';
 
 const Booking = () => {
     const location = useLocation();
     const navigate = useNavigate();
     const [currentStep, setCurrentStep] = useState(1);
+    const [showQRModal, setShowQRModal] = useState(false);
+    const [bookingId, setBookingId] = useState('');
     const [formData, setFormData] = useState({
         serviceType: location.state?.serviceName || '',
         name: '',
@@ -40,8 +43,17 @@ const Booking = () => {
         }
     };
 
+    const generateBookingId = () => {
+        const timestamp = Date.now().toString(36);
+        const randomStr = Math.random().toString(36).substring(2, 7).toUpperCase();
+        return `SSP-${timestamp}-${randomStr}`;
+    };
+
     const handleSubmit = () => {
-        const message = `*New Booking Request*\n\nService: ${formData.serviceType}\nName: ${formData.name}\nEmail: ${formData.email}\nPhone: ${formData.phone}\nDate: ${formData.date}\nTime: ${formData.time}\nSpecial Requests: ${formData.specialRequests || 'None'}`;
+        const newBookingId = generateBookingId();
+        setBookingId(newBookingId);
+        
+        const message = `*New Booking Request*\n\nBooking ID: ${newBookingId}\nService: ${formData.serviceType}\nName: ${formData.name}\nEmail: ${formData.email}\nPhone: ${formData.phone}\nDate: ${formData.date}\nTime: ${formData.time}\nSpecial Requests: ${formData.specialRequests || 'None'}`;
         
         if (formData.bookingMethod === 'whatsapp') {
             const encodedMessage = encodeURIComponent(message);
@@ -52,9 +64,13 @@ const Booking = () => {
             window.location.href = `mailto:hello@serenityspa.com?subject=${emailSubject}&body=${emailBody}`;
         }
         
-        setTimeout(() => {
-            navigate('/');
-        }, 1000);
+        // Show QR code modal
+        setShowQRModal(true);
+    };
+
+    const handleCloseQRModal = () => {
+        setShowQRModal(false);
+        navigate('/');
     };
 
     const isStepValid = () => {
@@ -511,6 +527,22 @@ const Booking = () => {
                     </div>
                 </div>
             </div>
+
+            {/* QR Code Modal */}
+            <QRCodeModal
+                isOpen={showQRModal}
+                onClose={handleCloseQRModal}
+                bookingData={{
+                    bookingId: bookingId,
+                    serviceType: formData.serviceType,
+                    name: formData.name,
+                    email: formData.email,
+                    phone: formData.phone,
+                    date: formData.date,
+                    time: formData.time,
+                    specialRequests: formData.specialRequests
+                }}
+            />
         </div>
     );
 };
