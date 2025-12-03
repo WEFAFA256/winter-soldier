@@ -12,7 +12,6 @@ const Booking = () => {
         phone: '',
         date: '',
         time: '',
-        duration: '60',
         specialRequests: '',
         bookingMethod: 'whatsapp'
     });
@@ -30,7 +29,7 @@ const Booking = () => {
     };
 
     const handleNext = () => {
-        if (currentStep < 4) {
+        if (currentStep < 3) {
             setCurrentStep(currentStep + 1);
         }
     };
@@ -42,7 +41,7 @@ const Booking = () => {
     };
 
     const handleSubmit = () => {
-        const message = `*New Booking Request*\n\nService: ${formData.serviceType}\nName: ${formData.name}\nEmail: ${formData.email}\nPhone: ${formData.phone}\nDate: ${formData.date}\nTime: ${formData.time}\nDuration: ${formData.duration} minutes\nSpecial Requests: ${formData.specialRequests || 'None'}`;
+        const message = `*New Booking Request*\n\nService: ${formData.serviceType}\nName: ${formData.name}\nEmail: ${formData.email}\nPhone: ${formData.phone}\nDate: ${formData.date}\nTime: ${formData.time}\nSpecial Requests: ${formData.specialRequests || 'None'}`;
         
         if (formData.bookingMethod === 'whatsapp') {
             const encodedMessage = encodeURIComponent(message);
@@ -58,27 +57,13 @@ const Booking = () => {
         }, 1000);
     };
 
-    const services = [
-        'Swedish Massage',
-        'Deeptissue Massage',
-        'Aromatherapy',
-        'Erotic & Body to Body',
-        'Xclusive Sessions',
-        'Turkish Bath Packages',
-        'Body Care Packages',
-        'Couples | Duo Packages',
-        'Womens\' Packages'
-    ];
-
     const isStepValid = () => {
         switch (currentStep) {
             case 1:
-                return formData.serviceType !== '';
-            case 2:
                 return formData.name !== '' && formData.email !== '' && formData.phone !== '';
-            case 3:
+            case 2:
                 return formData.date !== '' && formData.time !== '';
-            case 4:
+            case 3:
                 return true;
             default:
                 return false;
@@ -120,7 +105,7 @@ const Booking = () => {
                     gap: '1rem',
                     flexWrap: 'wrap'
                 }}>
-                    {[1, 2, 3, 4].map((step) => (
+                    {[1, 2, 3].map((step) => (
                         <React.Fragment key={step}>
                             <div style={{
                                 width: '50px',
@@ -138,7 +123,7 @@ const Booking = () => {
                             }}>
                                 {step}
                             </div>
-                            {step < 4 && (
+                            {step < 3 && (
                                 <div style={{
                                     width: '60px',
                                     height: '3px',
@@ -158,59 +143,12 @@ const Booking = () => {
                     boxShadow: '0 10px 30px rgba(0,0,0,0.1)',
                     minHeight: '400px'
                 }}>
-                    {/* Step 1: Select Service */}
+                    {/* Step 1: Contact Information */}
                     {currentStep === 1 && (
-                        <div>
-                            <h2 style={{ 
-                                fontSize: '2rem', 
-                                marginBottom: '1.5rem',
-                                color: 'var(--color-primary)',
-                                fontFamily: '"Times New Roman", Times, serif'
-                            }}>
-                                Select Your Service
-                            </h2>
-                            <p style={{ marginBottom: '2rem', color: 'var(--color-text-light)' }}>
-                                Choose the treatment you'd like to book
-                            </p>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                                {services.map((service) => (
-                                    <label
-                                        key={service}
-                                        style={{
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            padding: '1rem',
-                                            border: `2px solid ${formData.serviceType === service ? 'var(--color-primary)' : '#ddd'}`,
-                                            borderRadius: '8px',
-                                            cursor: 'pointer',
-                                            transition: 'all 0.3s ease',
-                                            backgroundColor: formData.serviceType === service ? '#f0f9f9' : 'transparent'
-                                        }}
-                                        onMouseEnter={(e) => e.currentTarget.style.borderColor = 'var(--color-primary)'}
-                                        onMouseLeave={(e) => {
-                                            if (formData.serviceType !== service) {
-                                                e.currentTarget.style.borderColor = '#ddd';
-                                            }
-                                        }}
-                                    >
-                                        <input
-                                            type="radio"
-                                            name="serviceType"
-                                            value={service}
-                                            checked={formData.serviceType === service}
-                                            onChange={handleInputChange}
-                                            style={{ marginRight: '1rem', width: '20px', height: '20px', cursor: 'pointer' }}
-                                        />
-                                        <span style={{ fontSize: '1.1rem', fontWeight: '500' }}>{service}</span>
-                                    </label>
-                                ))}
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Step 2: Contact Information */}
-                    {currentStep === 2 && (
-                        <div>
+                        <div style={{
+                            animation: 'floatInUp 0.6s ease-out forwards',
+                            opacity: 0
+                        }}>
                             <h2 style={{ 
                                 fontSize: '2rem', 
                                 marginBottom: '1.5rem',
@@ -299,9 +237,12 @@ const Booking = () => {
                         </div>
                     )}
 
-                    {/* Step 3: Schedule */}
-                    {currentStep === 3 && (
-                        <div>
+                    {/* Step 2: Schedule */}
+                    {currentStep === 2 && (
+                        <div style={{
+                            animation: 'floatInUp 0.6s ease-out forwards',
+                            opacity: 0
+                        }}>
                             <h2 style={{ 
                                 fontSize: '2rem', 
                                 marginBottom: '1.5rem',
@@ -310,9 +251,20 @@ const Booking = () => {
                             }}>
                                 Choose Date & Time
                             </h2>
-                            <p style={{ marginBottom: '2rem', color: 'var(--color-text-light)' }}>
+                            <p style={{ marginBottom: '1rem', color: 'var(--color-text-light)' }}>
                                 Select your preferred date and time for the session
                             </p>
+                            <div style={{
+                                backgroundColor: '#f0f9f9',
+                                padding: '1rem',
+                                borderRadius: '8px',
+                                marginBottom: '2rem',
+                                border: '2px solid var(--color-accent)'
+                            }}>
+                                <p style={{ fontWeight: '600', color: 'var(--color-primary)' }}>
+                                    Selected Service: {formData.serviceType}
+                                </p>
+                            </div>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
                                 <div>
                                     <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
@@ -363,32 +315,6 @@ const Booking = () => {
                                 </div>
                                 <div>
                                     <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
-                                        Session Duration
-                                    </label>
-                                    <select
-                                        name="duration"
-                                        value={formData.duration}
-                                        onChange={handleInputChange}
-                                        style={{
-                                            width: '100%',
-                                            padding: '0.8rem',
-                                            border: '2px solid #ddd',
-                                            borderRadius: '8px',
-                                            fontSize: '1rem',
-                                            fontFamily: 'inherit',
-                                            transition: 'border-color 0.3s ease'
-                                        }}
-                                        onFocus={(e) => e.target.style.borderColor = 'var(--color-primary)'}
-                                        onBlur={(e) => e.target.style.borderColor = '#ddd'}
-                                    >
-                                        <option value="60">60 minutes</option>
-                                        <option value="90">90 minutes</option>
-                                        <option value="120">120 minutes</option>
-                                        <option value="180">180 minutes</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
                                         Special Requests (Optional)
                                     </label>
                                     <textarea
@@ -415,9 +341,12 @@ const Booking = () => {
                         </div>
                     )}
 
-                    {/* Step 4: Confirmation Method */}
-                    {currentStep === 4 && (
-                        <div>
+                    {/* Step 3: Confirmation Method */}
+                    {currentStep === 3 && (
+                        <div style={{
+                            animation: 'floatInUp 0.6s ease-out forwards',
+                            opacity: 0
+                        }}>
                             <h2 style={{ 
                                 fontSize: '2rem', 
                                 marginBottom: '1.5rem',
@@ -446,7 +375,6 @@ const Booking = () => {
                                     <p><strong>Phone:</strong> {formData.phone}</p>
                                     <p><strong>Date:</strong> {formData.date}</p>
                                     <p><strong>Time:</strong> {formData.time}</p>
-                                    <p><strong>Duration:</strong> {formData.duration} minutes</p>
                                 </div>
                             </div>
 
@@ -541,7 +469,7 @@ const Booking = () => {
                                 Previous
                             </button>
                         )}
-                        {currentStep < 4 ? (
+                        {currentStep < 3 ? (
                             <button
                                 onClick={handleNext}
                                 disabled={!isStepValid()}

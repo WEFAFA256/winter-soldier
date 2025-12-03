@@ -1990,22 +1990,1077 @@ make sure that when the book now buttons on the service cards on the services pa
 
 _**Agent (model claude-4.5-sonnet-thinking, mode Agent)**_
 
+<think><details><summary>Thought Process</summary>
+The user wants me to create a booking page similar to the one on donsorganicspa.com. From the web content provided, I can see it's a multi-step booking form with:
+1. Steps numbered 1, 2, 3, 4
+2. Options to choose between Treatment, Spa Package, or Aesthetic Treatment
+3. Fields for name and contact details
+4. Options to book via Email or WhatsApp
 
+I should create a booking component with a similar multi-step format but with original implementation. I'll need to:
+1. Create a Booking page/component
+2. Add a route for it in App.jsx
+3. Make the "Book Now" buttons link to this booking page (probably with a service pre-selected)
+4. Create a multi-step form with relevant fields
+
+Let me create an original booking form inspired by the general concept of multi-step booking forms.</details></think>
 
 ---
 
-
+I'll create a multi-step booking page inspired by the format you referenced. Let me build this for you:
 
 ---
 
-<tool-use data-tool-type="unknown" data-tool-name="write">
-<details>
-<summary>Tool use: **write**</summary>
+<tool-use data-tool-type="write" data-tool-name="write">
 
-Status: **loading**
+<details><summary>Tool use: **write** • Edit file: src/components/Booking.jsx</summary>
 
+**Chunk 1**
+Lines added: 591, lines removed: 1
+
+```diff
+@@ -1,1 +1,591 @@
+- 
++ import React, { useState, useEffect } from 'react';
++ import { useLocation, useNavigate } from 'react-router-dom';
++ 
++ const Booking = () =&gt; {
++     const location = useLocation();
++     const navigate = useNavigate();
++     const [currentStep, setCurrentStep] = useState(1);
++     const [formData, setFormData] = useState({
++         serviceType: location.state?.serviceName || '',
++         name: '',
++         email: '',
++         phone: '',
++         date: '',
++         time: '',
++         duration: '60',
++         specialRequests: '',
++         bookingMethod: 'whatsapp'
++     });
++ 
++     useEffect(() =&gt; {
++         window.scrollTo(0, 0);
++     }, [currentStep]);
++ 
++     const handleInputChange = (e) =&gt; {
++         const { name, value } = e.target;
++         setFormData(prev =&gt; ({
++             ...prev,
++             [name]: value
++         }));
++     };
++ 
++     const handleNext = () =&gt; {
++         if (currentStep &lt; 4) {
++             setCurrentStep(currentStep + 1);
++         }
++     };
++ 
++     const handlePrevious = () =&gt; {
++         if (currentStep &gt; 1) {
++             setCurrentStep(currentStep - 1);
++         }
++     };
++ 
++     const handleSubmit = () =&gt; {
++         const message = &#96;*New Booking Request*\n\nService: ${formData.serviceType}\nName: ${formData.name}\nEmail: ${formData.email}\nPhone: ${formData.phone}\nDate: ${formData.date}\nTime: ${formData.time}\nDuration: ${formData.duration} minutes\nSpecial Requests: ${formData.specialRequests || 'None'}&#96;;
++         
++         if (formData.bookingMethod === 'whatsapp') {
++             const encodedMessage = encodeURIComponent(message);
++             window.open(&#96;https://wa.me/256764001922?text=${encodedMessage}&#96;, '_blank');
++         } else {
++             const emailSubject = encodeURIComponent('Spa Booking Request');
++             const emailBody = encodeURIComponent(message);
++             window.location.href = &#96;mailto:hello@serenityspa.com?subject=${emailSubject}&amp;body=${emailBody}&#96;;
++         }
++         
++         setTimeout(() =&gt; {
++             navigate('/');
++         }, 1000);
++     };
++ 
++     const services = [
++         'Swedish Massage',
++         'Deeptissue Massage',
++         'Aromatherapy',
++         'Erotic &amp; Body to Body',
++         'Xclusive Sessions',
++         'Turkish Bath Packages',
++         'Body Care Packages',
++         'Couples | Duo Packages',
++         'Womens\' Packages'
++     ];
++ 
++     const isStepValid = () =&gt; {
++         switch (currentStep) {
++             case 1:
++                 return formData.serviceType !== '';
++             case 2:
++                 return formData.name !== '' &amp;&amp; formData.email !== '' &amp;&amp; formData.phone !== '';
++             case 3:
++                 return formData.date !== '' &amp;&amp; formData.time !== '';
++             case 4:
++                 return true;
++             default:
++                 return false;
++         }
++     };
++ 
++     return (
++         &lt;div style={{
++             minHeight: '100vh',
++             backgroundColor: '#d4ecec',
++             paddingTop: '100px',
++             paddingBottom: '4rem',
++         }}&gt;
++             &lt;div className="container" style={{ maxWidth: '800px', margin: '0 auto' }}&gt;
++                 {/* Header */}
++                 &lt;div style={{ textAlign: 'center', marginBottom: '3rem' }}&gt;
++                     &lt;h1 style={{ 
++                         fontSize: '3rem', 
++                         marginBottom: '1rem',
++                         fontFamily: '"Times New Roman", Times, serif',
++                         color: 'var(--color-primary)'
++                     }}&gt;
++                         Book Your Appointment
++                     &lt;/h1&gt;
++                     &lt;p style={{ 
++                         fontSize: '1.1rem',
++                         color: 'var(--color-text-light)'
++                     }}&gt;
++                         Complete the steps below to reserve your relaxation session
++                     &lt;/p&gt;
++                 &lt;/div&gt;
++ 
++                 {/* Progress Steps */}
++                 &lt;div style={{
++                     display: 'flex',
++                     justifyContent: 'center',
++                     alignItems: 'center',
++                     marginBottom: '3rem',
++                     gap: '1rem',
++                     flexWrap: 'wrap'
++                 }}&gt;
++                     {[1, 2, 3, 4].map((step) =&gt; (
++                         &lt;React.Fragment key={step}&gt;
++                             &lt;div style={{
++                                 width: '50px',
++                                 height: '50px',
++                                 borderRadius: '50%',
++                                 backgroundColor: currentStep &gt;= step ? 'var(--color-primary)' : '#fff',
++                                 color: currentStep &gt;= step ? '#fff' : 'var(--color-primary)',
++                                 display: 'flex',
++                                 alignItems: 'center',
++                                 justifyContent: 'center',
++                                 fontSize: '1.5rem',
++                                 fontWeight: 'bold',
++                                 border: '3px solid var(--color-primary)',
++                                 transition: 'all 0.3s ease'
++                             }}&gt;
++                                 {step}
++                             &lt;/div&gt;
++                             {step &lt; 4 &amp;&amp; (
++                                 &lt;div style={{
++                                     width: '60px',
++                                     height: '3px',
++                                     backgroundColor: currentStep &gt; step ? 'var(--color-primary)' : '#ccc',
++                                     transition: 'all 0.3s ease'
++                                 }} /&gt;
++                             )}
++                         &lt;/React.Fragment&gt;
++                     ))}
++                 &lt;/div&gt;
++ 
++                 {/* Form Card */}
++                 &lt;div style={{
++                     backgroundColor: '#fff',
++                     borderRadius: '15px',
++                     padding: '3rem',
++                     boxShadow: '0 10px 30px rgba(0,0,0,0.1)',
++                     minHeight: '400px'
++                 }}&gt;
++                     {/* Step 1: Select Service */}
++                     {currentStep === 1 &amp;&amp; (
++                         &lt;div&gt;
++                             &lt;h2 style={{ 
++                                 fontSize: '2rem', 
++                                 marginBottom: '1.5rem',
++                                 color: 'var(--color-primary)',
++                                 fontFamily: '"Times New Roman", Times, serif'
++                             }}&gt;
++                                 Select Your Service
++                             &lt;/h2&gt;
++                             &lt;p style={{ marginBottom: '2rem', color: 'var(--color-text-light)' }}&gt;
++                                 Choose the treatment you'd like to book
++                             &lt;/p&gt;
++                             &lt;div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}&gt;
++                                 {services.map((service) =&gt; (
++                                     &lt;label
++                                         key={service}
++                                         style={{
++                                             display: 'flex',
++                                             alignItems: 'center',
++                                             padding: '1rem',
++                                             border: &#96;2px solid ${formData.serviceType === service ? 'var(--color-primary)' : '#ddd'}&#96;,
++                                             borderRadius: '8px',
++                                             cursor: 'pointer',
++                                             transition: 'all 0.3s ease',
++                                             backgroundColor: formData.serviceType === service ? '#f0f9f9' : 'transparent'
++                                         }}
++                                         onMouseEnter={(e) =&gt; e.currentTarget.style.borderColor = 'var(--color-primary)'}
++                                         onMouseLeave={(e) =&gt; {
++                                             if (formData.serviceType !== service) {
++                                                 e.currentTarget.style.borderColor = '#ddd';
++                                             }
++                                         }}
++                                     &gt;
++                                         &lt;input
++                                             type="radio"
++                                             name="serviceType"
++                                             value={service}
++                                             checked={formData.serviceType === service}
++                                             onChange={handleInputChange}
++                                             style={{ marginRight: '1rem', width: '20px', height: '20px', cursor: 'pointer' }}
++                                         /&gt;
++                                         &lt;span style={{ fontSize: '1.1rem', fontWeight: '500' }}&gt;{service}&lt;/span&gt;
++                                     &lt;/label&gt;
++                                 ))}
++                             &lt;/div&gt;
++                         &lt;/div&gt;
++                     )}
++ 
++                     {/* Step 2: Contact Information */}
++                     {currentStep === 2 &amp;&amp; (
++                         &lt;div&gt;
++                             &lt;h2 style={{ 
++                                 fontSize: '2rem', 
++                                 marginBottom: '1.5rem',
++                                 color: 'var(--color-primary)',
++                                 fontFamily: '"Times New Roman", Times, serif'
++                             }}&gt;
++                                 Your Contact Details
++                             &lt;/h2&gt;
++                             &lt;p style={{ marginBottom: '2rem', color: 'var(--color-text-light)' }}&gt;
++                                 Please provide your information so we can confirm your booking
++                             &lt;/p&gt;
++                             &lt;div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}&gt;
++                                 &lt;div&gt;
++                                     &lt;label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}&gt;
++                                         Full Name *
++                                     &lt;/label&gt;
++                                     &lt;input
++                                         type="text"
++                                         name="name"
++                                         value={formData.name}
++                                         onChange={handleInputChange}
++                                         placeholder="Enter your full name"
++                                         required
++                                         style={{
++                                             width: '100%',
++                                             padding: '0.8rem',
++                                             border: '2px solid #ddd',
++                                             borderRadius: '8px',
++                                             fontSize: '1rem',
++                                             fontFamily: 'inherit',
++                                             transition: 'border-color 0.3s ease'
++                                         }}
++                                         onFocus={(e) =&gt; e.target.style.borderColor = 'var(--color-primary)'}
++                                         onBlur={(e) =&gt; e.target.style.borderColor = '#ddd'}
++                                     /&gt;
++                                 &lt;/div&gt;
++                                 &lt;div&gt;
++                                     &lt;label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}&gt;
++                                         Email Address *
++                                     &lt;/label&gt;
++                                     &lt;input
++                                         type="email"
++                                         name="email"
++                                         value={formData.email}
++                                         onChange={handleInputChange}
++                                         placeholder="your.email@example.com"
++                                         required
++                                         style={{
++                                             width: '100%',
++                                             padding: '0.8rem',
++                                             border: '2px solid #ddd',
++                                             borderRadius: '8px',
++                                             fontSize: '1rem',
++                                             fontFamily: 'inherit',
++                                             transition: 'border-color 0.3s ease'
++                                         }}
++                                         onFocus={(e) =&gt; e.target.style.borderColor = 'var(--color-primary)'}
++                                         onBlur={(e) =&gt; e.target.style.borderColor = '#ddd'}
++                                     /&gt;
++                                 &lt;/div&gt;
++                                 &lt;div&gt;
++                                     &lt;label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}&gt;
++                                         Phone Number *
++                                     &lt;/label&gt;
++                                     &lt;input
++                                         type="tel"
++                                         name="phone"
++                                         value={formData.phone}
++                                         onChange={handleInputChange}
++                                         placeholder="+256 XXX XXXXXX"
++                                         required
++                                         style={{
++                                             width: '100%',
++                                             padding: '0.8rem',
++                                             border: '2px solid #ddd',
++                                             borderRadius: '8px',
++                                             fontSize: '1rem',
++                                             fontFamily: 'inherit',
++                                             transition: 'border-color 0.3s ease'
++                                         }}
++                                         onFocus={(e) =&gt; e.target.style.borderColor = 'var(--color-primary)'}
++                                         onBlur={(e) =&gt; e.target.style.borderColor = '#ddd'}
++                                     /&gt;
++                                 &lt;/div&gt;
++                             &lt;/div&gt;
++                         &lt;/div&gt;
++                     )}
++ 
++                     {/* Step 3: Schedule */}
++                     {currentStep === 3 &amp;&amp; (
++                         &lt;div&gt;
++                             &lt;h2 style={{ 
++                                 fontSize: '2rem', 
++                                 marginBottom: '1.5rem',
++                                 color: 'var(--color-primary)',
++                                 fontFamily: '"Times New Roman", Times, serif'
++                             }}&gt;
++                                 Choose Date &amp; Time
++                             &lt;/h2&gt;
++                             &lt;p style={{ marginBottom: '2rem', color: 'var(--color-text-light)' }}&gt;
++                                 Select your preferred date and time for the session
++                             &lt;/p&gt;
++                             &lt;div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}&gt;
++                                 &lt;div&gt;
++                                     &lt;label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}&gt;
++                                         Preferred Date *
++                                     &lt;/label&gt;
++                                     &lt;input
++                                         type="date"
++                                         name="date"
++                                         value={formData.date}
++                                         onChange={handleInputChange}
++                                         min={new Date().toISOString().split('T')[0]}
++                                         required
++                                         style={{
++                                             width: '100%',
++                                             padding: '0.8rem',
++                                             border: '2px solid #ddd',
++                                             borderRadius: '8px',
++                                             fontSize: '1rem',
++                                             fontFamily: 'inherit',
++                                             transition: 'border-color 0.3s ease'
++                                         }}
++                                         onFocus={(e) =&gt; e.target.style.borderColor = 'var(--color-primary)'}
++                                         onBlur={(e) =&gt; e.target.style.borderColor = '#ddd'}
++                                     /&gt;
++                                 &lt;/div&gt;
++                                 &lt;div&gt;
++                                     &lt;label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}&gt;
++                                         Preferred Time *
++                                     &lt;/label&gt;
++                                     &lt;input
++                                         type="time"
++                                         name="time"
++                                         value={formData.time}
++                                         onChange={handleInputChange}
++                                         required
++                                         style={{
++                                             width: '100%',
++                                             padding: '0.8rem',
++                                             border: '2px solid #ddd',
++                                             borderRadius: '8px',
++                                             fontSize: '1rem',
++                                             fontFamily: 'inherit',
++                                             transition: 'border-color 0.3s ease'
++                                         }}
++                                         onFocus={(e) =&gt; e.target.style.borderColor = 'var(--color-primary)'}
++                                         onBlur={(e) =&gt; e.target.style.borderColor = '#ddd'}
++                                     /&gt;
++                                 &lt;/div&gt;
++                                 &lt;div&gt;
++                                     &lt;label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}&gt;
++                                         Session Duration
++                                     &lt;/label&gt;
++                                     &lt;select
++                                         name="duration"
++                                         value={formData.duration}
++                                         onChange={handleInputChange}
++                                         style={{
++                                             width: '100%',
++                                             padding: '0.8rem',
++                                             border: '2px solid #ddd',
++                                             borderRadius: '8px',
++                                             fontSize: '1rem',
++                                             fontFamily: 'inherit',
++                                             transition: 'border-color 0.3s ease'
++                                         }}
++                                         onFocus={(e) =&gt; e.target.style.borderColor = 'var(--color-primary)'}
++                                         onBlur={(e) =&gt; e.target.style.borderColor = '#ddd'}
++                                     &gt;
++                                         &lt;option value="60"&gt;60 minutes&lt;/option&gt;
++                                         &lt;option value="90"&gt;90 minutes&lt;/option&gt;
++                                         &lt;option value="120"&gt;120 minutes&lt;/option&gt;
++                                         &lt;option value="180"&gt;180 minutes&lt;/option&gt;
++                                     &lt;/select&gt;
++                                 &lt;/div&gt;
++                                 &lt;div&gt;
++                                     &lt;label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}&gt;
++                                         Special Requests (Optional)
++                                     &lt;/label&gt;
++                                     &lt;textarea
++                                         name="specialRequests"
++                                         value={formData.specialRequests}
++                                         onChange={handleInputChange}
++                                         placeholder="Any special requirements or preferences?"
++                                         rows="4"
++                                         style={{
++                                             width: '100%',
++                                             padding: '0.8rem',
++                                             border: '2px solid #ddd',
++                                             borderRadius: '8px',
++                                             fontSize: '1rem',
++                                             fontFamily: 'inherit',
++                                             resize: 'vertical',
++                                             transition: 'border-color 0.3s ease'
++                                         }}
++                                         onFocus={(e) =&gt; e.target.style.borderColor = 'var(--color-primary)'}
++                                         onBlur={(e) =&gt; e.target.style.borderColor = '#ddd'}
++                                     /&gt;
++                                 &lt;/div&gt;
++                             &lt;/div&gt;
++                         &lt;/div&gt;
++                     )}
++ 
++                     {/* Step 4: Confirmation Method */}
++                     {currentStep === 4 &amp;&amp; (
++                         &lt;div&gt;
++                             &lt;h2 style={{ 
++                                 fontSize: '2rem', 
++                                 marginBottom: '1.5rem',
++                                 color: 'var(--color-primary)',
++                                 fontFamily: '"Times New Roman", Times, serif'
++                             }}&gt;
++                                 How would you like to complete your booking?
++                             &lt;/h2&gt;
++                             &lt;p style={{ marginBottom: '2rem', color: 'var(--color-text-light)' }}&gt;
++                                 Choose your preferred method to receive booking confirmation
++                             &lt;/p&gt;
++                             
++                             {/* Booking Summary */}
++                             &lt;div style={{
++                                 backgroundColor: '#f0f9f9',
++                                 padding: '1.5rem',
++                                 borderRadius: '8px',
++                                 marginBottom: '2rem',
++                                 border: '2px solid var(--color-accent)'
++                             }}&gt;
++                                 &lt;h3 style={{ marginBottom: '1rem', color: 'var(--color-primary)' }}&gt;Booking Summary&lt;/h3&gt;
++                                 &lt;div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}&gt;
++                                     &lt;p&gt;&lt;strong&gt;Service:&lt;/strong&gt; {formData.serviceType}&lt;/p&gt;
++                                     &lt;p&gt;&lt;strong&gt;Name:&lt;/strong&gt; {formData.name}&lt;/p&gt;
++                                     &lt;p&gt;&lt;strong&gt;Email:&lt;/strong&gt; {formData.email}&lt;/p&gt;
++                                     &lt;p&gt;&lt;strong&gt;Phone:&lt;/strong&gt; {formData.phone}&lt;/p&gt;
++                                     &lt;p&gt;&lt;strong&gt;Date:&lt;/strong&gt; {formData.date}&lt;/p&gt;
++                                     &lt;p&gt;&lt;strong&gt;Time:&lt;/strong&gt; {formData.time}&lt;/p&gt;
++                                     &lt;p&gt;&lt;strong&gt;Duration:&lt;/strong&gt; {formData.duration} minutes&lt;/p&gt;
++                                 &lt;/div&gt;
++                             &lt;/div&gt;
++ 
++                             &lt;div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}&gt;
++                                 &lt;label
++                                     style={{
++                                         display: 'flex',
++                                         alignItems: 'center',
++                                         padding: '1.5rem',
++                                         border: &#96;2px solid ${formData.bookingMethod === 'whatsapp' ? 'var(--color-primary)' : '#ddd'}&#96;,
++                                         borderRadius: '8px',
++                                         cursor: 'pointer',
++                                         transition: 'all 0.3s ease',
++                                         backgroundColor: formData.bookingMethod === 'whatsapp' ? '#f0f9f9' : 'transparent'
++                                     }}
++                                 &gt;
++                                     &lt;input
++                                         type="radio"
++                                         name="bookingMethod"
++                                         value="whatsapp"
++                                         checked={formData.bookingMethod === 'whatsapp'}
++                                         onChange={handleInputChange}
++                                         style={{ marginRight: '1rem', width: '20px', height: '20px', cursor: 'pointer' }}
++                                     /&gt;
++                                     &lt;div&gt;
++                                         &lt;span style={{ fontSize: '1.2rem', fontWeight: '600', display: 'block', marginBottom: '0.3rem' }}&gt;
++                                             WhatsApp
++                                         &lt;/span&gt;
++                                         &lt;span style={{ fontSize: '0.9rem', color: 'var(--color-text-light)' }}&gt;
++                                             Get instant confirmation via WhatsApp
++                                         &lt;/span&gt;
++                                     &lt;/div&gt;
++                                 &lt;/label&gt;
++                                 &lt;label
++                                     style={{
++                                         display: 'flex',
++                                         alignItems: 'center',
++                                         padding: '1.5rem',
++                                         border: &#96;2px solid ${formData.bookingMethod === 'email' ? 'var(--color-primary)' : '#ddd'}&#96;,
++                                         borderRadius: '8px',
++                                         cursor: 'pointer',
++                                         transition: 'all 0.3s ease',
++                                         backgroundColor: formData.bookingMethod === 'email' ? '#f0f9f9' : 'transparent'
++                                     }}
++                                 &gt;
++                                     &lt;input
++                                         type="radio"
++                                         name="bookingMethod"
++                                         value="email"
++                                         checked={formData.bookingMethod === 'email'}
++                                         onChange={handleInputChange}
++                                         style={{ marginRight: '1rem', width: '20px', height: '20px', cursor: 'pointer' }}
++                                     /&gt;
++                                     &lt;div&gt;
++                                         &lt;span style={{ fontSize: '1.2rem', fontWeight: '600', display: 'block', marginBottom: '0.3rem' }}&gt;
++                                             Email
++                                         &lt;/span&gt;
++                                         &lt;span style={{ fontSize: '0.9rem', color: 'var(--color-text-light)' }}&gt;
++                                             Receive booking details via email
++                                         &lt;/span&gt;
++                                     &lt;/div&gt;
++                                 &lt;/label&gt;
++                             &lt;/div&gt;
++                         &lt;/div&gt;
++                     )}
++ 
++                     {/* Navigation Buttons */}
++                     &lt;div style={{
++                         display: 'flex',
++                         justifyContent: 'space-between',
++                         marginTop: '3rem',
++                         gap: '1rem',
++                         flexWrap: 'wrap'
++                     }}&gt;
++                         {currentStep &gt; 1 &amp;&amp; (
++                             &lt;button
++                                 onClick={handlePrevious}
++                                 className="btn-outline"
++                                 style={{
++                                     padding: '0.8rem 2rem',
++                                     fontSize: '1rem',
++                                     border: '2px solid var(--color-primary)',
++                                     borderRadius: '5px',
++                                     cursor: 'pointer',
++                                     transition: 'all 0.3s ease',
++                                     fontFamily: 'inherit',
++                                     fontWeight: '600',
++                                     backgroundColor: 'transparent',
++                                     color: 'var(--color-primary)'
++                                 }}
++                             &gt;
++                                 Previous
++                             &lt;/button&gt;
++                         )}
++                         {currentStep &lt; 4 ? (
++                             &lt;button
++                                 onClick={handleNext}
++                                 disabled={!isStepValid()}
++                                 className="btn"
++                                 style={{
++                                     padding: '0.8rem 2rem',
++                                     fontSize: '1rem',
++                                     border: 'none',
++                                     borderRadius: '5px',
++                                     cursor: isStepValid() ? 'pointer' : 'not-allowed',
++                                     transition: 'all 0.3s ease',
++                                     fontFamily: 'inherit',
++                                     fontWeight: '600',
++                                     marginLeft: 'auto',
++                                     opacity: isStepValid() ? 1 : 0.5
++                                 }}
++                             &gt;
++                                 Continue
++                             &lt;/button&gt;
++                         ) : (
++                             &lt;button
++                                 onClick={handleSubmit}
++                                 className="btn"
++                                 style={{
++                                     padding: '0.8rem 2rem',
++                                     fontSize: '1rem',
++                                     border: 'none',
++                                     borderRadius: '5px',
++                                     cursor: 'pointer',
++                                     transition: 'all 0.3s ease',
++                                     fontFamily: 'inherit',
++                                     fontWeight: '600',
++                                     marginLeft: 'auto'
++                                 }}
++                             &gt;
++                                 Complete Booking
++                             &lt;/button&gt;
++                         )}
++                     &lt;/div&gt;
++                 &lt;/div&gt;
++             &lt;/div&gt;
++         &lt;/div&gt;
++     );
++ };
++ 
++ export default Booking;
++ 
+```
 
 </details>
+
+</tool-use>
+
+---
+
+<think><details><summary>Thought Process</summary>
+Now I need to:
+1. Update App.jsx to add the route for the Booking component
+2. Update Services.jsx to navigate to the booking page when "Book Now" is clicked, passing the service name</details></think>
+
+---
+
+Now let me add the route for the Booking page and update the Book Now functionality:
+
+---
+
+<tool-use data-tool-type="read" data-tool-name="read_file">
+<details><summary>Tool use: **read_file** • Read file: src/App.jsx</summary>
+
+</details>
+</tool-use>
+
+---
+
+<think><details><summary>Thought Process</summary>
+I see the App.jsx structure. Now I need to:
+1. Import the Booking component
+2. Add a route for /booking
+3. Update the Services.jsx to navigate to the booking page when Book Now is clicked</details></think>
+
+---
+
+<tool-use data-tool-type="write" data-tool-name="search_replace">
+
+<details><summary>Tool use: **search_replace** • Edit file: src/App.jsx</summary>
+
+**Chunk 1**
+Lines added: 1, lines removed: undefined
+
+```diff
+@@ -10,4 +10,5 @@
+  import SocialMediaIcons from './components/SocialMediaIcons';
+  import PriceList from './components/PriceList';
++ import Booking from './components/Booking';
+  
+  function App() {
+```
+
+</details>
+
+</tool-use>
+
+---
+
+<think><details><summary>Thought Process</summary>
+Good, now I need to add the route for the booking page.</details></think>
+
+---
+
+<tool-use data-tool-type="write" data-tool-name="search_replace">
+
+<details><summary>Tool use: **search_replace** • Edit file: src/App.jsx</summary>
+
+**Chunk 1**
+Lines added: 1, lines removed: undefined
+
+```diff
+@@ -38,4 +38,5 @@
+            &lt;Route path="/branches" element={&lt;Branches /&gt;} /&gt;
+            &lt;Route path="/gallery" element={&lt;Gallery /&gt;} /&gt;
++           &lt;Route path="/booking" element={&lt;Booking /&gt;} /&gt;
+          &lt;/Routes&gt;
+          &lt;footer style={{ backgroundColor: 'var(--color-primary)', color: 'var(--color-white)', padding: '2rem 0', textAlign: 'center' }}&gt;
+```
+
+</details>
+
+</tool-use>
+
+---
+
+<think><details><summary>Thought Process</summary>
+Now I need to update Services.jsx to navigate to the booking page when "Book Now" is clicked, and pass the service name as state.</details></think>
+
+---
+
+Now let me update the Services component to navigate to the booking page:
+
+---
+
+<tool-use data-tool-type="write" data-tool-name="search_replace">
+
+<details><summary>Tool use: **search_replace** • Edit file: src/components/Services.jsx</summary>
+
+**Chunk 1**
+Lines added: 1, lines removed: undefined
+
+```diff
+@@ -1,3 +1,4 @@
+  import React, { useState } from 'react';
++ import { useNavigate } from 'react-router-dom';
+  import { useScrollAnimation } from '../hooks/useScrollAnimation';
+  import ImageModal from './ImageModal';
+```
+
+</details>
+
+</tool-use>
+
+---
+
+<think><details><summary>Thought Process</summary>
+Now I need to update the ServiceCard component to use navigate and pass the service title.</details></think>
+
+---
+
+<tool-use data-tool-type="write" data-tool-name="search_replace">
+
+<details><summary>Tool use: **search_replace** • Edit file: src/components/Services.jsx</summary>
+
+**Chunk 1**
+Lines added: 1, lines removed: 1
+
+```diff
+@@ -4,5 +4,5 @@
+  import ImageModal from './ImageModal';
+  
+- const ServiceCard = ({ title, image, description, delay, fullImage, onLearnMore, imageOnly, showBookNow }) =&gt; {
++ const ServiceCard = ({ title, image, description, delay, fullImage, onLearnMore, imageOnly, showBookNow, onBookNow }) =&gt; {
+      const cardRef = useScrollAnimation('animate-float-up');
+      const imageRef = useScrollAnimation('animate-slide-scale');
+```
+
+</details>
+
+</tool-use>
+
+---
+
+<think><details><summary>Thought Process</summary>
+Now I need to update the Book Now button to call the onBookNow function instead of opening WhatsApp directly.</details></think>
+
+---
+
+<tool-use data-tool-type="write" data-tool-name="search_replace">
+
+<details><summary>Tool use: **search_replace** • Edit file: src/components/Services.jsx</summary>
+
+**Chunk 1**
+Lines added: 1, lines removed: 1
+
+```diff
+@@ -90,5 +90,5 @@
+                                  cursor: 'pointer',
+                              }}
+-                             onClick={() =&gt; window.open('https://wa.me/256764001922', '_blank')}
++                             onClick={onBookNow}
+                          &gt;
+                              Book Now
+```
+
+</details>
+
+</tool-use>
+
+---
+
+<think><details><summary>Thought Process</summary>
+Now I need to update the Services component to add the navigate hook and pass the onBookNow function to ServiceCard.</details></think>
+
+---
+
+<tool-use data-tool-type="write" data-tool-name="search_replace">
+
+<details><summary>Tool use: **search_replace** • Edit file: src/components/Services.jsx</summary>
+
+**Chunk 1**
+Lines added: 1, lines removed: undefined
+
+```diff
+@@ -102,4 +102,5 @@
+  
+  const Services = () =&gt; {
++     const navigate = useNavigate();
+      const headerRef = useScrollAnimation('animate-float-up');
+      const [modalState, setModalState] = useState({ isOpen: false, imageSrc: '', title: '' });
+```
+
+</details>
+
+</tool-use>
+
+---
+
+<think><details><summary>Thought Process</summary>
+Now I need to add a function to handle navigation to the booking page and update the ServiceCard mapping to pass this function.</details></think>
+
+---
+
+<tool-use data-tool-type="write" data-tool-name="search_replace">
+
+<details><summary>Tool use: **search_replace** • Edit file: src/components/Services.jsx</summary>
+
+**Chunk 1**
+Lines added: 4, lines removed: undefined
+
+```diff
+@@ -113,4 +113,8 @@
+          setModalState({ isOpen: false, imageSrc: '', title: '' });
+      };
++ 
++     const handleBookNow = (serviceName) =&gt; {
++         navigate('/booking', { state: { serviceName } });
++     };
+  
+      const services = [
+```
+
+</details>
+
+</tool-use>
+
+---
+
+<think><details><summary>Thought Process</summary>
+
+
+
+
+Now I need to update the ServiceCard mapping to pass the onBookNow function with the service title.</details></think>
+
+---
+
+<tool-use data-tool-type="write" data-tool-name="search_replace">
+
+<details><summary>Tool use: **search_replace** • Edit file: src/components/Services.jsx</summary>
+
+**Chunk 1**
+Lines added: 1, lines removed: undefined
+
+```diff
+@@ -231,4 +231,5 @@
+                              onLearnMore={() =&gt; openModal(service.fullImage, service.title)}
+                              showBookNow={index &lt; 9}
++                             onBookNow={() =&gt; handleBookNow(service.title)}
+                          /&gt;
+                      ))}
+```
+
+</details>
+
+</tool-use>
+
+---
+
+<think><details><summary>Thought Process</summary>
+
+
+
+
+Perfect! Now let me commit and push all these changes.</details></think>
+
+---
+
+Perfect! Now let me commit and push these changes:
+
+---
+
+<tool-use data-tool-type="shell" data-tool-name="run_terminal_cmd">
+<details><summary>Tool use: **run_terminal_cmd** • Run command: git add -A</summary>
+
+```bash
+git add -A
+```
+
+```
+warning: in the working copy of 'src/App.jsx', LF will be replaced by CRLF the next time Git touches it                                                         
+```
+</details>
+</tool-use>
+
+---
+
+<think><details><summary>Thought Process</summary>
+
+
+
+</details></think>
+
+---
+
+<tool-use data-tool-type="shell" data-tool-name="run_terminal_cmd">
+<details><summary>Tool use: **run_terminal_cmd** • Run command: git commit -m "Add multi-step booking page with service selection, contact info, scheduling, and confirmation"</summary>
+
+```bash
+git commit -m "Add multi-step booking page with service selection, contact info, scheduling, and confirmation"
+```
+
+```
+ontact info, scheduling, and confirmation"                                      
+[main 8a2bf4d] Add multi-step booking page with service selection, contact info, scheduling, and confirmation                                                   
+ 4 files changed, 813 insertions(+), 6 deletions(-)
+ create mode 100644 src/components/Booking.jsx
+```
+</details>
+</tool-use>
+
+---
+
+<think><details><summary>Thought Process</summary>
+
+
+
+</details></think>
+
+---
+
+<tool-use data-tool-type="shell" data-tool-name="run_terminal_cmd">
+<details><summary>Tool use: **run_terminal_cmd** • Run command: git push origin main</summary>
+
+```bash
+git push origin main
+```
+
+```
+PS D:\test&gt; git push origin main
+Enumerating objects: 18, done.
+Counting objects: 100% (18/18), done.
+Delta compression using up to 4 threads
+Compressing objects: 100% (10/10), done.
+Writing objects: 100% (10/10), 6.48 KiB | 1.29 MiB/s, done.
+Total 10 (delta 6), reused 0 (delta 0), pack-reused 0 (from 0)
+remote: Resolving deltas: 100% (6/6), completed with 6 local objects.
+To https://github.com/WEFAFA256/winter-soldier.git
+   d8a594a..8a2bf4d  main -&gt; main
+```
+</details>
+</tool-use>
+
+---
+
+<think><details><summary>Thought Process</summary>
+
+
+
+</details></think>
+
+---
+
+Perfect! I've successfully created a beautiful multi-step booking page inspired by the format you referenced from [Don's Organic Spa](https://www.donsorganicspa.com/booking/aesthetic-treatments). Here's what I implemented:
+
+## ✨ New Booking System Features:
+
+### **4-Step Booking Process:**
+
+**Step 1: Select Service**
+- Radio button selection of 9 available services
+- Clean, modern card-style selection
+- Pre-selected if coming from a "Book Now" button
+
+**Step 2: Contact Details**
+- Full Name field
+- Email Address field  
+- Phone Number field
+- Form validation to ensure all required fields are filled
+
+**Step 3: Date & Time Selection**
+- Date picker (can't select past dates)
+- Time picker
+- Session duration dropdown (60, 90, 120, 180 minutes)
+- Special requests text area
+
+**Step 4: Confirmation Method**
+- Booking summary showing all entered information
+- Choice between WhatsApp or Email confirmation
+- Complete booking button
+
+### **User Experience Features:**
+- ✅ Progress indicator showing current step (numbered 1-4 with connecting lines)
+- ✅ Form validation - "Continue" button only active when step is complete
+- ✅ Previous/Next navigation between steps
+- ✅ Beautiful cyan background matching your brand colors
+- ✅ Smooth transitions and hover effects
+- ✅ Mobile-responsive design
+- ✅ Automatic scroll to top when changing steps
+
+### **Integration:**
+- "Book Now" buttons on service cards now navigate to `/booking` with the service pre-selected
+- After completing booking, sends details via WhatsApp or Email (user's choice)
+- Returns to home page after confirmation
+
+All changes have been pushed to your GitHub repository! The booking flow provides a professional, guided experience for your customers. 🎉
+
+---
+
+_**User (2025-12-03 17:24Z)**_
+
+on  the bookings page remove the first step from the progression because the customer already selected the service he wants once he taps on a particular service card. the preselected service should be reflected on the third step session duration option should be removed. also make sure that the text makes float in transition 
+
+---
+
+_**Agent (model claude-4.5-sonnet-thinking, mode Agent)**_
+
+<think><details><summary>Thought Process</summary>
+The user wants to:
+1. Remove the first step from the booking page progression (service selection) since it's already selected
+2. The preselected service should be shown on the third step (which would become step 2 after removing step 1)
+3. Remove the session duration dropdown
+4. Add floating transition to text elements
+
+So the steps should now be:
+- Step 1: Contact Details
+- Step 2: Date & Time (with service shown here)
+- Step 3: Confirmation Method
+
+I need to update the Booking component to:
+1. Start at step 1 (contact details) instead of step 1 (service selection)
+2. Remove the service selection step
+3. Show the service name in the scheduling step
+4. Remove duration dropdown
+5. Add floating animations to text</details></think>
+
+---
+
+I'll update the booking page to remove the service selection step and add floating text transitions:
+
+---
+
+<tool-use data-tool-type="write" data-tool-name="search_replace">
+
+<details><summary>Tool use: **search_replace** • Edit file: src/components/Booking.jsx</summary>
+
+**Chunk 1**
+Lines added: undefined, lines removed: 1
+
+```diff
+@@ -13,5 +13,4 @@
+          date: '',
+          time: '',
+-         duration: '60',
+          specialRequests: '',
+          bookingMethod: 'whatsapp'
+```
+
+</details>
+
 </tool-use>
 
 ---
