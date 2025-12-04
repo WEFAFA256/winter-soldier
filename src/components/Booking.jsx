@@ -65,11 +65,59 @@ const Booking = () => {
         return `SSP-${timestamp}-${randomStr}`;
     };
 
+    const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+    const [mobileNetwork, setMobileNetwork] = useState('MTV_MOMO_UG'); // Default to MTN
+
     const handleSubmit = () => {
         const newBookingId = generateBookingId();
         setBookingId(newBookingId);
-        setPaymentStatus('Pay at Venue');
+        // Show payment selection prompt
+        setShowPaymentPrompt(true);
+    };
+
+    const handlePayAtVenue = () => {
+        setPaymentStatus('Not Paid');
+        setShowPaymentPrompt(false);
         setShowQRModal(true);
+    };
+
+    const handlePawapayPayment = async () => {
+        setIsProcessingPayment(true);
+        try {
+            // 1. Initiate Payment
+            const response = await fetch('http://localhost:3001/api/pawapay/deposit', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    amount: servicePrice,
+                    phoneNumber: formData.phone,
+                    email: formData.email,
+                    description: `Booking: ${formData.serviceType}`,
+                    currency: 'UGX'
+                })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.details?.message || 'Payment initiation failed');
+            }
+
+            // 2. Poll for status (Simplified for demo)
+            // In a real app, you'd show a "Check Status" button or use a websocket/polling hook
+            alert(`Payment initiated! Please approve the prompt on your phone.\nTransaction ID: ${data.depositId}`);
+
+            // Simulating success for flow completion
+            setPaymentStatus('Pending');
+            setShowPaymentPrompt(false);
+            setShowQRModal(true);
+
+        } catch (error) {
+            console.error('Payment Error:', error);
+            alert(`Payment failed: ${error.message}`);
+        } finally {
+            setIsProcessingPayment(false);
+        }
     };
 
     const sendBookingConfirmation = (status) => {
@@ -748,6 +796,83 @@ const Booking = () => {
                     )}
                 </div>
             </div>
+
+            {/* Payment Prompt Modal */}
+            {showPaymentPrompt && (
+                <div
+                    style={{
+                        position: 'fixed',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        backgroundColor: 'rgba(0,0,0,0.5)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        zIndex: 1000,
+                        backdropFilter: 'blur(5px)'
+                    }}
+                    onClick={() => setShowPaymentPrompt(false)}
+                >
+                    <div
+                        style={{
+                            backgroundColor: '#fff',
+                            borderRadius: '15px',
+                            padding: '2.5rem',
+                            maxWidth: '500px',
+                            width: '90%',
+                            textAlign: 'center',
+                            animation: 'floatInUp 0.4s ease-out'
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <h2 style={{ color: 'var(--color-primary)', marginBottom: '1rem' }}>Choose Payment Method</h2>
+                        <p style={{ marginBottom: '2rem', color: '#666' }}>
+                            Total: <strong>UGX {servicePrice.toLocaleString()}</strong>
+                        </p>
+
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                            <button
+                                onClick={handlePawapayPayment}
+                                disabled={isProcessingPayment}
+                                className="btn"
+                                style={{
+                                    padding: '1rem',
+                                    borderRadius: '8px',
+                                    border: 'none',
+                                    backgroundColor: 'var(--color-primary)',
+                                    color: '#fff',
+                                    fontWeight: 'bold',
+                                    cursor: isProcessingPayment ? 'wait' : 'pointer',
+                                    opacity: isProcessingPayment ? 0.7 : 1
+                                }}
+                            >
+                                {isProcessingPayment ? 'Processing...' : '📱 Pay with Mobile Money (Pawapay)'}
+                            </button>
+
+                            <button
+                                onClick={handlePayAtVenue}
+                                className="btn-outline"
+                                style={{
+                                    padding: '1rem',
+                                    borderRadius: '8px',
+                                    border: '2px solid var(--color-primary)',
+                                    backgroundColor: 'transparent',
+                                    color: 'var(--color-primary)',
+                                    fontWeight: 'bold',
+                                    cursor: 'pointer'
+                                }}
+                            >
+                                🏢 Pay at Venue
+                            </button>
+                        </div>
+                        <p style={{ marginTop: '1.5rem', fontSize: '0.9rem', color: '#888' }}>
+                            Secure payments powered by Pawapay
+                        </p>
+                    </div>
+                </div>
+            )}
 
             {/* QR Code Modal */}
             <QRCodeModal
