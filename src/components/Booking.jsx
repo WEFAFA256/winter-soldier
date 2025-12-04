@@ -38,8 +38,8 @@ const Booking = () => {
 
     const servicePrice = servicePricing[formData.serviceType] || 150000;
 
-    // Pesapal configuration
-    const PESAPAL_CONSUMER_KEY = '+xu+14OnZYEzJUvRXc/944JFZzePNFCT';
+    // Pesapal configuration (not used - credentials are in backend/serverless functions)
+    const PESAPAL_CONSUMER_KEY = '+xu+14OnZYEzJUvRXc/944JFZzePNFcT';
     const PESAPAL_CONSUMER_SECRET = 'bpwmC9GpZCfTCUzfInP8j3qH2U8=';
     const PESAPAL_MODE = 'sandbox'; // Change to 'live' for production
     const PESAPAL_BASE_URL = PESAPAL_MODE === 'sandbox' 

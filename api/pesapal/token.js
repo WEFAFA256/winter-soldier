@@ -17,7 +17,7 @@ export default async function handler(req, res) {
 
     try {
         // Pesapal credentials (set these in Vercel environment variables)
-        const PESAPAL_CONSUMER_KEY = process.env.PESAPAL_CONSUMER_KEY || '+xu+14OnZYEzJUvRXc/944JFZzePNFCT';
+        const PESAPAL_CONSUMER_KEY = process.env.PESAPAL_CONSUMER_KEY || '+xu+14OnZYEzJUvRXc/944JFZzePNFcT';
         const PESAPAL_CONSUMER_SECRET = process.env.PESAPAL_CONSUMER_SECRET || 'bpwmC9GpZCfTCUzfInP8j3qH2U8=';
         const PESAPAL_BASE_URL = process.env.PESAPAL_MODE === 'live' 
             ? 'https://pay.pesapal.com/v3'
