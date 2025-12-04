@@ -834,6 +834,19 @@ img {
   gap: 0;
 }
 
+.booking-image {
+  animation: slowZoom 20s ease-in-out infinite alternate;
+}
+
+@keyframes slowZoom {
+  0% {
+    transform: scale(1);
+  }
+  100% {
+    transform: scale(1.15);
+  }
+}
+
 @media (max-width: 1024px) {
   .booking-card {
     grid-template-columns: 1fr !important;

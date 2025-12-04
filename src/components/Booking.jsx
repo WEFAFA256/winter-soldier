@@ -302,7 +302,8 @@ const Booking = () => {
                             backgroundSize: 'cover',
                             backgroundPosition: 'center',
                             position: 'relative',
-                            minHeight: '500px'
+                            minHeight: '500px',
+                            overflow: 'hidden'
                         }}
                         className="booking-image"
                         >
@@ -463,7 +464,8 @@ const Booking = () => {
                             backgroundSize: 'cover',
                             backgroundPosition: 'center',
                             position: 'relative',
-                            minHeight: '500px'
+                            minHeight: '500px',
+                            overflow: 'hidden'
                         }}
                         className="booking-image"
                         >
@@ -620,7 +622,8 @@ const Booking = () => {
                             backgroundSize: 'cover',
                             backgroundPosition: 'center',
                             position: 'relative',
-                            minHeight: '500px'
+                            minHeight: '500px',
+                            overflow: 'hidden'
                         }}
                         className="booking-image"
                         >
