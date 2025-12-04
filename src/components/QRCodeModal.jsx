@@ -6,7 +6,7 @@ const QRCodeModal = ({ isOpen, onClose, bookingData }) => {
 
     useEffect(() => {
         if (isOpen && canvasRef.current && bookingData) {
-            const bookingInfo = `SERENITY SPA - BOOKING CONFIRMATION\n\nBooking ID: ${bookingData.bookingId}\nService: ${bookingData.serviceType}\nName: ${bookingData.name}\nEmail: ${bookingData.email}\nPhone: ${bookingData.phone}\nDate: ${bookingData.date}\nTime: ${bookingData.time}\nSpecial Requests: ${bookingData.specialRequests || 'None'}`;
+            const bookingInfo = `SERENITY SPA - BOOKING CONFIRMATION\n\nBooking ID: ${bookingData.bookingId}\nService: ${bookingData.serviceType}\nAmount: UGX ${bookingData.amount?.toLocaleString() || 'N/A'}\nPayment Status: ${bookingData.paymentStatus || 'Not Paid'}\nName: ${bookingData.name}\nEmail: ${bookingData.email}\nPhone: ${bookingData.phone}\nDate: ${bookingData.date}\nTime: ${bookingData.time}\nSpecial Requests: ${bookingData.specialRequests || 'None'}`;
 
             QRCode.toCanvas(canvasRef.current, bookingInfo, {
                 width: 250,
@@ -148,6 +148,14 @@ const QRCodeModal = ({ isOpen, onClose, bookingData }) => {
                 }}>
                     <p style={{ marginBottom: '0.4rem' }}><strong>Booking ID:</strong> {bookingData?.bookingId}</p>
                     <p style={{ marginBottom: '0.4rem' }}><strong>Service:</strong> {bookingData?.serviceType}</p>
+                    <p style={{ marginBottom: '0.4rem' }}><strong>Amount:</strong> UGX {bookingData?.amount?.toLocaleString() || 'N/A'}</p>
+                    <p style={{ 
+                        marginBottom: '0.4rem',
+                        color: bookingData?.paymentStatus === 'Paid' ? '#4CAF50' : '#ff9800',
+                        fontWeight: 'bold'
+                    }}>
+                        <strong>Payment Status:</strong> {bookingData?.paymentStatus || 'Not Paid'}
+                    </p>
                     <p style={{ marginBottom: '0.4rem' }}><strong>Date:</strong> {bookingData?.date}</p>
                     <p style={{ marginBottom: '0.4rem' }}><strong>Time:</strong> {bookingData?.time}</p>
                     <p><strong>Name:</strong> {bookingData?.name}</p>

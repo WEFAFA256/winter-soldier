@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { useFlutterwave, closePaymentModal } from 'flutterwave-react-v3';
 import QRCodeModal from './QRCodeModal';
 
 const Booking = () => {
@@ -7,7 +8,9 @@ const Booking = () => {
     const navigate = useNavigate();
     const [currentStep, setCurrentStep] = useState(1);
     const [showQRModal, setShowQRModal] = useState(false);
+    const [showPaymentPrompt, setShowPaymentPrompt] = useState(false);
     const [bookingId, setBookingId] = useState('');
+    const [paymentStatus, setPaymentStatus] = useState('Not Paid');
     const [formData, setFormData] = useState({
         serviceType: location.state?.serviceName || '',
         name: '',
@@ -18,6 +21,42 @@ const Booking = () => {
         specialRequests: '',
         bookingMethod: 'whatsapp'
     });
+
+    // Service pricing (you can adjust these)
+    const servicePricing = {
+        'Swedish Massage': 150000,
+        'Deeptissue Massage': 180000,
+        'Aromatherapy': 200000,
+        'Erotic & Body to Body': 250000,
+        'Xclusive Sessions': 300000,
+        'Turkish Bath Packages': 350000,
+        'Body Care Packages': 400000,
+        'Couples | Duo Packages': 450000,
+        'Womens\' Packages': 250000
+    };
+
+    const servicePrice = servicePricing[formData.serviceType] || 150000;
+
+    // Flutterwave configuration
+    const flutterwaveConfig = {
+        public_key: 'FLWPUBK_TEST-SANDBOXDEMOKEY-X', // Replace with your actual public key
+        tx_ref: Date.now().toString(),
+        amount: servicePrice,
+        currency: 'UGX',
+        payment_options: 'card,mobilemoneyuganda,ussd',
+        customer: {
+            email: formData.email,
+            phone_number: formData.phone,
+            name: formData.name,
+        },
+        customizations: {
+            title: 'Serenity Spa Booking',
+            description: `Payment for ${formData.serviceType}`,
+            logo: 'https://your-logo-url.com/logo.png',
+        },
+    };
+
+    const handleFlutterPayment = useFlutterwave(flutterwaveConfig);
 
     useEffect(() => {
         window.scrollTo(0, 0);
@@ -52,8 +91,41 @@ const Booking = () => {
     const handleSubmit = () => {
         const newBookingId = generateBookingId();
         setBookingId(newBookingId);
-        
-        const message = `*New Booking Request*\n\nBooking ID: ${newBookingId}\nService: ${formData.serviceType}\nName: ${formData.name}\nEmail: ${formData.email}\nPhone: ${formData.phone}\nDate: ${formData.date}\nTime: ${formData.time}\nSpecial Requests: ${formData.specialRequests || 'None'}`;
+        // Show payment selection prompt
+        setShowPaymentPrompt(true);
+    };
+
+    const handlePayAtVenue = () => {
+        setPaymentStatus('Not Paid');
+        setShowPaymentPrompt(false);
+        sendBookingConfirmation('Not Paid');
+        setShowQRModal(true);
+    };
+
+    const handlePayOnline = () => {
+        setShowPaymentPrompt(false);
+        handleFlutterPayment({
+            callback: (response) => {
+                console.log(response);
+                closePaymentModal();
+                if (response.status === 'successful') {
+                    setPaymentStatus('Paid');
+                    sendBookingConfirmation('Paid');
+                    setShowQRModal(true);
+                } else {
+                    alert('Payment failed. Please try again or choose to pay at venue.');
+                    setShowPaymentPrompt(true);
+                }
+            },
+            onClose: () => {
+                // User closed payment modal without completing
+                setShowPaymentPrompt(true);
+            },
+        });
+    };
+
+    const sendBookingConfirmation = (status) => {
+        const message = `*New Booking Request*\n\nBooking ID: ${bookingId}\nService: ${formData.serviceType}\nAmount: UGX ${servicePrice.toLocaleString()}\nPayment Status: ${status}\nName: ${formData.name}\nEmail: ${formData.email}\nPhone: ${formData.phone}\nDate: ${formData.date}\nTime: ${formData.time}\nSpecial Requests: ${formData.specialRequests || 'None'}`;
         
         if (formData.bookingMethod === 'whatsapp') {
             const encodedMessage = encodeURIComponent(message);
@@ -63,9 +135,6 @@ const Booking = () => {
             const emailBody = encodeURIComponent(message);
             window.location.href = `mailto:hello@serenityspa.com?subject=${emailSubject}&body=${emailBody}`;
         }
-        
-        // Show QR code modal
-        setShowQRModal(true);
     };
 
     const handleCloseQRModal = () => {
@@ -727,6 +796,145 @@ const Booking = () => {
                     </div>
             </div>
 
+            {/* Payment Selection Modal */}
+            {showPaymentPrompt && (
+                <div
+                    style={{
+                        position: 'fixed',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        zIndex: 2000,
+                        padding: '1rem',
+                        animation: 'fadeIn 0.3s ease-out'
+                    }}
+                >
+                    <div
+                        style={{
+                            backgroundColor: '#fff',
+                            borderRadius: '15px',
+                            padding: '2.5rem',
+                            maxWidth: '500px',
+                            width: '100%',
+                            textAlign: 'center',
+                            animation: 'floatInUp 0.4s ease-out',
+                            boxShadow: '0 20px 60px rgba(0,0,0,0.3)'
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div style={{
+                            width: '60px',
+                            height: '60px',
+                            borderRadius: '50%',
+                            backgroundColor: 'var(--color-secondary)',
+                            color: 'var(--color-primary)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontSize: '2rem',
+                            margin: '0 auto 1.5rem'
+                        }}>
+                            💳
+                        </div>
+
+                        <h2 style={{
+                            fontSize: '1.8rem',
+                            marginBottom: '0.5rem',
+                            color: 'var(--color-primary)',
+                            fontFamily: '"Times New Roman", Times, serif'
+                        }}>
+                            Choose Payment Method
+                        </h2>
+                        
+                        <p style={{
+                            color: 'var(--color-text-light)',
+                            marginBottom: '1rem',
+                            fontSize: '1rem'
+                        }}>
+                            {formData.serviceType}
+                        </p>
+
+                        <div style={{
+                            backgroundColor: '#f0f9f9',
+                            padding: '1.5rem',
+                            borderRadius: '10px',
+                            marginBottom: '2rem',
+                            border: '2px solid var(--color-accent)'
+                        }}>
+                            <p style={{ fontSize: '2rem', fontWeight: 'bold', color: 'var(--color-primary)', marginBottom: '0.3rem' }}>
+                                UGX {servicePrice.toLocaleString()}
+                            </p>
+                            <p style={{ fontSize: '0.9rem', color: 'var(--color-text-light)', margin: 0 }}>
+                                Total Amount
+                            </p>
+                        </div>
+
+                        <div style={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '1rem',
+                            marginBottom: '1rem'
+                        }}>
+                            <button
+                                onClick={handlePayOnline}
+                                className="btn"
+                                style={{
+                                    padding: '1rem 1.5rem',
+                                    fontSize: '1.1rem',
+                                    border: 'none',
+                                    borderRadius: '8px',
+                                    cursor: 'pointer',
+                                    fontFamily: 'inherit',
+                                    fontWeight: '600',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: '0.5rem'
+                                }}
+                            >
+                                <span>💳</span> Pay Online Now
+                            </button>
+                            
+                            <button
+                                onClick={handlePayAtVenue}
+                                className="btn-outline"
+                                style={{
+                                    padding: '1rem 1.5rem',
+                                    fontSize: '1.1rem',
+                                    border: '2px solid var(--color-primary)',
+                                    borderRadius: '8px',
+                                    cursor: 'pointer',
+                                    fontFamily: 'inherit',
+                                    fontWeight: '600',
+                                    backgroundColor: 'transparent',
+                                    color: 'var(--color-primary)',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: '0.5rem'
+                                }}
+                            >
+                                <span>🏢</span> Pay at Venue
+                            </button>
+                        </div>
+
+                        <p style={{
+                            marginTop: '1rem',
+                            fontSize: '0.85rem',
+                            color: 'var(--color-text-light)',
+                            lineHeight: '1.4'
+                        }}>
+                            Pay online using Mobile Money, Card, or Bank Transfer. Or pay when you arrive at the spa.
+                        </p>
+                    </div>
+                </div>
+            )}
+
             {/* QR Code Modal */}
             <QRCodeModal
                 isOpen={showQRModal}
@@ -739,7 +947,9 @@ const Booking = () => {
                     phone: formData.phone,
                     date: formData.date,
                     time: formData.time,
-                    specialRequests: formData.specialRequests
+                    specialRequests: formData.specialRequests,
+                    paymentStatus: paymentStatus,
+                    amount: servicePrice
                 }}
             />
         </div>
