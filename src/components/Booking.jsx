@@ -160,8 +160,8 @@ const Booking = () => {
 
             if (!accessToken) {
                 console.error('No token found in response:', tokenData);
-                // Show the actual response in the error for debugging
-                throw new Error(`No access token received from Pesapal. Please check server logs. Response structure: ${JSON.stringify(tokenData).substring(0, 200)}...`);
+                // Don't include response in error message shown to user
+                throw new Error('No access token received from Pesapal. Please check server logs.');
             }
 
             // Step 2: Create order via backend
@@ -225,7 +225,7 @@ const Booking = () => {
                 window.location.href = redirectUrl;
             } else {
                 console.error('No redirect URL in response:', orderResult);
-                throw new Error(`No redirect URL received from Pesapal. Response: ${JSON.stringify(orderResult)}`);
+                throw new Error('No redirect URL received from Pesapal.');
             }
 
         } catch (error) {
@@ -235,15 +235,27 @@ const Booking = () => {
             // Check if it's a connection error (backend not running)
             const isDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
 
+            // Create user-friendly error message
+            let userMessage = '';
+
             if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
                 if (isDevelopment) {
-                    alert('Payment server is not running. Please start the backend server (npm run server) or choose to pay at venue.');
+                    userMessage = 'Payment server is not running. Please start the backend server (npm run server) or choose to pay at venue.';
                 } else {
-                    alert('Payment service is temporarily unavailable. Please try again later or choose to pay at venue.');
+                    userMessage = 'Payment service is temporarily unavailable. Please try again later or choose to pay at venue.';
                 }
+            } else if (error.message.includes('No access token')) {
+                userMessage = 'Unable to connect to payment service. Please try again or choose to pay at venue.';
+            } else if (error.message.includes('No redirect URL')) {
+                userMessage = 'Payment setup incomplete. Please try again or choose to pay at venue.';
+            } else if (error.message.includes('authenticate')) {
+                userMessage = 'Payment authentication failed. Please try again or choose to pay at venue.';
             } else {
-                alert(`Payment setup failed: ${error.message}. Please try again or choose to pay at venue.`);
+                // Generic error - don't show technical details to user
+                userMessage = 'Payment setup failed. Please try again or choose to pay at venue.';
             }
+
+            alert(userMessage);
             setShowPaymentPrompt(true);
         }
     };
