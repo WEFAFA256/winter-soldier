@@ -7,6 +7,7 @@ const Booking = () => {
     const navigate = useNavigate();
     const [currentStep, setCurrentStep] = useState(1);
     const [showQRModal, setShowQRModal] = useState(false);
+    const [showPaymentPrompt, setShowPaymentPrompt] = useState(false);
     const [bookingId, setBookingId] = useState('');
     const [paymentStatus, setPaymentStatus] = useState('Not Paid');
     const [formData, setFormData] = useState({
