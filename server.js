@@ -11,6 +11,18 @@ app.use(express.json());
 
 const PORT = 3001;
 
+// Root route
+app.get('/', (req, res) => {
+    res.json({ 
+        message: 'Pesapal Payment Proxy Server',
+        status: 'running',
+        endpoints: [
+            'POST /api/pesapal/token - Get Pesapal access token',
+            'POST /api/pesapal/order - Create Pesapal order'
+        ]
+    });
+});
+
 // Pesapal credentials
 const PESAPAL_CONSUMER_KEY = '+xu+14OnZYEzJUvRXc/944JFZzePNFCT';
 const PESAPAL_CONSUMER_SECRET = 'bpwmC9GpZCfTCUzfInP8j3qH2U8=';
