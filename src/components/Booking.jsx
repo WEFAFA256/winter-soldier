@@ -39,8 +39,8 @@ const Booking = () => {
 
     // Flutterwave configuration
     const flutterwaveConfig = {
-        public_key: 'FLWPUBK_TEST-SANDBOXDEMOKEY-X', // Replace with your actual public key
-        tx_ref: Date.now().toString(),
+        public_key: 'FLWPUBK_TEST-8e47ace8f16e5fda51f7f8b798483caf-X', // Replace with your actual public key
+        tx_ref: `SSP-${Date.now()}`,
         amount: servicePrice,
         currency: 'UGX',
         payment_options: 'card,mobilemoneyuganda,ussd',
@@ -52,7 +52,7 @@ const Booking = () => {
         customizations: {
             title: 'Serenity Spa Booking',
             description: `Payment for ${formData.serviceType}`,
-            logo: 'https://your-logo-url.com/logo.png',
+            logo: 'https://assets.piedpiper.com/logo.png',
         },
     };
 
@@ -98,7 +98,6 @@ const Booking = () => {
     const handlePayAtVenue = () => {
         setPaymentStatus('Not Paid');
         setShowPaymentPrompt(false);
-        sendBookingConfirmation('Not Paid');
         setShowQRModal(true);
     };
 
@@ -110,7 +109,6 @@ const Booking = () => {
                 closePaymentModal();
                 if (response.status === 'successful') {
                     setPaymentStatus('Paid');
-                    sendBookingConfirmation('Paid');
                     setShowQRModal(true);
                 } else {
                     alert('Payment failed. Please try again or choose to pay at venue.');
@@ -139,7 +137,12 @@ const Booking = () => {
 
     const handleCloseQRModal = () => {
         setShowQRModal(false);
-        navigate('/');
+        // Send booking confirmation via WhatsApp/Email after QR code is shown
+        sendBookingConfirmation(paymentStatus);
+        // Navigate to home after a short delay to allow the WhatsApp/Email window to open
+        setTimeout(() => {
+            navigate('/');
+        }, 500);
     };
 
     const isStepValid = () => {
