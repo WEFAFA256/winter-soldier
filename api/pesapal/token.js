@@ -1,4 +1,4 @@
-// Vercel serverless function for Pesapal token
+// Vercel serverless function for Pesapal token - LIVE ENVIRONMENT
 export default async function handler(req, res) {
     // Only allow POST requests
     if (req.method !== 'POST') {
@@ -16,14 +16,12 @@ export default async function handler(req, res) {
     }
 
     try {
-        // Pesapal credentials (set these in Vercel environment variables)
+        // Pesapal credentials - LIVE ENVIRONMENT (set these in Vercel environment variables)
         const PESAPAL_CONSUMER_KEY = process.env.PESAPAL_CONSUMER_KEY || '+xu+14OnZYEzJUvRXc/944JFZzePNFcT';
         const PESAPAL_CONSUMER_SECRET = process.env.PESAPAL_CONSUMER_SECRET || 'bpwmC9GpZCfTCUzfInP8j3qH2U8=';
-        const PESAPAL_BASE_URL = process.env.PESAPAL_MODE === 'live' 
-            ? 'https://pay.pesapal.com/v3'
-            : 'https://cybqa.pesapal.com/pesapalv3';
+        const PESAPAL_BASE_URL = 'https://pay.pesapal.com/v3'; // LIVE - Real payments!
 
-        console.log('Requesting token from Pesapal...');
+        console.log('Requesting token from Pesapal LIVE...');
         const response = await fetch(`${PESAPAL_BASE_URL}/api/Auth/RequestToken`, {
             method: 'POST',
             headers: {
@@ -42,7 +40,7 @@ export default async function handler(req, res) {
 
         if (!response.ok || responseText.toLowerCase().includes('error') || responseText.toLowerCase().includes('invalid')) {
             console.error('Pesapal API error detected:', responseText);
-            return res.status(response.ok ? 500 : response.status).json({ 
+            return res.status(response.ok ? 500 : response.status).json({
                 error: responseText,
                 status: response.status,
                 message: 'Pesapal API returned an error'
@@ -54,7 +52,7 @@ export default async function handler(req, res) {
             data = JSON.parse(responseText);
         } catch (parseError) {
             console.error('Failed to parse JSON:', parseError);
-            return res.status(500).json({ 
+            return res.status(500).json({
                 error: 'Invalid JSON response from Pesapal',
                 rawResponse: responseText
             });
@@ -63,31 +61,31 @@ export default async function handler(req, res) {
         // Recursive function to find token
         const findTokenRecursively = (obj, depth = 0) => {
             if (depth > 5) return null;
-            
+
             if (typeof obj !== 'object' || obj === null) {
                 if (typeof obj === 'string' && obj.length > 20 && obj.length < 500 && /^[A-Za-z0-9\-_=]+$/.test(obj)) {
                     return obj;
                 }
                 return null;
             }
-            
+
             const tokenFields = ['token', 'access_token', 'Token', 'AccessToken', 'accessToken', 'bearer_token'];
             for (const field of tokenFields) {
                 if (obj[field] && typeof obj[field] === 'string' && obj[field].length > 20) {
                     return obj[field];
                 }
             }
-            
+
             for (const key in obj) {
                 if (obj.hasOwnProperty(key)) {
                     const result = findTokenRecursively(obj[key], depth + 1);
                     if (result) return result;
                 }
             }
-            
+
             return null;
         };
-        
+
         const token = findTokenRecursively(data);
 
         if (token) {
@@ -104,10 +102,9 @@ export default async function handler(req, res) {
         }
     } catch (error) {
         console.error('Token error:', error);
-        return res.status(500).json({ 
+        return res.status(500).json({
             error: error.message,
             details: error.stack
         });
     }
 }
-

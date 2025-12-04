@@ -26,9 +26,7 @@ export default async function handler(req, res) {
             return res.status(400).json({ error: 'Order data is required' });
         }
 
-        const PESAPAL_BASE_URL = process.env.PESAPAL_MODE === 'live' 
-            ? 'https://pay.pesapal.com/v3'
-            : 'https://cybqa.pesapal.com/pesapalv3';
+        const PESAPAL_BASE_URL = 'https://pay.pesapal.com/v3'; // LIVE - Real payments!
 
         console.log('Creating order with data:', JSON.stringify(orderData, null, 2));
 
@@ -48,7 +46,7 @@ export default async function handler(req, res) {
 
         if (!response.ok) {
             console.error('Pesapal order API error:', responseText);
-            return res.status(response.status).json({ 
+            return res.status(response.status).json({
                 error: responseText,
                 status: response.status
             });
@@ -59,7 +57,7 @@ export default async function handler(req, res) {
             data = JSON.parse(responseText);
         } catch (parseError) {
             console.error('Failed to parse order JSON:', parseError);
-            return res.status(500).json({ 
+            return res.status(500).json({
                 error: 'Invalid JSON response from Pesapal',
                 rawResponse: responseText
             });
@@ -69,7 +67,7 @@ export default async function handler(req, res) {
         return res.status(200).json(data);
     } catch (error) {
         console.error('Order error:', error);
-        return res.status(500).json({ 
+        return res.status(500).json({
             error: error.message,
             details: error.stack
         });

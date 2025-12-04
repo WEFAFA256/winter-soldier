@@ -13,7 +13,7 @@ const PORT = 3001;
 
 // Root route
 app.get('/', (req, res) => {
-    res.json({ 
+    res.json({
         message: 'Pesapal Payment Proxy Server',
         status: 'running',
         endpoints: [
@@ -26,7 +26,7 @@ app.get('/', (req, res) => {
 
 // Health check endpoint
 app.get('/health', (req, res) => {
-    res.json({ 
+    res.json({
         status: 'healthy',
         timestamp: new Date().toISOString(),
         pesapalBaseUrl: PESAPAL_BASE_URL
@@ -51,7 +51,7 @@ app.get('/api/pesapal/test', async (req, res) => {
 
         const responseText = await response.text();
         let parsedData = null;
-        
+
         try {
             parsedData = JSON.parse(responseText);
         } catch (e) {
@@ -67,17 +67,17 @@ app.get('/api/pesapal/test', async (req, res) => {
             url: `${PESAPAL_BASE_URL}/api/Auth/RequestToken`
         });
     } catch (error) {
-        res.status(500).json({ 
+        res.status(500).json({
             error: error.message,
             stack: error.stack
         });
     }
 });
 
-// Pesapal credentials
+// Pesapal credentials - LIVE ENVIRONMENT
 const PESAPAL_CONSUMER_KEY = '+xu+14OnZYEzJUvRXc/944JFZzePNFcT';
 const PESAPAL_CONSUMER_SECRET = 'bpwmC9GpZCfTCUzfInP8j3qH2U8=';
-const PESAPAL_BASE_URL = 'https://cybqa.pesapal.com/pesapalv3'; // Sandbox
+const PESAPAL_BASE_URL = 'https://pay.pesapal.com/v3'; // LIVE - Real payments!
 
 // Endpoint to get Pesapal access token
 app.post('/api/pesapal/token', async (req, res) => {
@@ -103,7 +103,7 @@ app.post('/api/pesapal/token', async (req, res) => {
         // Check if response indicates an error (even if status is 200)
         if (!response.ok || responseText.toLowerCase().includes('error') || responseText.toLowerCase().includes('invalid')) {
             console.error('Pesapal API error detected:', responseText);
-            return res.status(response.ok ? 500 : response.status).json({ 
+            return res.status(response.ok ? 500 : response.status).json({
                 error: responseText,
                 status: response.status,
                 message: 'Pesapal API returned an error'
@@ -115,7 +115,7 @@ app.post('/api/pesapal/token', async (req, res) => {
             data = JSON.parse(responseText);
         } catch (parseError) {
             console.error('Failed to parse JSON:', parseError);
-            return res.status(500).json({ 
+            return res.status(500).json({
                 error: 'Invalid JSON response from Pesapal',
                 rawResponse: responseText
             });
@@ -123,11 +123,11 @@ app.post('/api/pesapal/token', async (req, res) => {
 
         // Log the response structure for debugging
         console.log('Parsed response:', JSON.stringify(data, null, 2));
-        
+
         // Recursive function to find token anywhere in the object
         const findTokenRecursively = (obj, depth = 0) => {
             if (depth > 5) return null; // Prevent infinite recursion
-            
+
             if (typeof obj !== 'object' || obj === null) {
                 // If it's a string that looks like a token (long alphanumeric)
                 if (typeof obj === 'string' && obj.length > 20 && obj.length < 500 && /^[A-Za-z0-9\-_=]+$/.test(obj)) {
@@ -135,7 +135,7 @@ app.post('/api/pesapal/token', async (req, res) => {
                 }
                 return null;
             }
-            
+
             // Check common token field names
             const tokenFields = ['token', 'access_token', 'Token', 'AccessToken', 'accessToken', 'accessToken', 'bearer_token'];
             for (const field of tokenFields) {
@@ -143,7 +143,7 @@ app.post('/api/pesapal/token', async (req, res) => {
                     return obj[field];
                 }
             }
-            
+
             // Recursively search in nested objects
             for (const key in obj) {
                 if (obj.hasOwnProperty(key)) {
@@ -151,13 +151,13 @@ app.post('/api/pesapal/token', async (req, res) => {
                     if (result) return result;
                 }
             }
-            
+
             return null;
         };
-        
+
         // Try to find token in various possible formats
         let token = findTokenRecursively(data);
-        
+
         if (token) {
             console.log('Token found successfully:', token.substring(0, 20) + '...');
             res.json({ token: token });
@@ -169,14 +169,14 @@ app.post('/api/pesapal/token', async (req, res) => {
             console.error('Full response object:', JSON.stringify(data, null, 2));
             console.error('Raw response text:', responseText);
             console.error('Response keys:', Object.keys(data || {}));
-            
+
             // Check if this might be an error response
             const errorIndicators = ['error', 'Error', 'ERROR', 'message', 'Message', 'fail', 'Fail'];
-            const hasError = errorIndicators.some(indicator => 
+            const hasError = errorIndicators.some(indicator =>
                 (data && typeof data === 'object' && data[indicator]) ||
                 responseText.includes(indicator)
             );
-            
+
             if (hasError) {
                 return res.status(500).json({
                     error: 'Pesapal API returned an error response',
@@ -185,9 +185,9 @@ app.post('/api/pesapal/token', async (req, res) => {
                     message: 'Please check your Pesapal credentials and API endpoint'
                 });
             }
-            
+
             // Return the full response so frontend can try to extract token
-            res.status(500).json({ 
+            res.status(500).json({
                 error: 'Token not found in Pesapal response',
                 fullResponse: data,
                 rawResponse: responseText,
@@ -197,7 +197,7 @@ app.post('/api/pesapal/token', async (req, res) => {
         }
     } catch (error) {
         console.error('Token error:', error);
-        res.status(500).json({ 
+        res.status(500).json({
             error: error.message,
             details: error.stack
         });
@@ -235,7 +235,7 @@ app.post('/api/pesapal/order', async (req, res) => {
 
         if (!response.ok) {
             console.error('Pesapal order API error:', responseText);
-            return res.status(response.status).json({ 
+            return res.status(response.status).json({
                 error: responseText,
                 status: response.status
             });
@@ -246,7 +246,7 @@ app.post('/api/pesapal/order', async (req, res) => {
             data = JSON.parse(responseText);
         } catch (parseError) {
             console.error('Failed to parse order JSON:', parseError);
-            return res.status(500).json({ 
+            return res.status(500).json({
                 error: 'Invalid JSON response from Pesapal',
                 rawResponse: responseText
             });
@@ -256,7 +256,7 @@ app.post('/api/pesapal/order', async (req, res) => {
         res.json(data);
     } catch (error) {
         console.error('Order error:', error);
-        res.status(500).json({ 
+        res.status(500).json({
             error: error.message,
             details: error.stack
         });
