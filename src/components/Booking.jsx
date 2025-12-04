@@ -104,15 +104,27 @@ const Booking = () => {
             });
 
             if (!tokenResponse.ok) {
-                const errorData = await tokenResponse.json();
-                throw new Error(errorData.error || 'Failed to authenticate with Pesapal');
+                let errorMessage = 'Failed to authenticate with Pesapal';
+                try {
+                    const errorData = await tokenResponse.json();
+                    errorMessage = errorData.error || errorData.message || errorMessage;
+                    console.error('Token error response:', errorData);
+                } catch (e) {
+                    const errorText = await tokenResponse.text();
+                    errorMessage = errorText || errorMessage;
+                    console.error('Token error (text):', errorText);
+                }
+                throw new Error(errorMessage);
             }
 
             const tokenData = await tokenResponse.json();
-            const accessToken = tokenData.token || tokenData.access_token;
+            console.log('Token response:', tokenData);
+            
+            const accessToken = tokenData.token || tokenData.access_token || tokenData.Token;
             
             if (!accessToken) {
-                throw new Error('No access token received from Pesapal');
+                console.error('No token found in response:', tokenData);
+                throw new Error(`No access token received from Pesapal. Response: ${JSON.stringify(tokenData)}`);
             }
 
             // Step 2: Create order via backend
@@ -154,17 +166,29 @@ const Booking = () => {
             });
 
             if (!orderResponse.ok) {
-                const errorData = await orderResponse.json();
-                throw new Error(errorData.error || 'Failed to create order');
+                let errorMessage = 'Failed to create order';
+                try {
+                    const errorData = await orderResponse.json();
+                    errorMessage = errorData.error || errorData.message || errorMessage;
+                    console.error('Order error response:', errorData);
+                } catch (e) {
+                    const errorText = await orderResponse.text();
+                    errorMessage = errorText || errorMessage;
+                    console.error('Order error (text):', errorText);
+                }
+                throw new Error(errorMessage);
             }
 
             const orderResult = await orderResponse.json();
+            console.log('Order response:', orderResult);
             
             // Step 3: Redirect to Pesapal payment page
-            if (orderResult.redirect_url) {
-                window.location.href = orderResult.redirect_url;
+            const redirectUrl = orderResult.redirect_url || orderResult.redirectUrl || orderResult.RedirectUrl;
+            if (redirectUrl) {
+                window.location.href = redirectUrl;
             } else {
-                throw new Error('No redirect URL received from Pesapal');
+                console.error('No redirect URL in response:', orderResult);
+                throw new Error(`No redirect URL received from Pesapal. Response: ${JSON.stringify(orderResult)}`);
             }
 
         } catch (error) {

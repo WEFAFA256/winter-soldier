@@ -18,8 +18,18 @@ app.get('/', (req, res) => {
         status: 'running',
         endpoints: [
             'POST /api/pesapal/token - Get Pesapal access token',
-            'POST /api/pesapal/order - Create Pesapal order'
+            'POST /api/pesapal/order - Create Pesapal order',
+            'GET /health - Health check'
         ]
+    });
+});
+
+// Health check endpoint
+app.get('/health', (req, res) => {
+    res.json({ 
+        status: 'healthy',
+        timestamp: new Date().toISOString(),
+        pesapalBaseUrl: PESAPAL_BASE_URL
     });
 });
 
@@ -31,6 +41,7 @@ const PESAPAL_BASE_URL = 'https://cybqa.pesapal.com/pesapalv3'; // Sandbox
 // Endpoint to get Pesapal access token
 app.post('/api/pesapal/token', async (req, res) => {
     try {
+        console.log('Requesting token from Pesapal...');
         const response = await fetch(`${PESAPAL_BASE_URL}/api/Auth/RequestToken`, {
             method: 'POST',
             headers: {
@@ -43,16 +54,52 @@ app.post('/api/pesapal/token', async (req, res) => {
             })
         });
 
+        const responseText = await response.text();
+        console.log('Pesapal response status:', response.status);
+        console.log('Pesapal response:', responseText);
+
         if (!response.ok) {
-            const errorText = await response.text();
-            return res.status(response.status).json({ error: errorText });
+            console.error('Pesapal API error:', responseText);
+            return res.status(response.status).json({ 
+                error: responseText,
+                status: response.status
+            });
         }
 
-        const data = await response.json();
-        res.json(data);
+        let data;
+        try {
+            data = JSON.parse(responseText);
+        } catch (parseError) {
+            console.error('Failed to parse JSON:', parseError);
+            return res.status(500).json({ 
+                error: 'Invalid JSON response from Pesapal',
+                rawResponse: responseText
+            });
+        }
+
+        // Log the response structure for debugging
+        console.log('Parsed response:', JSON.stringify(data, null, 2));
+        
+        // Ensure we return the token in a consistent format
+        if (data.token) {
+            res.json({ token: data.token });
+        } else if (data.access_token) {
+            res.json({ token: data.access_token });
+        } else if (data.Token) {
+            res.json({ token: data.Token });
+        } else {
+            console.error('Unexpected response format:', data);
+            res.status(500).json({ 
+                error: 'Unexpected response format from Pesapal',
+                receivedData: data
+            });
+        }
     } catch (error) {
         console.error('Token error:', error);
-        res.status(500).json({ error: error.message });
+        res.status(500).json({ 
+            error: error.message,
+            details: error.stack
+        });
     }
 });
 
@@ -60,6 +107,16 @@ app.post('/api/pesapal/token', async (req, res) => {
 app.post('/api/pesapal/order', async (req, res) => {
     try {
         const { accessToken, orderData } = req.body;
+
+        if (!accessToken) {
+            return res.status(400).json({ error: 'Access token is required' });
+        }
+
+        if (!orderData) {
+            return res.status(400).json({ error: 'Order data is required' });
+        }
+
+        console.log('Creating order with data:', JSON.stringify(orderData, null, 2));
 
         const response = await fetch(`${PESAPAL_BASE_URL}/api/Transactions/SubmitOrderRequest`, {
             method: 'POST',
@@ -71,16 +128,37 @@ app.post('/api/pesapal/order', async (req, res) => {
             body: JSON.stringify(orderData)
         });
 
+        const responseText = await response.text();
+        console.log('Order response status:', response.status);
+        console.log('Order response:', responseText);
+
         if (!response.ok) {
-            const errorText = await response.text();
-            return res.status(response.status).json({ error: errorText });
+            console.error('Pesapal order API error:', responseText);
+            return res.status(response.status).json({ 
+                error: responseText,
+                status: response.status
+            });
         }
 
-        const data = await response.json();
+        let data;
+        try {
+            data = JSON.parse(responseText);
+        } catch (parseError) {
+            console.error('Failed to parse order JSON:', parseError);
+            return res.status(500).json({ 
+                error: 'Invalid JSON response from Pesapal',
+                rawResponse: responseText
+            });
+        }
+
+        console.log('Order created successfully:', JSON.stringify(data, null, 2));
         res.json(data);
     } catch (error) {
         console.error('Order error:', error);
-        res.status(500).json({ error: error.message });
+        res.status(500).json({ 
+            error: error.message,
+            details: error.stack
+        });
     }
 });
 
