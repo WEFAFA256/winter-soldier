@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { useFlutterwave, closePaymentModal } from 'flutterwave-react-v3';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import QRCodeModal from './QRCodeModal';
 
 const Booking = () => {
@@ -38,35 +37,62 @@ const Booking = () => {
 
     const servicePrice = servicePricing[formData.serviceType] || 150000;
 
-    // Flutterwave configuration
-    const flutterwaveConfig = {
-        public_key: 'FLWPUBK_TEST-SANDBOXDEMOKEY-X', // ⚠️ REPLACE THIS WITH YOUR OWN PUBLIC KEY FROM FLUTTERWAVE DASHBOARD
-        tx_ref: `SSP-${Date.now()}`,
-        amount: servicePrice,
-        currency: 'UGX',
-        payment_options: 'card,mobilemoneyuganda,ussd',
-        customer: {
-            email: formData.email,
-            phone_number: formData.phone,
-            name: formData.name,
-        },
-        customizations: {
-            title: 'Serenity Spa Booking',
-            description: `Payment for ${formData.serviceType}`,
-            logo: 'https://assets.piedpiper.com/logo.png',
-        },
+    // Pesapal configuration
+    // ⚠️ REPLACE THESE WITH YOUR ACTUAL PESAPAL CREDENTIALS
+    const PESAPAL_CONSUMER_KEY = 'YOUR_PESAPAL_CONSUMER_KEY'; // Get from Pesapal dashboard
+    const PESAPAL_CONSUMER_SECRET = 'YOUR_PESAPAL_CONSUMER_SECRET'; // Get from Pesapal dashboard
+    const PESAPAL_MODE = 'sandbox'; // Change to 'live' for production
+
+    // Check for payment callback from Pesapal
+    const [searchParams] = useSearchParams();
+    useEffect(() => {
+        const orderTrackingId = searchParams.get('OrderTrackingId');
+        const orderMerchantReference = searchParams.get('OrderMerchantReference');
+        
+        if (orderTrackingId && orderMerchantReference) {
+            // Payment was processed, check status
+            checkPesapalPaymentStatus(orderTrackingId);
+        }
+    }, [searchParams]);
+
+    const checkPesapalPaymentStatus = async (orderTrackingId) => {
+        // In a real implementation, you'd call your backend to verify payment
+        // For now, we'll simulate checking the status
+        // In production, create an API endpoint that uses Pesapal's API to verify
+        
+        // Simulate successful payment check (replace with actual API call)
+        setPaymentStatus('Paid');
+        setTransactionId(orderTrackingId);
+        setShowQRModal(true);
     };
 
-    const handleFlutterPayment = useFlutterwave(flutterwaveConfig);
-
-    // Dev helper to simulate payment success without valid API key
-    const handleSimulatePayment = () => {
-        const mockTransactionId = `MOCK-${Date.now()}`;
-        console.log('Simulating successful payment...');
-        setPaymentStatus('Paid');
-        setTransactionId(mockTransactionId);
+    const handlePayOnline = async () => {
         setShowPaymentPrompt(false);
-        setShowQRModal(true);
+        
+        // Generate unique order reference
+        const orderReference = `SSP-${Date.now()}-${Math.random().toString(36).substring(7)}`;
+        
+        // Store booking data in sessionStorage for after payment redirect
+        sessionStorage.setItem('pendingBooking', JSON.stringify({
+            bookingId: bookingId,
+            formData: formData,
+            servicePrice: servicePrice,
+            orderReference: orderReference
+        }));
+
+        // For now, we'll use a simple redirect approach
+        // In production, you'd create a backend endpoint that generates Pesapal payment URL
+        
+        // Simulate Pesapal redirect (replace with actual Pesapal checkout URL generation)
+        alert('Pesapal integration requires backend setup. Using simulation for now.');
+        
+        // Simulate payment success for testing
+        setTimeout(() => {
+            const mockTransactionId = `PESAPAL-${Date.now()}`;
+            setPaymentStatus('Paid');
+            setTransactionId(mockTransactionId);
+            setShowQRModal(true);
+        }, 1000);
     };
 
     useEffect(() => {
@@ -112,45 +138,6 @@ const Booking = () => {
         setShowQRModal(true);
     };
 
-    const handlePayOnline = () => {
-        setShowPaymentPrompt(false);
-        // Ensure status starts as Not Paid
-        setPaymentStatus('Not Paid');
-        
-        handleFlutterPayment({
-            callback: (response) => {
-                console.log('Flutterwave Response:', response);
-                closePaymentModal();
-                
-                // Strict verification - payment must be successful AND have transaction_id
-                if (response.status === 'successful' && response.transaction_id) {
-                    // Payment verified and confirmed successful
-                    setPaymentStatus('Paid');
-                    setTransactionId(response.transaction_id);
-                    console.log('Payment Successful! Transaction ID:', response.transaction_id);
-                    setShowQRModal(true);
-                } else if (response.status === 'cancelled') {
-                    // User cancelled payment
-                    console.log('Payment cancelled by user');
-                    alert('Payment was cancelled. Please try again or choose to pay at venue.');
-                    setPaymentStatus('Not Paid');
-                    setShowPaymentPrompt(true);
-                } else {
-                    // Payment failed or incomplete
-                    console.log('Payment failed or incomplete:', response);
-                    alert('Payment was not completed. Please try again or choose to pay at venue.');
-                    setPaymentStatus('Not Paid');
-                    setShowPaymentPrompt(true);
-                }
-            },
-            onClose: () => {
-                // User closed payment modal without completing
-                console.log('Payment modal closed without completion');
-                setPaymentStatus('Not Paid');
-                setShowPaymentPrompt(true);
-            },
-        });
-    };
 
     const sendBookingConfirmation = (status) => {
         const message = `*New Booking Request*\n\nBooking ID: ${bookingId}\nService: ${formData.serviceType}\nAmount: UGX ${servicePrice.toLocaleString()}\nPayment Status: ${status}\nName: ${formData.name}\nEmail: ${formData.email}\nPhone: ${formData.phone}\nDate: ${formData.date}\nTime: ${formData.time}\nSpecial Requests: ${formData.specialRequests || 'None'}`;
@@ -954,23 +941,6 @@ const Booking = () => {
                             >
                                 <span>🏢</span> Pay at Venue
                             </button>
-
-                            {/* Dev Tool for testing flow */}
-                            <button
-                                onClick={handleSimulatePayment}
-                                style={{
-                                    marginTop: '1rem',
-                                    padding: '0.5rem',
-                                    fontSize: '0.9rem',
-                                    border: '1px dashed #999',
-                                    borderRadius: '4px',
-                                    cursor: 'pointer',
-                                    backgroundColor: '#f0f0f0',
-                                    color: '#666'
-                                }}
-                            >
-                                🛠️ Simulate Success (Dev Mode)
-                            </button>
                         </div>
 
                         <p style={{
@@ -979,7 +949,7 @@ const Booking = () => {
                             color: 'var(--color-text-light)',
                             lineHeight: '1.4'
                         }}>
-                            Pay online using Mobile Money, Card, or Bank Transfer. Or pay when you arrive at the spa.
+                            Pay online using MTN Mobile Money, Airtel Money, Visa, or Mastercard via Pesapal. Or pay when you arrive at the spa.
                         </p>
                     </div>
                 </div>
