@@ -11,6 +11,7 @@ const Booking = () => {
     const [showPaymentPrompt, setShowPaymentPrompt] = useState(false);
     const [bookingId, setBookingId] = useState('');
     const [paymentStatus, setPaymentStatus] = useState('Not Paid');
+    const [transactionId, setTransactionId] = useState('');
     const [formData, setFormData] = useState({
         serviceType: location.state?.serviceName || '',
         name: '',
@@ -103,20 +104,39 @@ const Booking = () => {
 
     const handlePayOnline = () => {
         setShowPaymentPrompt(false);
+        // Ensure status starts as Not Paid
+        setPaymentStatus('Not Paid');
+        
         handleFlutterPayment({
             callback: (response) => {
-                console.log(response);
+                console.log('Flutterwave Response:', response);
                 closePaymentModal();
-                if (response.status === 'successful') {
+                
+                // Strict verification - payment must be successful AND have transaction_id
+                if (response.status === 'successful' && response.transaction_id) {
+                    // Payment verified and confirmed successful
                     setPaymentStatus('Paid');
+                    setTransactionId(response.transaction_id);
+                    console.log('Payment Successful! Transaction ID:', response.transaction_id);
                     setShowQRModal(true);
+                } else if (response.status === 'cancelled') {
+                    // User cancelled payment
+                    console.log('Payment cancelled by user');
+                    alert('Payment was cancelled. Please try again or choose to pay at venue.');
+                    setPaymentStatus('Not Paid');
+                    setShowPaymentPrompt(true);
                 } else {
-                    alert('Payment failed. Please try again or choose to pay at venue.');
+                    // Payment failed or incomplete
+                    console.log('Payment failed or incomplete:', response);
+                    alert('Payment was not completed. Please try again or choose to pay at venue.');
+                    setPaymentStatus('Not Paid');
                     setShowPaymentPrompt(true);
                 }
             },
             onClose: () => {
                 // User closed payment modal without completing
+                console.log('Payment modal closed without completion');
+                setPaymentStatus('Not Paid');
                 setShowPaymentPrompt(true);
             },
         });
@@ -952,7 +972,8 @@ const Booking = () => {
                     time: formData.time,
                     specialRequests: formData.specialRequests,
                     paymentStatus: paymentStatus,
-                    amount: servicePrice
+                    amount: servicePrice,
+                    transactionId: transactionId
                 }}
             />
         </div>
