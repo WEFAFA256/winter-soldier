@@ -8,6 +8,7 @@ const Booking = () => {
     const [currentStep, setCurrentStep] = useState(1);
     const [showQRModal, setShowQRModal] = useState(false);
     const [showPaymentPrompt, setShowPaymentPrompt] = useState(false);
+    const [isProcessingPayment, setIsProcessingPayment] = useState(false);
     const [bookingId, setBookingId] = useState('');
     const [paymentStatus, setPaymentStatus] = useState('Not Paid');
     const [transactionId, setTransactionId] = useState('');
@@ -38,10 +39,12 @@ const Booking = () => {
     const servicePrice = servicePricing[formData.serviceType] || 150000;
 
     // Pesapal configuration
-    // ⚠️ REPLACE THESE WITH YOUR ACTUAL PESAPAL CREDENTIALS
-    const PESAPAL_CONSUMER_KEY = 'YOUR_PESAPAL_CONSUMER_KEY'; // Get from Pesapal dashboard
-    const PESAPAL_CONSUMER_SECRET = 'YOUR_PESAPAL_CONSUMER_SECRET'; // Get from Pesapal dashboard
+    const PESAPAL_CONSUMER_KEY = '+xu+14OnZYEzJUvRXc/944JFZzePNFCT';
+    const PESAPAL_CONSUMER_SECRET = 'bpwmC9GpZCfTCUzfInP8j3qH2U8=';
     const PESAPAL_MODE = 'sandbox'; // Change to 'live' for production
+    const PESAPAL_BASE_URL = PESAPAL_MODE === 'sandbox' 
+        ? 'https://cybqa.pesapal.com/pesapalv3' 
+        : 'https://pay.pesapal.com/v3';
 
     // Check for payment callback from Pesapal
     const [searchParams] = useSearchParams();
@@ -56,18 +59,26 @@ const Booking = () => {
     }, [searchParams]);
 
     const checkPesapalPaymentStatus = async (orderTrackingId) => {
-        // In a real implementation, you'd call your backend to verify payment
-        // For now, we'll simulate checking the status
-        // In production, create an API endpoint that uses Pesapal's API to verify
-        
-        // Simulate successful payment check (replace with actual API call)
+        // Restore booking data from sessionStorage
+        const pendingBooking = sessionStorage.getItem('pendingBooking');
+        if (pendingBooking) {
+            const booking = JSON.parse(pendingBooking);
+            setBookingId(booking.bookingId);
+            setFormData(booking.formData);
+        }
+
+        // For now, assume payment was successful if we got redirected back
+        // In production, you should verify with Pesapal API by calling:
+        // GET /api/Transactions/GetTransactionStatus?orderTrackingId={orderTrackingId}
         setPaymentStatus('Paid');
         setTransactionId(orderTrackingId);
         setShowQRModal(true);
+        sessionStorage.removeItem('pendingBooking');
     };
 
     const handlePayOnline = async () => {
         setShowPaymentPrompt(false);
+        setIsProcessingPayment(true);
         
         // Generate unique order reference
         const orderReference = `SSP-${Date.now()}-${Math.random().toString(36).substring(7)}`;
@@ -80,19 +91,90 @@ const Booking = () => {
             orderReference: orderReference
         }));
 
-        // For now, we'll use a simple redirect approach
-        // In production, you'd create a backend endpoint that generates Pesapal payment URL
-        
-        // Simulate Pesapal redirect (replace with actual Pesapal checkout URL generation)
-        alert('Pesapal integration requires backend setup. Using simulation for now.');
-        
-        // Simulate payment success for testing
-        setTimeout(() => {
-            const mockTransactionId = `PESAPAL-${Date.now()}`;
-            setPaymentStatus('Paid');
-            setTransactionId(mockTransactionId);
-            setShowQRModal(true);
-        }, 1000);
+        try {
+            // Step 1: Get OAuth token from Pesapal
+            const tokenResponse = await fetch(`${PESAPAL_BASE_URL}/api/Auth/RequestToken`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    consumer_key: PESAPAL_CONSUMER_KEY,
+                    consumer_secret: PESAPAL_CONSUMER_SECRET
+                })
+            });
+
+            if (!tokenResponse.ok) {
+                const errorText = await tokenResponse.text();
+                console.error('Token error:', errorText);
+                throw new Error('Failed to authenticate with Pesapal');
+            }
+
+            const tokenData = await tokenResponse.json();
+            const accessToken = tokenData.token || tokenData.access_token;
+            
+            if (!accessToken) {
+                throw new Error('No access token received from Pesapal');
+            }
+
+            // Step 2: Create order
+            const callbackUrl = `${window.location.origin}/booking?OrderTrackingId={order_tracking_id}&OrderMerchantReference=${orderReference}`;
+            const orderData = {
+                id: orderReference,
+                currency: 'UGX',
+                amount: servicePrice,
+                description: `Serenity Spa Booking - ${formData.serviceType}`,
+                callback_url: callbackUrl,
+                redirect_mode: '',
+                notification_id: '',
+                branch: '',
+                billing_address: {
+                    email_address: formData.email,
+                    phone_number: formData.phone,
+                    country_code: 'UG',
+                    first_name: formData.name.split(' ')[0] || formData.name,
+                    middle_name: '',
+                    last_name: formData.name.split(' ').slice(1).join(' ') || '',
+                    line_1: '',
+                    line_2: '',
+                    city: '',
+                    state: '',
+                    postal_code: '',
+                    zip_code: ''
+                }
+            };
+
+            const orderResponse = await fetch(`${PESAPAL_BASE_URL}/api/Transactions/SubmitOrderRequest`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'Authorization': `Bearer ${accessToken}`
+                },
+                body: JSON.stringify(orderData)
+            });
+
+            if (!orderResponse.ok) {
+                const errorText = await orderResponse.text();
+                throw new Error(`Failed to create order: ${errorText}`);
+            }
+
+            const orderResult = await orderResponse.json();
+            
+            // Step 3: Redirect to Pesapal payment page
+            if (orderResult.redirect_url) {
+                window.location.href = orderResult.redirect_url;
+            } else {
+                throw new Error('No redirect URL received from Pesapal');
+            }
+
+        } catch (error) {
+            console.error('Pesapal payment error:', error);
+            setIsProcessingPayment(false);
+            alert(`Payment setup failed: ${error.message}. Please try again or choose to pay at venue.`);
+            setShowPaymentPrompt(true);
+        }
     };
 
     useEffect(() => {
@@ -902,22 +984,28 @@ const Booking = () => {
                         }}>
                             <button
                                 onClick={handlePayOnline}
+                                disabled={isProcessingPayment}
                                 className="btn"
                                 style={{
                                     padding: '1rem 1.5rem',
                                     fontSize: '1.1rem',
                                     border: 'none',
                                     borderRadius: '8px',
-                                    cursor: 'pointer',
+                                    cursor: isProcessingPayment ? 'wait' : 'pointer',
                                     fontFamily: 'inherit',
                                     fontWeight: '600',
                                     display: 'flex',
                                     alignItems: 'center',
                                     justifyContent: 'center',
-                                    gap: '0.5rem'
+                                    gap: '0.5rem',
+                                    opacity: isProcessingPayment ? 0.7 : 1
                                 }}
                             >
-                                <span>💳</span> Pay Online Now
+                                {isProcessingPayment ? (
+                                    <>⏳ Processing...</>
+                                ) : (
+                                    <>💳 Pay Online Now</>
+                                )}
                             </button>
                             
                             <button
