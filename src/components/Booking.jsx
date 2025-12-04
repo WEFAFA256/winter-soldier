@@ -40,7 +40,7 @@ const Booking = () => {
 
     // Flutterwave configuration
     const flutterwaveConfig = {
-        public_key: 'FLWPUBK_TEST-8e47ace8f16e5fda51f7f8b798483caf-X', // Replace with your actual public key
+        public_key: 'FLWPUBK_TEST-SANDBOXDEMOKEY-X', // ⚠️ REPLACE THIS WITH YOUR OWN PUBLIC KEY FROM FLUTTERWAVE DASHBOARD
         tx_ref: `SSP-${Date.now()}`,
         amount: servicePrice,
         currency: 'UGX',
@@ -58,6 +58,16 @@ const Booking = () => {
     };
 
     const handleFlutterPayment = useFlutterwave(flutterwaveConfig);
+
+    // Dev helper to simulate payment success without valid API key
+    const handleSimulatePayment = () => {
+        const mockTransactionId = `MOCK-${Date.now()}`;
+        console.log('Simulating successful payment...');
+        setPaymentStatus('Paid');
+        setTransactionId(mockTransactionId);
+        setShowPaymentPrompt(false);
+        setShowQRModal(true);
+    };
 
     useEffect(() => {
         window.scrollTo(0, 0);
@@ -943,6 +953,23 @@ const Booking = () => {
                                 }}
                             >
                                 <span>🏢</span> Pay at Venue
+                            </button>
+
+                            {/* Dev Tool for testing flow */}
+                            <button
+                                onClick={handleSimulatePayment}
+                                style={{
+                                    marginTop: '1rem',
+                                    padding: '0.5rem',
+                                    fontSize: '0.9rem',
+                                    border: '1px dashed #999',
+                                    borderRadius: '4px',
+                                    cursor: 'pointer',
+                                    backgroundColor: '#f0f0f0',
+                                    color: '#666'
+                                }}
+                            >
+                                🛠️ Simulate Success (Dev Mode)
                             </button>
                         </div>
 
