@@ -155,31 +155,56 @@ const Booking = () => {
                 <div style={{
                     backgroundColor: '#fff',
                     borderRadius: '15px',
-                    padding: '3rem',
                     boxShadow: '0 10px 30px rgba(0,0,0,0.1)',
-                    minHeight: '400px'
-                }}>
+                    overflow: 'hidden',
+                    display: 'grid',
+                    gridTemplateColumns: 'minmax(300px, 1fr) 400px',
+                    gap: 0
+                }}
+                className="booking-card"
+                >
                     {/* Step 1: Contact Information */}
                     {currentStep === 1 && (
-                        <div style={{
-                            animation: 'floatInUp 0.6s ease-out forwards',
-                            opacity: 0
-                        }}>
-                            <h2 style={{ 
-                                fontSize: '2rem', 
-                                marginBottom: '1.5rem',
-                                color: 'var(--color-primary)',
-                                fontFamily: '"Times New Roman", Times, serif'
+                        <>
+                            <div style={{
+                                animation: 'floatInUp 0.6s ease-out forwards',
+                                opacity: 0,
+                                padding: '3rem'
                             }}>
-                                Your Contact Details
-                            </h2>
-                            <p style={{ marginBottom: '2rem', color: 'var(--color-text-light)' }}>
-                                Please provide your information so we can confirm your booking
-                            </p>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                                <div style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '1rem',
+                                    marginBottom: '1rem'
+                                }}>
+                                    <div style={{
+                                        width: '50px',
+                                        height: '50px',
+                                        borderRadius: '10px',
+                                        backgroundColor: 'var(--color-secondary)',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        fontSize: '1.5rem'
+                                    }}>
+                                        👤
+                                    </div>
+                                    <h2 style={{ 
+                                        fontSize: '2rem', 
+                                        marginBottom: '0',
+                                        color: 'var(--color-primary)',
+                                        fontFamily: '"Times New Roman", Times, serif'
+                                    }}>
+                                        Your Contact Details
+                                    </h2>
+                                </div>
+                                <p style={{ marginBottom: '2rem', color: 'var(--color-text-light)' }}>
+                                    Please provide your information so we can confirm your booking
+                                </p>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
                                 <div>
-                                    <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
-                                        Full Name *
+                                    <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500', color: 'var(--color-text)' }}>
+                                        <span style={{ marginRight: '0.3rem' }}>👤</span> Full Name *
                                     </label>
                                     <input
                                         type="text"
@@ -195,15 +220,22 @@ const Booking = () => {
                                             borderRadius: '8px',
                                             fontSize: '1rem',
                                             fontFamily: 'inherit',
-                                            transition: 'border-color 0.3s ease'
+                                            transition: 'all 0.3s ease',
+                                            boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
                                         }}
-                                        onFocus={(e) => e.target.style.borderColor = 'var(--color-primary)'}
-                                        onBlur={(e) => e.target.style.borderColor = '#ddd'}
+                                        onFocus={(e) => {
+                                            e.target.style.borderColor = 'var(--color-primary)';
+                                            e.target.style.boxShadow = '0 4px 8px rgba(26, 87, 87, 0.15)';
+                                        }}
+                                        onBlur={(e) => {
+                                            e.target.style.borderColor = '#ddd';
+                                            e.target.style.boxShadow = '0 2px 4px rgba(0,0,0,0.05)';
+                                        }}
                                     />
                                 </div>
                                 <div>
-                                    <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
-                                        Email Address *
+                                    <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500', color: 'var(--color-text)' }}>
+                                        <span style={{ marginRight: '0.3rem' }}>✉️</span> Email Address *
                                     </label>
                                     <input
                                         type="email"
@@ -219,15 +251,22 @@ const Booking = () => {
                                             borderRadius: '8px',
                                             fontSize: '1rem',
                                             fontFamily: 'inherit',
-                                            transition: 'border-color 0.3s ease'
+                                            transition: 'all 0.3s ease',
+                                            boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
                                         }}
-                                        onFocus={(e) => e.target.style.borderColor = 'var(--color-primary)'}
-                                        onBlur={(e) => e.target.style.borderColor = '#ddd'}
+                                        onFocus={(e) => {
+                                            e.target.style.borderColor = 'var(--color-primary)';
+                                            e.target.style.boxShadow = '0 4px 8px rgba(26, 87, 87, 0.15)';
+                                        }}
+                                        onBlur={(e) => {
+                                            e.target.style.borderColor = '#ddd';
+                                            e.target.style.boxShadow = '0 2px 4px rgba(0,0,0,0.05)';
+                                        }}
                                     />
                                 </div>
                                 <div>
-                                    <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
-                                        Phone Number *
+                                    <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500', color: 'var(--color-text)' }}>
+                                        <span style={{ marginRight: '0.3rem' }}>📱</span> Phone Number *
                                     </label>
                                     <input
                                         type="tel"
@@ -243,30 +282,94 @@ const Booking = () => {
                                             borderRadius: '8px',
                                             fontSize: '1rem',
                                             fontFamily: 'inherit',
-                                            transition: 'border-color 0.3s ease'
+                                            transition: 'all 0.3s ease',
+                                            boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
                                         }}
-                                        onFocus={(e) => e.target.style.borderColor = 'var(--color-primary)'}
-                                        onBlur={(e) => e.target.style.borderColor = '#ddd'}
+                                        onFocus={(e) => {
+                                            e.target.style.borderColor = 'var(--color-primary)';
+                                            e.target.style.boxShadow = '0 4px 8px rgba(26, 87, 87, 0.15)';
+                                        }}
+                                        onBlur={(e) => {
+                                            e.target.style.borderColor = '#ddd';
+                                            e.target.style.boxShadow = '0 2px 4px rgba(0,0,0,0.05)';
+                                        }}
                                     />
                                 </div>
                             </div>
                         </div>
+                        <div style={{
+                            backgroundImage: 'url(https://images.unsplash.com/photo-1600334129128-685c5582fd35?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80)',
+                            backgroundSize: 'cover',
+                            backgroundPosition: 'center',
+                            position: 'relative',
+                            minHeight: '500px'
+                        }}
+                        className="booking-image"
+                        >
+                            <div style={{
+                                position: 'absolute',
+                                bottom: '2rem',
+                                left: '2rem',
+                                right: '2rem',
+                                backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                                padding: '1.5rem',
+                                borderRadius: '10px',
+                                backdropFilter: 'blur(10px)'
+                            }}>
+                                <h3 style={{ 
+                                    marginBottom: '0.5rem',
+                                    color: 'var(--color-primary)',
+                                    fontSize: '1.3rem'
+                                }}>
+                                    Welcome to Serenity Spa
+                                </h3>
+                                <p style={{ 
+                                    margin: 0,
+                                    color: 'var(--color-text-light)',
+                                    fontSize: '0.95rem'
+                                }}>
+                                    Your journey to ultimate relaxation begins here. We're excited to serve you!
+                                </p>
+                            </div>
+                        </div>
+                    </>
                     )}
 
                     {/* Step 2: Schedule */}
                     {currentStep === 2 && (
+                        <>
                         <div style={{
                             animation: 'floatInUp 0.6s ease-out forwards',
-                            opacity: 0
+                            opacity: 0,
+                            padding: '3rem'
                         }}>
-                            <h2 style={{ 
-                                fontSize: '2rem', 
-                                marginBottom: '1.5rem',
-                                color: 'var(--color-primary)',
-                                fontFamily: '"Times New Roman", Times, serif'
+                            <div style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '1rem',
+                                marginBottom: '1rem'
                             }}>
-                                Choose Date & Time
-                            </h2>
+                                <div style={{
+                                    width: '50px',
+                                    height: '50px',
+                                    borderRadius: '10px',
+                                    backgroundColor: 'var(--color-secondary)',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    fontSize: '1.5rem'
+                                }}>
+                                    📅
+                                </div>
+                                <h2 style={{ 
+                                    fontSize: '2rem', 
+                                    marginBottom: '0',
+                                    color: 'var(--color-primary)',
+                                    fontFamily: '"Times New Roman", Times, serif'
+                                }}>
+                                    Choose Date & Time
+                                </h2>
+                            </div>
                             <p style={{ marginBottom: '1rem', color: 'var(--color-text-light)' }}>
                                 Select your preferred date and time for the session
                             </p>
@@ -355,22 +458,79 @@ const Booking = () => {
                                 </div>
                             </div>
                         </div>
+                        <div style={{
+                            backgroundImage: 'url(https://images.unsplash.com/photo-1540555700478-4be289fbecef?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80)',
+                            backgroundSize: 'cover',
+                            backgroundPosition: 'center',
+                            position: 'relative',
+                            minHeight: '500px'
+                        }}
+                        className="booking-image"
+                        >
+                            <div style={{
+                                position: 'absolute',
+                                bottom: '2rem',
+                                left: '2rem',
+                                right: '2rem',
+                                backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                                padding: '1.5rem',
+                                borderRadius: '10px',
+                                backdropFilter: 'blur(10px)'
+                            }}>
+                                <h3 style={{ 
+                                    marginBottom: '0.5rem',
+                                    color: 'var(--color-primary)',
+                                    fontSize: '1.3rem'
+                                }}>
+                                    {formData.serviceType}
+                                </h3>
+                                <p style={{ 
+                                    margin: 0,
+                                    color: 'var(--color-text-light)',
+                                    fontSize: '0.95rem'
+                                }}>
+                                    Available 24/7 • Professional therapists • Premium experience
+                                </p>
+                            </div>
+                        </div>
+                    </>
                     )}
 
                     {/* Step 3: Confirmation Method */}
                     {currentStep === 3 && (
+                        <>
                         <div style={{
                             animation: 'floatInUp 0.6s ease-out forwards',
-                            opacity: 0
+                            opacity: 0,
+                            padding: '3rem'
                         }}>
-                            <h2 style={{ 
-                                fontSize: '2rem', 
-                                marginBottom: '1.5rem',
-                                color: 'var(--color-primary)',
-                                fontFamily: '"Times New Roman", Times, serif'
+                            <div style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '1rem',
+                                marginBottom: '1rem'
                             }}>
-                                How would you like to complete your booking?
-                            </h2>
+                                <div style={{
+                                    width: '50px',
+                                    height: '50px',
+                                    borderRadius: '10px',
+                                    backgroundColor: 'var(--color-secondary)',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    fontSize: '1.5rem'
+                                }}>
+                                    ✉️
+                                </div>
+                                <h2 style={{ 
+                                    fontSize: '2rem', 
+                                    marginBottom: '0',
+                                    color: 'var(--color-primary)',
+                                    fontFamily: '"Times New Roman", Times, serif'
+                                }}>
+                                    Complete Your Booking
+                                </h2>
+                            </div>
                             <p style={{ marginBottom: '2rem', color: 'var(--color-text-light)' }}>
                                 Choose your preferred method to receive booking confirmation
                             </p>
@@ -455,10 +615,47 @@ const Booking = () => {
                                 </label>
                             </div>
                         </div>
+                        <div style={{
+                            backgroundImage: 'url(https://images.unsplash.com/photo-1544161515-4ab6ce6db874?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80)',
+                            backgroundSize: 'cover',
+                            backgroundPosition: 'center',
+                            position: 'relative',
+                            minHeight: '500px'
+                        }}
+                        className="booking-image"
+                        >
+                            <div style={{
+                                position: 'absolute',
+                                bottom: '2rem',
+                                left: '2rem',
+                                right: '2rem',
+                                backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                                padding: '1.5rem',
+                                borderRadius: '10px',
+                                backdropFilter: 'blur(10px)'
+                            }}>
+                                <h3 style={{ 
+                                    marginBottom: '0.5rem',
+                                    color: 'var(--color-primary)',
+                                    fontSize: '1.3rem'
+                                }}>
+                                    Almost There!
+                                </h3>
+                                <p style={{ 
+                                    margin: 0,
+                                    color: 'var(--color-text-light)',
+                                    fontSize: '0.95rem'
+                                }}>
+                                    You'll receive a QR code to present at our reception for a seamless check-in experience.
+                                </p>
+                            </div>
+                        </div>
+                    </>
                     )}
+                </div>
 
-                    {/* Navigation Buttons */}
-                    <div style={{
+                {/* Navigation Buttons */}
+                <div style={{
                         display: 'flex',
                         justifyContent: 'space-between',
                         marginTop: '3rem',
@@ -525,7 +722,6 @@ const Booking = () => {
                             </button>
                         )}
                     </div>
-                </div>
             </div>
 
             {/* QR Code Modal */}

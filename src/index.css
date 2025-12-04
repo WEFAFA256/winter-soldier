@@ -826,3 +826,20 @@ img {
     font-size: 1.25rem;
   }
 }
+
+/* Booking Page Styles */
+.booking-card {
+  display: grid;
+  grid-template-columns: minmax(300px, 1fr) 400px;
+  gap: 0;
+}
+
+@media (max-width: 1024px) {
+  .booking-card {
+    grid-template-columns: 1fr !important;
+  }
+
+  .booking-image {
+    display: none !important;
+  }
+}
