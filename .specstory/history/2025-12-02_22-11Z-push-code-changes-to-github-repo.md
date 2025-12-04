@@ -10749,3 +10749,627 @@ _**Agent (model default, mode Agent)**_
 
 ---
 
+
+Investigating the Pesapal API call issue. Checking the server code and fixing it:
+
+
+---
+
+<tool-use data-tool-type="read" data-tool-name="read_file">
+<details><summary>Tool use: **read_file** • Read file: server.js</summary>
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Checking the frontend code to see how it handles the response:
+
+
+---
+
+<tool-use data-tool-type="search" data-tool-name="grep">
+<details>
+<summary>Tool use: **grep** • Grep for "tokenData.*token" in "src/components/Booking.jsx" • 2 matches</summary>
+
+Output mode: content
+
+
+| File | Content | Line |
+|------|------|------|
+| `src/components/Booking.jsx` | `const tokenData = await tokenResponse.json();` | L111 |
+| `src/components/Booking.jsx` | `const accessToken = tokenData.token \|\| tokenData.access_token;` | L112 |
+
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Improving the server with better error handling and logging, and checking Pesapal's actual response format:
+
+
+---
+
+<tool-use data-tool-type="write" data-tool-name="search_replace">
+
+<details><summary>Tool use: **search_replace** • Edit file: server.js</summary>
+
+**Chunk 1**
+Lines added: 1, lines removed: undefined
+
+```diff
+@@ -32,4 +32,5 @@
+  app.post('/api/pesapal/token', async (req, res) =&gt; {
+      try {
++         console.log('Requesting token from Pesapal...');
+          const response = await fetch(&#96;${PESAPAL_BASE_URL}/api/Auth/RequestToken&#96;, {
+              method: 'POST',
+```
+
+**Chunk 2**
+Lines added: 41, lines removed: 5
+
+```diff
+@@ -43,15 +44,51 @@
+              })
+          });
++ 
++         const responseText = await response.text();
++         console.log('Pesapal response status:', response.status);
++         console.log('Pesapal response:', responseText);
+  
+          if (!response.ok) {
+-             const errorText = await response.text();
+-             return res.status(response.status).json({ error: errorText });
++             console.error('Pesapal API error:', responseText);
++             return res.status(response.status).json({ 
++                 error: responseText,
++                 status: response.status
++             });
++         }
++ 
++         let data;
++         try {
++             data = JSON.parse(responseText);
++         } catch (parseError) {
++             console.error('Failed to parse JSON:', parseError);
++             return res.status(500).json({ 
++                 error: 'Invalid JSON response from Pesapal',
++                 rawResponse: responseText
++             });
+          }
+  
+-         const data = await response.json();
+-         res.json(data);
++         // Log the response structure for debugging
++         console.log('Parsed response:', JSON.stringify(data, null, 2));
++         
++         // Ensure we return the token in a consistent format
++         if (data.token) {
++             res.json({ token: data.token });
++         } else if (data.access_token) {
++             res.json({ token: data.access_token });
++         } else if (data.Token) {
++             res.json({ token: data.Token });
++         } else {
++             console.error('Unexpected response format:', data);
++             res.status(500).json({ 
++                 error: 'Unexpected response format from Pesapal',
++                 receivedData: data
++             });
++         }
+      } catch (error) {
+          console.error('Token error:', error);
+-         res.status(500).json({ error: error.message });
++         res.status(500).json({ 
++             error: error.message,
++             details: error.stack
++         });
+      }
+  });
+```
+
+</details>
+
+</tool-use>
+
+---
+
+
+
+---
+
+
+Improving the order endpoint with better error handling:
+
+
+---
+
+<tool-use data-tool-type="write" data-tool-name="search_replace">
+
+<details><summary>Tool use: **search_replace** • Edit file: server.js</summary>
+
+**Chunk 1**
+Lines added: 10, lines removed: undefined
+
+```diff
+@@ -98,4 +98,14 @@
+      try {
+          const { accessToken, orderData } = req.body;
++ 
++         if (!accessToken) {
++             return res.status(400).json({ error: 'Access token is required' });
++         }
++ 
++         if (!orderData) {
++             return res.status(400).json({ error: 'Order data is required' });
++         }
++ 
++         console.log('Creating order with data:', JSON.stringify(orderData, null, 2));
+  
+          const response = await fetch(&#96;${PESAPAL_BASE_URL}/api/Transactions/SubmitOrderRequest&#96;, {
+```
+
+**Chunk 2**
+Lines added: 25, lines removed: 4
+
+```diff
+@@ -108,15 +118,36 @@
+              body: JSON.stringify(orderData)
+          });
++ 
++         const responseText = await response.text();
++         console.log('Order response status:', response.status);
++         console.log('Order response:', responseText);
+  
+          if (!response.ok) {
+-             const errorText = await response.text();
+-             return res.status(response.status).json({ error: errorText });
++             console.error('Pesapal order API error:', responseText);
++             return res.status(response.status).json({ 
++                 error: responseText,
++                 status: response.status
++             });
+          }
+  
+-         const data = await response.json();
++         let data;
++         try {
++             data = JSON.parse(responseText);
++         } catch (parseError) {
++             console.error('Failed to parse order JSON:', parseError);
++             return res.status(500).json({ 
++                 error: 'Invalid JSON response from Pesapal',
++                 rawResponse: responseText
++             });
++         }
++ 
++         console.log('Order created successfully:', JSON.stringify(data, null, 2));
+          res.json(data);
+      } catch (error) {
+          console.error('Order error:', error);
+-         res.status(500).json({ error: error.message });
++         res.status(500).json({ 
++             error: error.message,
++             details: error.stack
++         });
+      }
+  });
+```
+
+</details>
+
+</tool-use>
+
+---
+
+
+
+---
+
+
+Adding a health check endpoint and improving frontend error messages:
+
+
+---
+
+<tool-use data-tool-type="write" data-tool-name="search_replace">
+
+<details><summary>Tool use: **search_replace** • Edit file: server.js</summary>
+
+**Chunk 1**
+Lines added: 11, lines removed: 1
+
+```diff
+@@ -19,8 +19,18 @@
+          endpoints: [
+              'POST /api/pesapal/token - Get Pesapal access token',
+-             'POST /api/pesapal/order - Create Pesapal order'
++             'POST /api/pesapal/order - Create Pesapal order',
++             'GET /health - Health check'
+          ]
+      });
+  });
++ 
++ // Health check endpoint
++ app.get('/health', (req, res) =&gt; {
++     res.json({ 
++         status: 'healthy',
++         timestamp: new Date().toISOString(),
++         pesapalBaseUrl: PESAPAL_BASE_URL
++     });
++ });
+  
+  // Pesapal credentials
+```
+
+</details>
+
+</tool-use>
+
+---
+
+
+
+---
+
+
+Improving frontend error handling to show more detailed error messages:
+
+
+---
+
+<tool-use data-tool-type="read" data-tool-name="read_file">
+<details><summary>Tool use: **read_file** • Read file: src/components/Booking.jsx</summary>
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+
+
+
+---
+
+<tool-use data-tool-type="write" data-tool-name="search_replace">
+
+<details><summary>Tool use: **search_replace** • Edit file: src/components/Booking.jsx</summary>
+
+**Chunk 1**
+Lines added: 16, lines removed: 4
+
+```diff
+@@ -105,13 +105,25 @@
+  
+              if (!tokenResponse.ok) {
+-                 const errorData = await tokenResponse.json();
+-                 throw new Error(errorData.error || 'Failed to authenticate with Pesapal');
++                 let errorMessage = 'Failed to authenticate with Pesapal';
++                 try {
++                     const errorData = await tokenResponse.json();
++                     errorMessage = errorData.error || errorData.message || errorMessage;
++                     console.error('Token error response:', errorData);
++                 } catch (e) {
++                     const errorText = await tokenResponse.text();
++                     errorMessage = errorText || errorMessage;
++                     console.error('Token error (text):', errorText);
++                 }
++                 throw new Error(errorMessage);
+              }
+  
+              const tokenData = await tokenResponse.json();
+-             const accessToken = tokenData.token || tokenData.access_token;
++             console.log('Token response:', tokenData);
++             
++             const accessToken = tokenData.token || tokenData.access_token || tokenData.Token;
+              
+              if (!accessToken) {
+-                 throw new Error('No access token received from Pesapal');
++                 console.error('No token found in response:', tokenData);
++                 throw new Error(&#96;No access token received from Pesapal. Response: ${JSON.stringify(tokenData)}&#96;);
+              }
+  
+```
+
+</details>
+
+</tool-use>
+
+---
+
+
+
+---
+
+
+Improving order creation error handling:
+
+
+---
+
+<tool-use data-tool-type="search" data-tool-name="grep">
+<details>
+<summary>Tool use: **grep** • Grep for "orderResponse.ok" in "src/components/Booking.jsx" • 1 match</summary>
+
+Output mode: content
+
+
+| File | Content | Line |
+|------|------|------|
+| `src/components/Booking.jsx` | `if (!orderResponse.ok) \{` | L168 |
+
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+
+
+
+---
+
+<tool-use data-tool-type="write" data-tool-name="search_replace">
+
+<details><summary>Tool use: **search_replace** • Edit file: src/components/Booking.jsx</summary>
+
+**Chunk 1**
+Lines added: 17, lines removed: 5
+
+```diff
+@@ -167,15 +167,27 @@
+  
+              if (!orderResponse.ok) {
+-                 const errorData = await orderResponse.json();
+-                 throw new Error(errorData.error || 'Failed to create order');
++                 let errorMessage = 'Failed to create order';
++                 try {
++                     const errorData = await orderResponse.json();
++                     errorMessage = errorData.error || errorData.message || errorMessage;
++                     console.error('Order error response:', errorData);
++                 } catch (e) {
++                     const errorText = await orderResponse.text();
++                     errorMessage = errorText || errorMessage;
++                     console.error('Order error (text):', errorText);
++                 }
++                 throw new Error(errorMessage);
+              }
+  
+              const orderResult = await orderResponse.json();
++             console.log('Order response:', orderResult);
+              
+              // Step 3: Redirect to Pesapal payment page
+-             if (orderResult.redirect_url) {
+-                 window.location.href = orderResult.redirect_url;
++             const redirectUrl = orderResult.redirect_url || orderResult.redirectUrl || orderResult.RedirectUrl;
++             if (redirectUrl) {
++                 window.location.href = redirectUrl;
+              } else {
+-                 throw new Error('No redirect URL received from Pesapal');
++                 console.error('No redirect URL in response:', orderResult);
++                 throw new Error(&#96;No redirect URL received from Pesapal. Response: ${JSON.stringify(orderResult)}&#96;);
+              }
+  
+```
+
+</details>
+
+</tool-use>
+
+---
+
+
+
+---
+
+
+Committing and pushing the improvements:
+
+
+---
+
+<tool-use data-tool-type="shell" data-tool-name="run_terminal_cmd">
+<details><summary>Tool use: **run_terminal_cmd** • Run command: git add -A</summary>
+
+```bash
+git add -A
+```
+
+```
+PS D:\test&gt; git add -A
+warning: in the working copy of 'src/components/Booking.jsx', LF will be replaced by CRLF the next time Git touches it                                          
+```
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+
+
+
+---
+
+<tool-use data-tool-type="shell" data-tool-name="run_terminal_cmd">
+<details><summary>Tool use: **run_terminal_cmd** • Run command: git commit -m "Improve error handling and logging for Pesapal integration with detailed error messages"</summary>
+
+```bash
+git commit -m "Improve error handling and logging for Pesapal integration with detailed error messages"
+```
+
+```
+ation with detailed error messages"                                             
+[main 9b5f368] Improve error handling and logging for Pesapal integration with detailed error messages                                                          
+ 3 files changed, 1343 insertions(+), 19 deletions(-)
+```
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+
+
+
+---
+
+<tool-use data-tool-type="shell" data-tool-name="run_terminal_cmd">
+<details><summary>Tool use: **run_terminal_cmd** • Run command: git push origin main</summary>
+
+```bash
+git push origin main
+```
+
+```
+Enumerating objects: 17, done.
+Counting objects: 100% (17/17), done.
+Delta compression using up to 4 threads
+Compressing objects: 100% (9/9), done.
+Writing objects: 100% (9/9), 8.05 KiB | 67.00 KiB/s, done.
+Total 9 (delta 6), reused 0 (delta 0), pack-reused 0 (from 0)
+remote: Resolving deltas: 100% (6/6), completed with 6 local objects.
+To https://github.com/WEFAFA256/winter-soldier.git
+   096c4eb..9b5f368  main -&gt; main
+```
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Restarting the server with the improved error handling:
+
+
+---
+
+<tool-use data-tool-type="shell" data-tool-name="run_terminal_cmd">
+<details><summary>Tool use: **run_terminal_cmd** • Run command: Get-Process -Name node | Where-Object { $_.MainWindowTitle -eq '' } | Stop-Process -Force; Start-Sleep -Seconds 1; node server.js</summary>
+
+```bash
+Get-Process -Name node | Where-Object { $_.MainWindowTitle -eq '' } | Stop-Process -Force; Start-Sleep -Seconds 1; node server.js
+```
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Verifying the server is running:
+
+
+---
+
+<tool-use data-tool-type="shell" data-tool-name="run_terminal_cmd">
+<details><summary>Tool use: **run_terminal_cmd** • Run command: Start-Sleep -Seconds 2; Invoke-WebRequest -Uri http://localhost:3001/health -UseBasicParsing | Select-Object StatusCode, @{Name='Content';Expression={$_.Content | ConvertFrom-Json | ConvertTo-Json}}</summary>
+
+```bash
+Start-Sleep -Seconds 2; Invoke-WebRequest -Uri http://localhost:3001/health -UseBasicParsing | Select-Object StatusCode, @{Name='Content';Expression={$_.Content | ConvertFrom-Json | ConvertTo-Json}}
+```
+
+```
+={$_.Content | ConvertFrom-Json | ConvertTo-Json}}                              
+
+StatusCode Content
+---------- -------
+       200 {...
+```
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+**All improvements have been committed and pushed to GitHub.**
+
+## What I fixed
+
+### 1. Enhanced server error handling
+- Detailed logging for all API calls
+- Better error messages with response details
+- Handles different response formats (token, access_token, Token)
+- Health check endpoint added
+
+### 2. Improved frontend error handling
+- More detailed error messages
+- Console logging for debugging
+- Better response parsing
+- Handles multiple redirect URL formats
+
+### 3. Better debugging
+- Server logs all API requests/responses
+- Frontend logs token and order responses
+- Error messages include actual API responses
+
+---
+
+## Server status
+- Server restarted with new code
+- Running on `http://localhost:3001`
+- Health check: working
+
+---
+
+## Next steps
+
+1. Try the payment flow again — the improved error handling will show what's happening.
+2. Check the browser console (F12) — you'll see detailed logs of what Pesapal is returning.
+3. Check the server terminal — it will show detailed API request/response logs.
+
+If there's still an error, the logs will show exactly what Pesapal is returning, which will help us fix the root cause. The code is now on GitHub with all improvements.
+
+---
+
+_**User (2025-12-03 17:23Z)**_
+
+its showing this, tell me the cause and also fix then push changes to the repo
+
+---
+
+_**Agent (model default, mode Agent)**_
+
+
+
+---
+

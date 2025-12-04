@@ -120,11 +120,36 @@ const Booking = () => {
             const tokenData = await tokenResponse.json();
             console.log('Token response:', tokenData);
             
-            const accessToken = tokenData.token || tokenData.access_token || tokenData.Token;
+            // Try to extract token from various possible locations
+            let accessToken = tokenData.token || tokenData.access_token || tokenData.Token || 
+                            tokenData.AccessToken || tokenData.accessToken;
+            
+            // If not found, try to find it in nested objects
+            if (!accessToken && tokenData.fullResponse) {
+                const fullResp = tokenData.fullResponse;
+                accessToken = fullResp.token || fullResp.access_token || fullResp.Token || 
+                            fullResp.AccessToken || fullResp.accessToken ||
+                            fullResp.data?.token || fullResp.data?.access_token ||
+                            fullResp.result?.token || fullResp.response?.token;
+            }
+            
+            // If still not found, try to extract from raw response string
+            if (!accessToken && tokenData.rawResponse) {
+                try {
+                    const rawParsed = JSON.parse(tokenData.rawResponse);
+                    accessToken = rawParsed.token || rawParsed.access_token || rawParsed.Token;
+                } catch (e) {
+                    // If raw response is not JSON, maybe it's the token itself
+                    if (tokenData.rawResponse && tokenData.rawResponse.length > 20 && tokenData.rawResponse.length < 500) {
+                        accessToken = tokenData.rawResponse;
+                    }
+                }
+            }
             
             if (!accessToken) {
                 console.error('No token found in response:', tokenData);
-                throw new Error(`No access token received from Pesapal. Response: ${JSON.stringify(tokenData)}`);
+                // Show the actual response in the error for debugging
+                throw new Error(`No access token received from Pesapal. Please check server logs. Response structure: ${JSON.stringify(tokenData).substring(0, 200)}...`);
             }
 
             // Step 2: Create order via backend

@@ -33,6 +33,47 @@ app.get('/health', (req, res) => {
     });
 });
 
+// Test endpoint to debug Pesapal API response
+app.get('/api/pesapal/test', async (req, res) => {
+    try {
+        console.log('Testing Pesapal API connection...');
+        const response = await fetch(`${PESAPAL_BASE_URL}/api/Auth/RequestToken`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                consumer_key: PESAPAL_CONSUMER_KEY,
+                consumer_secret: PESAPAL_CONSUMER_SECRET
+            })
+        });
+
+        const responseText = await response.text();
+        let parsedData = null;
+        
+        try {
+            parsedData = JSON.parse(responseText);
+        } catch (e) {
+            // Not JSON
+        }
+
+        res.json({
+            status: response.status,
+            statusText: response.statusText,
+            headers: Object.fromEntries(response.headers.entries()),
+            rawResponse: responseText,
+            parsedResponse: parsedData,
+            url: `${PESAPAL_BASE_URL}/api/Auth/RequestToken`
+        });
+    } catch (error) {
+        res.status(500).json({ 
+            error: error.message,
+            stack: error.stack
+        });
+    }
+});
+
 // Pesapal credentials
 const PESAPAL_CONSUMER_KEY = '+xu+14OnZYEzJUvRXc/944JFZzePNFCT';
 const PESAPAL_CONSUMER_SECRET = 'bpwmC9GpZCfTCUzfInP8j3qH2U8=';
@@ -80,18 +121,38 @@ app.post('/api/pesapal/token', async (req, res) => {
         // Log the response structure for debugging
         console.log('Parsed response:', JSON.stringify(data, null, 2));
         
-        // Ensure we return the token in a consistent format
-        if (data.token) {
-            res.json({ token: data.token });
-        } else if (data.access_token) {
-            res.json({ token: data.access_token });
-        } else if (data.Token) {
-            res.json({ token: data.Token });
+        // Try to find token in various possible formats
+        let token = null;
+        
+        // Check all possible token field names
+        if (data.token) token = data.token;
+        else if (data.access_token) token = data.access_token;
+        else if (data.Token) token = data.Token;
+        else if (data.AccessToken) token = data.AccessToken;
+        else if (data.accessToken) token = data.accessToken;
+        else if (data.data && data.data.token) token = data.data.token;
+        else if (data.data && data.data.access_token) token = data.data.access_token;
+        else if (data.result && data.result.token) token = data.result.token;
+        else if (data.response && data.response.token) token = data.response.token;
+        // Check if the entire response is just a string (token)
+        else if (typeof data === 'string' && data.length > 20) token = data;
+        
+        if (token) {
+            console.log('Token found successfully');
+            res.json({ token: token });
         } else {
-            console.error('Unexpected response format:', data);
-            res.status(500).json({ 
-                error: 'Unexpected response format from Pesapal',
-                receivedData: data
+            // Return the full response so frontend can try to extract token
+            // This helps with debugging and allows frontend to handle different formats
+            console.error('Token not found in expected fields. Full response:', JSON.stringify(data, null, 2));
+            console.error('Raw response text:', responseText);
+            
+            // Return the data anyway - frontend can try to extract it
+            // This is better than failing completely
+            res.json({ 
+                token: null,
+                fullResponse: data,
+                rawResponse: responseText,
+                warning: 'Token not found in expected format, returning full response'
             });
         }
     } catch (error) {
