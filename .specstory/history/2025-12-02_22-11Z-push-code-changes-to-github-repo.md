@@ -11940,3 +11940,513 @@ At line:1 char:1
 
 ---
 
+
+Checking the server code to understand the issue. Reviewing the token extraction logic:
+
+
+---
+
+<tool-use data-tool-type="read" data-tool-name="read_file">
+<details><summary>Tool use: **read_file** • Read file: server.js</summary>
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Checking the rest of the token extraction logic:
+
+
+---
+
+<tool-use data-tool-type="read" data-tool-name="read_file">
+<details><summary>Tool use: **read_file** • Read file: server.js</summary>
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+The issue is that when the token isn't found, we return `token: null`, and the frontend still throws an error. Checking Pesapal's API documentation and fixing the endpoint/request format:
+
+
+---
+
+<tool-use data-tool-type="search" data-tool-name="web_search">
+<details>
+            <summary>Tool use: **web_search** • Searched web `Pesapal v3 API RequestToken endpoint correct format cybqa.pesapal.com` • **1** results</summary>
+        
+| Title | URL | Chunk |
+|-------|-----|-------|
+| Web Search Results |  | I'm sorry, but I need more specific information to assist you effectively. Could you please provide the exact error message you're encountering? This will help me diagnose the issue and offer a precise solution. |
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Improving error handling to catch Pesapal errors and handle edge cases:
+
+
+---
+
+<tool-use data-tool-type="write" data-tool-name="search_replace">
+
+<details><summary>Tool use: **search_replace** • Edit file: server.js</summary>
+
+**Chunk 1**
+Lines added: 8, lines removed: 5
+
+```diff
+@@ -98,11 +98,14 @@
+          const responseText = await response.text();
+          console.log('Pesapal response status:', response.status);
+-         console.log('Pesapal response:', responseText);
++         console.log('Pesapal response headers:', Object.fromEntries(response.headers.entries()));
++         console.log('Pesapal response text:', responseText);
+  
+-         if (!response.ok) {
+-             console.error('Pesapal API error:', responseText);
+-             return res.status(response.status).json({ 
++         // Check if response indicates an error (even if status is 200)
++         if (!response.ok || responseText.toLowerCase().includes('error') || responseText.toLowerCase().includes('invalid')) {
++             console.error('Pesapal API error detected:', responseText);
++             return res.status(response.ok ? 500 : response.status).json({ 
+                  error: responseText,
+-                 status: response.status
++                 status: response.status,
++                 message: 'Pesapal API returned an error'
+              });
+          }
+```
+
+</details>
+
+</tool-use>
+
+---
+
+
+
+---
+
+
+Adding a recursive function to search for the token anywhere in the response and improving the extraction:
+
+
+---
+
+<tool-use data-tool-type="write" data-tool-name="search_replace">
+
+<details><summary>Tool use: **search_replace** • Edit file: server.js</summary>
+
+**Chunk 1**
+Lines added: 32, lines removed: 14
+
+```diff
+@@ -124,20 +124,38 @@
+          // Log the response structure for debugging
+          console.log('Parsed response:', JSON.stringify(data, null, 2));
++         
++         // Recursive function to find token anywhere in the object
++         const findTokenRecursively = (obj, depth = 0) =&gt; {
++             if (depth &gt; 5) return null; // Prevent infinite recursion
++             
++             if (typeof obj !== 'object' || obj === null) {
++                 // If it's a string that looks like a token (long alphanumeric)
++                 if (typeof obj === 'string' &amp;&amp; obj.length &gt; 20 &amp;&amp; obj.length &lt; 500 &amp;&amp; /^[A-Za-z0-9\-_=]+$/.test(obj)) {
++                     return obj;
++                 }
++                 return null;
++             }
++             
++             // Check common token field names
++             const tokenFields = ['token', 'access_token', 'Token', 'AccessToken', 'accessToken', 'accessToken', 'bearer_token'];
++             for (const field of tokenFields) {
++                 if (obj[field] &amp;&amp; typeof obj[field] === 'string' &amp;&amp; obj[field].length &gt; 20) {
++                     return obj[field];
++                 }
++             }
++             
++             // Recursively search in nested objects
++             for (const key in obj) {
++                 if (obj.hasOwnProperty(key)) {
++                     const result = findTokenRecursively(obj[key], depth + 1);
++                     if (result) return result;
++                 }
++             }
++             
++             return null;
++         };
+          
+          // Try to find token in various possible formats
+-         let token = null;
+-         
+-         // Check all possible token field names
+-         if (data.token) token = data.token;
+-         else if (data.access_token) token = data.access_token;
+-         else if (data.Token) token = data.Token;
+-         else if (data.AccessToken) token = data.AccessToken;
+-         else if (data.accessToken) token = data.accessToken;
+-         else if (data.data &amp;&amp; data.data.token) token = data.data.token;
+-         else if (data.data &amp;&amp; data.data.access_token) token = data.data.access_token;
+-         else if (data.result &amp;&amp; data.result.token) token = data.result.token;
+-         else if (data.response &amp;&amp; data.response.token) token = data.response.token;
+-         // Check if the entire response is just a string (token)
+-         else if (typeof data === 'string' &amp;&amp; data.length &gt; 20) token = data;
++         let token = findTokenRecursively(data);
+          
+          if (token) {
+```
+
+</details>
+
+</tool-use>
+
+---
+
+
+
+---
+
+
+Improving error handling when the token isn't found to provide clearer debugging info:
+
+
+---
+
+<tool-use data-tool-type="write" data-tool-name="search_replace">
+
+<details><summary>Tool use: **search_replace** • Edit file: server.js</summary>
+
+**Chunk 1**
+Lines added: 29, lines removed: 10
+
+```diff
+@@ -160,19 +160,38 @@
+          
+          if (token) {
+-             console.log('Token found successfully');
++             console.log('Token found successfully:', token.substring(0, 20) + '...');
+              res.json({ token: token });
+          } else {
+-             // Return the full response so frontend can try to extract token
+-             // This helps with debugging and allows frontend to handle different formats
+-             console.error('Token not found in expected fields. Full response:', JSON.stringify(data, null, 2));
++             // Log detailed information for debugging
++             console.error('=== TOKEN NOT FOUND ===');
++             console.error('Response status:', response.status);
++             console.error('Response type:', typeof data);
++             console.error('Full response object:', JSON.stringify(data, null, 2));
+              console.error('Raw response text:', responseText);
+-             
+-             // Return the data anyway - frontend can try to extract it
+-             // This is better than failing completely
+-             res.json({ 
+-                 token: null,
++             console.error('Response keys:', Object.keys(data || {}));
++             
++             // Check if this might be an error response
++             const errorIndicators = ['error', 'Error', 'ERROR', 'message', 'Message', 'fail', 'Fail'];
++             const hasError = errorIndicators.some(indicator =&gt; 
++                 (data &amp;&amp; typeof data === 'object' &amp;&amp; data[indicator]) ||
++                 responseText.includes(indicator)
++             );
++             
++             if (hasError) {
++                 return res.status(500).json({
++                     error: 'Pesapal API returned an error response',
++                     details: data,
++                     rawResponse: responseText,
++                     message: 'Please check your Pesapal credentials and API endpoint'
++                 });
++             }
++             
++             // Return the full response so frontend can try to extract token
++             res.status(500).json({ 
++                 error: 'Token not found in Pesapal response',
+                  fullResponse: data,
+                  rawResponse: responseText,
+-                 warning: 'Token not found in expected format, returning full response'
++                 responseKeys: Object.keys(data || {}),
++                 message: 'Please check server logs for full response details. The token might be in an unexpected format.'
+              });
+          }
+```
+
+</details>
+
+</tool-use>
+
+---
+
+
+
+---
+
+
+Updating the frontend to handle the improved error response:
+
+
+---
+
+<tool-use data-tool-type="read" data-tool-name="read_file">
+<details><summary>Tool use: **read_file** • Read file: src/components/Booking.jsx</summary>
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Committing and pushing the improvements. Then we'll check the server logs to see what Pesapal returns:
+
+
+---
+
+<tool-use data-tool-type="shell" data-tool-name="run_terminal_cmd">
+<details><summary>Tool use: **run_terminal_cmd** • Run command: git add -A</summary>
+
+```bash
+git add -A
+```
+
+```
+PS D:\test&gt; git add -A
+```
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+
+
+
+---
+
+<tool-use data-tool-type="shell" data-tool-name="run_terminal_cmd">
+<details><summary>Tool use: **run_terminal_cmd** • Run command: git commit -m "Add recursive token search and improved error handling for Pesapal API responses"</summary>
+
+```bash
+git commit -m "Add recursive token search and improved error handling for Pesapal API responses"
+```
+
+```
+g for Pesapal API responses"                                                    
+[main 09a45f8] Add recursive token search and improved error handling for Pesapal API responses                                                                 
+ 2 files changed, 635 insertions(+), 28 deletions(-)
+```
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+
+
+
+---
+
+<tool-use data-tool-type="shell" data-tool-name="run_terminal_cmd">
+<details><summary>Tool use: **run_terminal_cmd** • Run command: git push origin main</summary>
+
+```bash
+git push origin main
+```
+
+```
+PS D:\test&gt; git push origin main
+Enumerating objects: 11, done.
+Counting objects: 100% (11/11), done.
+Delta compression using up to 4 threads
+Compressing objects: 100% (6/6), done.
+Writing objects: 100% (6/6), 6.32 KiB | 239.00 KiB/s, done.
+Total 6 (delta 3), reused 0 (delta 0), pack-reused 0 (from 0)
+remote: Resolving deltas: 100% (3/3), completed with 3 local objects.
+To https://github.com/WEFAFA256/winter-soldier.git
+   2d2630f..09a45f8  main -&gt; main
+```
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+All changes have been pushed to GitHub. Here's what's causing the error and how to debug it:
+
+## Root cause analysis
+
+The error "Unexpected response format from Pesapal" occurs because:
+
+1. Token not found: The server can't find the access token in Pesapal's response.
+2. Unknown response format: Pesapal may return the token in a different structure than expected.
+3. Possible API issues:
+   - Wrong API endpoint URL
+   - Incorrect request format
+   - Invalid credentials
+   - Sandbox API differences
+
+## What I fixed
+
+### 1. Recursive token search
+- Searches the entire response object for the token
+- Checks nested objects and arrays
+- Handles various field names and formats
+
+### 2. Enhanced error detection
+- Detects error responses even with 200 status
+- Checks for error indicators in the response
+- Provides detailed logging
+
+### 3. Better debugging
+- Logs full response structure
+- Shows response keys
+- Includes raw response text
+
+## How to debug
+
+### Step 1: Check server logs
+When you try to pay, check the terminal where the server is running. You should see:
+```
+Pesapal response status: XXX
+Pesapal response: [actual response]
+Parsed response: [parsed JSON]
+=== TOKEN NOT FOUND ===
+Response keys: [list of keys]
+```
+
+### Step 2: Check what Pesapal is returning
+The logs will show the exact response format. Common possibilities:
+- Error message (credentials invalid, endpoint wrong)
+- Different field name (e.g., `bearerToken`, `authToken`)
+- Nested structure (e.g., `data.auth.token`)
+- HTML error page (wrong endpoint)
+
+### Step 3: Verify credentials and endpoint
+- Confirm the Consumer Key and Secret are correct
+- Verify the sandbox URL: `https://cybqa.pesapal.com/pesapalv3`
+- Check if the endpoint path is correct: `/api/Auth/RequestToken`
+
+## Next steps
+
+1. Restart the server to get the new code:
+   ```bash
+   npm run server
+   ```
+
+2. Try the payment flow again.
+
+3. Check the server terminal — it will show exactly what Pesapal returns.
+
+4. Share the server logs — the detailed logs will show the actual response format so we can fix it.
+
+The code now searches for the token more thoroughly and provides better error messages. Check the server logs to see what Pesapal is actually returning.
+
+---
+
+_**User (2025-12-03 17:23Z)**_
+
+on phone it shows that
+
+---
+
+_**Agent (model default, mode Agent)**_
+
+
+
+---
+
+
+The app is deployed on Vercel, but the frontend is hardcoded to `localhost:3001`, which only works locally. Updating the frontend to use the correct backend URL based on the environment:
+
+
+---
+
+<tool-use data-tool-type="read" data-tool-name="read_file">
+<details><summary>Tool use: **read_file** • Read file: src/components/Booking.jsx</summary>
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Making the backend URL dynamic based on the environment:
+
+
+---
+
+<tool-use data-tool-type="write" data-tool-name="search_replace">
+
+<details><summary>Tool use: **search_replace** • Edit file: src/components/Booking.jsx</summary>
+
+**Chunk 1**
+Lines added: 12, lines removed: 1
+
+```diff
+@@ -94,5 +94,16 @@
+          try {
+              // Use backend proxy to avoid CORS issues
+-             const BACKEND_URL = 'http://localhost:3001'; // Change this to your backend URL in production
++             // Automatically detect environment and use appropriate backend URL
++             const getBackendUrl = () =&gt; {
++                 // Check if we're in development (localhost)
++                 if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
++                     return 'http://localhost:3001';
++                 }
++                 // For production, use environment variable or default to a deployed backend
++                 // You'll need to set VITE_BACKEND_URL in your Vercel environment variables
++                 return import.meta.env.VITE_BACKEND_URL || 'https://your-backend-url.vercel.app';
++             };
++             
++             const BACKEND_URL = getBackendUrl();
+              
+              // Step 1: Get OAuth token from Pesapal via backend
+```
+
+</details>
+
+</tool-use>
+
+---
+
+
+
+---
+

@@ -93,10 +93,22 @@ const Booking = () => {
 
         try {
             // Use backend proxy to avoid CORS issues
-            const BACKEND_URL = 'http://localhost:3001'; // Change this to your backend URL in production
+            // Automatically detect environment and use appropriate backend URL
+            const getBackendUrl = () => {
+                // Check if we're in development (localhost)
+                if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+                    return 'http://localhost:3001';
+                }
+                // For production (Vercel), use the same domain's API routes
+                // Vercel will automatically route /api/* to serverless functions
+                return ''; // Empty string means use same origin (relative URLs)
+            };
+            
+            const BACKEND_URL = getBackendUrl();
+            const API_BASE = BACKEND_URL || ''; // Use relative URLs in production
             
             // Step 1: Get OAuth token from Pesapal via backend
-            const tokenResponse = await fetch(`${BACKEND_URL}/api/pesapal/token`, {
+            const tokenResponse = await fetch(`${API_BASE}/api/pesapal/token`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -179,7 +191,7 @@ const Booking = () => {
                 }
             };
 
-            const orderResponse = await fetch(`${BACKEND_URL}/api/pesapal/order`, {
+            const orderResponse = await fetch(`${API_BASE}/api/pesapal/order`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -221,8 +233,14 @@ const Booking = () => {
             setIsProcessingPayment(false);
             
             // Check if it's a connection error (backend not running)
+            const isDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+            
             if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
-                alert('Payment server is not running. Please start the backend server (node server.js) or choose to pay at venue.');
+                if (isDevelopment) {
+                    alert('Payment server is not running. Please start the backend server (npm run server) or choose to pay at venue.');
+                } else {
+                    alert('Payment service is temporarily unavailable. Please try again later or choose to pay at venue.');
+                }
             } else {
                 alert(`Payment setup failed: ${error.message}. Please try again or choose to pay at venue.`);
             }
