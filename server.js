@@ -97,13 +97,16 @@ app.post('/api/pesapal/token', async (req, res) => {
 
         const responseText = await response.text();
         console.log('Pesapal response status:', response.status);
-        console.log('Pesapal response:', responseText);
+        console.log('Pesapal response headers:', Object.fromEntries(response.headers.entries()));
+        console.log('Pesapal response text:', responseText);
 
-        if (!response.ok) {
-            console.error('Pesapal API error:', responseText);
-            return res.status(response.status).json({ 
+        // Check if response indicates an error (even if status is 200)
+        if (!response.ok || responseText.toLowerCase().includes('error') || responseText.toLowerCase().includes('invalid')) {
+            console.error('Pesapal API error detected:', responseText);
+            return res.status(response.ok ? 500 : response.status).json({ 
                 error: responseText,
-                status: response.status
+                status: response.status,
+                message: 'Pesapal API returned an error'
             });
         }
 
@@ -121,38 +124,75 @@ app.post('/api/pesapal/token', async (req, res) => {
         // Log the response structure for debugging
         console.log('Parsed response:', JSON.stringify(data, null, 2));
         
-        // Try to find token in various possible formats
-        let token = null;
+        // Recursive function to find token anywhere in the object
+        const findTokenRecursively = (obj, depth = 0) => {
+            if (depth > 5) return null; // Prevent infinite recursion
+            
+            if (typeof obj !== 'object' || obj === null) {
+                // If it's a string that looks like a token (long alphanumeric)
+                if (typeof obj === 'string' && obj.length > 20 && obj.length < 500 && /^[A-Za-z0-9\-_=]+$/.test(obj)) {
+                    return obj;
+                }
+                return null;
+            }
+            
+            // Check common token field names
+            const tokenFields = ['token', 'access_token', 'Token', 'AccessToken', 'accessToken', 'accessToken', 'bearer_token'];
+            for (const field of tokenFields) {
+                if (obj[field] && typeof obj[field] === 'string' && obj[field].length > 20) {
+                    return obj[field];
+                }
+            }
+            
+            // Recursively search in nested objects
+            for (const key in obj) {
+                if (obj.hasOwnProperty(key)) {
+                    const result = findTokenRecursively(obj[key], depth + 1);
+                    if (result) return result;
+                }
+            }
+            
+            return null;
+        };
         
-        // Check all possible token field names
-        if (data.token) token = data.token;
-        else if (data.access_token) token = data.access_token;
-        else if (data.Token) token = data.Token;
-        else if (data.AccessToken) token = data.AccessToken;
-        else if (data.accessToken) token = data.accessToken;
-        else if (data.data && data.data.token) token = data.data.token;
-        else if (data.data && data.data.access_token) token = data.data.access_token;
-        else if (data.result && data.result.token) token = data.result.token;
-        else if (data.response && data.response.token) token = data.response.token;
-        // Check if the entire response is just a string (token)
-        else if (typeof data === 'string' && data.length > 20) token = data;
+        // Try to find token in various possible formats
+        let token = findTokenRecursively(data);
         
         if (token) {
-            console.log('Token found successfully');
+            console.log('Token found successfully:', token.substring(0, 20) + '...');
             res.json({ token: token });
         } else {
-            // Return the full response so frontend can try to extract token
-            // This helps with debugging and allows frontend to handle different formats
-            console.error('Token not found in expected fields. Full response:', JSON.stringify(data, null, 2));
+            // Log detailed information for debugging
+            console.error('=== TOKEN NOT FOUND ===');
+            console.error('Response status:', response.status);
+            console.error('Response type:', typeof data);
+            console.error('Full response object:', JSON.stringify(data, null, 2));
             console.error('Raw response text:', responseText);
+            console.error('Response keys:', Object.keys(data || {}));
             
-            // Return the data anyway - frontend can try to extract it
-            // This is better than failing completely
-            res.json({ 
-                token: null,
+            // Check if this might be an error response
+            const errorIndicators = ['error', 'Error', 'ERROR', 'message', 'Message', 'fail', 'Fail'];
+            const hasError = errorIndicators.some(indicator => 
+                (data && typeof data === 'object' && data[indicator]) ||
+                responseText.includes(indicator)
+            );
+            
+            if (hasError) {
+                return res.status(500).json({
+                    error: 'Pesapal API returned an error response',
+                    details: data,
+                    rawResponse: responseText,
+                    message: 'Please check your Pesapal credentials and API endpoint'
+                });
+            }
+            
+            // Return the full response so frontend can try to extract token
+            res.status(500).json({ 
+                error: 'Token not found in Pesapal response',
                 fullResponse: data,
                 rawResponse: responseText,
-                warning: 'Token not found in expected format, returning full response'
+                responseKeys: Object.keys(data || {}),
+                message: 'Please check server logs for full response details. The token might be in an unexpected format.'
             });
         }
     } catch (error) {
