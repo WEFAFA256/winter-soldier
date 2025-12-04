@@ -92,23 +92,20 @@ const Booking = () => {
         }));
 
         try {
-            // Step 1: Get OAuth token from Pesapal
-            const tokenResponse = await fetch(`${PESAPAL_BASE_URL}/api/Auth/RequestToken`, {
+            // Use backend proxy to avoid CORS issues
+            const BACKEND_URL = 'http://localhost:3001'; // Change this to your backend URL in production
+            
+            // Step 1: Get OAuth token from Pesapal via backend
+            const tokenResponse = await fetch(`${BACKEND_URL}/api/pesapal/token`, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json'
-                },
-                body: JSON.stringify({
-                    consumer_key: PESAPAL_CONSUMER_KEY,
-                    consumer_secret: PESAPAL_CONSUMER_SECRET
-                })
+                    'Content-Type': 'application/json'
+                }
             });
 
             if (!tokenResponse.ok) {
-                const errorText = await tokenResponse.text();
-                console.error('Token error:', errorText);
-                throw new Error('Failed to authenticate with Pesapal');
+                const errorData = await tokenResponse.json();
+                throw new Error(errorData.error || 'Failed to authenticate with Pesapal');
             }
 
             const tokenData = await tokenResponse.json();
@@ -118,7 +115,7 @@ const Booking = () => {
                 throw new Error('No access token received from Pesapal');
             }
 
-            // Step 2: Create order
+            // Step 2: Create order via backend
             const callbackUrl = `${window.location.origin}/booking?OrderTrackingId={order_tracking_id}&OrderMerchantReference=${orderReference}`;
             const orderData = {
                 id: orderReference,
@@ -145,19 +142,20 @@ const Booking = () => {
                 }
             };
 
-            const orderResponse = await fetch(`${PESAPAL_BASE_URL}/api/Transactions/SubmitOrderRequest`, {
+            const orderResponse = await fetch(`${BACKEND_URL}/api/pesapal/order`, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                    'Authorization': `Bearer ${accessToken}`
+                    'Content-Type': 'application/json'
                 },
-                body: JSON.stringify(orderData)
+                body: JSON.stringify({
+                    accessToken: accessToken,
+                    orderData: orderData
+                })
             });
 
             if (!orderResponse.ok) {
-                const errorText = await orderResponse.text();
-                throw new Error(`Failed to create order: ${errorText}`);
+                const errorData = await orderResponse.json();
+                throw new Error(errorData.error || 'Failed to create order');
             }
 
             const orderResult = await orderResponse.json();
@@ -172,7 +170,13 @@ const Booking = () => {
         } catch (error) {
             console.error('Pesapal payment error:', error);
             setIsProcessingPayment(false);
-            alert(`Payment setup failed: ${error.message}. Please try again or choose to pay at venue.`);
+            
+            // Check if it's a connection error (backend not running)
+            if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+                alert('Payment server is not running. Please start the backend server (node server.js) or choose to pay at venue.');
+            } else {
+                alert(`Payment setup failed: ${error.message}. Please try again or choose to pay at venue.`);
+            }
             setShowPaymentPrompt(true);
         }
     };
