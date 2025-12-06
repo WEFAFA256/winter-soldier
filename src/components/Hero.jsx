@@ -8,12 +8,12 @@ const Hero = () => {
     const btnRef = useScrollAnimation('animate-float-up');
 
     const slides = [
-        '/assets/hero_spa.png',
-        'https://images.unsplash.com/photo-1540555700478-4be289fbecef?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80', // Massage
-        'https://images.unsplash.com/photo-1544161515-4ab6ce6db874?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80', // Facial
-        'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80', // Spa stones
-        'https://images.unsplash.com/photo-1600334089648-b0d9d3028eb2?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80', // Relaxing pool
-        'https://images.unsplash.com/photo-1515377905703-c4788e51af15?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80'  // Candles
+        '/assets/slide_1.jpg',
+        '/assets/slide_2.jpg',
+        '/assets/slide_3.jpg',
+        '/assets/slide_4.jpg',
+        '/assets/slide_5.jpg',
+        '/assets/slide_6.jpg'
     ];
 
     const [currentSlide, setCurrentSlide] = useState(0);
