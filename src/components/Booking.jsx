@@ -82,36 +82,73 @@ const Booking = () => {
         setShowQRModal(true);
     };
 
-    const handlePawapayPayment = async () => {
+    // Check for DPO Pay callback
+    useEffect(() => {
+        const searchParams = new URLSearchParams(location.search);
+        const paymentStatus = searchParams.get('payment');
+        const transToken = searchParams.get('TransactionToken');
+
+        if (paymentStatus === 'success' && transToken) {
+            // Verify payment status with DPO
+            const verifyPayment = async () => {
+                try {
+                    const response = await fetch(`http://localhost:3001/api/dpo/verify/${transToken}`);
+                    const data = await response.json();
+
+                    if (data.success && data.transactionPaid) {
+                        setPaymentStatus('Paid');
+                        setShowQRModal(true);
+                        window.history.replaceState({}, document.title, location.pathname);
+                        alert('Payment Successful! ✅');
+                    } else if (data.transactionApproved) {
+                        setPaymentStatus('Pending');
+                        setShowQRModal(true);
+                        alert('Payment is being processed. We will confirm shortly.');
+                    } else {
+                        setPaymentStatus('Failed');
+                        alert('Payment verification failed. Please contact support.');
+                    }
+                } catch (error) {
+                    console.error('Verification Error:', error);
+                    alert('Could not verify payment. Please contact support.');
+                }
+            };
+
+            verifyPayment();
+        } else if (paymentStatus === 'cancelled') {
+            alert('Payment was cancelled.');
+        }
+    }, [location]);
+
+    const handleDPOPayment = async () => {
         setIsProcessingPayment(true);
         try {
-            // 1. Initiate Payment
-            const response = await fetch('http://localhost:3001/api/pawapay/deposit', {
+            // 1. Initiate Payment with DPO
+            const response = await fetch('http://localhost:3001/api/dpo/initiate', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     amount: servicePrice,
                     phoneNumber: formData.phone,
                     email: formData.email,
-                    description: `Booking: ${formData.serviceType}`,
-                    currency: 'UGX'
+                    name: formData.name,
+                    description: `${formData.serviceType} - Serenity Spa`,
                 })
             });
 
             const data = await response.json();
 
-            if (!response.ok) {
-                throw new Error(data.details?.message || 'Payment initiation failed');
+            if (!response.ok || !data.success) {
+                throw new Error(data.details || data.error || 'Payment initiation failed');
             }
 
-            // 2. Poll for status (Simplified for demo)
-            // In a real app, you'd show a "Check Status" button or use a websocket/polling hook
-            alert(`Payment initiated! Please approve the prompt on your phone.\nTransaction ID: ${data.depositId}`);
-
-            // Simulating success for flow completion
-            setPaymentStatus('Pending');
-            setShowPaymentPrompt(false);
-            setShowQRModal(true);
+            // 2. Redirect to DPO Pay
+            if (data.paymentUrl) {
+                console.log('Redirecting to DPO Pay:', data.paymentUrl);
+                window.location.href = data.paymentUrl;
+            } else {
+                throw new Error('No payment URL received from DPO Pay');
+            }
 
         } catch (error) {
             console.error('Payment Error:', error);
@@ -835,7 +872,7 @@ const Booking = () => {
 
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                             <button
-                                onClick={handlePawapayPayment}
+                                onClick={handleDPOPayment}
                                 disabled={isProcessingPayment}
                                 className="btn"
                                 style={{
@@ -849,7 +886,7 @@ const Booking = () => {
                                     opacity: isProcessingPayment ? 0.7 : 1
                                 }}
                             >
-                                {isProcessingPayment ? 'Processing...' : '📱 Pay with Mobile Money (Pawapay)'}
+                                {isProcessingPayment ? 'Redirecting to DPO Pay...' : '💳 Pay Online (Card/Mobile Money)'}
                             </button>
 
                             <button
@@ -869,7 +906,7 @@ const Booking = () => {
                             </button>
                         </div>
                         <p style={{ marginTop: '1.5rem', fontSize: '0.9rem', color: '#888' }}>
-                            Secure payments powered by Pawapay
+                            Secure payments powered by DPO Pay • MTN • Airtel • Visa • Mastercard
                         </p>
                     </div>
                 </div>
