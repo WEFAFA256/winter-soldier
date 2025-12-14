@@ -7,21 +7,48 @@ import PriceList from './PriceList';
 
 const SpaPage = () => {
     // Slideshow State
-    const [currentImageIndex, setCurrentImageIndex] = useState(0);
-
-    // Images Array - New image first, then original
-    const images = [
+    const originalImages = [
         '/assets/spa-hero-bg-2.jpg',
         '/assets/spa-hero-bg.jpg'
     ];
+    // Clone first image for seamless loop
+    const extendedImages = [...originalImages, originalImages[0]];
+
+    const [currentIndex, setCurrentIndex] = useState(0);
+    const [isTransitioning, setIsTransitioning] = useState(true);
+    const [isMounted, setIsMounted] = useState(false);
+
+    // Initial mount effect
+    useEffect(() => {
+        setIsMounted(true);
+    }, []);
 
     // Cycle images every 6 seconds
     useEffect(() => {
         const interval = setInterval(() => {
-            setCurrentImageIndex(prev => (prev + 1) % images.length);
+            setCurrentIndex(prev => prev + 1);
         }, 6000);
         return () => clearInterval(interval);
-    }, [images.length]);
+    }, []);
+
+    // Handle Seamless Loop Reset
+    useEffect(() => {
+        if (currentIndex === originalImages.length) {
+            // Reached clone. Wait 1s transition, then snap reset.
+            const timeout = setTimeout(() => {
+                setIsTransitioning(false);
+                setCurrentIndex(0);
+            }, 1000);
+            return () => clearTimeout(timeout);
+        } else if (currentIndex === 0 && !isTransitioning) {
+            // Snapped back. Re-enable transition.
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    setIsTransitioning(true);
+                });
+            });
+        }
+    }, [currentIndex, isTransitioning, originalImages.length]);
 
     return (
         <div>
@@ -31,21 +58,29 @@ const SpaPage = () => {
                 <div style={{ position: 'relative', width: '100%' }}>
                     <style>
                         {`
+                            /* Slider Styles */
+                            .hero-slider-track {
+                                display: flex;
+                                width: 100%;
+                            }
+                            
                             .hero-bg-image {
                                 width: 100%;
+                                min-width: 100%; /* Force 1 item per slide */
                                 height: auto;
                                 display: block;
                                 min-height: 600px;
                                 object-fit: cover;
-                                animation: zoomIn 7s ease-out forwards;
                                 backface-visibility: hidden;
-                                transform: translateZ(0);
+                                transform: translateZ(0) scale(1);
                                 image-rendering: high-quality;
+                                object-position: center 75%;
+                                transition: transform 7s ease-out; /* Smooth zoom transition */
                             }
-                            
-                            @keyframes zoomIn {
-                                0% { transform: scale(1); }
-                                100% { transform: scale(1.1); }
+
+                            /* Active Slide Zoom Effect */
+                            .hero-bg-image.active-slide {
+                                transform: translateZ(0) scale(1.1);
                             }
                         `}
                     </style>
@@ -60,14 +95,19 @@ const SpaPage = () => {
                         zIndex: 1
                     }}></div>
 
-                    {/* Render current image with key to trigger animation */}
-                    <div style={{ position: 'relative', width: '100%', height: '100%' }}>
-                        <img
-                            key={currentImageIndex}
-                            src={images[currentImageIndex]}
-                            alt="The Serenity Spa"
-                            className="hero-bg-image"
-                        />
+                    {/* Slider Window */}
+                    <div className="hero-slider-track" style={{
+                        transform: `translateX(-${currentIndex * 100}%)`,
+                        transition: isTransitioning ? 'transform 1s ease-in-out' : 'none'
+                    }}>
+                        {extendedImages.map((imgSrc, index) => (
+                            <img
+                                key={index}
+                                src={imgSrc}
+                                alt="The Serenity Spa"
+                                className={`hero-bg-image ${index === currentIndex && isMounted ? 'active-slide' : ''}`}
+                            />
+                        ))}
                     </div>
                 </div>
 

@@ -2,50 +2,113 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
 const DualHero = ({ onBusinessChange }) => {
-    // Cycle through 0-3: 
-    // 0: Hotel (Img 1), 1: Spa (Img 1), 2: Hotel (Img 2), 3: Spa (Img 2)
-    const [cycleIndex, setCycleIndex] = useState(0);
-    const [isTransitioning, setIsTransitioning] = useState(false);
+    // Images Array: 0: Hotel(1), 1: Spa(1), 2: Hotel(2), 3: Spa(2)
+    const originalImages = [
+        '/assets/hotel-bg.jpg',
+        '/assets/spa-bg.jpg',
+        '/assets/hotel-bg-2.jpg',
+        '/assets/spa-bg-2.jpg',
+        '/assets/hotel-slide-3.jpg',
+        '/assets/spa-slide-3.jpg'
+    ];
+    // Clone first image for loop
+    const extendedImages = [...originalImages, originalImages[0]];
 
-    // Initial business change notification
+    // Slider State
+    const [currentIndex, setCurrentIndex] = useState(0);
+    const [isTransitioning, setIsTransitioning] = useState(true);
+
+    // Text Fade State
+    const [textVisible, setTextVisible] = useState(true);
+    const [isMounted, setIsMounted] = useState(false);
+
+    // Initial mount effect to trigger first zoom
+    useEffect(() => {
+        setIsMounted(true);
+    }, []);
+
+    // Initial business set
     useEffect(() => {
         if (onBusinessChange) {
             onBusinessChange('hotel');
         }
     }, []);
 
-    // Cycle every 6 seconds
+    // Timer triggers slide and text toggle
     useEffect(() => {
+        let textTimer;
+
         const interval = setInterval(() => {
-            setIsTransitioning(true);
+            // 1. Start Text Fade Out
+            setTextVisible(false);
+
+            // 2. Start Slide (after short delay for text to fade?) or immediately?
+            // Let's slide immediately. Text will fade out during slide.
+            setCurrentIndex(prev => prev + 1);
+
+            // 3. After slide/fade time, Text Fades In (driven by render change usually)
+            // But we need to toggle 'textVisible' back to true after content update.
+            // If slide takes 1s. Text Fade Out takes 0.5s.
+            // At 0.5s, update Content? No, Content updates when currentIndex changes (immediately).
+            // So if we change index, content flips.
+            // We want old text to fade out -> Flip Content -> New text fade in.
+            // To do this strictly: Fade Out -> (Wait) -> Change Index -> (Wait) -> Fade In.
+            // But Slider needs to move continuously?
+            // "Current image slides left as new slides in".
+            // So Slide happens. Text can Fade Out/In on top.
+
+            // Revised flow:
+            // T=0: setTextVisible(false). (Fade out old).
+            // T=0.5s: setCurrentIndex(+1). (Slide starts physically, content updates).
+            // T=0.6s: setTextVisible(true). (Fade in new).
+            // This ensures text is hidden during the "swap" moment if distinct, or just transition.
+
+            // However, sliding happens over 1s.
+            // If we delay Index update, slide is delayed.
+            // Let's just let text fade out/in smoothly.
+
             setTimeout(() => {
-                setCycleIndex(prev => {
-                    const nextIndex = (prev + 1) % 4;
-                    // Determine business type for next index
-                    const nextBusiness = (nextIndex === 0 || nextIndex === 2) ? 'hotel' : 'spa';
+                setTextVisible(true);
+            }, 600); // Fade in after 600ms (Slide is halfway)
 
-                    if (onBusinessChange) {
-                        onBusinessChange(nextBusiness);
-                    }
-                    return nextIndex;
-                });
+        }, 6000);
+
+        return () => {
+            clearInterval(interval);
+            clearTimeout(textTimer);
+        };
+    }, []);
+
+    // Handle Infinite Loop Reset
+    useEffect(() => {
+        if (currentIndex === originalImages.length) {
+            const timeout = setTimeout(() => {
                 setIsTransitioning(false);
-            }, 800); // Transition duration
-        }, 6000); // Change every 6 seconds
+                setCurrentIndex(0);
+            }, 1000); // 1s matches CSS transition
+            return () => clearTimeout(timeout);
+        } else if (currentIndex === 0 && !isTransitioning) {
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    setIsTransitioning(true);
+                });
+            });
+        }
+    }, [currentIndex, isTransitioning, originalImages.length]);
 
-        return () => clearInterval(interval);
-    }, [onBusinessChange]);
+    // Update Business Type based on index
+    useEffect(() => {
+        const effectiveIndex = currentIndex % originalImages.length;
+        // Even = Hotel, Odd = Spa
+        const nextBusiness = (effectiveIndex % 2 === 0) ? 'hotel' : 'spa';
+        if (onBusinessChange) {
+            onBusinessChange(nextBusiness);
+        }
+    }, [currentIndex, onBusinessChange, originalImages.length]);
 
-    // Determine current business and image based on cycle index
-    const currentBusiness = (cycleIndex === 0 || cycleIndex === 2) ? 'hotel' : 'spa';
-
-    // Define images for each step
-    const bgImages = [
-        '/assets/hotel-bg.jpg',   // 0: Hotel 1
-        '/assets/spa-bg.jpg',     // 1: Spa 1
-        '/assets/hotel-bg-2.jpg', // 2: Hotel 2
-        '/assets/spa-bg-2.jpg'    // 3: Spa 2
-    ];
+    // currentContent Calculation
+    const effectiveIndex = currentIndex % originalImages.length;
+    const currentBusiness = (effectiveIndex % 2 === 0) ? 'hotel' : 'spa';
 
     const spaContent = {
         logo: '/assets/logo.jpg',
@@ -55,8 +118,7 @@ const DualHero = ({ onBusinessChange }) => {
         description: 'Experience ultimate relaxation with our premium massage and spa services',
         cta: 'Book Spa Service',
         link: '/spa',
-        color: 'var(--color-primary)',
-        bgImage: bgImages[cycleIndex]
+        color: '#005C53' // Updated Deep Teal
     };
 
     const hotelContent = {
@@ -67,8 +129,7 @@ const DualHero = ({ onBusinessChange }) => {
         description: 'Luxury accommodation with stunning views and world-class amenities',
         cta: 'Book Your Stay',
         link: '/hotel',
-        color: '#8B4513',
-        bgImage: bgImages[cycleIndex]
+        color: '#8B4513' // Updated Brown
     };
 
     const content = currentBusiness === 'spa' ? spaContent : hotelContent;
@@ -83,28 +144,37 @@ const DualHero = ({ onBusinessChange }) => {
                 transition: 'all 0.5s ease-in-out'
             }}
         >
-            {/* Background Slideshow - Image Drives Height */}
+            {/* Background Slideshow - Slider Track */}
             <div style={{ position: 'relative', width: '100%' }}>
 
                 <style>
                     {`
+                        .hero-slider-track {
+                            display: flex;
+                            width: 100%;
+                        }
+                        
                         .hero-bg-image {
                             width: 100%;
+                            min-width: 100%;
                             height: auto;
                             display: block;
-                            /* Desktop: Original Aspect Ratio (Full Features) */
-                            animation: zoomIn 7s ease-out forwards;
                             backface-visibility: hidden;
-                            transform: translateZ(0);
+                            transform: translateZ(0) scale(1);
                             image-rendering: high-quality;
-                            transition: opacity 0.5s ease-in-out;
+                            object-position: center 75%; /* Reveal lower details */
+                            transition: transform 7s ease-out;
+                        }
+                        
+                        .hero-bg-image.active-slide {
+                            transform: translateZ(0) scale(1.1);
                         }
 
-                        /* Mobile: Fix height to stabilize text and show green section */
+                        /* Mobile Fix */
                         @media (max-width: 768px) {
                             .hero-bg-image {
-                                height: 85vh !important; /* Fit screen but show bottom section */
-                                object-fit: cover; /* Fill the fixed area */
+                                height: 85vh !important;
+                                object-fit: cover;
                                 min-height: 500px;
                             }
                         }
@@ -121,7 +191,7 @@ const DualHero = ({ onBusinessChange }) => {
                     `}
                 </style>
 
-                {/* Top Gradient Overlay for Navbar Visibility */}
+                {/* Top Gradient Overlay */}
                 <div style={{
                     position: 'absolute',
                     top: 0,
@@ -132,18 +202,24 @@ const DualHero = ({ onBusinessChange }) => {
                     zIndex: 1
                 }}></div>
 
-                <img
-                    key={cycleIndex} // Re-render on cycle index change to restart animation
-                    src={content.bgImage}
-                    alt={content.name}
-                    className="hero-bg-image"
-                // style prop removed in favor of CSS class above for responsiveness
-                />
+                {/* Slider Window */}
+                <div className="hero-slider-track" style={{
+                    transform: `translateX(-${currentIndex * 100}%)`,
+                    transition: isTransitioning ? 'transform 1s ease-in-out' : 'none'
+                }}>
+                    {extendedImages.map((imgSrc, index) => (
+                        <img
+                            key={index}
+                            src={imgSrc}
+                            alt={`Slide ${index}`}
+                            className={`hero-bg-image ${index === currentIndex && isMounted ? 'active-slide' : ''}`}
+                        />
+                    ))}
+                </div>
             </div>
 
             {/* Content Container - Absolute Overlay */}
             <div
-                // className="container" <- Removed to prevent max-width constraint on desktop
                 style={{
                     position: 'absolute',
                     top: 0,
@@ -152,22 +228,23 @@ const DualHero = ({ onBusinessChange }) => {
                     height: '100%',
                     display: 'flex',
                     flexDirection: 'column',
-                    justifyContent: 'flex-start', // Align to top for stability
+                    justifyContent: 'flex-start',
                     alignItems: 'center',
                     zIndex: 2,
                     textAlign: 'center',
-                    paddingTop: 'clamp(60px, 12vh, 100px)', // Fixed position from top (moved up)
+                    paddingTop: 'clamp(60px, 12vh, 100px)',
                     paddingBottom: '2rem',
                     paddingLeft: '1rem',
                     paddingRight: '1rem'
                 }}
             >
-                {/* Logo with Float-in Animation */}
+                {/* Logo with Fade Animation */}
                 <div
-                    className={`logo-container ${isTransitioning ? 'fade-out' : 'fade-in'}`}
+                    className={`logo-container`}
                     style={{
                         marginBottom: '2rem',
-                        animation: isTransitioning ? 'simpleFadeOut 0.6s ease-out forwards' : 'simpleFadeIn 1s ease-out'
+                        opacity: textVisible ? 1 : 0,
+                        transition: 'opacity 0.5s ease-in-out'
                     }}
                 >
                     <img
@@ -185,18 +262,19 @@ const DualHero = ({ onBusinessChange }) => {
                     />
                 </div>
 
-                {/* Business Name with Typewriter Effect */}
+                {/* Business Name with Fade */}
                 <h1
-                    className={`business-name ${isTransitioning ? 'fade-out' : 'type-in'}`}
+                    className={`business-name`}
                     style={{
                         fontSize: 'clamp(1.8rem, 5vw, 4rem)',
                         fontWeight: '800',
-                        color: currentBusiness === 'hotel' ? '#8B4513' : '#005C53',
+                        color: content.color,
                         marginBottom: '1rem',
                         fontFamily: '"Times New Roman", Times, serif',
                         letterSpacing: '2px',
-                        textShadow: 'none', // Removed glowing effect
-                        animation: isTransitioning ? 'simpleFadeOut 0.6s ease-out forwards' : 'simpleFadeIn 1.2s ease-out'
+                        textShadow: 'none',
+                        opacity: textVisible ? 1 : 0,
+                        transition: 'opacity 0.5s ease-in-out'
                     }}
                 >
                     {content.name}
@@ -204,14 +282,15 @@ const DualHero = ({ onBusinessChange }) => {
 
                 {/* Tagline */}
                 <p
-                    className={isTransitioning ? 'fade-out' : 'fade-in'}
                     style={{
-                        fontSize: 'clamp(1.2rem, 2.5vw, 1.8rem)',
-                        color: '#000000',
-                        marginBottom: '0.5rem',
+                        fontSize: 'clamp(1rem, 2.5vw, 1.5rem)',
                         fontStyle: 'italic',
-                        textShadow: '0 0 10px rgba(255, 255, 255, 0.8)',
-                        animation: isTransitioning ? 'simpleFadeOut 0.6s ease-out forwards' : 'simpleFadeIn 1.5s ease-out'
+                        marginBottom: '0.5rem',
+                        color: '#ffffff',
+                        textShadow: '0 2px 4px rgba(0,0,0,0.5)',
+                        opacity: textVisible ? 1 : 0,
+                        transition: 'opacity 0.5s ease-in-out',
+                        transitionDelay: '0.1s'
                     }}
                 >
                     {content.tagline}
@@ -219,195 +298,58 @@ const DualHero = ({ onBusinessChange }) => {
 
                 {/* Location */}
                 <p
-                    className={isTransitioning ? 'fade-out' : 'fade-in'}
                     style={{
-                        fontSize: '1.1rem',
-                        color: '#000000',
                         marginBottom: '2rem',
-                        textShadow: '0 0 10px rgba(255, 255, 255, 0.8)',
-                        animation: isTransitioning ? 'simpleFadeOut 0.6s ease-out forwards' : 'simpleFadeIn 1.8s ease-out'
+                        color: '#f0f0f0',
+                        fontSize: '1.1rem',
+                        opacity: textVisible ? 1 : 0,
+                        transition: 'opacity 0.5s ease-in-out',
+                        transitionDelay: '0.2s'
                     }}
                 >
                     📍 {content.location}
                 </p>
 
-                {/* Description */}
-                <p
-                    className={isTransitioning ? 'fade-out' : 'fade-in'}
-                    style={{
-                        fontSize: '1.2rem',
-                        color: '#000000',
-                        maxWidth: '700px',
-                        margin: '0 auto 3rem',
-                        lineHeight: '1.8',
-                        fontWeight: '600',
-                        textShadow: '0 0 10px rgba(255, 255, 255, 0.8)',
-                        animation: isTransitioning ? 'simpleFadeOut 0.6s ease-out forwards' : 'simpleFadeIn 2s ease-out'
-                    }}
-                >
-                    {content.description}
-                </p>
-
-                {/* CTA Buttons */}
+                {/* Buttons */}
                 <div
-                    className={isTransitioning ? 'fade-out' : 'fade-in'}
                     style={{
                         display: 'flex',
-                        gap: '1.5rem',
-                        justifyContent: 'center',
+                        gap: '1rem',
                         flexWrap: 'wrap',
-                        animation: isTransitioning ? 'simpleFadeOut 0.6s ease-out forwards' : 'simpleFadeIn 2.3s ease-out'
+                        justifyContent: 'center',
+                        opacity: textVisible ? 1 : 0,
+                        transition: 'opacity 0.5s ease-in-out',
+                        transitionDelay: '0.3s'
                     }}
                 >
                     <Link
                         to={content.link}
+                        className="btn-primary"
                         style={{
-                            padding: '1rem 2.5rem',
-                            backgroundColor: '#ffffff',
-                            color: content.color,
+                            padding: '1rem 2rem',
+                            backgroundColor: content.color,
+                            color: '#ffffff',
+                            border: 'none',
                             borderRadius: '50px',
                             fontWeight: '600',
-                            fontSize: '1.1rem',
                             textDecoration: 'none',
-                            boxShadow: '0 5px 20px rgba(0, 0, 0, 0.3)',
-                            transition: 'all 0.3s ease',
-                            border: '2px solid transparent'
+                            fontSize: '1.1rem',
+                            boxShadow: '0 5px 15px rgba(0,0,0,0.3)',
+                            transition: 'transform 0.3s ease, background-color 0.3s ease'
                         }}
                         onMouseEnter={(e) => {
                             e.target.style.transform = 'translateY(-3px)';
-                            e.target.style.boxShadow = '0 8px 30px rgba(0, 0, 0, 0.4)';
+                            e.target.style.filter = 'brightness(1.1)';
                         }}
                         onMouseLeave={(e) => {
                             e.target.style.transform = 'translateY(0)';
-                            e.target.style.boxShadow = '0 5px 20px rgba(0, 0, 0, 0.3)';
+                            e.target.style.filter = 'brightness(1)';
                         }}
                     >
                         {content.cta}
                     </Link>
-
-                    <Link
-                        to={currentBusiness === 'spa' ? '/hotel' : '/spa'}
-                        style={{
-                            padding: '1rem 2.5rem',
-                            backgroundColor: 'transparent',
-                            color: '#ffffff',
-                            borderRadius: '50px',
-                            fontWeight: '600',
-                            fontSize: '1.1rem',
-                            textDecoration: 'none',
-                            border: '2px solid rgba(255, 255, 255, 0.8)',
-                            transition: 'all 0.3s ease'
-                        }}
-                        onMouseEnter={(e) => {
-                            e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.2)';
-                            e.target.style.transform = 'translateY(-3px)';
-                        }}
-                        onMouseLeave={(e) => {
-                            e.target.style.backgroundColor = 'transparent';
-                            e.target.style.transform = 'translateY(0)';
-                        }}
-                    >
-                        {currentBusiness === 'spa' ? 'Explore Hotel' : 'Explore Spa'}
-                    </Link>
-                </div>
-
-                {/* Business Indicator */}
-                <div
-                    style={{
-                        marginTop: '4rem',
-                        display: 'flex',
-                        gap: '1rem',
-                        justifyContent: 'center',
-                        alignItems: 'center'
-                    }}
-                >
-                    <div
-                        style={{
-                            width: '40px',
-                            height: '8px',
-                            borderRadius: '4px',
-                            backgroundColor: currentBusiness === 'hotel' ? '#ffffff' : 'rgba(255, 255, 255, 0.3)',
-                            transition: 'all 0.3s ease'
-                        }}
-                    />
-                    <div
-                        style={{
-                            width: '40px',
-                            height: '8px',
-                            borderRadius: '4px',
-                            backgroundColor: currentBusiness === 'spa' ? '#ffffff' : 'rgba(255, 255, 255, 0.3)',
-                            transition: 'all 0.3s ease'
-                        }}
-                    />
                 </div>
             </div>
-
-            {/* Animations */}
-            <style>{`
-        @keyframes floatIn {
-          0% {
-            opacity: 0;
-            transform: translateY(-50px);
-          }
-          100% {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
-        @keyframes fadeIn {
-          0% {
-            opacity: 0;
-          }
-          100% {
-            opacity: 1;
-          }
-        }
-
-        @keyframes fadeOut {
-          0% {
-            opacity: 1;
-          }
-          100% {
-            opacity: 0;
-          }
-        }
-
-        @keyframes typeIn {
-          0% {
-            opacity: 0;
-            width: 0;
-          }
-          1% {
-            opacity: 1;
-          }
-          100% {
-            opacity: 1;
-            width: 100%;
-          }
-        }
-
-        @keyframes zoomIn {
-          0% {
-            transform: scale(1);
-          }
-          100% {
-            transform: scale(1.1);
-          }
-        }
-
-        .business-name {
-          overflow: hidden;
-          white-space: nowrap;
-          display: inline-block;
-        }
-
-        @media (max-width: 768px) {
-          .business-name {
-            white-space: normal;
-          }
-        }
-      `}</style>
         </section>
     );
 };
