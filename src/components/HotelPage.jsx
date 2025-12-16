@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import HotelPriceList from './HotelPriceList';
+import ServiceCard from './ServiceCard';
+import { useScrollReveal } from '../hooks/useAnimations';
 
 const HotelPage = () => {
     // Slideshow State
@@ -46,6 +49,9 @@ const HotelPage = () => {
         }
     }, [currentIndex, isTransitioning, originalImages.length]);
 
+    // Initialize scroll reveal animations
+    useScrollReveal();
+
     return (
         <div>
             {/* Hotel Hero Section */}
@@ -62,7 +68,8 @@ const HotelPage = () => {
                             
                             .hero-bg-image {
                                 width: 100%;
-                                min-width: 100%; /* Force 1 item per slide */
+                                min-width: 100%;
+                                flex-shrink: 0;
                                 height: auto;
                                 display: block;
                                 min-height: 600px;
@@ -147,7 +154,7 @@ const HotelPage = () => {
                         </p>
                         <div style={{ marginTop: '2rem' }}>
                             <Link
-                                to="/hotel/booking"
+                                to="/hotel/rooms"
                                 style={{
                                     padding: '1rem 2.5rem',
                                     backgroundColor: '#ffffff',
@@ -170,85 +177,103 @@ const HotelPage = () => {
                 </div>
             </section>
 
+            {/* Hotel Price List */}
+            <HotelPriceList />
+
             {/* Rooms & Amenities */}
-            <section style={{ padding: '5rem 0' }}>
+
+
+
+
+            {/* Hotel Specials */}
+            <section style={{ padding: '5rem 0', backgroundColor: '#f5f5f5' }}>
                 <div className="container">
-                    <h2 style={{ textAlign: 'center', marginBottom: '3rem', fontSize: '2.5rem', color: '#8B4513' }}>
-                        Our Rooms & Suites
+                    <h2 className="gradient-text-gold scroll-reveal" style={{ textAlign: 'center', marginBottom: '1rem', fontSize: '2.5rem' }}>
+                        Hotel Specials
                     </h2>
+                    <p className="scroll-reveal delay-200" style={{ textAlign: 'center', fontSize: '1.2rem', color: '#666', marginBottom: '3rem', maxWidth: '700px', margin: '0 auto 3rem' }}>
+                        Enjoy our exclusive Oak & Tonic Bar and Marina Cafeteria offerings
+                    </p>
                     <div style={{
                         display: 'grid',
                         gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
                         gap: '2rem'
                     }}>
                         {[
-                            { name: 'Deluxe Room', price: 'UGX 200,000/night', features: ['King Size Bed', 'Lake View', 'Free WiFi', 'Breakfast Included'] },
-                            { name: 'Executive Suite', price: 'UGX 350,000/night', features: ['Separate Living Area', 'Balcony', 'Mini Bar', 'Airport Transfer'] },
-                            { name: 'Presidential Suite', price: 'UGX 500,000/night', features: ['2 Bedrooms', 'Private Pool', 'Butler Service', 'Panoramic Views'] }
-                        ].map((room, index) => (
+                            {
+                                image: '/assets/hotel_specials/nojito_closeup.jpg',
+                                title: 'Classic Nojito',
+                                desc: 'Our signature Nojito with fresh lime, ice & cherries'
+                            },
+                            {
+                                image: '/assets/hotel_specials/nojito_menu.jpg',
+                                title: 'Nojito Menu',
+                                desc: 'Refreshing Nojitos - Classic, Coco Le Blue, Lavender & More'
+                            },
+                            {
+                                image: '/assets/hotel_specials/cocktails_1.jpg',
+                                title: 'Signature Cocktails',
+                                desc: 'Premium Cocktails from Oak & Tonic Bar'
+                            },
+                            {
+                                image: '/assets/hotel_specials/cocktails_menu.jpg',
+                                title: 'Cocktails & Juices',
+                                desc: 'Fresh Juices, Cocktails & Marina\'s Special Blends'
+                            },
+                            {
+                                image: '/assets/hotel_specials/cafe_menu.jpg',
+                                title: 'Café Menu',
+                                desc: 'Espresso, Cappuccino, Latte & More from Marina Cafeteria'
+                            },
+                            {
+                                image: '/assets/hotel_specials/breakfast_menu.jpg',
+                                title: 'Breakfast Specials',
+                                desc: 'Toasted Bread, Eggs, Sausages, Pancakes & More'
+                            }
+                        ].map((special, index) => (
                             <div
                                 key={index}
+                                className={`scroll-reveal-scale hover-lift delay-${(index + 3) * 100}`}
                                 style={{
-                                    backgroundColor: '#ffffff',
+                                    backgroundColor: '#fff',
                                     borderRadius: '15px',
-                                    padding: '2rem',
-                                    boxShadow: '0 5px 20px rgba(0, 0, 0, 0.1)',
-                                    transition: 'transform 0.3s ease',
+                                    overflow: 'hidden',
+                                    boxShadow: '0 5px 20px rgba(0,0,0,0.1)',
                                     cursor: 'pointer'
                                 }}
-                                onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-10px)'}
-                                onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
                             >
-                                <h3 style={{ fontSize: '1.8rem', marginBottom: '1rem', color: '#8B4513' }}>
-                                    {room.name}
-                                </h3>
-                                <p style={{ fontSize: '1.3rem', fontWeight: '600', color: '#654321', marginBottom: '1.5rem' }}>
-                                    {room.price}
-                                </p>
-                                <ul style={{ listStyle: 'none', padding: 0 }}>
-                                    {room.features.map((feature, idx) => (
-                                        <li key={idx} style={{ marginBottom: '0.5rem', color: '#666' }}>
-                                            ✓ {feature}
-                                        </li>
-                                    ))}
-                                </ul>
+                                <div className="hover-zoom" style={{
+                                    height: '300px',
+                                    overflow: 'hidden',
+                                    backgroundColor: '#f0f0f0',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center'
+                                }}>
+                                    <img
+                                        src={special.image}
+                                        alt={special.title}
+                                        style={{
+                                            width: '100%',
+                                            height: '100%',
+                                            objectFit: index === 0 ? 'contain' : 'cover'
+                                        }}
+                                    />
+                                </div>
+                                <div style={{ padding: '1.5rem' }}>
+                                    <h3 style={{ fontSize: '1.5rem', marginBottom: '0.5rem', color: '#8B4513' }}>
+                                        {special.title}
+                                    </h3>
+                                    <p style={{ color: '#666', lineHeight: '1.6' }}>
+                                        {special.desc}
+                                    </p>
+                                </div>
                             </div>
                         ))}
                     </div>
                 </div>
             </section>
 
-            {/* Amenities */}
-            <section style={{ padding: '5rem 0', backgroundColor: '#f5f5f5' }}>
-                <div className="container">
-                    <h2 style={{ textAlign: 'center', marginBottom: '3rem', fontSize: '2.5rem', color: '#8B4513' }}>
-                        Hotel Amenities
-                    </h2>
-                    <div style={{
-                        display: 'grid',
-                        gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-                        gap: '2rem',
-                        textAlign: 'center'
-                    }}>
-                        {[
-                            { icon: '🏊', name: 'Swimming Pool', desc: 'Outdoor infinity pool' },
-                            { icon: '🍽️', name: 'Restaurant', desc: 'Fine dining experience' },
-                            { icon: '🏋️', name: 'Fitness Center', desc: '24/7 gym access' },
-                            { icon: '🚗', name: 'Parking', desc: 'Free secure parking' },
-                            { icon: '📶', name: 'Free WiFi', desc: 'High-speed internet' },
-                            { icon: '🛎️', name: 'Concierge', desc: '24/7 service' }
-                        ].map((amenity, index) => (
-                            <div key={index} style={{ padding: '1.5rem' }}>
-                                <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>{amenity.icon}</div>
-                                <h3 style={{ fontSize: '1.3rem', marginBottom: '0.5rem', color: '#8B4513' }}>
-                                    {amenity.name}
-                                </h3>
-                                <p style={{ color: '#666' }}>{amenity.desc}</p>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </section>
 
             {/* Contact Info */}
             <section style={{ padding: '5rem 0', backgroundColor: '#8B4513', color: '#ffffff' }}>

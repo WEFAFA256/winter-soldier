@@ -1,104 +1,10 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useScrollAnimation } from '../hooks/useScrollAnimation';
+import { useScrollReveal } from '../hooks/useAnimations';
 import ImageModal from './ImageModal';
 
-const ServiceCard = ({ title, image, description, delay, fullImage, onLearnMore, imageOnly, showBookNow, onBookNow }) => {
-    const cardRef = useScrollAnimation('animate-float-up');
-    const imageRef = useScrollAnimation('animate-slide-scale');
-    const textRef = useScrollAnimation('animate-float-up');
-
-    if (imageOnly) {
-        return (
-            <div
-                ref={imageRef}
-                className={`animate-on-scroll ${delay}`}
-                style={{
-                    borderRadius: '10px',
-                    overflow: 'hidden',
-                    boxShadow: '0 5px 15px rgba(0,0,0,0.05)',
-                    cursor: 'pointer',
-                    transition: 'transform 0.3s ease',
-                }}
-                onClick={() => onLearnMore && onLearnMore()}
-                onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
-                onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
-            >
-                <img
-                    src={image}
-                    alt="Price List"
-                    style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-                />
-            </div>
-        );
-    }
-
-    return (
-        <div
-            className="service-card"
-            style={{
-                backgroundColor: 'var(--color-white)',
-                borderRadius: '10px',
-                overflow: 'hidden',
-                boxShadow: '0 5px 15px rgba(0,0,0,0.05)',
-                transition: 'transform 0.3s ease',
-                width: '100%',
-                maxWidth: '100%',
-                position: 'relative',
-            }}
-            onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-10px)'}
-            onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
-        >
-            <div
-                ref={imageRef}
-                className={`animate-on-scroll ${delay} service-card-image`}
-                style={{ height: '250px', overflow: 'hidden' }}
-            >
-                <img
-                    src={image}
-                    alt={title}
-                    style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.5s ease' }}
-                    onMouseEnter={(e) => e.target.style.transform = 'scale(1.1)'}
-                    onMouseLeave={(e) => e.target.style.transform = 'scale(1)'}
-                />
-            </div>
-            <div
-                ref={textRef}
-                className={`animate-on-scroll ${delay} service-card-content`}
-                style={{ padding: '2rem', position: 'relative' }}
-            >
-                <h3 className="service-card-title" style={{ marginBottom: '1rem', fontSize: '1.5rem' }}>{title}</h3>
-                <p className="service-card-description" style={{ color: 'var(--color-text-light)', marginBottom: '1.5rem' }}>{description}</p>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <a
-                        href="#"
-                        onClick={(e) => {
-                            e.preventDefault();
-                            if (onLearnMore) onLearnMore();
-                        }}
-                        style={{ color: 'var(--color-primary)', fontWeight: '600', fontSize: '0.9rem', textTransform: 'uppercase', cursor: 'pointer' }}
-                    >
-                        Learn More &rarr;
-                    </a>
-                    {showBookNow && (
-                        <button
-                            className="btn"
-                            style={{
-                                padding: '0.5rem 1rem',
-                                fontSize: '0.85rem',
-                                border: 'none',
-                                cursor: 'pointer',
-                            }}
-                            onClick={onBookNow}
-                        >
-                            Book Now
-                        </button>
-                    )}
-                </div>
-            </div>
-        </div>
-    );
-};
+import ServiceCard from './ServiceCard';
 
 const Services = () => {
     const navigate = useNavigate();
@@ -117,6 +23,9 @@ const Services = () => {
         navigate('/booking', { state: { serviceName } });
     };
 
+    // Initialize scroll reveal animations
+    useScrollReveal();
+
     const services = [
         {
             title: 'Swedish Massage',
@@ -129,7 +38,7 @@ const Services = () => {
             title: 'Deeptissue Massage',
             image: '/assets/service2.jpg',
             fullImage: '/assets/deeptissue-massage-full.jpg',
-            description: 'Simillar to Swedish Massage, also known as Hard Massage but with a deeptissue massage, the therapist applies slow, firm pressure to release muscle tension. The focus is on the deepest layers of muscle tissue, tendons & fasia. Highly recommended for clients with body pains, aches',
+            description: 'Similar to Swedish Massage, also known as Hard Massage but with a deeptissue massage, the therapist applies slow, firm pressure to release muscle tension. The focus is on the deepest layers of muscle tissue, tendons & fascia. Highly recommended for clients with body pains, aches',
             delay: 'delay-200',
         },
         {
@@ -143,14 +52,14 @@ const Services = () => {
             title: 'Erotic & Body to Body',
             image: '/assets/service3.jpg',
             fullImage: '/assets/erotic-massage-full.jpg',
-            description: 'Definetely the most Relaxing & Sensual Massage Session combining Erotic Soothing Touches & Body 2 body Sensual Techniques of Romance. Except its more gentle & affectionate with calm relaxing touches to arouse intimacy',
+            description: 'Definitely the most Relaxing & Sensual Massage Session combining Erotic Soothing Touches & Body 2 body Sensual Techniques of Romance. Except its more gentle & affectionate with calm relaxing touches to arouse intimacy',
             delay: 'delay-100',
         },
         {
             title: 'Xclusive Sessions',
             image: '/assets/service5.jpg',
             fullImage: '/assets/xclusive-sessions-full.jpg',
-            description: 'The most sensual Erotically Satisfying Session due to the Pleasure it comes with combining B2b & Erotic Massage Techniques to arouse the Client in an immense Romantic Yoni | Tantric Feeling. Its\' inclusive of a Pack Of Extras',
+            description: 'The most sensual Erotically Satisfying Session due to the Pleasure it comes with combining B2b & Erotic Massage Techniques to arouse the Client in an immense Romantic Yoni | Tantric Feeling. It\'s inclusive of a Pack Of Extras',
             delay: 'delay-200',
         },
         {
@@ -181,6 +90,155 @@ const Services = () => {
             description: 'Out for a Massage Service? Planning for a 90mins | 120mins Session as a Mini Relaxation Package for the Girls Day Out. We\'ve got you covered! - Try these Massage sessions!',
             delay: 'delay-300',
         },
+        // 4-Hands Services
+        {
+            title: '4hands Essential Oils',
+            image: '/assets/4hands-essential-oils.jpg?v=3',
+            fullImage: '/assets/4hands-essential-oils.jpg?v=3',
+            description: 'Double the relaxation with two therapists using scented warm oils to heal mind, body, and soul. (300K)',
+            delay: 'delay-100',
+            needsCrop: true,
+        },
+        {
+            title: 'Kamasutra Session',
+            image: '/assets/kamasutra-session.jpg?v=3',
+            fullImage: '/assets/kamasutra-session.jpg?v=3',
+            description: 'Pure intimacy and control. A distinctive session involving deep body contact, warm oils, and inverse B2B techniques. (400K)',
+            delay: 'delay-200',
+            needsCrop: true,
+        },
+        {
+            title: '4hands Nuru | B2b',
+            image: '/assets/4hands-nuru-b2b.jpg?v=3',
+            fullImage: '/assets/4hands-nuru-b2b.jpg?v=3',
+            description: 'Experience pure arousal with two therapists. Sensual slides, sticky oils, and extreme body contact at its best. (450K)',
+            delay: 'delay-300',
+            needsCrop: true,
+        },
+        {
+            title: '4hands Full Service',
+            image: '/assets/4hands-full-service.jpg?v=3',
+            fullImage: '/assets/4hands-full-service.jpg?v=3',
+            description: 'Intense duo intimacy. Thighs, curves, and extreme contact with warm scented oils. Pure sensation. (650K)',
+            delay: 'delay-100',
+            needsCrop: true,
+        },
+        {
+            title: '4hands Tantra | Yoni',
+            image: '/assets/4hands-tantra-yoni.jpg?v=3',
+            fullImage: '/assets/4hands-tantra-yoni.jpg?v=3',
+            description: 'Deep tantric soothing and arousal. Two therapists focus on intimate detail and pure sensation for ultimate release. (750K)',
+            delay: 'delay-200',
+            needsCrop: true,
+        },
+        // 6-Hands & Scrubs
+        {
+            title: '6hands Swedish',
+            image: '/assets/6hands-swedish.jpg?v=3',
+            fullImage: '/assets/6hands-swedish.jpg?v=3',
+            description: 'Relaxation at its Peak. Get soothed like a Baby to refresh, stress relief & re-gain focus with three therapists. (300K)',
+            delay: 'delay-100',
+            needsCrop: true,
+        },
+        {
+            title: '6hands Erotic',
+            image: '/assets/6hands-erotic.jpg?v=3',
+            fullImage: '/assets/6hands-erotic.jpg?v=3',
+            description: 'Soothing beyond normal Erotic Sessions. Stimulate all sexual pleasures through intimate, romantic & teasing touches by three therapists. (450K)',
+            delay: 'delay-200',
+            needsCrop: true,
+        },
+        {
+            title: '6hands Full Service',
+            image: '/assets/6hands-full-service.jpg?v=3',
+            fullImage: '/assets/6hands-full-service.jpg?v=3',
+            description: 'Combining B2b, Erotic & Aromatherapy. Unique pleasure using thighs, breasts, lips with extra body contact from three therapists. (900K)',
+            delay: 'delay-300',
+            needsCrop: true,
+        },
+        {
+            title: '6hands Kamasutra',
+            image: '/assets/6hands-kamasutra.jpg?v=3',
+            fullImage: '/assets/6hands-kamasutra.jpg?v=3',
+            description: 'Pure Romance, Erotic, and Tantric practices. Maximise the session with three therapists using extra full body contact. (1.2M)',
+            delay: 'delay-100',
+            needsCrop: true,
+        },
+        {
+            title: 'Body Scrubs',
+            image: '/assets/body-scrubs.jpg?v=3',
+            fullImage: '/assets/body-scrubs.jpg?v=3',
+            description: 'Coffee, Salt-Based, or Moisturizing scrubs rubbed onto skin to peel dead tissue, soothing and renewing skin to full potential. (150K)',
+            delay: 'delay-200',
+            needsCrop: true,
+        },
+        // New Services: Sports, Signature, Body Care, Nuru, Hotstone
+        {
+            title: 'Sports Massage',
+            image: '/assets/sports-massage.jpg?v=3',
+            fullImage: '/assets/sports-massage.jpg?v=3',
+            description: 'More effective than Deep Tissue. Focuses on pain relief, muscle tension, and flexibility using stretching, rolling, kneading & joint cracking. (150K)',
+            delay: 'delay-100',
+            needsCrop: true,
+        },
+        {
+            title: 'Signature Massage',
+            image: '/assets/signature-massage.jpg?v=3',
+            fullImage: '/assets/signature-massage.jpg?v=3',
+            description: 'The most relaxing and pleasing session combining Aroma, Swedish & Deep Tissue techniques for ultimate stress relief and relaxation therapy. (150K)',
+            delay: 'delay-200',
+            needsCrop: true,
+        },
+        {
+            title: 'Hotstone Massage',
+            image: '/assets/hotstone-massage.jpg?v=4',
+            fullImage: '/assets/hotstone-massage.jpg?v=4',
+            description: 'Stone Therapy involving placement of heated basalt river rocks on the body. Allows deeper pressure without discomfort, increasing blood flow and healing. (200K)',
+            delay: 'delay-300',
+            needsCrop: true,
+        },
+        {
+            title: 'B2b Nuru Massage',
+            image: '/assets/b2b-nuru-massage.jpg?v=3',
+            fullImage: '/assets/b2b-nuru-massage.jpg?v=3',
+            description: 'Sensual massage using oiled body techniques (Breasts, Thighs) to arouse sexual feeling and intimacy. Therapist fully nude. (200K)',
+            delay: 'delay-100',
+            needsCrop: true,
+        },
+        {
+            title: 'Body Care Package',
+            image: '/assets/body-care-package.jpg?v=3',
+            fullImage: '/assets/body-care-package.jpg?v=3',
+            description: 'Pedicure, Manicure, Full Body Waxing, Warm Towel & Relaxing Massage. Refresh, rewind & cleanse yourself in one session. (200K)',
+            delay: 'delay-200',
+            needsCrop: true,
+        },
+        // Latest Additions: Couples, Full Service Pack, Tantra
+        {
+            title: 'Couples Massage',
+            image: '/assets/couples-massage-flyer.jpg?v=4',
+            fullImage: '/assets/couples-massage-flyer.jpg?v=4',
+            description: 'Shared experience for two. Erotic/Swedish with 2 girls or 1 girl & 1 guy. A life time adventure creating memories forever. (250K)',
+            delay: 'delay-300',
+            needsCrop: true,
+        },
+        {
+            title: 'Full Service Pack',
+            image: '/assets/full-service-pack.jpg?v=4',
+            fullImage: '/assets/full-service-pack.jpg?v=4',
+            description: 'The most Sensual Erotically Satisfying Session. Combines B2b & Erotic Massage. Complete pack inclusive of Extra Services for immense Romantic Tantra Mood. (300K)',
+            delay: 'delay-100',
+            needsCrop: true,
+        },
+        {
+            title: 'Tantra Massage',
+            image: '/assets/tantra-massage-flyer.jpg?v=4',
+            fullImage: '/assets/tantra-massage-flyer.jpg?v=4',
+            description: 'Tantric Sex Practice Massage. Intensely teases client into Sensual Feeling. Therapist uses Breasts, Thighs & Soothing Hands. Not about one Orgasm but More Pleasure. (350K)',
+            delay: 'delay-200',
+            needsCrop: true,
+        },
+        // Packs (Image Only)
         {
             title: 'Affluent Body Care Pack',
             image: '/assets/affluent-collage.jpg',
@@ -211,8 +269,8 @@ const Services = () => {
         <section id="services" className="section-padding" style={{ backgroundColor: 'var(--color-secondary)' }}>
             <div className="container">
                 <div style={{ textAlign: 'center', marginBottom: '4rem' }}>
-                    <h2 ref={headerRef} className="animate-on-scroll" style={{ fontSize: '3rem', marginBottom: '1rem' }}>Our Services</h2>
-                    <p style={{ maxWidth: '600px', margin: '0 auto', color: 'var(--color-text-light)' }}>
+                    <h2 className="gradient-text scroll-reveal" style={{ fontSize: '3rem', marginBottom: '1rem' }}>Our Services</h2>
+                    <p className="scroll-reveal delay-200" style={{ maxWidth: '600px', margin: '0 auto', color: 'var(--color-text-light)' }}>
                         Indulge in our wide range of premium spa treatments designed to relax, renew, and revive.
                     </p>
                 </div>
@@ -224,12 +282,12 @@ const Services = () => {
                         gap: '2rem',
                     }}
                 >
-                    {services.map((service, index) => (
+                    {services.map((service) => (
                         <ServiceCard
-                            key={index}
+                            key={service.title}
                             {...service}
                             onLearnMore={() => openModal(service.fullImage, service.title)}
-                            showBookNow={index < 9}
+                            showBookNow={true}
                             onBookNow={() => handleBookNow(service.title)}
                         />
                     ))}

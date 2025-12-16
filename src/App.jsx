@@ -4,6 +4,7 @@ import Navbar from './components/Navbar';
 import DualHero from './components/DualHero';
 import SpaPage from './components/SpaPage';
 import HotelPage from './components/HotelPage';
+import HotelRoomsPage from './components/HotelRoomsPage';
 import Services from './components/Services';
 import Branches from './components/Branches';
 import Gallery from './components/Gallery';
@@ -33,8 +34,12 @@ function AppContent() {
         <Route path="/spa/booking" element={<Booking businessType="spa" />} />
 
         {/* Hotel Routes */}
+        {/* Hotel Routes */}
         <Route path="/hotel" element={<HotelPage />} />
+        <Route path="/hotel/rooms" element={<HotelRoomsPage />} />
         <Route path="/hotel/booking" element={<Booking businessType="hotel" />} />
+
+
 
         {/* Legacy routes (redirect to spa for backward compatibility) */}
         <Route path="/services" element={

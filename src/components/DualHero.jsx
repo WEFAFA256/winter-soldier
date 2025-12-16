@@ -11,8 +11,8 @@ const DualHero = ({ onBusinessChange }) => {
         '/assets/hotel-slide-3.jpg',
         '/assets/spa-slide-3.jpg'
     ];
-    // Clone first image for loop
-    const extendedImages = [...originalImages, originalImages[0]];
+    // No need for extended images for fade effect
+    const extendedImages = originalImages;
 
     // Slider State
     const [currentIndex, setCurrentIndex] = useState(0);
@@ -79,22 +79,13 @@ const DualHero = ({ onBusinessChange }) => {
         };
     }, []);
 
-    // Handle Infinite Loop Reset
+    // Cyclic reset handled naturally by modulo in rendering if we wanted, 
+    // but here we just increment. To prevent integer overflow eventuall (unlikely but clean), reset.
     useEffect(() => {
-        if (currentIndex === originalImages.length) {
-            const timeout = setTimeout(() => {
-                setIsTransitioning(false);
-                setCurrentIndex(0);
-            }, 1000); // 1s matches CSS transition
-            return () => clearTimeout(timeout);
-        } else if (currentIndex === 0 && !isTransitioning) {
-            requestAnimationFrame(() => {
-                requestAnimationFrame(() => {
-                    setIsTransitioning(true);
-                });
-            });
+        if (currentIndex >= originalImages.length) {
+            setCurrentIndex(0);
         }
-    }, [currentIndex, isTransitioning, originalImages.length]);
+    }, [currentIndex]);
 
     // Update Business Type based on index
     useEffect(() => {
@@ -147,73 +138,36 @@ const DualHero = ({ onBusinessChange }) => {
             {/* Background Slideshow - Slider Track */}
             <div style={{ position: 'relative', width: '100%' }}>
 
-                <style>
-                    {`
-                        .hero-slider-track {
-                            display: flex;
-                            width: 100%;
-                        }
-                        
-                        .hero-bg-image {
-                            width: 100%;
-                            min-width: 100%;
-                            height: auto;
-                            display: block;
-                            backface-visibility: hidden;
-                            transform: translateZ(0) scale(1);
-                            image-rendering: high-quality;
-                            object-position: center 75%; /* Reveal lower details */
-                            transition: transform 7s ease-out;
-                        }
-                        
-                        .hero-bg-image.active-slide {
-                            transform: translateZ(0) scale(1.1);
-                        }
-
-                        /* Mobile Fix */
-                        @media (max-width: 768px) {
-                            .hero-bg-image {
-                                height: 85vh !important;
-                                object-fit: cover;
-                                min-height: 500px;
-                            }
-                        }
-
-                        @keyframes simpleFadeIn {
-                            from { opacity: 0; }
-                            to { opacity: 1; }
-                        }
-                        
-                        @keyframes simpleFadeOut {
-                            from { opacity: 1; }
-                            to { opacity: 0; }
-                        }
-                    `}
-                </style>
-
-                {/* Top Gradient Overlay */}
-                <div style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    width: '100%',
-                    height: '30%',
-                    background: 'linear-gradient(to bottom, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0) 100%)',
-                    zIndex: 1
-                }}></div>
-
-                {/* Slider Window */}
-                <div className="hero-slider-track" style={{
-                    transform: `translateX(-${currentIndex * 100}%)`,
-                    transition: isTransitioning ? 'transform 1s ease-in-out' : 'none'
-                }}>
+                {/* Content Container - Absolute Overlay */}
+                <div style={{ position: 'relative', width: '100%', height: '100vh' }}>
                     {extendedImages.map((imgSrc, index) => (
-                        <img
+                        <div
                             key={index}
-                            src={imgSrc}
-                            alt={`Slide ${index}`}
-                            className={`hero-bg-image ${index === currentIndex && isMounted ? 'active-slide' : ''}`}
-                        />
+                            className={`hero-bg-image ${index === currentIndex ? 'active' : ''}`}
+                            style={{
+                                position: 'absolute',
+                                top: 0,
+                                left: 0,
+                                width: '100%',
+                                height: '100%',
+                                opacity: index === currentIndex ? 1 : 0,
+                                transition: 'opacity 1.5s ease-in-out',
+                                zIndex: index === currentIndex ? 0 : -1
+                            }}
+                        >
+                            <img
+                                src={imgSrc}
+                                alt={`Slide ${index}`}
+                                style={{
+                                    width: '100%',
+                                    height: '100%',
+                                    objectFit: 'cover',
+                                    objectPosition: 'center 75%',
+                                    transform: index === currentIndex ? 'scale(1.05)' : 'scale(1)',
+                                    transition: 'transform 6s ease-out'
+                                }}
+                            />
+                        </div>
                     ))}
                 </div>
             </div>

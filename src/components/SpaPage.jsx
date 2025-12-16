@@ -4,6 +4,7 @@ import Services from './Services';
 import Gallery from './Gallery';
 import Contact from './Contact';
 import PriceList from './PriceList';
+import { useScrollReveal } from '../hooks/useAnimations';
 
 const SpaPage = () => {
     // Slideshow State
@@ -50,6 +51,9 @@ const SpaPage = () => {
         }
     }, [currentIndex, isTransitioning, originalImages.length]);
 
+    // Initialize scroll reveal animations
+    useScrollReveal();
+
     return (
         <div>
             {/* Spa Hero Section */}
@@ -66,7 +70,8 @@ const SpaPage = () => {
                             
                             .hero-bg-image {
                                 width: 100%;
-                                min-width: 100%; /* Force 1 item per slide */
+                                min-width: 100%;
+                                flex-shrink: 0; /* Prevent shrinking */
                                 height: auto;
                                 display: block;
                                 min-height: 600px;
@@ -131,23 +136,23 @@ const SpaPage = () => {
                     }}
                 >
                     <div className="container">
-                        <h1 style={{
+                        <h1 className="gradient-text animate-fade-in-down" style={{
                             fontSize: 'clamp(2.5rem, 5vw, 4rem)',
                             marginBottom: '1rem',
-                            fontFamily: '"Times New Roman", Times, serif',
-                            color: '#005C53' // Deep Teal Green
+                            fontFamily: '"Times New Roman", Times, serif'
                         }}>
                             THE SERENITY SPA
                         </h1>
-                        <p style={{ fontSize: '1.5rem', fontStyle: 'italic', marginBottom: '0.5rem' }}>
+                        <p className="animate-fade-in-up delay-200" style={{ fontSize: '1.5rem', fontStyle: 'italic', marginBottom: '0.5rem' }}>
                             Your Oasis of Relaxation
                         </p>
-                        <p style={{ fontSize: '1.1rem', opacity: 0.9 }}>
+                        <p className="animate-fade-in-up delay-300" style={{ fontSize: '1.1rem', opacity: 0.9 }}>
                             📍 Makerere, Kampala
                         </p>
-                        <div style={{ marginTop: '2rem' }}>
+                        <div className="animate-scale-in delay-400" style={{ marginTop: '2rem' }}>
                             <Link
-                                to="/spa/booking"
+                                to="/spa/services"
+                                className="magnetic"
                                 style={{
                                     padding: '1rem 2.5rem',
                                     backgroundColor: '#ffffff',
@@ -168,14 +173,14 @@ const SpaPage = () => {
                         </div>
                     </div>
                 </div>
-            </section>
+            </section >
 
             {/* Price List */}
-            <PriceList />
+            < PriceList />
 
             {/* Contact */}
-            <Contact />
-        </div>
+            < Contact />
+        </div >
     );
 };
 

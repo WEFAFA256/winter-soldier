@@ -37,24 +37,27 @@ const Navbar = ({ homePageBusiness = 'spa' }) => {
     };
 
     // Dynamic navigation links based on section
-    const links = isHotelSection ? [
+    const links = isHome ? [
+        { name: 'Home', path: '/' },
+        { name: 'Spa', path: '/spa' },
+        { name: 'Hotel', path: '/hotel' }
+    ] : (isHotelSection) ? [
         { name: 'Home', path: '/' },
         { name: 'Hotel', path: '/hotel' },
-        { name: 'Rooms', path: '/hotel#rooms' },
-        { name: 'Book Stay', path: '/hotel/booking' },
+        { name: 'Rooms', path: '/hotel/rooms' },
         { name: 'Spa', path: '/spa' }
     ] : isSpaSection ? [
         { name: 'Home', path: '/' },
         { name: 'Spa', path: '/spa' },
         { name: 'Services', path: '/spa/services' },
         { name: 'Gallery', path: '/spa/gallery' },
-        { name: 'Book Service', path: '/spa/booking' },
         { name: 'Hotel', path: '/hotel' }
     ] : [
         { name: 'Home', path: '/' },
         { name: 'Spa', path: '/spa' },
         { name: 'Hotel', path: '/hotel' }
     ];
+
 
     const [sidebarOpen, setSidebarOpen] = useState(false);
 

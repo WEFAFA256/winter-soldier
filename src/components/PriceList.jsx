@@ -4,9 +4,13 @@ import price2 from '../assets/pricelist/price2.jpg';
 import price3 from '../assets/pricelist/price3.jpg';
 import price4 from '../assets/pricelist/price4.jpg';
 import price5 from '../assets/pricelist/price5.jpg';
+import price6 from '../assets/pricelist/price6.jpg';
+import price7 from '../assets/pricelist/price7.jpg';
+import price8 from '../assets/pricelist/price8.jpg';
+import price9 from '../assets/pricelist/price9.jpg';
 
 const PriceList = () => {
-    const images = [price1, price2, price3, price4, price5];
+    const images = [price1, price2, price3, price4, price5, price6, price7, price8, price9];
     const [currentIndex, setCurrentIndex] = useState(0);
 
     useEffect(() => {

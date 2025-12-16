@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import QRCodeModal from './QRCodeModal';
 
-const Booking = () => {
+const Booking = ({ businessType = 'spa' }) => {
     const location = useLocation();
     const navigate = useNavigate();
     const [currentStep, setCurrentStep] = useState(1);
@@ -21,20 +21,68 @@ const Booking = () => {
         bookingMethod: 'whatsapp'
     });
 
-    // Service pricing (you can adjust these)
-    const servicePricing = {
-        'Swedish Massage': 150000,
-        'Deeptissue Massage': 180000,
-        'Aromatherapy': 200000,
-        'Erotic & Body to Body': 250000,
-        'Xclusive Sessions': 300000,
-        'Turkish Bath Packages': 350000,
-        'Body Care Packages': 400000,
-        'Couples | Duo Packages': 450000,
-        'Womens\' Packages': 250000
+    const isHotel = businessType === 'hotel';
+
+    const branding = isHotel ? {
+        name: 'The Marina Stays',
+        color: '#8B4513',
+        secondaryColor: '#D2691E',
+        backgroundColor: '#F5F5DC', // Beige/Cream
+        lightColor: '#e6cbb3', // Light brown for accents
+        title: 'Book Your Stay',
+        subTitle: 'Reserve your luxury accommodation today',
+        welcomeTitle: 'Welcome to The Marina Stays',
+        welcomeText: 'Experience luxury accommodation with stunning views and world-class amenities.',
+        serviceLabel: 'Room Type',
+        dateLabel: 'Check-in Date',
+        timeLabel: 'Arrival Time',
+        image1: '/assets/hotel-slide-3.jpg',
+        image2: '/assets/hotel-hero-bg-2.jpg',
+        image3: '/assets/hotel-bg.jpg',
+        pricing: {
+            'Economy Stay': 110000,
+            'Deluxe Queen': 295000,
+            'Deluxe Twinbed': 370000,
+            'Penthouse Deluxe': 480000
+        },
+        marketingText: 'Luxury rooms • 24/7 Service • Best Views',
+        emailSubject: 'Hotel Booking Request',
+        contactEmail: 'reservations@marinastays.com'
+    } : {
+        name: 'The Serenity Spa',
+        color: 'var(--color-primary)',
+        secondaryColor: 'var(--color-secondary)',
+        backgroundColor: '#d4ecec',
+        lightColor: '#f0f9f9',
+        title: 'Book Your Appointment',
+        subTitle: 'Complete the steps below to reserve your relaxation session',
+        welcomeTitle: 'Welcome to Serenity Spa',
+        welcomeText: 'Your journey to ultimate relaxation begins here. We\'re excited to serve you!',
+        serviceLabel: 'Selected Service',
+        dateLabel: 'Preferred Date',
+        timeLabel: 'Preferred Time',
+        image1: 'https://images.unsplash.com/photo-1600334129128-685c5582fd35?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+        image2: 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+        image3: 'https://images.unsplash.com/photo-1544161515-4ab6ce6db874?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+        pricing: {
+            'Swedish Massage': 150000,
+            'Deeptissue Massage': 180000,
+            'Aromatherapy': 200000,
+            'Erotic & Body to Body': 250000,
+            'Xclusive Sessions': 300000,
+            'Turkish Bath Packages': 350000,
+            'Body Care Packages': 400000,
+            'Couples | Duo Packages': 450000,
+            'Womens\' Packages': 250000
+        },
+        marketingText: 'Available 24/7 • Professional therapists • Premium experience',
+        emailSubject: 'Spa Booking Request',
+        contactEmail: 'hello@serenityspa.com'
     };
 
-    const servicePrice = servicePricing[formData.serviceType] || 150000;
+    const servicePrice = branding.pricing[formData.serviceType] || (isHotel ? 100000 : 150000);
+
+
 
     useEffect(() => {
         window.scrollTo(0, 0);
@@ -132,7 +180,7 @@ const Booking = () => {
                     phoneNumber: formData.phone,
                     email: formData.email,
                     name: formData.name,
-                    description: `${formData.serviceType} - Serenity Spa`,
+                    description: `${branding.serviceLabel}: ${formData.serviceType} - ${branding.name}`,
                 })
             });
 
@@ -159,15 +207,15 @@ const Booking = () => {
     };
 
     const sendBookingConfirmation = (status) => {
-        const message = `*New Booking Request*\\n\\nBooking ID: ${bookingId}\\nService: ${formData.serviceType}\\nAmount: UGX ${servicePrice.toLocaleString()}\\nPayment Status: ${status}\\nName: ${formData.name}\\nEmail: ${formData.email}\\nPhone: ${formData.phone}\\nDate: ${formData.date}\\nTime: ${formData.time}\\nSpecial Requests: ${formData.specialRequests || 'None'}`;
+        const message = `*New Booking Request*\\n\\nBooking ID: ${bookingId}\\n${branding.serviceLabel}: ${formData.serviceType}\\nAmount: UGX ${servicePrice.toLocaleString()}\\nPayment Status: ${status}\\nName: ${formData.name}\\nEmail: ${formData.email}\\nPhone: ${formData.phone}\\nDate: ${formData.date}\\nTime: ${formData.time}\\nSpecial Requests: ${formData.specialRequests || 'None'}`;
 
         if (formData.bookingMethod === 'whatsapp') {
             const encodedMessage = encodeURIComponent(message);
             window.open(`https://wa.me/256764001922?text=${encodedMessage}`, '_blank');
         } else {
-            const emailSubject = encodeURIComponent('Spa Booking Request');
+            const emailSubject = encodeURIComponent(branding.emailSubject);
             const emailBody = encodeURIComponent(message);
-            window.location.href = `mailto:hello@serenityspa.com?subject=${emailSubject}&body=${emailBody}`;
+            window.location.href = `mailto:${branding.contactEmail}?subject=${emailSubject}&body=${emailBody}`;
         }
     };
 
@@ -197,7 +245,7 @@ const Booking = () => {
     return (
         <div style={{
             minHeight: '100vh',
-            backgroundColor: '#d4ecec',
+            backgroundColor: branding.backgroundColor,
             paddingTop: '100px',
             paddingBottom: '4rem',
         }}>
@@ -208,15 +256,15 @@ const Booking = () => {
                         fontSize: '3rem',
                         marginBottom: '1rem',
                         fontFamily: '"Times New Roman", Times, serif',
-                        color: 'var(--color-primary)'
+                        color: branding.color
                     }}>
-                        Book Your Appointment
+                        {branding.title}
                     </h1>
                     <p style={{
                         fontSize: '1.1rem',
                         color: 'var(--color-text-light)'
                     }}>
-                        Complete the steps below to reserve your relaxation session
+                        {branding.subTitle}
                     </p>
                 </div>
 
@@ -235,14 +283,14 @@ const Booking = () => {
                                 width: '50px',
                                 height: '50px',
                                 borderRadius: '50%',
-                                backgroundColor: currentStep >= step ? 'var(--color-primary)' : '#fff',
-                                color: currentStep >= step ? '#fff' : 'var(--color-primary)',
+                                backgroundColor: currentStep >= step ? branding.color : '#fff',
+                                color: currentStep >= step ? '#fff' : branding.color,
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
                                 fontSize: '1.5rem',
                                 fontWeight: 'bold',
-                                border: '3px solid var(--color-primary)',
+                                border: `3px solid ${branding.color}`,
                                 transition: 'all 0.3s ease'
                             }}>
                                 {step}
@@ -251,7 +299,7 @@ const Booking = () => {
                                 <div style={{
                                     width: '60px',
                                     height: '3px',
-                                    backgroundColor: currentStep > step ? 'var(--color-primary)' : '#ccc',
+                                    backgroundColor: currentStep > step ? branding.color : '#ccc',
                                     transition: 'all 0.3s ease'
                                 }} />
                             )}
@@ -332,8 +380,8 @@ const Booking = () => {
                                                 boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
                                             }}
                                             onFocus={(e) => {
-                                                e.target.style.borderColor = 'var(--color-primary)';
-                                                e.target.style.boxShadow = '0 4px 8px rgba(26, 87, 87, 0.15)';
+                                                e.target.style.borderColor = branding.color;
+                                                e.target.style.boxShadow = `0 4px 8px ${branding.color}33`;
                                             }}
                                             onBlur={(e) => {
                                                 e.target.style.borderColor = '#ddd';
@@ -363,8 +411,8 @@ const Booking = () => {
                                                 boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
                                             }}
                                             onFocus={(e) => {
-                                                e.target.style.borderColor = 'var(--color-primary)';
-                                                e.target.style.boxShadow = '0 4px 8px rgba(26, 87, 87, 0.15)';
+                                                e.target.style.borderColor = branding.color;
+                                                e.target.style.boxShadow = `0 4px 8px ${branding.color}33`;
                                             }}
                                             onBlur={(e) => {
                                                 e.target.style.borderColor = '#ddd';
@@ -394,8 +442,8 @@ const Booking = () => {
                                                 boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
                                             }}
                                             onFocus={(e) => {
-                                                e.target.style.borderColor = 'var(--color-primary)';
-                                                e.target.style.boxShadow = '0 4px 8px rgba(26, 87, 87, 0.15)';
+                                                e.target.style.borderColor = branding.color;
+                                                e.target.style.boxShadow = `0 4px 8px ${branding.color}33`;
                                             }}
                                             onBlur={(e) => {
                                                 e.target.style.borderColor = '#ddd';
@@ -406,7 +454,7 @@ const Booking = () => {
                                 </div>
                             </div>
                             <div style={{
-                                backgroundImage: 'url(https://images.unsplash.com/photo-1600334129128-685c5582fd35?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80)',
+                                backgroundImage: `url(${branding.image1})`,
                                 backgroundSize: 'cover',
                                 backgroundPosition: 'center',
                                 position: 'relative',
@@ -427,17 +475,17 @@ const Booking = () => {
                                 }}>
                                     <h3 style={{
                                         marginBottom: '0.5rem',
-                                        color: 'var(--color-primary)',
+                                        color: branding.color,
                                         fontSize: '1.3rem'
                                     }}>
-                                        Welcome to Serenity Spa
+                                        {branding.welcomeTitle}
                                     </h3>
                                     <p style={{
                                         margin: 0,
                                         color: 'var(--color-text-light)',
                                         fontSize: '0.95rem'
                                     }}>
-                                        Your journey to ultimate relaxation begins here. We're excited to serve you!
+                                        {branding.welcomeText}
                                     </p>
                                 </div>
                             </div>
@@ -487,16 +535,16 @@ const Booking = () => {
                                     padding: '1rem',
                                     borderRadius: '8px',
                                     marginBottom: '2rem',
-                                    border: '2px solid var(--color-accent)'
+                                    border: `2px solid ${branding.color}66`
                                 }}>
-                                    <p style={{ fontWeight: '600', color: 'var(--color-primary)' }}>
-                                        Selected Service: {formData.serviceType}
+                                    <p style={{ fontWeight: '600', color: branding.color }}>
+                                        {branding.serviceLabel}: {formData.serviceType}
                                     </p>
                                 </div>
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
                                     <div>
                                         <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
-                                            Preferred Date *
+                                            {branding.dateLabel} *
                                         </label>
                                         <input
                                             type="date"
@@ -514,13 +562,13 @@ const Booking = () => {
                                                 fontFamily: 'inherit',
                                                 transition: 'border-color 0.3s ease'
                                             }}
-                                            onFocus={(e) => e.target.style.borderColor = 'var(--color-primary)'}
+                                            onFocus={(e) => e.target.style.borderColor = branding.color}
                                             onBlur={(e) => e.target.style.borderColor = '#ddd'}
                                         />
                                     </div>
                                     <div>
                                         <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
-                                            Preferred Time *
+                                            {branding.timeLabel} *
                                         </label>
                                         <input
                                             type="time"
@@ -537,7 +585,7 @@ const Booking = () => {
                                                 fontFamily: 'inherit',
                                                 transition: 'border-color 0.3s ease'
                                             }}
-                                            onFocus={(e) => e.target.style.borderColor = 'var(--color-primary)'}
+                                            onFocus={(e) => e.target.style.borderColor = branding.color}
                                             onBlur={(e) => e.target.style.borderColor = '#ddd'}
                                         />
                                     </div>
@@ -561,14 +609,14 @@ const Booking = () => {
                                                 resize: 'vertical',
                                                 transition: 'border-color 0.3s ease'
                                             }}
-                                            onFocus={(e) => e.target.style.borderColor = 'var(--color-primary)'}
+                                            onFocus={(e) => e.target.style.borderColor = branding.color}
                                             onBlur={(e) => e.target.style.borderColor = '#ddd'}
                                         />
                                     </div>
                                 </div>
                             </div>
                             <div style={{
-                                backgroundImage: 'url(https://images.unsplash.com/photo-1540555700478-4be289fbecef?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80)',
+                                backgroundImage: `url(${branding.image2})`,
                                 backgroundSize: 'cover',
                                 backgroundPosition: 'center',
                                 position: 'relative',
@@ -589,7 +637,7 @@ const Booking = () => {
                                 }}>
                                     <h3 style={{
                                         marginBottom: '0.5rem',
-                                        color: 'var(--color-primary)',
+                                        color: branding.color,
                                         fontSize: '1.3rem'
                                     }}>
                                         {formData.serviceType}
@@ -599,7 +647,7 @@ const Booking = () => {
                                         color: 'var(--color-text-light)',
                                         fontSize: '0.95rem'
                                     }}>
-                                        Available 24/7 • Professional therapists • Premium experience
+                                        {branding.marketingText}
                                     </p>
                                 </div>
                             </div>
@@ -651,11 +699,11 @@ const Booking = () => {
                                     padding: '1.5rem',
                                     borderRadius: '8px',
                                     marginBottom: '2rem',
-                                    border: '2px solid var(--color-accent)'
+                                    border: `2px solid ${branding.color}66`
                                 }}>
-                                    <h3 style={{ marginBottom: '1rem', color: 'var(--color-primary)' }}>Booking Summary</h3>
+                                    <h3 style={{ marginBottom: '1rem', color: branding.color }}>Booking Summary</h3>
                                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                                        <p><strong>Service:</strong> {formData.serviceType}</p>
+                                        <p><strong>{branding.serviceLabel}:</strong> {formData.serviceType}</p>
                                         <p><strong>Name:</strong> {formData.name}</p>
                                         <p><strong>Email:</strong> {formData.email}</p>
                                         <p><strong>Phone:</strong> {formData.phone}</p>
@@ -675,10 +723,10 @@ const Booking = () => {
                                             alignItems: 'center',
                                             padding: '1rem',
                                             border: '2px solid',
-                                            borderColor: formData.bookingMethod === 'whatsapp' ? 'var(--color-primary)' : '#ddd',
+                                            borderColor: formData.bookingMethod === 'whatsapp' ? branding.color : '#ddd',
                                             borderRadius: '8px',
                                             cursor: 'pointer',
-                                            backgroundColor: formData.bookingMethod === 'whatsapp' ? '#f0f9f9' : 'transparent',
+                                            backgroundColor: formData.bookingMethod === 'whatsapp' ? branding.lightColor : 'transparent',
                                             transition: 'all 0.3s ease'
                                         }}>
                                             <input
@@ -702,10 +750,10 @@ const Booking = () => {
                                             alignItems: 'center',
                                             padding: '1rem',
                                             border: '2px solid',
-                                            borderColor: formData.bookingMethod === 'email' ? 'var(--color-primary)' : '#ddd',
+                                            borderColor: formData.bookingMethod === 'email' ? branding.color : '#ddd',
                                             borderRadius: '8px',
                                             cursor: 'pointer',
-                                            backgroundColor: formData.bookingMethod === 'email' ? '#f0f9f9' : 'transparent',
+                                            backgroundColor: formData.bookingMethod === 'email' ? branding.lightColor : 'transparent',
                                             transition: 'all 0.3s ease'
                                         }}>
                                             <input
@@ -728,7 +776,7 @@ const Booking = () => {
                                 </div>
                             </div>
                             <div style={{
-                                backgroundImage: 'url(https://images.unsplash.com/photo-1544161515-4ab6ce6db874?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80)',
+                                backgroundImage: `url(${branding.image3})`,
                                 backgroundSize: 'cover',
                                 backgroundPosition: 'center',
                                 position: 'relative',
@@ -781,13 +829,13 @@ const Booking = () => {
                             style={{
                                 padding: '1rem 2rem',
                                 fontSize: '1.1rem',
-                                border: '2px solid var(--color-primary)',
+                                border: `2px solid ${branding.color}`,
                                 borderRadius: '8px',
                                 cursor: 'pointer',
                                 fontFamily: 'inherit',
                                 fontWeight: '600',
                                 backgroundColor: 'transparent',
-                                color: 'var(--color-primary)'
+                                color: branding.color
                             }}
                         >
                             ← Previous
