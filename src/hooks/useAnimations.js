@@ -28,7 +28,7 @@ export const useScrollReveal = (options = {}) => {
 
         // Observe all elements with scroll-reveal classes
         const elements = document.querySelectorAll(
-            '.scroll-reveal, .scroll-reveal-left, .scroll-reveal-right, .scroll-reveal-scale'
+            '.scroll-reveal, .scroll-reveal-left, .scroll-reveal-right, .scroll-reveal-scale, .scroll-reveal-float'
         );
 
         elements.forEach(el => observer.observe(el));

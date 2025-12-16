@@ -134,11 +134,15 @@ const HotelPage = () => {
                     }}
                 >
                     <div className="container">
-                        <h1 style={{
+                        <h1 className="typewriter-effect" style={{
                             fontSize: 'clamp(2.5rem, 5vw, 4rem)',
                             marginBottom: '1rem',
                             fontFamily: '"Times New Roman", Times, serif',
-                            color: '#8B4513' // Apply Brown ONLY to Heading
+                            color: '#8B4513',
+                            borderRightColor: '#8B4513', // Override cursor color
+                            width: 'fit-content',
+                            marginLeft: 'auto',
+                            marginRight: 'auto'
                         }}>
                             THE MARINA STAYS
                         </h1>
@@ -179,11 +183,6 @@ const HotelPage = () => {
 
             {/* Hotel Price List */}
             <HotelPriceList />
-
-            {/* Rooms & Amenities */}
-
-
-
 
             {/* Hotel Specials */}
             <section style={{ padding: '5rem 0', backgroundColor: '#f5f5f5' }}>
@@ -233,7 +232,7 @@ const HotelPage = () => {
                         ].map((special, index) => (
                             <div
                                 key={index}
-                                className={`scroll-reveal-scale hover-lift delay-${(index + 3) * 100}`}
+                                className={`scroll-reveal-float hover-lift delay-${(index + 3) * 100}`}
                                 style={{
                                     backgroundColor: '#fff',
                                     borderRadius: '15px',
@@ -261,7 +260,7 @@ const HotelPage = () => {
                                     />
                                 </div>
                                 <div style={{ padding: '1.5rem' }}>
-                                    <h3 style={{ fontSize: '1.5rem', marginBottom: '0.5rem', color: '#8B4513' }}>
+                                    <h3 className="typewriter-scrolled" style={{ fontSize: '1.5rem', marginBottom: '0.5rem', color: '#8B4513' }}>
                                         {special.title}
                                     </h3>
                                     <p style={{ color: '#666', lineHeight: '1.6' }}>

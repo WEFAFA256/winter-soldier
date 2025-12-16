@@ -217,22 +217,54 @@ const DualHero = ({ onBusinessChange }) => {
                 </div>
 
                 {/* Business Name with Fade */}
-                <h1
-                    className={`business-name`}
-                    style={{
+                {/* Business Name with Typewriter Wrapper */}
+                <div style={{
+                    position: 'relative',
+                    display: 'inline-block',
+                    marginBottom: '1rem'
+                }}>
+                    {/* Invisible Spacer to set exact width */}
+                    <h1 style={{
                         fontSize: 'clamp(1.8rem, 5vw, 4rem)',
                         fontWeight: '800',
-                        color: content.color,
-                        marginBottom: '1rem',
                         fontFamily: '"Times New Roman", Times, serif',
                         letterSpacing: '2px',
-                        textShadow: 'none',
-                        opacity: textVisible ? 1 : 0,
-                        transition: 'opacity 0.5s ease-in-out'
-                    }}
-                >
-                    {content.name}
-                </h1>
+                        opacity: 0,
+                        margin: 0,
+                        padding: 0,
+                        pointerEvents: 'none',
+                        width: 'max-content' // Ensure it takes full width of text
+                    }}>
+                        {content.name}
+                    </h1>
+
+                    {/* Animated Overlay */}
+                    <h1
+                        key={content.name}
+                        className="typewriter-effect"
+                        style={{
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            width: '0',
+                            height: '100%',
+                            fontSize: 'clamp(1.8rem, 5vw, 4rem)',
+                            fontWeight: '800',
+                            color: content.color,
+                            fontFamily: '"Times New Roman", Times, serif',
+                            letterSpacing: '2px',
+                            textShadow: 'none',
+                            borderRightColor: content.color,
+                            margin: 0, // Reset margin
+                            padding: 0,
+                            animationDelay: '0.5s',
+                            opacity: textVisible ? 1 : 0,
+                            transition: 'opacity 0.5s ease-in-out'
+                        }}
+                    >
+                        {content.name}
+                    </h1>
+                </div>
 
                 {/* Tagline */}
                 <p
