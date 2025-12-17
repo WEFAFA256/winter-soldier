@@ -23,6 +23,18 @@ const Services = () => {
         navigate('/booking', { state: { serviceName } });
     };
 
+    // Handle hash scrolling
+    React.useEffect(() => {
+        if (location.hash) {
+            const element = document.getElementById(location.hash.replace('#', ''));
+            if (element) {
+                setTimeout(() => {
+                    element.scrollIntoView({ behavior: 'smooth' });
+                }, 100); // Small delay to ensure render
+            }
+        }
+    }, [location]);
+
     // Initialize scroll reveal animations
     useScrollReveal();
 
@@ -346,7 +358,7 @@ const Services = () => {
 
                 {/* VIP Services */}
                 {vipServices.length > 0 && (
-                    <div className="vip-section" style={{ marginTop: '5rem' }}>
+                    <div id="vip-section" className="vip-section" style={{ marginTop: '5rem' }}>
                         <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
                             <h2 className="gradient-text-gold scroll-reveal" style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>VIP & Exclusive Collections</h2>
                             <p className="scroll-reveal delay-200" style={{ maxWidth: '600px', margin: '0 auto', color: 'var(--color-text-light)' }}>

@@ -134,18 +134,47 @@ const HotelPage = () => {
                     }}
                 >
                     <div className="container">
-                        <h1 className="typewriter-effect" style={{
-                            fontSize: 'clamp(2.5rem, 5vw, 4rem)',
+                        <div style={{
+                            position: 'relative',
+                            display: 'inline-block',
                             marginBottom: '1rem',
-                            fontFamily: '"Times New Roman", Times, serif',
-                            color: '#8B4513',
-                            borderRightColor: '#8B4513', // Override cursor color
-                            width: 'fit-content',
-                            marginLeft: 'auto',
-                            marginRight: 'auto'
+                            maxWidth: '100%' // Ensure mobile fit
                         }}>
-                            THE MARINA STAYS
-                        </h1>
+                            {/* Invisible Spacer */}
+                            <h1 style={{
+                                fontSize: 'clamp(2rem, 5vw, 4rem)',
+                                marginBottom: '0',
+                                fontFamily: '"Times New Roman", Times, serif',
+                                color: '#8B4513',
+                                opacity: 0,
+                                margin: 0,
+                                padding: 0,
+                                pointerEvents: 'none',
+                                whiteSpace: 'nowrap' // Keep single line unless really small
+                            }}>
+                                THE MARINA STAYS
+                            </h1>
+                            {/* Animated Overlay */}
+                            <h1 className="typewriter-effect" style={{
+                                position: 'absolute',
+                                top: 0,
+                                left: 0,
+                                width: '0',
+                                height: '100%',
+                                fontSize: 'clamp(2rem, 5vw, 4rem)',
+                                marginBottom: '0',
+                                fontFamily: '"Times New Roman", Times, serif',
+                                color: '#8B4513',
+                                borderRightColor: '#8B4513',
+                                margin: 0,
+                                padding: 0,
+                                whiteSpace: 'nowrap',
+                                overflow: 'hidden'
+                            }}>
+                                THE MARINA STAYS
+                            </h1>
+                        </div>
+
                         <p style={{ fontSize: '1.5rem', fontStyle: 'italic', marginBottom: '0.5rem' }}>
                             Entebbe's Premier Residences
                         </p>

@@ -1336,3 +1336,44 @@ img {
     hideCursor 0.1s linear 2.5s forwards;
 }
 
+
+/* Flashy Gold Pulse for VIP Button */
+@keyframes goldPulse {
+  0% { box-shadow: 0 0 0 0 rgba(197, 160, 89, 0.7); transformer: scale(1); }
+  70% { box-shadow: 0 0 0 15px rgba(197, 160, 89, 0); transformer: scale(1.05); }
+  100% { box-shadow: 0 0 0 0 rgba(197, 160, 89, 0); transformer: scale(1); }
+}
+
+.animate-pulse-gold {
+  animation: goldPulse 2s infinite;
+}
+
+.btn-vip-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-vip-shimmer::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(120deg, transparent, rgba(255,255,255,0.4), transparent);
+  transition: all 0.6s;
+}
+
+.btn-vip-shimmer:hover::after {
+  left: 100%;
+  transition: 0.6s; 
+  /* Or make it auto run? */
+  animation: shimmerRun 3s infinite;
+}
+
+@keyframes shimmerRun {
+  0% { left: -100%; }
+  20% { left: 100%; }
+  100% { left: 100%; }
+}
+

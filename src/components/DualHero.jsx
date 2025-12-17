@@ -275,8 +275,9 @@ const DualHero = ({ onBusinessChange }) => {
                         color: '#ffffff',
                         textShadow: '0 2px 4px rgba(0,0,0,0.5)',
                         opacity: textVisible ? 1 : 0,
-                        transition: 'opacity 0.5s ease-in-out',
-                        transitionDelay: '0.1s'
+                        transform: textVisible ? 'translateX(0)' : 'translateX(-50px)',
+                        transition: 'opacity 0.8s ease-in-out, transform 0.8s ease-out',
+                        transitionDelay: '0.2s'
                     }}
                 >
                     {content.tagline}
@@ -289,8 +290,9 @@ const DualHero = ({ onBusinessChange }) => {
                         color: '#f0f0f0',
                         fontSize: '1.1rem',
                         opacity: textVisible ? 1 : 0,
-                        transition: 'opacity 0.5s ease-in-out',
-                        transitionDelay: '0.2s'
+                        transform: textVisible ? 'translateX(0)' : 'translateX(-50px)',
+                        transition: 'opacity 0.8s ease-in-out, transform 0.8s ease-out',
+                        transitionDelay: '0.4s'
                     }}
                 >
                     📍 {content.location}
@@ -304,8 +306,9 @@ const DualHero = ({ onBusinessChange }) => {
                         flexWrap: 'wrap',
                         justifyContent: 'center',
                         opacity: textVisible ? 1 : 0,
-                        transition: 'opacity 0.5s ease-in-out',
-                        transitionDelay: '0.3s'
+                        transform: textVisible ? 'translateX(0)' : 'translateX(-50px)',
+                        transition: 'opacity 0.8s ease-in-out, transform 0.8s ease-out',
+                        transitionDelay: '0.6s'
                     }}
                 >
                     <Link

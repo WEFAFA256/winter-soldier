@@ -170,6 +170,35 @@ const SpaPage = () => {
                             >
                                 Book Spa Service
                             </Link>
+                            <Link
+                                to="/spa/services#vip-section"
+                                className="magnetic animate-pulse-gold"
+                                style={{
+                                    padding: '1rem 2.5rem',
+                                    backgroundColor: 'transparent',
+                                    color: '#ffffff',
+                                    border: '2px solid #C5A059',
+                                    borderRadius: '50px',
+                                    fontWeight: '600',
+                                    fontSize: '1.1rem',
+                                    textDecoration: 'none',
+                                    display: 'inline-block',
+                                    marginLeft: '1rem',
+                                    marginTop: '1rem', // Stack on mobile if needed
+                                    boxShadow: '0 5px 20px rgba(0, 0, 0, 0.2)',
+                                    transition: 'all 0.3s ease'
+                                }}
+                                onMouseEnter={(e) => {
+                                    e.target.style.transform = 'translateY(-3px)';
+                                    e.target.style.backgroundColor = '#C5A059';
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.target.style.transform = 'translateY(0)';
+                                    e.target.style.backgroundColor = 'transparent';
+                                }}
+                            >
+                                VIP Specials
+                            </Link>
                         </div>
                     </div>
                 </div>
