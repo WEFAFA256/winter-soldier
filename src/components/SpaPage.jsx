@@ -6,6 +6,8 @@ import Contact from './Contact';
 import PriceList from './PriceList';
 import { useScrollReveal } from '../hooks/useAnimations';
 
+import Reviews from './Reviews';
+
 const SpaPage = () => {
     // Slideshow State
     const originalImages = [
@@ -205,10 +207,13 @@ const SpaPage = () => {
             </section >
 
             {/* Price List */}
-            < PriceList />
+            <PriceList />
+
+            {/* Reviews */}
+            <Reviews type="spa" />
 
             {/* Contact */}
-            < Contact />
+            <Contact />
         </div >
     );
 };

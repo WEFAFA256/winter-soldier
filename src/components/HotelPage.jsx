@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import HotelPriceList from './HotelPriceList';
 import ServiceCard from './ServiceCard';
 import { useScrollReveal } from '../hooks/useAnimations';
+import Reviews from './Reviews';
 
 const HotelPage = () => {
     // Slideshow State
@@ -302,6 +303,9 @@ const HotelPage = () => {
                 </div>
             </section>
 
+
+            {/* Reviews */}
+            <Reviews type="hotel" />
 
             {/* Contact Info */}
             <section style={{ padding: '5rem 0', backgroundColor: '#8B4513', color: '#ffffff' }}>

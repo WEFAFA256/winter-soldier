@@ -35,47 +35,59 @@ const DualHero = ({ onBusinessChange }) => {
     }, []);
 
     // Timer triggers slide and text toggle
+    // Preload images
     useEffect(() => {
-        let textTimer;
+        originalImages.forEach((src) => {
+            const img = new Image();
+            img.src = src;
+        });
+    }, []);
+
+    useEffect(() => {
+        let fadeOutTimer;
+        let fadeInTimer;
 
         const interval = setInterval(() => {
             // 1. Start Text Fade Out
             setTextVisible(false);
 
-            // 2. Start Slide (after short delay for text to fade?) or immediately?
-            // Let's slide immediately. Text will fade out during slide.
-            setCurrentIndex(prev => prev + 1);
+            // 2. Wait for fade out
+            fadeOutTimer = setTimeout(() => {
+                setCurrentIndex(prev => prev + 1);
 
-            // 3. After slide/fade time, Text Fades In (driven by render change usually)
-            // But we need to toggle 'textVisible' back to true after content update.
-            // If slide takes 1s. Text Fade Out takes 0.5s.
-            // At 0.5s, update Content? No, Content updates when currentIndex changes (immediately).
-            // So if we change index, content flips.
-            // We want old text to fade out -> Flip Content -> New text fade in.
-            // To do this strictly: Fade Out -> (Wait) -> Change Index -> (Wait) -> Fade In.
-            // But Slider needs to move continuously?
-            // "Current image slides left as new slides in".
-            // So Slide happens. Text can Fade Out/In on top.
+                // 3. After slide/fade time, Text Fades In (driven by render change usually)
+                // But we need to toggle 'textVisible' back to true after content update.
+                // If slide takes 1s. Text Fade Out takes 0.5s.
+                // At 0.5s, update Content? No, Content updates when currentIndex changes (immediately).
+                // So if we change index, content flips.
+                // We want old text to fade out -> Flip Content -> New text fade in.
+                // To do this strictly: Fade Out -> (Wait) -> Change Index -> (Wait) -> Fade In.
+                // But Slider needs to move continuously?
+                // "Current image slides left as new slides in".
+                // So Slide happens. Text can Fade Out/In on top.
 
-            // Revised flow:
-            // T=0: setTextVisible(false). (Fade out old).
-            // T=0.5s: setCurrentIndex(+1). (Slide starts physically, content updates).
-            // T=0.6s: setTextVisible(true). (Fade in new).
-            // This ensures text is hidden during the "swap" moment if distinct, or just transition.
+                // Revised flow:
+                // T=0: setTextVisible(false). (Fade out old).
+                // T=0.5s: setCurrentIndex(+1). (Slide starts physically, content updates).
+                // T=0.6s: setTextVisible(true). (Fade in new).
+                // This ensures text is hidden during the "swap" moment if distinct, or just transition.
 
-            // However, sliding happens over 1s.
-            // If we delay Index update, slide is delayed.
-            // Let's just let text fade out/in smoothly.
+                // However, sliding happens over 1s.
+                // If we delay Index update, slide is delayed.
+                // Let's just let text fade out/in smoothly.
 
-            setTimeout(() => {
-                setTextVisible(true);
-            }, 600); // Fade in after 600ms (Slide is halfway)
+                // 3. Fade In
+                fadeInTimer = setTimeout(() => {
+                    setTextVisible(true);
+                }, 100);
+            }, 800);
 
         }, 6000);
 
         return () => {
             clearInterval(interval);
-            clearTimeout(textTimer);
+            clearTimeout(fadeOutTimer);
+            clearTimeout(fadeInTimer);
         };
     }, []);
 

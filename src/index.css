@@ -1377,3 +1377,62 @@ img {
   100% { left: 100%; }
 }
 
+
+/* Reviews Marquee Animation */
+.reviews-marquee-container {
+  overflow: hidden;
+  position: relative;
+  width: 100%;
+  padding: 4rem 0;
+  background: linear-gradient(to right, rgba(255,255,255,0), rgba(255,255,255,1) 15%, rgba(255,255,255,1) 85%, rgba(255,255,255,0));
+  mask-image: linear-gradient(to right, transparent, black 15%, black 85%, transparent);
+}
+
+.reviews-track {
+  display: flex;
+  gap: 2rem;
+  width: max-content;
+  animation: scrollMarquee 40s linear infinite;
+  padding-left: 2rem;
+}
+
+.reviews-track:hover {
+  animation-play-state: paused;
+}
+
+@keyframes scrollMarquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.review-card {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 15px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+  width: 300px;
+  flex-shrink: 0;
+  border: 1px solid rgba(0,0,0,0.05);
+  transition: transform 0.3s ease;
+}
+
+.review-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(197, 160, 89, 0.2);
+}
+
+.avatar-circle {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background-color: #f0f0f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 1.2rem;
+  color: #555;
+  border: 2px solid #fff;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
