@@ -12,7 +12,9 @@ const SpaPage = () => {
     // Slideshow State
     const originalImages = [
         '/assets/spa-hero-bg-2.jpg',
-        '/assets/spa-hero-bg.jpg'
+        '/assets/spa-hero-bg.jpg',
+        '/assets/spa-new-1.jpg',
+        '/assets/spa-new-2.jpg'
     ];
     // Clone first image for seamless loop
     const extendedImages = [...originalImages, originalImages[0]];
@@ -69,25 +71,37 @@ const SpaPage = () => {
                                 display: flex;
                                 width: 100%;
                             }
+
+                            @keyframes zoomSlow {
+                                from { transform: scale(1); }
+                                to { transform: scale(1.1); }
+                            }
                             
                             .hero-bg-image {
                                 width: 100%;
                                 min-width: 100%;
-                                flex-shrink: 0; /* Prevent shrinking */
-                                height: auto;
+                                flex-shrink: 0;
+                                height: 100%; 
                                 display: block;
                                 min-height: 600px;
-                                object-fit: cover;
+                                object-fit: contain; /* Show all details */
                                 backface-visibility: hidden;
-                                transform: translateZ(0) scale(1);
+                                transform: scale(1);
                                 image-rendering: high-quality;
-                                object-position: center 75%;
-                                transition: transform 7s ease-out; /* Smooth zoom transition */
+                                object-position: center;
+                                background-color: #000;
                             }
 
-                            /* Active Slide Zoom Effect */
+                            /* Active Slide - Zoom Animation */
                             .hero-bg-image.active-slide {
-                                transform: translateZ(0) scale(1.1);
+                                opacity: 1;
+                                animation: zoomSlow 7s ease-out forwards;
+                            }
+
+                            /* Previous Slide - Keep Zoomed */
+                            .hero-bg-image.prev-slide {
+                                transform: scale(1.1);
+                                z-index: 1; 
                             }
                         `}
                     </style>
@@ -107,14 +121,20 @@ const SpaPage = () => {
                         transform: `translateX(-${currentIndex * 100}%)`,
                         transition: isTransitioning ? 'transform 1s ease-in-out' : 'none'
                     }}>
-                        {extendedImages.map((imgSrc, index) => (
-                            <img
-                                key={index}
-                                src={imgSrc}
-                                alt="The Serenity Spa"
-                                className={`hero-bg-image ${index === currentIndex && isMounted ? 'active-slide' : ''}`}
-                            />
-                        ))}
+                        {extendedImages.map((imgSrc, index) => {
+                            // Check for previous slide (standard or wrap-around handling if needed, 
+                            // though strictly currentIndex - 1 is the one sliding left)
+                            const isPrev = index === currentIndex - 1;
+
+                            return (
+                                <img
+                                    key={index}
+                                    src={imgSrc}
+                                    alt="The Serenity Spa"
+                                    className={`hero-bg-image ${index === currentIndex && isMounted ? 'active-slide' : ''} ${isPrev ? 'prev-slide' : ''}`}
+                                />
+                            );
+                        })}
                     </div>
                 </div>
 

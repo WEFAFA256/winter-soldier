@@ -2,15 +2,37 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
 const DualHero = ({ onBusinessChange }) => {
-    // Images Array: 0: Hotel(1), 1: Spa(1), 2: Hotel(2), 3: Spa(2)
-    const originalImages = [
+    // Define Hotel and Spa images separately
+    const hotelImages = [
         '/assets/hotel-bg.jpg',
-        '/assets/spa-bg.jpg',
         '/assets/hotel-bg-2.jpg',
-        '/assets/spa-bg-2.jpg',
         '/assets/hotel-slide-3.jpg',
-        '/assets/spa-slide-3.jpg'
+        '/assets/hotel-extra-1.jpg',
+        '/assets/hotel-extra-2.jpg',
+        '/assets/hotel-extra-3.jpg',
+        '/assets/hotel-extra-4.jpg',
+        '/assets/hotel-extra-5.jpg',
+        '/assets/hotel-extra-6.jpg',
+        '/assets/hotel-extra-7.jpg',
+        '/assets/hotel-extra-8.jpg'
     ];
+
+    const spaImages = [
+        '/assets/spa-bg.jpg',
+        '/assets/spa-bg-2.jpg',
+        '/assets/spa-slide-3.jpg',
+        '/assets/spa-new-1.jpg',
+        '/assets/spa-new-2.jpg'
+    ];
+
+    // Interleave images to maintain H, S, H, S pattern
+    // We loop through hotel images and repeat spa images as needed
+    const originalImages = [];
+    hotelImages.forEach((hImg, index) => {
+        originalImages.push(hImg);
+        originalImages.push(spaImages[index % spaImages.length]);
+    });
+
     // No need for extended images for fade effect
     const extendedImages = originalImages;
 
@@ -163,20 +185,37 @@ const DualHero = ({ onBusinessChange }) => {
                                 width: '100%',
                                 height: '100%',
                                 opacity: index === currentIndex ? 1 : 0,
+                                toggle: index === currentIndex,
                                 transition: 'opacity 1.5s ease-in-out',
                                 zIndex: index === currentIndex ? 0 : -1
                             }}
                         >
+                            <style>
+                                {`
+                                    @keyframes zoomSlowDual {
+                                        from { transform: scale(1); }
+                                        to { transform: scale(1.05); }
+                                    }
+                                    .zoom-animate {
+                                        animation: zoomSlowDual 6s ease-out forwards;
+                                    }
+                                    .zoom-exit {
+                                        transform: scale(1.05);
+                                    }
+                                `}
+                            </style>
                             <img
                                 src={imgSrc}
                                 alt={`Slide ${index}`}
+                                className={index === currentIndex ? 'zoom-animate' : (
+                                    index === (currentIndex - 1 + extendedImages.length) % extendedImages.length ? 'zoom-exit' : ''
+                                )}
                                 style={{
                                     width: '100%',
                                     height: '100%',
                                     objectFit: 'cover',
                                     objectPosition: 'center 75%',
-                                    transform: index === currentIndex ? 'scale(1.05)' : 'scale(1)',
-                                    transition: 'transform 6s ease-out'
+                                    backgroundColor: 'transparent',
                                 }}
                             />
                         </div>

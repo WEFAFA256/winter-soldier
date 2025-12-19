@@ -10,6 +10,7 @@ import Branches from './components/Branches';
 import Gallery from './components/Gallery';
 import SocialMediaIcons from './components/SocialMediaIcons';
 import Booking from './components/Booking';
+import Footer from './components/Footer';
 
 function AppContent() {
   const [homePageBusiness, setHomePageBusiness] = useState('spa');
@@ -54,11 +55,7 @@ function AppContent() {
 
       <SocialMediaIcons />
 
-      <footer style={{ backgroundColor: 'var(--color-primary)', color: 'var(--color-white)', padding: '2rem 0', textAlign: 'center' }}>
-        <div className="container">
-          <p>&copy; {new Date().getFullYear()} Serenity Spa & The Marina Stays. All rights reserved.</p>
-        </div>
-      </footer>
+      <Footer mode={(location.pathname.startsWith('/hotel') || (location.pathname === '/' && homePageBusiness === 'hotel')) ? 'hotel' : 'spa'} />
     </div>
   );
 }

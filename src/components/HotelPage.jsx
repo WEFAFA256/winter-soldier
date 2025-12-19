@@ -9,7 +9,15 @@ const HotelPage = () => {
     // Slideshow State
     const originalImages = [
         '/assets/hotel-hero-bg-2.jpg',
-        '/assets/hotel-hero-bg.jpg'
+        '/assets/hotel-hero-bg.jpg',
+        '/assets/hotel-extra-1.jpg',
+        '/assets/hotel-extra-2.jpg',
+        '/assets/hotel-extra-3.jpg',
+        '/assets/hotel-extra-4.jpg',
+        '/assets/hotel-extra-5.jpg',
+        '/assets/hotel-extra-6.jpg',
+        '/assets/hotel-extra-7.jpg',
+        '/assets/hotel-extra-8.jpg'
     ];
     // Clone first image for seamless loop
     const extendedImages = [...originalImages, originalImages[0]];
@@ -67,24 +75,36 @@ const HotelPage = () => {
                                 width: 100%;
                             }
                             
+                            @keyframes zoomSlow {
+                                from { transform: scale(1); }
+                                to { transform: scale(1.1); }
+                            }
+
                             .hero-bg-image {
                                 width: 100%;
                                 min-width: 100%;
                                 flex-shrink: 0;
-                                height: auto;
+                                height: 100%;
                                 display: block;
                                 min-height: 600px;
-                                object-fit: cover;
+                                object-fit: contain;
                                 backface-visibility: hidden;
-                                transform: translateZ(0) scale(1);
+                                transform: scale(1);
                                 image-rendering: high-quality;
-                                object-position: center 75%;
-                                transition: transform 7s ease-out; /* Smooth zoom transition */
+                                object-position: center;
+                                background-color: #000;
                             }
 
-                            /* Active Slide Zoom Effect */
+                            /* Active Slide - Zoom Animation */
                             .hero-bg-image.active-slide {
-                                transform: translateZ(0) scale(1.1);
+                                opacity: 1;
+                                animation: zoomSlow 7s ease-out forwards;
+                            }
+
+                            /* Previous Slide - Keep Zoomed */
+                            .hero-bg-image.prev-slide {
+                                transform: scale(1.1);
+                                z-index: 1;
                             }
                         `}
                     </style>
@@ -104,14 +124,17 @@ const HotelPage = () => {
                         transform: `translateX(-${currentIndex * 100}%)`,
                         transition: isTransitioning ? 'transform 1s ease-in-out' : 'none'
                     }}>
-                        {extendedImages.map((imgSrc, index) => (
-                            <img
-                                key={index}
-                                src={imgSrc}
-                                alt="The Marina Stays"
-                                className={`hero-bg-image ${index === currentIndex && isMounted ? 'active-slide' : ''}`}
-                            />
-                        ))}
+                        {extendedImages.map((imgSrc, index) => {
+                            const isPrev = index === currentIndex - 1;
+                            return (
+                                <img
+                                    key={index}
+                                    src={imgSrc}
+                                    alt="The Marina Stays"
+                                    className={`hero-bg-image ${index === currentIndex && isMounted ? 'active-slide' : ''} ${isPrev ? 'prev-slide' : ''}`}
+                                />
+                            );
+                        })}
                     </div>
                 </div>
 
@@ -307,24 +330,7 @@ const HotelPage = () => {
             {/* Reviews */}
             <Reviews type="hotel" />
 
-            {/* Contact Info */}
-            <section style={{ padding: '5rem 0', backgroundColor: '#8B4513', color: '#ffffff' }}>
-                <div className="container" style={{ textAlign: 'center' }}>
-                    <h2 style={{ fontSize: '2.5rem', marginBottom: '2rem' }}>Visit Us</h2>
-                    <p style={{ fontSize: '1.2rem', marginBottom: '1rem' }}>
-                        📍 Entebbe, Uganda
-                    </p>
-                    <p style={{ fontSize: '1.2rem', marginBottom: '1rem' }}>
-                        📞 +256 XXX XXX XXX
-                    </p>
-                    <p style={{ fontSize: '1.2rem', marginBottom: '2rem' }}>
-                        ✉️ info@themarinastays.com
-                    </p>
-                    <p style={{ fontSize: '1.1rem', opacity: 0.9 }}>
-                        Open 24/7 for your convenience
-                    </p>
-                </div>
-            </section>
+
         </div>
     );
 };
