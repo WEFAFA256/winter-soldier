@@ -6,7 +6,7 @@ const HotelRoomsPage = () => {
     const navigate = useNavigate();
 
     return (
-        <div style={{ paddingTop: '100px', backgroundColor: 'var(--color-secondary)' }}>
+        <div style={{ paddingTop: '100px', backgroundColor: '#FAF0E6', minHeight: '100vh' }}>
             <section style={{ padding: '5rem 0' }}>
                 <div className="container">
                     <h2 style={{ textAlign: 'center', marginBottom: '1rem', fontSize: '3rem', color: '#8B4513' }}>

@@ -46,7 +46,7 @@ const HotelPage = () => {
             const timeout = setTimeout(() => {
                 setIsTransitioning(false);
                 setCurrentIndex(0);
-            }, 1000);
+            }, 1550);
             return () => clearTimeout(timeout);
         } else if (currentIndex === 0 && !isTransitioning) {
             // Snapped back. Re-enable transition.
