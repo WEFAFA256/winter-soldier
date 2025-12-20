@@ -186,13 +186,48 @@ const SpaPage = () => {
                     }}
                 >
                     <div className="container">
-                        <h1 className="gradient-text animate-fade-in-down" style={{
-                            fontSize: 'clamp(2.5rem, 5vw, 4rem)',
-                            marginBottom: '1rem',
-                            fontFamily: '"Times New Roman", Times, serif'
+                        {/* Business Name with Typewriter Wrapper */}
+                        <div style={{
+                            position: 'relative',
+                            display: 'inline-block',
+                            marginBottom: '1rem'
                         }}>
-                            THE SERENITY SPA
-                        </h1>
+                            {/* Invisible Spacer to set exact width */}
+                            <h1 style={{
+                                fontSize: 'clamp(2.5rem, 5vw, 4rem)',
+                                fontFamily: '"Times New Roman", Times, serif',
+                                opacity: 0,
+                                margin: 0,
+                                padding: 0,
+                                pointerEvents: 'none',
+                                width: 'max-content'
+                            }}>
+                                THE SERENITY SPA
+                            </h1>
+
+                            {/* Animated Overlay */}
+                            <h1
+                                className="typewriter-effect"
+                                style={{
+                                    position: 'absolute',
+                                    top: 0,
+                                    left: 0,
+                                    width: '0',
+                                    height: '100%',
+                                    fontSize: 'clamp(2.5rem, 5vw, 4rem)',
+                                    fontWeight: '800',
+                                    color: '#005C53',
+                                    fontFamily: '"Times New Roman", Times, serif',
+                                    letterSpacing: '2px',
+                                    textShadow: 'none',
+                                    borderRightColor: '#005C53',
+                                    margin: 0,
+                                    padding: 0
+                                }}
+                            >
+                                THE SERENITY SPA
+                            </h1>
+                        </div>
                         <p className="animate-fade-in-up delay-200" style={{ fontSize: '1.5rem', fontStyle: 'italic', marginBottom: '0.5rem' }}>
                             Your Oasis of Relaxation
                         </p>
