@@ -103,6 +103,16 @@ const SpaPage = () => {
                                 transform: scale(1.1);
                                 z-index: 1; 
                             }
+
+                            /* Mobile Optimization - Remove black bars */
+                            @media (max-width: 768px) {
+                                .hero-bg-image {
+                                    object-fit: cover !important;
+                                    background-color: transparent !important;
+                                    height: 100vh; /* Ensure full height on mobile */
+                                    min-height: 100vh;
+                                }
+                            }
                         `}
                     </style>
 
