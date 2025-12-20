@@ -190,22 +190,19 @@ const SpaPage = () => {
                         <div style={{
                             position: 'relative',
                             display: 'inline-block',
-                            marginBottom: '1rem',
-                            width: '100%',
-                            textAlign: 'center'
+                            marginBottom: '1rem'
                         }}>
                             {/* Invisible Spacer to set exact width */}
                             <h1 style={{
                                 fontSize: 'clamp(2.5rem, 5vw, 4rem)',
+                                fontWeight: '800',
                                 fontFamily: '"Times New Roman", Times, serif',
+                                letterSpacing: '2px',
                                 opacity: 0,
                                 margin: 0,
                                 padding: 0,
                                 pointerEvents: 'none',
-                                width: 'max-content',
-                                whiteSpace: 'nowrap',
-                                letterSpacing: '2px',
-                                fontWeight: '800'
+                                width: 'max-content'
                             }}>
                                 THE SERENITY SPA
                             </h1>
@@ -216,8 +213,7 @@ const SpaPage = () => {
                                 style={{
                                     position: 'absolute',
                                     top: 0,
-                                    left: '50%',
-                                    transform: 'translateX(-50%)',
+                                    left: 0,
                                     width: '0',
                                     height: '100%',
                                     fontSize: 'clamp(2.5rem, 5vw, 4rem)',
@@ -229,8 +225,7 @@ const SpaPage = () => {
                                     borderRightColor: '#005C53',
                                     margin: 0,
                                     padding: 0,
-                                    overflow: 'visible',
-                                    whiteSpace: 'nowrap'
+                                    animationDelay: '0.5s'
                                 }}
                             >
                                 THE SERENITY SPA
