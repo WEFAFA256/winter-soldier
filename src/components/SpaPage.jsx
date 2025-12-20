@@ -92,33 +92,14 @@ const SpaPage = () => {
                                 background-color: #000;
                             }
 
-                            /* Crossfade Transition */
-                            .hero-bg-wrapper {
-                                position: absolute;
-                                top: 0;
-                                left: 0;
-                                width: 100%;
-                                height: 100%;
-                                opacity: 0;
-                                transition: opacity 1.5s ease-in-out;
-                                z-index: -1;
-                            }
-                            .hero-bg-wrapper.active {
-                                opacity: 1;
-                                z-index: 1;
-                            }
-                            .hero-bg-wrapper.prev {
-                                opacity: 0;
-                                z-index: 0;
-                            }
-
                             /* Animation */
-                            .active .hero-bg-image {
+                            .hero-bg-image.active {
                                 animation: zoomSlow 7s ease-out forwards;
                             }
-
-                            .prev .hero-bg-image {
-                                transform: scale(1.1); /* Hold zoom level on exit */
+                            
+                            /* Keep outgoing slide zoomed */
+                            .hero-bg-image.prev {
+                                transform: scale(1.1);
                             }
 
                             /* Mobile Optimization */
@@ -128,18 +109,16 @@ const SpaPage = () => {
                                     background-color: transparent !important;
                                     height: 100vh;
                                     min-height: 100vh;
-                                    /* Less zoom on mobile */
                                     transform-origin: center;
                                 }
-                                /* Adjust Keyframes for mobile - less zoom */
                                 @keyframes zoomSlowMobile {
                                     from { transform: scale(1); }
                                     to { transform: scale(1.05); } 
                                 }
-                                .active .hero-bg-image {
+                                .hero-bg-image.active {
                                     animation: zoomSlowMobile 7s ease-out forwards;
                                 }
-                                .prev .hero-bg-image {
+                                .hero-bg-image.prev {
                                     transform: scale(1.05);
                                 }
                             }
@@ -156,33 +135,29 @@ const SpaPage = () => {
                         zIndex: 2
                     }}></div>
 
-                    {/* Slideshow Container (Stacked) */}
-                    <div style={{ position: 'relative', width: '100%', height: '100vh', overflow: 'hidden' }}>
-                        {originalImages.map((imgSrc, index) => {
+                    {/* Slider Window */}
+                    <div className="hero-slider-track" style={{
+                        transform: `translateX(-${currentIndex * 100}%)`,
+                        transition: isTransitioning ? 'transform 1.5s ease-in-out' : 'none'
+                    }}>
+                        {extendedImages.map((imgSrc, index) => {
                             const isActive = index === currentIndex;
-                            // Determine if this is the "previous" slide (the one fading out)
-                            // We'll use a simple check: if it's not active, but was just active
-                            // Ideally we track 'prevIndex', but for a simple rotation, 
-                            // we can say: if not active, opacity is 0. 
-                            // The CSS transition on wrapper handles the fade out.
-                            // To fix the "cutout" issue, we ensure the outgoing image stays fully opaque 
-                            // until the new one is fully visible? No, crossfade means both are visible.
-                            // The issue described ("outgoing image still remains... yet another pic is being displayed")
-                            // implies a gap or a jump.
-                            // With absolute positioning + opacity transition, they overlap perfectly.
-
-                            // Logic for "previous":
-                            const isPrev = index === (currentIndex - 1 + originalImages.length) % originalImages.length;
+                            // Outgoing slide is the one immediately before the current one
+                            const isPrev = index === currentIndex - 1 || (currentIndex === 0 && index === extendedImages.length - 2);
+                            // Note: Wrap around logic for prev might be tricky with cloning. 
+                            // If we slide 0 -> 1, 0 is prev.
+                            // If we slide N -> Clone, N is prev.
+                            // We just need to ensure the one TO THE LEFT is scaled up.
 
                             return (
                                 <div
                                     key={index}
-                                    className={`hero-bg-wrapper ${isActive ? 'active' : ''} ${isPrev ? 'prev' : ''}`}
+                                    style={{ width: '100%', minWidth: '100%', height: '100%' }}
                                 >
                                     <img
                                         src={imgSrc}
                                         alt="The Serenity Spa"
-                                        className="hero-bg-image"
+                                        className={`hero-bg-image ${isActive ? 'active' : ''} ${index === currentIndex - 1 ? 'prev' : ''}`}
                                     />
                                 </div>
                             );

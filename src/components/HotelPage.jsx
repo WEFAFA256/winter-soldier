@@ -101,30 +101,40 @@ const HotelPage = () => {
                                 animation: zoomSlow 7s ease-out forwards;
                             }
 
-                            /* Crossfade Transition Strategy */
-                            .hero-bg-wrapper {
-                                position: absolute;
-                                top: 0;
-                                left: 0;
+                            /* Slider Track for Sliding Animation */
+                            .hero-slider-track {
+                                display: flex;
                                 width: 100%;
-                                height: 100%;
-                                opacity: 0;
-                                transition: opacity 1.5s ease-in-out;
-                                z-index: -1;
                             }
-                            .hero-bg-wrapper.active {
-                                opacity: 1;
-                                z-index: 1;
-                            }
-                            /* previous slide just fades out naturally via transition */
 
-                            /* Animation Target */
-                            .active .hero-bg-image {
+                            .hero-bg-image {
+                                width: 100%;
+                                min-width: 100%;
+                                flex-shrink: 0;
+                                height: 100%; 
+                                display: block;
+                                min-height: 600px;
+                                object-fit: contain;
+                                backface-visibility: hidden;
+                                transform: scale(1);
+                                image-rendering: high-quality;
+                                object-position: center;
+                                background-color: #000;
+                            }
+
+                            /* Animation */
+                            @keyframes zoomSlow {
+                                from { transform: scale(1); }
+                                to { transform: scale(1.1); }
+                            }
+
+                            .hero-bg-image.active {
                                 animation: zoomSlow 7s ease-out forwards;
                             }
-                            /* Keep zoom on outgoing wrapper's image */
-                            .hero-bg-wrapper:not(.active) .hero-bg-image {
-                                transform: scale(1.1); 
+                            
+                            /* Keep outgoing slide zoomed */
+                            .hero-bg-image.prev {
+                                transform: scale(1.1);
                             }
 
                             /* Mobile Optimization */
@@ -134,15 +144,16 @@ const HotelPage = () => {
                                     background-color: transparent !important;
                                     height: 100vh;
                                     min-height: 100vh;
+                                    transform-origin: center;
                                 }
                                 @keyframes zoomSlowMobile {
                                     from { transform: scale(1); }
                                     to { transform: scale(1.05); } 
                                 }
-                                .active .hero-bg-image {
+                                .hero-bg-image.active {
                                     animation: zoomSlowMobile 7s ease-out forwards;
                                 }
-                                .hero-bg-wrapper:not(.active) .hero-bg-image {
+                                .hero-bg-image.prev {
                                     transform: scale(1.05);
                                 }
                             }
@@ -159,20 +170,26 @@ const HotelPage = () => {
                         zIndex: 2
                     }}></div>
 
-                    {/* Slideshow Container (Stacked) */}
-                    <div style={{ position: 'relative', width: '100%', height: '100vh', overflow: 'hidden' }}>
-                        {originalImages.map((imgSrc, index) => (
-                            <div
-                                key={index}
-                                className={`hero-bg-wrapper ${index === currentIndex ? 'active' : ''}`}
-                            >
-                                <img
-                                    src={imgSrc}
-                                    alt="The Marina Stays"
-                                    className="hero-bg-image"
-                                />
-                            </div>
-                        ))}
+                    {/* Slider Window */}
+                    <div className="hero-slider-track" style={{
+                        transform: `translateX(-${currentIndex * 100}%)`,
+                        transition: isTransitioning ? 'transform 1.5s ease-in-out' : 'none'
+                    }}>
+                        {extendedImages.map((imgSrc, index) => {
+                            const isActive = index === currentIndex;
+                            return (
+                                <div
+                                    key={index}
+                                    style={{ width: '100%', minWidth: '100%', height: '100%' }}
+                                >
+                                    <img
+                                        src={imgSrc}
+                                        alt="The Marina Stays"
+                                        className={`hero-bg-image ${isActive ? 'active' : ''} ${index === currentIndex - 1 ? 'prev' : ''}`}
+                                    />
+                                </div>
+                            );
+                        })}
                     </div>
                 </div>
 
