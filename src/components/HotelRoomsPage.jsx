@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ServiceCard from './ServiceCard';
 
 const HotelRoomsPage = () => {
     const navigate = useNavigate();
+    const [selectedImage, setSelectedImage] = useState(null);
 
     return (
         <div style={{ paddingTop: '100px', backgroundColor: '#FAF0E6', minHeight: '100vh' }}>
@@ -57,17 +58,67 @@ const HotelRoomsPage = () => {
                                 fullImage={room.image}
                                 description={`${room.description} Price: ${room.price}`}
                                 delay={room.delay}
-                                onLearnMore={() => {
-                                    // Placeholder for modal logic
-                                }}
+                                onLearnMore={() => setSelectedImage(room.image)}
                                 showBookNow={true}
                                 onBookNow={() => navigate('/hotel/booking', { state: { serviceName: room.title } })}
                                 needsCrop={true}
+                                customColor="#8B4513"
                             />
                         ))}
                     </div>
                 </div>
             </section>
+
+            {/* Image Modal */}
+            {selectedImage && (
+                <div
+                    style={{
+                        position: 'fixed',
+                        top: 0,
+                        left: 0,
+                        width: '100%',
+                        height: '100%',
+                        backgroundColor: 'rgba(0,0,0,0.8)',
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        zIndex: 1000,
+                        padding: '1rem',
+                        cursor: 'pointer'
+                    }}
+                    onClick={() => setSelectedImage(null)}
+                >
+                    <div style={{ position: 'relative', maxWidth: '90%', maxHeight: '90%' }}>
+                        <img
+                            src={selectedImage}
+                            alt="Room Detail"
+                            style={{
+                                width: '100%',
+                                height: 'auto',
+                                maxHeight: '80vh',
+                                objectFit: 'contain',
+                                borderRadius: '8px',
+                                boxShadow: '0 5px 30px rgba(0,0,0,0.5)'
+                            }}
+                        />
+                        <button
+                            style={{
+                                position: 'absolute',
+                                top: '-40px',
+                                right: '0',
+                                background: 'transparent',
+                                border: 'none',
+                                color: 'white',
+                                fontSize: '2rem',
+                                cursor: 'pointer'
+                            }}
+                            onClick={() => setSelectedImage(null)}
+                        >
+                            &times;
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

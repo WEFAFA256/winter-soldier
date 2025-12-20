@@ -1,10 +1,13 @@
 import React from 'react';
 import { useScrollAnimation } from '../hooks/useScrollAnimation';
 
-const ServiceCard = ({ title, image, description, delay, fullImage, onLearnMore, imageOnly, showBookNow, onBookNow, needsCrop }) => {
+const ServiceCard = ({ title, image, description, delay, fullImage, onLearnMore, imageOnly, showBookNow, onBookNow, needsCrop, customColor }) => {
     const cardRef = useScrollAnimation('animate-float-up');
     const imageRef = useScrollAnimation('animate-slide-scale');
     const textRef = useScrollAnimation('animate-float-up');
+
+    // Default primary color fallback
+    const primaryColor = customColor || 'var(--color-primary)';
 
     // Scale up image for 'needsCrop' items to hide bottom text
     // Anchor 'right top' so the Price Tag (on Right) is preserved and K is not cut
@@ -81,7 +84,7 @@ const ServiceCard = ({ title, image, description, delay, fullImage, onLearnMore,
                 className={`animate-on-scroll ${delay} service-card-content`}
                 style={{ padding: '2rem', position: 'relative', flex: 1, display: 'flex', flexDirection: 'column' }}
             >
-                <h3 className="service-card-title" style={{ marginBottom: '1rem', fontSize: '1.5rem', fontFamily: '"Times New Roman", Times, serif', color: 'var(--color-primary)' }}>{title}</h3>
+                <h3 className="service-card-title" style={{ marginBottom: '1rem', fontSize: '1.5rem', fontFamily: '"Times New Roman", Times, serif', color: primaryColor }}>{title}</h3>
                 <p className="service-card-description" style={{ color: 'var(--color-text-light)', marginBottom: '1.5rem', lineHeight: '1.5', flex: 1, fontSize: '1rem' }}>{description}</p>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'auto' }}>
                     <a
@@ -90,7 +93,7 @@ const ServiceCard = ({ title, image, description, delay, fullImage, onLearnMore,
                             e.preventDefault();
                             if (onLearnMore) onLearnMore();
                         }}
-                        style={{ color: 'var(--color-primary)', fontWeight: '600', fontSize: '0.9rem', textTransform: 'uppercase', cursor: 'pointer' }}
+                        style={{ color: primaryColor, fontWeight: '600', fontSize: '0.9rem', textTransform: 'uppercase', cursor: 'pointer' }}
                     >
                         Learn More &rarr;
                     </a>
@@ -102,6 +105,8 @@ const ServiceCard = ({ title, image, description, delay, fullImage, onLearnMore,
                                 fontSize: '0.85rem',
                                 border: 'none',
                                 cursor: 'pointer',
+                                backgroundColor: customColor ? customColor : undefined,
+                                color: customColor ? '#fff' : undefined
                             }}
                             onClick={onBookNow}
                         >
