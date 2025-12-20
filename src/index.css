@@ -328,6 +328,11 @@ img {
   right: 0;
 }
 
+/* Hotel sidebar with light brown background */
+.sidebar.hotel-sidebar {
+  background: #FAF0E6;
+}
+
 .sidebar-overlay {
   display: none;
   /* Not needed for full screen sidebar */

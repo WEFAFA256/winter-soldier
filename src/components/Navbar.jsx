@@ -140,7 +140,7 @@ const Navbar = ({ homePageBusiness = 'spa' }) => {
             ></div>
 
             {/* Sidebar */}
-            <div className={`sidebar ${sidebarOpen ? 'open' : ''}`}>
+            <div className={`sidebar ${sidebarOpen ? 'open' : ''} ${(isHome ? homePageBusiness === 'hotel' : isHotelSection) ? 'hotel-sidebar' : ''}`}>
                 <button
                     className="sidebar-close-btn"
                     onClick={closeSidebar}

@@ -13,6 +13,7 @@ const SpaPage = () => {
     const originalImages = [
         '/assets/spa-hero-bg-2.jpg',
         '/assets/spa-hero-bg.jpg',
+        '/assets/spa-new-3.jpg',
         '/assets/spa-new-1.jpg',
         '/assets/spa-new-2.jpg'
     ];
