@@ -348,7 +348,7 @@ const Booking = ({ businessType = 'spa' }) => {
                                     <h2 style={{
                                         fontSize: '2rem',
                                         marginBottom: '0',
-                                        color: 'var(--color-primary)',
+                                        color: branding.color,
                                         fontFamily: '"Times New Roman", Times, serif'
                                     }}>
                                         Your Contact Details
@@ -521,7 +521,7 @@ const Booking = ({ businessType = 'spa' }) => {
                                     <h2 style={{
                                         fontSize: '2rem',
                                         marginBottom: '0',
-                                        color: 'var(--color-primary)',
+                                        color: branding.color,
                                         fontFamily: '"Times New Roman", Times, serif'
                                     }}>
                                         Choose Date & Time
@@ -683,7 +683,7 @@ const Booking = ({ businessType = 'spa' }) => {
                                     <h2 style={{
                                         fontSize: '2rem',
                                         marginBottom: '0',
-                                        color: 'var(--color-primary)',
+                                        color: branding.color,
                                         fontFamily: '"Times New Roman", Times, serif'
                                     }}>
                                         Complete Your Booking
@@ -797,7 +797,7 @@ const Booking = ({ businessType = 'spa' }) => {
                                 }}>
                                     <h3 style={{
                                         marginBottom: '0.5rem',
-                                        color: 'var(--color-primary)',
+                                        color: branding.color,
                                         fontSize: '1.3rem'
                                     }}>
                                         Almost There!
@@ -855,7 +855,9 @@ const Booking = ({ businessType = 'spa' }) => {
                                 fontFamily: 'inherit',
                                 fontWeight: '600',
                                 marginLeft: 'auto',
-                                opacity: isStepValid() ? 1 : 0.5
+                                opacity: isStepValid() ? 1 : 0.5,
+                                backgroundColor: branding.color,
+                                color: '#fff'
                             }}
                         >
                             Next →
@@ -874,7 +876,9 @@ const Booking = ({ businessType = 'spa' }) => {
                                 fontFamily: 'inherit',
                                 fontWeight: '600',
                                 marginLeft: 'auto',
-                                opacity: isStepValid() ? 1 : 0.5
+                                opacity: isStepValid() ? 1 : 0.5,
+                                backgroundColor: branding.color,
+                                color: '#fff'
                             }}
                         >
                             Complete Booking
@@ -913,7 +917,7 @@ const Booking = ({ businessType = 'spa' }) => {
                         }}
                         onClick={(e) => e.stopPropagation()}
                     >
-                        <h2 style={{ color: 'var(--color-primary)', marginBottom: '1rem' }}>Choose Payment Method</h2>
+                        <h2 style={{ color: branding.color, marginBottom: '1rem' }}>Choose Payment Method</h2>
                         <p style={{ marginBottom: '2rem', color: '#666' }}>
                             Total: <strong>UGX {servicePrice.toLocaleString()}</strong>
                         </p>
@@ -927,7 +931,7 @@ const Booking = ({ businessType = 'spa' }) => {
                                     padding: '1rem',
                                     borderRadius: '8px',
                                     border: 'none',
-                                    backgroundColor: 'var(--color-primary)',
+                                    backgroundColor: branding.color,
                                     color: '#fff',
                                     fontWeight: 'bold',
                                     cursor: isProcessingPayment ? 'wait' : 'pointer',
@@ -943,9 +947,9 @@ const Booking = ({ businessType = 'spa' }) => {
                                 style={{
                                     padding: '1rem',
                                     borderRadius: '8px',
-                                    border: '2px solid var(--color-primary)',
+                                    border: `2px solid ${branding.color}`,
                                     backgroundColor: 'transparent',
-                                    color: 'var(--color-primary)',
+                                    color: branding.color,
                                     fontWeight: 'bold',
                                     cursor: 'pointer'
                                 }}

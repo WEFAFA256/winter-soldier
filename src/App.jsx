@@ -11,6 +11,7 @@ import Gallery from './components/Gallery';
 import SocialMediaIcons from './components/SocialMediaIcons';
 import Booking from './components/Booking';
 import Footer from './components/Footer';
+import ScrollToTop from './components/ScrollToTop';
 
 function AppContent() {
   const [homePageBusiness, setHomePageBusiness] = useState('spa');
@@ -18,6 +19,7 @@ function AppContent() {
 
   return (
     <div className="App">
+      <ScrollToTop />
       <Navbar homePageBusiness={homePageBusiness} />
       <Routes>
         {/* Homepage with alternating spa/hotel content */}
