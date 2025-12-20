@@ -190,7 +190,9 @@ const SpaPage = () => {
                         <div style={{
                             position: 'relative',
                             display: 'inline-block',
-                            marginBottom: '1rem'
+                            marginBottom: '1rem',
+                            width: '100%',
+                            textAlign: 'center'
                         }}>
                             {/* Invisible Spacer to set exact width */}
                             <h1 style={{
@@ -200,7 +202,10 @@ const SpaPage = () => {
                                 margin: 0,
                                 padding: 0,
                                 pointerEvents: 'none',
-                                width: 'max-content'
+                                width: 'max-content',
+                                whiteSpace: 'nowrap',
+                                letterSpacing: '2px',
+                                fontWeight: '800'
                             }}>
                                 THE SERENITY SPA
                             </h1>
@@ -211,7 +216,8 @@ const SpaPage = () => {
                                 style={{
                                     position: 'absolute',
                                     top: 0,
-                                    left: 0,
+                                    left: '50%',
+                                    transform: 'translateX(-50%)',
                                     width: '0',
                                     height: '100%',
                                     fontSize: 'clamp(2.5rem, 5vw, 4rem)',
@@ -222,7 +228,9 @@ const SpaPage = () => {
                                     textShadow: 'none',
                                     borderRightColor: '#005C53',
                                     margin: 0,
-                                    padding: 0
+                                    padding: 0,
+                                    overflow: 'visible',
+                                    whiteSpace: 'nowrap'
                                 }}
                             >
                                 THE SERENITY SPA
