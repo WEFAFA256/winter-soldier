@@ -101,19 +101,49 @@ const HotelPage = () => {
                                 animation: zoomSlow 7s ease-out forwards;
                             }
 
-                            /* Previous Slide - Keep Zoomed */
-                            .hero-bg-image.prev-slide {
-                                transform: scale(1.1);
+                            /* Crossfade Transition Strategy */
+                            .hero-bg-wrapper {
+                                position: absolute;
+                                top: 0;
+                                left: 0;
+                                width: 100%;
+                                height: 100%;
+                                opacity: 0;
+                                transition: opacity 1.5s ease-in-out;
+                                z-index: -1;
+                            }
+                            .hero-bg-wrapper.active {
+                                opacity: 1;
                                 z-index: 1;
                             }
+                            /* previous slide just fades out naturally via transition */
 
-                            /* Mobile Optimization - Remove black bars */
+                            /* Animation Target */
+                            .active .hero-bg-image {
+                                animation: zoomSlow 7s ease-out forwards;
+                            }
+                            /* Keep zoom on outgoing wrapper's image */
+                            .hero-bg-wrapper:not(.active) .hero-bg-image {
+                                transform: scale(1.1); 
+                            }
+
+                            /* Mobile Optimization */
                             @media (max-width: 768px) {
                                 .hero-bg-image {
                                     object-fit: cover !important;
                                     background-color: transparent !important;
                                     height: 100vh;
                                     min-height: 100vh;
+                                }
+                                @keyframes zoomSlowMobile {
+                                    from { transform: scale(1); }
+                                    to { transform: scale(1.05); } 
+                                }
+                                .active .hero-bg-image {
+                                    animation: zoomSlowMobile 7s ease-out forwards;
+                                }
+                                .hero-bg-wrapper:not(.active) .hero-bg-image {
+                                    transform: scale(1.05);
                                 }
                             }
                         `}
@@ -126,25 +156,23 @@ const HotelPage = () => {
                         width: '100%',
                         height: '30%',
                         background: 'linear-gradient(to bottom, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0) 100%)',
-                        zIndex: 1
+                        zIndex: 2
                     }}></div>
 
-                    {/* Slider Window */}
-                    <div className="hero-slider-track" style={{
-                        transform: `translateX(-${currentIndex * 100}%)`,
-                        transition: isTransitioning ? 'transform 1s ease-in-out' : 'none'
-                    }}>
-                        {extendedImages.map((imgSrc, index) => {
-                            const isPrev = index === currentIndex - 1;
-                            return (
+                    {/* Slideshow Container (Stacked) */}
+                    <div style={{ position: 'relative', width: '100%', height: '100vh', overflow: 'hidden' }}>
+                        {originalImages.map((imgSrc, index) => (
+                            <div
+                                key={index}
+                                className={`hero-bg-wrapper ${index === currentIndex ? 'active' : ''}`}
+                            >
                                 <img
-                                    key={index}
                                     src={imgSrc}
                                     alt="The Marina Stays"
-                                    className={`hero-bg-image ${index === currentIndex && isMounted ? 'active-slide' : ''} ${isPrev ? 'prev-slide' : ''}`}
+                                    className="hero-bg-image"
                                 />
-                            );
-                        })}
+                            </div>
+                        ))}
                     </div>
                 </div>
 

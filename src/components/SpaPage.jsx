@@ -92,25 +92,55 @@ const SpaPage = () => {
                                 background-color: #000;
                             }
 
-                            /* Active Slide - Zoom Animation */
-                            .hero-bg-image.active-slide {
+                            /* Crossfade Transition */
+                            .hero-bg-wrapper {
+                                position: absolute;
+                                top: 0;
+                                left: 0;
+                                width: 100%;
+                                height: 100%;
+                                opacity: 0;
+                                transition: opacity 1.5s ease-in-out;
+                                z-index: -1;
+                            }
+                            .hero-bg-wrapper.active {
                                 opacity: 1;
+                                z-index: 1;
+                            }
+                            .hero-bg-wrapper.prev {
+                                opacity: 0;
+                                z-index: 0;
+                            }
+
+                            /* Animation */
+                            .active .hero-bg-image {
                                 animation: zoomSlow 7s ease-out forwards;
                             }
 
-                            /* Previous Slide - Keep Zoomed */
-                            .hero-bg-image.prev-slide {
-                                transform: scale(1.1);
-                                z-index: 1; 
+                            .prev .hero-bg-image {
+                                transform: scale(1.1); /* Hold zoom level on exit */
                             }
 
-                            /* Mobile Optimization - Remove black bars */
+                            /* Mobile Optimization */
                             @media (max-width: 768px) {
                                 .hero-bg-image {
                                     object-fit: cover !important;
                                     background-color: transparent !important;
-                                    height: 100vh; /* Ensure full height on mobile */
+                                    height: 100vh;
                                     min-height: 100vh;
+                                    /* Less zoom on mobile */
+                                    transform-origin: center;
+                                }
+                                /* Adjust Keyframes for mobile - less zoom */
+                                @keyframes zoomSlowMobile {
+                                    from { transform: scale(1); }
+                                    to { transform: scale(1.05); } 
+                                }
+                                .active .hero-bg-image {
+                                    animation: zoomSlowMobile 7s ease-out forwards;
+                                }
+                                .prev .hero-bg-image {
+                                    transform: scale(1.05);
                                 }
                             }
                         `}
@@ -123,26 +153,38 @@ const SpaPage = () => {
                         width: '100%',
                         height: '30%',
                         background: 'linear-gradient(to bottom, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0) 100%)',
-                        zIndex: 1
+                        zIndex: 2
                     }}></div>
 
-                    {/* Slider Window */}
-                    <div className="hero-slider-track" style={{
-                        transform: `translateX(-${currentIndex * 100}%)`,
-                        transition: isTransitioning ? 'transform 1s ease-in-out' : 'none'
-                    }}>
-                        {extendedImages.map((imgSrc, index) => {
-                            // Check for previous slide (standard or wrap-around handling if needed, 
-                            // though strictly currentIndex - 1 is the one sliding left)
-                            const isPrev = index === currentIndex - 1;
+                    {/* Slideshow Container (Stacked) */}
+                    <div style={{ position: 'relative', width: '100%', height: '100vh', overflow: 'hidden' }}>
+                        {originalImages.map((imgSrc, index) => {
+                            const isActive = index === currentIndex;
+                            // Determine if this is the "previous" slide (the one fading out)
+                            // We'll use a simple check: if it's not active, but was just active
+                            // Ideally we track 'prevIndex', but for a simple rotation, 
+                            // we can say: if not active, opacity is 0. 
+                            // The CSS transition on wrapper handles the fade out.
+                            // To fix the "cutout" issue, we ensure the outgoing image stays fully opaque 
+                            // until the new one is fully visible? No, crossfade means both are visible.
+                            // The issue described ("outgoing image still remains... yet another pic is being displayed")
+                            // implies a gap or a jump.
+                            // With absolute positioning + opacity transition, they overlap perfectly.
+
+                            // Logic for "previous":
+                            const isPrev = index === (currentIndex - 1 + originalImages.length) % originalImages.length;
 
                             return (
-                                <img
+                                <div
                                     key={index}
-                                    src={imgSrc}
-                                    alt="The Serenity Spa"
-                                    className={`hero-bg-image ${index === currentIndex && isMounted ? 'active-slide' : ''} ${isPrev ? 'prev-slide' : ''}`}
-                                />
+                                    className={`hero-bg-wrapper ${isActive ? 'active' : ''} ${isPrev ? 'prev' : ''}`}
+                                >
+                                    <img
+                                        src={imgSrc}
+                                        alt="The Serenity Spa"
+                                        className="hero-bg-image"
+                                    />
+                                </div>
                             );
                         })}
                     </div>
