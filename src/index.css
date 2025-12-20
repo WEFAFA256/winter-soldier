@@ -523,6 +523,11 @@ img {
   text-transform: uppercase;
 }
 
+/* Hotel sidebar circular text - brown color */
+.sidebar.hotel-sidebar .circular-text-content {
+  fill: #8B4513;
+}
+
 @keyframes rotateText {
   from {
     transform: rotate(0deg);
@@ -1240,27 +1245,41 @@ img {
 .cursor-follow {
   transition: transform 0.2s cubic-bezier(0.23, 1, 0.32, 1);
 }
+
 /* Typewriter Effect */
 @keyframes typeWriter {
-  from { width: 0; }
-  to { width: 100%; }
+  from {
+    width: 0;
+  }
+
+  to {
+    width: 100%;
+  }
 }
 
 @keyframes blinkCursor {
-  from, to { border-color: transparent }
-  50% { border-color: rgba(255,255,255,0.75) }
+
+  from,
+  to {
+    border-color: transparent
+  }
+
+  50% {
+    border-color: rgba(255, 255, 255, 0.75)
+  }
 }
 
 .typewriter-effect {
   overflow: hidden;
   white-space: nowrap;
-  border-right: 2px solid rgba(255,255,255,0.75);
-  animation: 
+  border-right: 2px solid rgba(255, 255, 255, 0.75);
+  animation:
     typeWriter 3.5s steps(40, end) forwards,
     blinkCursor .75s step-end infinite;
   display: inline-block;
   vertical-align: bottom;
-  width: 0; /* Start at 0 */
+  width: 0;
+  /* Start at 0 */
 }
 
 /* Float In 3D Effect for Cards */
@@ -1269,6 +1288,7 @@ img {
     opacity: 0;
     transform: perspective(1000px) rotateY(15deg) translateY(30px) scale(0.9);
   }
+
   100% {
     opacity: 1;
     transform: perspective(1000px) rotateY(0deg) translateY(0) scale(1);
@@ -1283,12 +1303,29 @@ img {
 }
 
 /* Staggered delays for card items if not using existing classes */
-.card-delay-1 { animation-delay: 0.2s; }
-.card-delay-2 { animation-delay: 0.4s; }
-.card-delay-3 { animation-delay: 0.6s; }
-.card-delay-4 { animation-delay: 0.8s; }
-.card-delay-5 { animation-delay: 1.0s; }
-.card-delay-6 { animation-delay: 1.2s; }
+.card-delay-1 {
+  animation-delay: 0.2s;
+}
+
+.card-delay-2 {
+  animation-delay: 0.4s;
+}
+
+.card-delay-3 {
+  animation-delay: 0.6s;
+}
+
+.card-delay-4 {
+  animation-delay: 0.8s;
+}
+
+.card-delay-5 {
+  animation-delay: 1.0s;
+}
+
+.card-delay-6 {
+  animation-delay: 1.2s;
+}
 
 
 /* Scroll Reveal Float Variant */
@@ -1307,14 +1344,15 @@ img {
 /* Triggered Typewriter for Scrolled Elements */
 .scroll-reveal-float.revealed .typewriter-scrolled {
   animation: typeWriter 2s steps(30, end) forwards, blinkCursor .75s step-end infinite;
-  border-right: 2px solid #8B4513; /* Cursor color */
+  border-right: 2px solid #8B4513;
+  /* Cursor color */
 }
 
 .typewriter-scrolled {
   width: 0;
   overflow: hidden;
   white-space: nowrap;
-  border-right: 2px solid transparent; 
+  border-right: 2px solid transparent;
   display: inline-block;
   vertical-align: bottom;
 }
@@ -1322,20 +1360,23 @@ img {
 
 /* Hide cursor after typing */
 @keyframes hideCursor {
-  to { border-right-color: transparent !important; }
+  to {
+    border-right-color: transparent !important;
+  }
 }
 
 /* Update typewriter-effect to include cursor hiding */
 .typewriter-effect {
-  animation: 
+  animation:
     typeWriter 3.5s steps(40, end) forwards,
     blinkCursor .75s step-end infinite,
-    hideCursor 0.1s linear 5s forwards; /* Hide after 5s (3.5s type + delay buffer) */
+    hideCursor 0.1s linear 5s forwards;
+  /* Hide after 5s (3.5s type + delay buffer) */
 }
 
 /* Same for scrolled */
 .scroll-reveal-float.revealed .typewriter-scrolled {
-  animation: 
+  animation:
     typeWriter 2s steps(30, end) forwards,
     blinkCursor .75s step-end infinite,
     hideCursor 0.1s linear 2.5s forwards;
@@ -1344,9 +1385,20 @@ img {
 
 /* Flashy Gold Pulse for VIP Button */
 @keyframes goldPulse {
-  0% { box-shadow: 0 0 0 0 rgba(197, 160, 89, 0.7); transformer: scale(1); }
-  70% { box-shadow: 0 0 0 15px rgba(197, 160, 89, 0); transformer: scale(1.05); }
-  100% { box-shadow: 0 0 0 0 rgba(197, 160, 89, 0); transformer: scale(1); }
+  0% {
+    box-shadow: 0 0 0 0 rgba(197, 160, 89, 0.7);
+    transformer: scale(1);
+  }
+
+  70% {
+    box-shadow: 0 0 0 15px rgba(197, 160, 89, 0);
+    transformer: scale(1.05);
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 rgba(197, 160, 89, 0);
+    transformer: scale(1);
+  }
 }
 
 .animate-pulse-gold {
@@ -1365,21 +1417,29 @@ img {
   left: -100%;
   width: 50%;
   height: 100%;
-  background: linear-gradient(120deg, transparent, rgba(255,255,255,0.4), transparent);
+  background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.4), transparent);
   transition: all 0.6s;
 }
 
 .btn-vip-shimmer:hover::after {
   left: 100%;
-  transition: 0.6s; 
+  transition: 0.6s;
   /* Or make it auto run? */
   animation: shimmerRun 3s infinite;
 }
 
 @keyframes shimmerRun {
-  0% { left: -100%; }
-  20% { left: 100%; }
-  100% { left: 100%; }
+  0% {
+    left: -100%;
+  }
+
+  20% {
+    left: 100%;
+  }
+
+  100% {
+    left: 100%;
+  }
 }
 
 
@@ -1389,7 +1449,7 @@ img {
   position: relative;
   width: 100%;
   padding: 4rem 0;
-  background: linear-gradient(to right, rgba(255,255,255,0), rgba(255,255,255,1) 15%, rgba(255,255,255,1) 85%, rgba(255,255,255,0));
+  background: linear-gradient(to right, rgba(255, 255, 255, 0), rgba(255, 255, 255, 1) 15%, rgba(255, 255, 255, 1) 85%, rgba(255, 255, 255, 0));
   mask-image: linear-gradient(to right, transparent, black 15%, black 85%, transparent);
 }
 
@@ -1406,18 +1466,23 @@ img {
 }
 
 @keyframes scrollMarquee {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
+  0% {
+    transform: translateX(0);
+  }
+
+  100% {
+    transform: translateX(-50%);
+  }
 }
 
 .review-card {
   background: white;
   padding: 1.5rem;
   border-radius: 15px;
-  box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
   width: 300px;
   flex-shrink: 0;
-  border: 1px solid rgba(0,0,0,0.05);
+  border: 1px solid rgba(0, 0, 0, 0.05);
   transition: transform 0.3s ease;
 }
 
@@ -1438,6 +1503,5 @@ img {
   font-size: 1.2rem;
   color: #555;
   border: 2px solid #fff;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
-
