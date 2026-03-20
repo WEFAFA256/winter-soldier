@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 
 const SocialMediaIcons = () => {
@@ -11,13 +13,13 @@ const SocialMediaIcons = () => {
         {
             name: 'WhatsApp',
             image: '/assets/whatsapp-icon.jpg',
-            url: 'https://whatsapp.com',
+            url: 'https://wa.me/256764001922',
             delay: '0.2s'
         },
         {
-            name: 'TikTok',
-            image: '/assets/tiktok-icon.jpg',
-            url: 'https://tiktok.com',
+            name: 'Phone',
+            image: '/assets/phone-icon.jpg',
+            url: 'tel:+256764001922',
             delay: '0.4s'
         },
     ];
@@ -39,7 +41,7 @@ const SocialMediaIcons = () => {
                 <a
                     key={index}
                     href={social.url}
-                    target="_blank"
+                    target={social.name === 'Phone' ? '_self' : '_blank'}
                     rel="noopener noreferrer"
                     className="social-icon"
                     style={{

@@ -1,5 +1,7 @@
+'use client';
+
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 import Services from './Services';
 import Gallery from './Gallery';
 import Contact from './Contact';
@@ -243,7 +245,7 @@ const SpaPage = () => {
                         </p>
                         <div className="animate-scale-in delay-400" style={{ marginTop: '2rem' }}>
                             <Link
-                                to="/spa/services"
+                                href="/spa/services"
                                 className="magnetic"
                                 style={{
                                     padding: '1rem 2.5rem',
@@ -263,7 +265,7 @@ const SpaPage = () => {
                                 Book Spa Service
                             </Link>
                             <Link
-                                to="/spa/services#vip-section"
+                                href="/spa/services#vip-section"
                                 className="magnetic animate-pulse-gold"
                                 style={{
                                     padding: '1rem 2.5rem',

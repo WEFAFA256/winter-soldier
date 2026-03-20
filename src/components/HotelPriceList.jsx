@@ -1,8 +1,10 @@
+'use client';
+
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 
 const HotelPriceList = () => {
-    const navigate = useNavigate();
+    const router = useRouter();
     // Using images from public/assets/hotel_pricelist
     const images = [
         '/assets/hotel_pricelist/price1.jpg',
@@ -91,7 +93,7 @@ const HotelPriceList = () => {
 
                 <div style={{ textAlign: 'center', marginTop: '2rem' }}>
                     <button
-                        onClick={() => navigate('/hotel/booking')}
+                        onClick={() => router.push('/hotel/booking')}
                         className="btn"
                         style={{
                             backgroundColor: '#8B4513',

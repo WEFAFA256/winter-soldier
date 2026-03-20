@@ -1,9 +1,12 @@
+'use client';
+
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 
 const Navbar = ({ homePageBusiness = 'spa' }) => {
     const [scrolled, setScrolled] = useState(false);
-    const location = useLocation();
+    const pathname = usePathname();
 
     useEffect(() => {
         const handleScroll = () => {
@@ -19,9 +22,9 @@ const Navbar = ({ homePageBusiness = 'spa' }) => {
     }, []);
 
     // Determine which business section we're in
-    const isHotelSection = location.pathname.startsWith('/hotel');
-    const isSpaSection = location.pathname.startsWith('/spa');
-    const isHome = location.pathname === '/';
+    const isHotelSection = pathname.startsWith('/hotel');
+    const isSpaSection = pathname.startsWith('/spa');
+    const isHome = pathname === '/';
 
     // Dynamic branding based on section (or homepage business state)
     const branding = (isHome ? homePageBusiness === 'hotel' : isHotelSection) ? {
@@ -71,7 +74,7 @@ const Navbar = ({ homePageBusiness = 'spa' }) => {
 
     // Determine if we are on the home page, hotel page, or spa page and not scrolled (transparent bg)
     // Only apply to the main landing pages where we have full-screen hero images
-    const isTransparent = !scrolled && (location.pathname === '/' || location.pathname === '/hotel' || location.pathname === '/spa');
+    const isTransparent = !scrolled && (pathname === '/' || pathname === '/hotel' || pathname === '/spa');
 
     return (
         <>
@@ -92,7 +95,7 @@ const Navbar = ({ homePageBusiness = 'spa' }) => {
             >
                 <div className="container" style={{ display: 'flex', justifyContent: isHome ? 'flex-end' : 'space-between', alignItems: 'center' }}>
                     {!isHome && (
-                        <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', fontSize: '1.5rem', fontWeight: '700', color: isTransparent ? 'var(--color-white)' : branding.color, fontFamily: 'inherit', textDecoration: 'none' }}>
+                        <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', fontSize: '1.5rem', fontWeight: '700', color: isTransparent ? 'var(--color-white)' : branding.color, fontFamily: 'inherit', textDecoration: 'none' }}>
                             <img
                                 src={branding.logo}
                                 alt={branding.name}
@@ -107,7 +110,7 @@ const Navbar = ({ homePageBusiness = 'spa' }) => {
                         {links.map((item) => (
                             <li key={item.name}>
                                 <Link
-                                    to={item.path}
+                                    href={item.path}
                                     style={{
                                         color: isTransparent ? 'var(--color-white)' : 'var(--color-text)',
                                         fontWeight: '500',
@@ -171,7 +174,7 @@ const Navbar = ({ homePageBusiness = 'spa' }) => {
                     {links.map((item) => (
                         <li key={item.name}>
                             <Link
-                                to={item.path}
+                                href={item.path}
                                 className="sidebar-link"
                                 onClick={closeSidebar}
                                 style={{ display: 'block', width: '100%' }}

@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState, useEffect } from 'react';
 import price1 from '../assets/pricelist/price1.jpg';
 import price2 from '../assets/pricelist/price2.jpg';

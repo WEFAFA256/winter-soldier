@@ -1,9 +1,11 @@
+'use client';
+
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 import ServiceCard from './ServiceCard';
 
 const HotelRoomsPage = () => {
-    const navigate = useNavigate();
+    const router = useRouter();
     const [selectedImage, setSelectedImage] = useState(null);
 
     return (
@@ -60,7 +62,7 @@ const HotelRoomsPage = () => {
                                 delay={room.delay}
                                 onLearnMore={() => setSelectedImage(room.image)}
                                 showBookNow={true}
-                                onBookNow={() => navigate('/hotel/booking', { state: { serviceName: room.title } })}
+                                onBookNow={() => router.push(`/hotel/booking?serviceName=${encodeURIComponent(room.title)}`)}
                                 needsCrop={true}
                                 customColor="#8B4513"
                             />

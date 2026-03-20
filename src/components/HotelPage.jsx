@@ -1,5 +1,7 @@
+'use client';
+
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 import HotelPriceList from './HotelPriceList';
 import ServiceCard from './ServiceCard';
 import { useScrollReveal } from '../hooks/useAnimations';
@@ -266,7 +268,7 @@ const HotelPage = () => {
                         </p>
                         <div style={{ marginTop: '2rem' }}>
                             <Link
-                                to="/hotel/rooms"
+                                href="/hotel/rooms"
                                 style={{
                                     padding: '1rem 2.5rem',
                                     backgroundColor: '#ffffff',

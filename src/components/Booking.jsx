@@ -1,17 +1,21 @@
-import React, { useState, useEffect } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+'use client';
+
+import React, { useState, useEffect, Suspense } from 'react';
+import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import QRCodeModal from './QRCodeModal';
 
-const Booking = ({ businessType = 'spa' }) => {
-    const location = useLocation();
-    const navigate = useNavigate();
+const BookingContent = ({ businessType = 'spa' }) => {
+    const searchParams = useSearchParams();
+    const router = useRouter();
+    const pathname = usePathname();
+    
     const [currentStep, setCurrentStep] = useState(1);
     const [showQRModal, setShowQRModal] = useState(false);
     const [showPaymentPrompt, setShowPaymentPrompt] = useState(false);
     const [bookingId, setBookingId] = useState('');
     const [paymentStatus, setPaymentStatus] = useState('Not Paid');
     const [formData, setFormData] = useState({
-        serviceType: location.state?.serviceName || '',
+        serviceType: searchParams.get('serviceName') || '',
         name: '',
         email: '',
         phone: '',
@@ -132,11 +136,10 @@ const Booking = ({ businessType = 'spa' }) => {
 
     // Check for DPO Pay callback
     useEffect(() => {
-        const searchParams = new URLSearchParams(location.search);
-        const paymentStatus = searchParams.get('payment');
+        const paymentValue = searchParams.get('payment');
         const transToken = searchParams.get('TransactionToken');
 
-        if (paymentStatus === 'success' && transToken) {
+        if (paymentValue === 'success' && transToken) {
             // Verify payment status with DPO
             const verifyPayment = async () => {
                 try {
@@ -146,7 +149,7 @@ const Booking = ({ businessType = 'spa' }) => {
                     if (data.success && data.transactionPaid) {
                         setPaymentStatus('Paid');
                         setShowQRModal(true);
-                        window.history.replaceState({}, document.title, location.pathname);
+                        router.replace(pathname);
                         alert('Payment Successful! ✅');
                     } else if (data.transactionApproved) {
                         setPaymentStatus('Pending');
@@ -163,10 +166,10 @@ const Booking = ({ businessType = 'spa' }) => {
             };
 
             verifyPayment();
-        } else if (paymentStatus === 'cancelled') {
+        } else if (paymentValue === 'cancelled') {
             alert('Payment was cancelled.');
         }
-    }, [location]);
+    }, [searchParams, router, pathname]);
 
     const handleDPOPayment = async () => {
         setIsProcessingPayment(true);
@@ -225,7 +228,7 @@ const Booking = ({ businessType = 'spa' }) => {
         sendBookingConfirmation(paymentStatus);
         // Navigate to home after a short delay to allow the WhatsApp/Email window to open
         setTimeout(() => {
-            navigate('/');
+            router.push('/');
         }, 500);
     };
 
@@ -985,5 +988,11 @@ const Booking = ({ businessType = 'spa' }) => {
         </div>
     );
 };
+
+const Booking = (props) => (
+    <Suspense fallback={<div>Loading...</div>}>
+        <BookingContent {...props} />
+    </Suspense>
+);
 
 export default Booking;

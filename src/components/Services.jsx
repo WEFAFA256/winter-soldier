@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { useScrollAnimation } from '../hooks/useScrollAnimation';
 import { useScrollReveal } from '../hooks/useAnimations';
 import ImageModal from './ImageModal';
@@ -7,7 +9,7 @@ import ImageModal from './ImageModal';
 import ServiceCard from './ServiceCard';
 
 const Services = () => {
-    const navigate = useNavigate();
+    const router = useRouter();
     const headerRef = useScrollAnimation('animate-float-up');
     const [modalState, setModalState] = useState({ isOpen: false, imageSrc: '', title: '' });
 
@@ -20,20 +22,20 @@ const Services = () => {
     };
 
     const handleBookNow = (serviceName) => {
-        navigate('/booking', { state: { serviceName } });
+        router.push(`/booking?serviceName=${encodeURIComponent(serviceName)}`);
     };
 
     // Handle hash scrolling
-    React.useEffect(() => {
-        if (location.hash) {
-            const element = document.getElementById(location.hash.replace('#', ''));
+    useEffect(() => {
+        if (typeof window !== 'undefined' && window.location.hash) {
+            const element = document.getElementById(window.location.hash.replace('#', ''));
             if (element) {
                 setTimeout(() => {
                     element.scrollIntoView({ behavior: 'smooth' });
                 }, 100); // Small delay to ensure render
             }
         }
-    }, [location]);
+    }, []);
 
     // Initialize scroll reveal animations
     useScrollReveal();

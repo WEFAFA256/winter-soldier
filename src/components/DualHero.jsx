@@ -1,5 +1,7 @@
+'use client';
+
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 
 const DualHero = ({ onBusinessChange }) => {
     // Define Hotel and Spa images separately
@@ -363,7 +365,7 @@ const DualHero = ({ onBusinessChange }) => {
                     }}
                 >
                     <Link
-                        to={content.link}
+                        href={content.link}
                         className="btn-primary"
                         style={{
                             padding: '1rem 2rem',
