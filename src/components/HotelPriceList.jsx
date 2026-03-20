@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 
 const HotelPriceList = () => {
     const router = useRouter();
@@ -49,7 +50,7 @@ const HotelPriceList = () => {
 
     return (
         <section id="hotel-pricelist" className="section-padding" style={{ backgroundColor: '#fff' }}>
-            <div className="container">
+            <div className="container" style={{ position: 'relative' }}>
                 <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
                     <h2 style={{ color: '#8B4513' }}>Hotel Services Price List</h2>
                     <p style={{ color: '#666', maxWidth: '600px', margin: '0 auto' }}>
@@ -57,22 +58,19 @@ const HotelPriceList = () => {
                     </p>
                 </div>
 
-                <div className="pricelist-carousel-container">
+                <div className="pricelist-carousel-container" style={{ position: 'relative', overflow: 'hidden' }}>
                     <div
                         className="pricelist-track"
-                        style={{ transform: `translateX(-${currentIndex * 100}%)` }}
+                        style={{ transform: `translateX(-${currentIndex * 100}%)`, display: 'flex' }}
                     >
                         {images.map((img, index) => (
-                            <div key={index} className="pricelist-slide">
-                                <img
+                            <div key={index} className="pricelist-slide" style={{ position: 'relative', minWidth: '100%', minHeight: '500px' }}>
+                                <Image
                                     src={img}
                                     alt={`Hotel Price List ${index + 1}`}
+                                    fill
+                                    style={{ objectFit: 'contain' }}
                                     className="pricelist-image"
-                                // Make sure we have the crop logic if needed? 
-                                // The user said "pricelist images", they are likely portraits.
-                                // PriceList.jsx handles them.
-                                // I'll add NeedsCrop? User didn't ask.
-                                // I'll just render img.
                                 />
                             </div>
                         ))}

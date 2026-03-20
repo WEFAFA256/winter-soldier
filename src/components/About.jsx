@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Image from 'next/image';
 import { useScrollAnimation } from '../hooks/useScrollAnimation';
 
 const About = () => {
@@ -13,11 +14,16 @@ const About = () => {
                 <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '4rem' }}>
                     <div style={{ flex: '1 1 400px' }}>
                         <div ref={imgRef} className="animate-on-scroll" style={{ position: 'relative' }}>
-                            <img
-                                src="/assets/ambience.png"
-                                alt="Spa Ambience"
-                                style={{ width: '100%', height: 'auto', borderRadius: '10px', boxShadow: '0 10px 30px rgba(0,0,0,0.1)' }}
-                            />
+                            <div style={{ position: 'relative', width: '100%', height: 'auto', minHeight: '300px' }}>
+                                <Image
+                                    src="/assets/ambience.png"
+                                    alt="Spa Ambience"
+                                    fill
+                                    sizes="(max-width: 768px) 100vw, 50vw"
+                                    style={{ objectFit: 'cover', borderRadius: '10px' }}
+                                    className="hover-lift"
+                                />
+                            </div>
                             <div
                                 style={{
                                     position: 'absolute',

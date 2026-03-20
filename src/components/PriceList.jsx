@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
 import price1 from '../assets/pricelist/price1.jpg';
 import price2 from '../assets/pricelist/price2.jpg';
 import price3 from '../assets/pricelist/price3.jpg';
@@ -43,8 +44,14 @@ const PriceList = () => {
                         style={{ transform: `translateX(-${currentIndex * 100}%)` }}
                     >
                         {images.map((img, index) => (
-                            <div key={index} className="pricelist-slide">
-                                <img src={img} alt={`Price List ${index + 1}`} className="pricelist-image" />
+                            <div key={index} className="pricelist-slide" style={{ position: 'relative', height: 'auto', minHeight: '500px' }}>
+                                <Image 
+                                    src={img} 
+                                    alt={`Price List ${index + 1}`} 
+                                    fill
+                                    style={{ objectFit: 'contain' }}
+                                    className="pricelist-image" 
+                                />
                             </div>
                         ))}
                     </div>
