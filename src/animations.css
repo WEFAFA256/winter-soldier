@@ -340,3 +340,17 @@
 .cursor-follow {
   transition: transform 0.2s cubic-bezier(0.23, 1, 0.32, 1);
 }
+
+/* Hero Zoom Animations */
+@keyframes zoomSlowDual {
+  from { transform: scale(1); }
+  to { transform: scale(1.05); }
+}
+
+.zoom-animate {
+  animation: zoomSlowDual 6s ease-out forwards;
+}
+
+.zoom-exit {
+  transform: scale(1.05);
+}

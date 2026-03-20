@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 
 const DualHero = ({ onBusinessChange }) => {
     // Define Hotel and Spa images separately
@@ -28,79 +29,35 @@ const DualHero = ({ onBusinessChange }) => {
     ];
 
     // Interleave images to maintain H, S, H, S pattern
-    // We loop through hotel images and repeat spa images as needed
     const originalImages = [];
     hotelImages.forEach((hImg, index) => {
         originalImages.push(hImg);
         originalImages.push(spaImages[index % spaImages.length]);
     });
 
-    // No need for extended images for fade effect
     const extendedImages = originalImages;
 
     // Slider State
     const [currentIndex, setCurrentIndex] = useState(0);
-    const [isTransitioning, setIsTransitioning] = useState(true);
-
-    // Text Fade State
     const [textVisible, setTextVisible] = useState(true);
     const [isMounted, setIsMounted] = useState(false);
 
-    // Initial mount effect to trigger first zoom
     useEffect(() => {
         setIsMounted(true);
-    }, []);
-
-    // Initial business set
-    useEffect(() => {
         if (onBusinessChange) {
             onBusinessChange('hotel');
         }
-    }, []);
-
-    // Timer triggers slide and text toggle
-    // Preload images
-    useEffect(() => {
-        originalImages.forEach((src) => {
-            const img = new Image();
-            img.src = src;
-        });
-    }, []);
+    }, [onBusinessChange]);
 
     useEffect(() => {
         let fadeOutTimer;
         let fadeInTimer;
 
         const interval = setInterval(() => {
-            // 1. Start Text Fade Out
             setTextVisible(false);
 
-            // 2. Wait for fade out
             fadeOutTimer = setTimeout(() => {
-                setCurrentIndex(prev => prev + 1);
-
-                // 3. After slide/fade time, Text Fades In (driven by render change usually)
-                // But we need to toggle 'textVisible' back to true after content update.
-                // If slide takes 1s. Text Fade Out takes 0.5s.
-                // At 0.5s, update Content? No, Content updates when currentIndex changes (immediately).
-                // So if we change index, content flips.
-                // We want old text to fade out -> Flip Content -> New text fade in.
-                // To do this strictly: Fade Out -> (Wait) -> Change Index -> (Wait) -> Fade In.
-                // But Slider needs to move continuously?
-                // "Current image slides left as new slides in".
-                // So Slide happens. Text can Fade Out/In on top.
-
-                // Revised flow:
-                // T=0: setTextVisible(false). (Fade out old).
-                // T=0.5s: setCurrentIndex(+1). (Slide starts physically, content updates).
-                // T=0.6s: setTextVisible(true). (Fade in new).
-                // This ensures text is hidden during the "swap" moment if distinct, or just transition.
-
-                // However, sliding happens over 1s.
-                // If we delay Index update, slide is delayed.
-                // Let's just let text fade out/in smoothly.
-
-                // 3. Fade In
+                setCurrentIndex(prev => (prev + 1) % originalImages.length);
                 fadeInTimer = setTimeout(() => {
                     setTextVisible(true);
                 }, 100);
@@ -113,29 +70,17 @@ const DualHero = ({ onBusinessChange }) => {
             clearTimeout(fadeOutTimer);
             clearTimeout(fadeInTimer);
         };
-    }, []);
-
-    // Cyclic reset handled naturally by modulo in rendering if we wanted, 
-    // but here we just increment. To prevent integer overflow eventuall (unlikely but clean), reset.
-    useEffect(() => {
-        if (currentIndex >= originalImages.length) {
-            setCurrentIndex(0);
-        }
-    }, [currentIndex]);
+    }, [originalImages.length]);
 
     // Update Business Type based on index
     useEffect(() => {
-        const effectiveIndex = currentIndex % originalImages.length;
-        // Even = Hotel, Odd = Spa
-        const nextBusiness = (effectiveIndex % 2 === 0) ? 'hotel' : 'spa';
+        const nextBusiness = (currentIndex % 2 === 0) ? 'hotel' : 'spa';
         if (onBusinessChange) {
             onBusinessChange(nextBusiness);
         }
-    }, [currentIndex, onBusinessChange, originalImages.length]);
+    }, [currentIndex, onBusinessChange]);
 
-    // currentContent Calculation
-    const effectiveIndex = currentIndex % originalImages.length;
-    const currentBusiness = (effectiveIndex % 2 === 0) ? 'hotel' : 'spa';
+    const currentBusiness = (currentIndex % 2 === 0) ? 'hotel' : 'spa';
 
     const spaContent = {
         logo: '/assets/logo.jpg',
@@ -145,7 +90,7 @@ const DualHero = ({ onBusinessChange }) => {
         description: 'Experience ultimate relaxation with our premium massage and spa services',
         cta: 'Book Spa Service',
         link: '/spa',
-        color: '#005C53' // Updated Deep Teal
+        color: '#005C53' 
     };
 
     const hotelContent = {
@@ -156,7 +101,7 @@ const DualHero = ({ onBusinessChange }) => {
         description: 'Luxury accommodation with stunning views and world-class amenities',
         cta: 'Book Your Stay',
         link: '/hotel',
-        color: '#8B4513' // Updated Brown
+        color: '#8B4513'
     };
 
     const content = currentBusiness === 'spa' ? spaContent : hotelContent;
@@ -171,57 +116,45 @@ const DualHero = ({ onBusinessChange }) => {
                 transition: 'all 0.5s ease-in-out'
             }}
         >
-            {/* Background Slideshow - Slider Track */}
             <div style={{ position: 'relative', width: '100%' }}>
+                <div style={{ position: 'relative', width: '100%', height: '100vh', backgroundColor: '#000' }}>
+                    {extendedImages.map((imgSrc, index) => {
+                        // Only render current and next image for performance, or use opacity strategy but optimize visibility
+                        const isActive = index === currentIndex;
+                        const isPrev = index === (currentIndex - 1 + extendedImages.length) % extendedImages.length;
+                        
+                        // To keep it smooth but light, we only show active and prev during transition
+                        if (!isActive && !isPrev) return null;
 
-                {/* Content Container - Absolute Overlay */}
-                <div style={{ position: 'relative', width: '100%', height: '100vh' }}>
-                    {extendedImages.map((imgSrc, index) => (
-                        <div
-                            key={index}
-                            className={`hero-bg-image ${index === currentIndex ? 'active' : ''}`}
-                            style={{
-                                position: 'absolute',
-                                top: 0,
-                                left: 0,
-                                width: '100%',
-                                height: '100%',
-                                opacity: index === currentIndex ? 1 : 0,
-                                toggle: index === currentIndex,
-                                transition: 'opacity 1.5s ease-in-out',
-                                zIndex: index === currentIndex ? 0 : -1
-                            }}
-                        >
-                            <style>
-                                {`
-                                    @keyframes zoomSlowDual {
-                                        from { transform: scale(1); }
-                                        to { transform: scale(1.05); }
-                                    }
-                                    .zoom-animate {
-                                        animation: zoomSlowDual 6s ease-out forwards;
-                                    }
-                                    .zoom-exit {
-                                        transform: scale(1.05);
-                                    }
-                                `}
-                            </style>
-                            <img
-                                src={imgSrc}
-                                alt={`Slide ${index}`}
-                                className={index === currentIndex ? 'zoom-animate' : (
-                                    index === (currentIndex - 1 + extendedImages.length) % extendedImages.length ? 'zoom-exit' : ''
-                                )}
+                        return (
+                            <div
+                                key={index}
                                 style={{
+                                    position: 'absolute',
+                                    top: 0,
+                                    left: 0,
                                     width: '100%',
                                     height: '100%',
-                                    objectFit: 'cover',
-                                    objectPosition: 'center 75%',
-                                    backgroundColor: 'transparent',
+                                    opacity: isActive ? 1 : 0,
+                                    transition: 'opacity 1.5s ease-in-out',
+                                    zIndex: isActive ? 1 : 0
                                 }}
-                            />
-                        </div>
-                    ))}
+                            >
+                                <Image
+                                    src={imgSrc}
+                                    alt={`Slide ${index}`}
+                                    fill
+                                    priority={index < 2} // Preload only first two images
+                                    sizes="100vw"
+                                    style={{
+                                        objectFit: 'cover',
+                                        objectPosition: 'center 75%',
+                                    }}
+                                    className={isActive ? 'zoom-animate' : 'zoom-exit'}
+                                />
+                            </div>
+                        );
+                    })}
                 </div>
             </div>
 

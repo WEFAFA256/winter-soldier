@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import HotelPriceList from './HotelPriceList';
 import ServiceCard from './ServiceCard';
 import { useScrollReveal } from '../hooks/useAnimations';
@@ -67,132 +68,42 @@ const HotelPage = () => {
         <div>
             {/* Hotel Hero Section */}
             <section style={{ position: 'relative', width: '100%', overflow: 'hidden' }}>
-                {/* Background Slideshow */}
-                <div style={{ position: 'relative', width: '100%' }}>
-                    <style>
-                        {`
-                            /* Slider Styles */
-                            .hero-slider-track {
-                                display: flex;
-                                width: 100%;
-                            }
-                            
-                            @keyframes zoomSlow {
-                                from { transform: scale(1); }
-                                to { transform: scale(1.1); }
-                            }
+                <div style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    height: '30%',
+                    background: 'linear-gradient(to bottom, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0) 100%)',
+                    zIndex: 2
+                }}></div>
 
-                            .hero-bg-image {
-                                width: 100%;
-                                min-width: 100%;
-                                flex-shrink: 0;
-                                height: 100%;
-                                display: block;
-                                min-height: 600px;
-                                object-fit: contain;
-                                backface-visibility: hidden;
-                                transform: scale(1);
-                                image-rendering: high-quality;
-                                object-position: center;
-                                background-color: #000;
-                            }
-
-                            /* Active Slide - Zoom Animation */
-                            .hero-bg-image.active-slide {
-                                opacity: 1;
-                                animation: zoomSlow 7s ease-out forwards;
-                            }
-
-                            /* Slider Track for Sliding Animation */
-                            .hero-slider-track {
-                                display: flex;
-                                width: 100%;
-                            }
-
-                            .hero-bg-image {
-                                width: 100%;
-                                min-width: 100%;
-                                flex-shrink: 0;
-                                height: 100%; 
-                                display: block;
-                                min-height: 600px;
-                                object-fit: contain;
-                                backface-visibility: hidden;
-                                transform: scale(1);
-                                image-rendering: high-quality;
-                                object-position: center;
-                                background-color: #000;
-                            }
-
-                            /* Animation */
-                            @keyframes zoomSlow {
-                                from { transform: scale(1); }
-                                to { transform: scale(1.1); }
-                            }
-
-                            .hero-bg-image.active {
-                                animation: zoomSlow 7s ease-out forwards;
-                            }
-                            
-                            /* Keep outgoing slide zoomed */
-                            .hero-bg-image.prev {
-                                transform: scale(1.1);
-                            }
-
-                            /* Mobile Optimization */
-                            @media (max-width: 768px) {
-                                .hero-bg-image {
-                                    object-fit: cover !important;
-                                    background-color: transparent !important;
-                                    height: 100vh;
-                                    min-height: 100vh;
-                                    transform-origin: center;
-                                }
-                                @keyframes zoomSlowMobile {
-                                    from { transform: scale(1); }
-                                    to { transform: scale(1.05); } 
-                                }
-                                .hero-bg-image.active {
-                                    animation: zoomSlowMobile 7s ease-out forwards;
-                                }
-                                .hero-bg-image.prev {
-                                    transform: scale(1.05);
-                                }
-                            }
-                        `}
-                    </style>
-
-                    <div style={{
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        width: '100%',
-                        height: '30%',
-                        background: 'linear-gradient(to bottom, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0) 100%)',
-                        zIndex: 2
-                    }}></div>
-
-                    {/* Slider Window */}
-                    <div className="hero-slider-track" style={{
-                        transform: `translateX(-${currentIndex * 100}%)`,
-                        transition: isTransitioning ? 'transform 1.5s ease-in-out' : 'none'
-                    }}>
-                        {extendedImages.map((imgSrc, index) => {
-                            const isActive = index === currentIndex;
-                            return (
-                                <div
-                                    key={index}
-                                    style={{ width: '100%', minWidth: '100%', height: '100%' }}
-                                >
-                                    <img
-                                        src={imgSrc}
-                                        alt="The Marina Stays"
-                                        className={`hero-bg-image ${isActive ? 'active' : ''} ${index === currentIndex - 1 ? 'prev' : ''}`}
-                                    />
-                                </div>
-                            );
-                        })}
-                    </div>
+                {/* Slider Window */}
+                <div className="hero-slider-track" style={{
+                    transform: `translateX(-${currentIndex * 100}%)`,
+                    transition: isTransitioning ? 'transform 1.5s ease-in-out' : 'none',
+                    display: 'flex',
+                    width: '100%'
+                }}>
+                    {extendedImages.map((imgSrc, index) => {
+                        const isActive = index === currentIndex;
+                        return (
+                            <div
+                                key={index}
+                                style={{ position: 'relative', width: '100%', minWidth: '100%', minHeight: '600px', height: '100vh', backgroundColor: '#000' }}
+                            >
+                                <Image
+                                    src={imgSrc}
+                                    alt="The Marina Stays"
+                                    fill
+                                    priority={index < 2}
+                                    sizes="100vw"
+                                    style={{ objectFit: 'cover' }}
+                                    className={`hero-bg-image ${isActive ? 'active' : ''} ${index === currentIndex - 1 ? 'prev' : ''}`}
+                                />
+                            </div>
+                        );
+                    })}
                 </div>
 
                 {/* Content Overlay */}
@@ -205,13 +116,13 @@ const HotelPage = () => {
                         height: '100%',
                         display: 'flex',
                         flexDirection: 'column',
-                        justifyContent: 'flex-start', // Fixed top position
+                        justifyContent: 'flex-start',
                         alignItems: 'center',
                         textAlign: 'center',
-                        color: '#ffffff', // Revert text color to white for body text
+                        color: '#ffffff',
                         textShadow: '2px 2px 4px rgba(0,0,0,0.5)',
                         zIndex: 2,
-                        paddingTop: 'clamp(100px, 22vh, 200px)' // Consistent spacing (lowered)
+                        paddingTop: 'clamp(100px, 22vh, 200px)'
                     }}
                 >
                     <div className="container">
@@ -219,9 +130,8 @@ const HotelPage = () => {
                             position: 'relative',
                             display: 'inline-block',
                             marginBottom: '1rem',
-                            maxWidth: '100%' // Ensure mobile fit
+                            maxWidth: '100%'
                         }}>
-                            {/* Invisible Spacer */}
                             <h1 style={{
                                 fontSize: 'clamp(2rem, 5vw, 4rem)',
                                 marginBottom: '0',
@@ -231,11 +141,10 @@ const HotelPage = () => {
                                 margin: 0,
                                 padding: 0,
                                 pointerEvents: 'none',
-                                whiteSpace: 'nowrap' // Keep single line unless really small
+                                whiteSpace: 'nowrap'
                             }}>
                                 THE MARINA STAYS
                             </h1>
-                            {/* Animated Overlay */}
                             <h1 className="typewriter-effect" style={{
                                 position: 'absolute',
                                 top: 0,
@@ -281,8 +190,6 @@ const HotelPage = () => {
                                     boxShadow: '0 5px 20px rgba(0, 0, 0, 0.3)',
                                     transition: 'transform 0.3s ease'
                                 }}
-                                onMouseEnter={(e) => e.target.style.transform = 'translateY(-3px)'}
-                                onMouseLeave={(e) => e.target.style.transform = 'translateY(0)'}
                             >
                                 Book Your Stay
                             </Link>
@@ -352,6 +259,7 @@ const HotelPage = () => {
                                 }}
                             >
                                 <div className="hover-zoom" style={{
+                                    position: 'relative',
                                     height: '300px',
                                     overflow: 'hidden',
                                     backgroundColor: '#f0f0f0',
@@ -359,12 +267,12 @@ const HotelPage = () => {
                                     alignItems: 'center',
                                     justifyContent: 'center'
                                 }}>
-                                    <img
+                                    <Image
                                         src={special.image}
                                         alt={special.title}
+                                        fill
+                                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                                         style={{
-                                            width: '100%',
-                                            height: '100%',
                                             objectFit: index === 0 ? 'contain' : 'cover'
                                         }}
                                     />
@@ -383,11 +291,8 @@ const HotelPage = () => {
                 </div>
             </section>
 
-
             {/* Reviews */}
             <Reviews type="hotel" />
-
-
         </div>
     );
 };

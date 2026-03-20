@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Image from 'next/image';
 import { useScrollAnimation } from '../hooks/useScrollAnimation';
 
 const GalleryImage = ({ src, alt, delay }) => {
@@ -18,23 +19,16 @@ const GalleryImage = ({ src, alt, delay }) => {
                 cursor: 'pointer',
             }}
         >
-            <img
+            <Image
                 src={src}
                 alt={alt}
+                fill
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                 style={{
-                    width: '100%',
-                    height: '100%',
                     objectFit: 'cover',
-                    transition: 'transform 0.5s ease, filter 0.5s ease',
+                    transition: 'transform 0.5s ease',
                 }}
-                onMouseEnter={(e) => {
-                    e.target.style.transform = 'scale(1.1)';
-                    e.target.style.filter = 'brightness(1.1)';
-                }}
-                onMouseLeave={(e) => {
-                    e.target.style.transform = 'scale(1)';
-                    e.target.style.filter = 'brightness(1)';
-                }}
+                className="hover-scale"
             />
         </div>
     );

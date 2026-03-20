@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import Services from './Services';
 import Gallery from './Gallery';
 import Contact from './Contact';
@@ -65,107 +66,42 @@ const SpaPage = () => {
         <div>
             {/* Spa Hero Section */}
             <section style={{ position: 'relative', width: '100%', overflow: 'hidden' }}>
-                {/* Background Slideshow */}
-                <div style={{ position: 'relative', width: '100%' }}>
-                    <style>
-                        {`
-                            /* Slider Styles */
-                            .hero-slider-track {
-                                display: flex;
-                                width: 100%;
-                            }
+                <div style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    height: '30%',
+                    background: 'linear-gradient(to bottom, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0) 100%)',
+                    zIndex: 2
+                }}></div>
 
-                            @keyframes zoomSlow {
-                                from { transform: scale(1); }
-                                to { transform: scale(1.1); }
-                            }
-                            
-                            .hero-bg-image {
-                                width: 100%;
-                                min-width: 100%;
-                                flex-shrink: 0;
-                                height: 100%; 
-                                display: block;
-                                min-height: 600px;
-                                object-fit: contain; /* Show all details */
-                                backface-visibility: hidden;
-                                transform: scale(1);
-                                image-rendering: high-quality;
-                                object-position: center;
-                                background-color: #000;
-                            }
-
-                            /* Animation */
-                            .hero-bg-image.active {
-                                animation: zoomSlow 7s ease-out forwards;
-                            }
-                            
-                            /* Keep outgoing slide zoomed */
-                            .hero-bg-image.prev {
-                                transform: scale(1.1);
-                            }
-
-                            /* Mobile Optimization */
-                            @media (max-width: 768px) {
-                                .hero-bg-image {
-                                    object-fit: cover !important;
-                                    background-color: transparent !important;
-                                    height: 100vh;
-                                    min-height: 100vh;
-                                    transform-origin: center;
-                                }
-                                @keyframes zoomSlowMobile {
-                                    from { transform: scale(1); }
-                                    to { transform: scale(1.05); } 
-                                }
-                                .hero-bg-image.active {
-                                    animation: zoomSlowMobile 7s ease-out forwards;
-                                }
-                                .hero-bg-image.prev {
-                                    transform: scale(1.05);
-                                }
-                            }
-                        `}
-                    </style>
-
-                    <div style={{
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        width: '100%',
-                        height: '30%',
-                        background: 'linear-gradient(to bottom, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0) 100%)',
-                        zIndex: 2
-                    }}></div>
-
-                    {/* Slider Window */}
-                    <div className="hero-slider-track" style={{
-                        transform: `translateX(-${currentIndex * 100}%)`,
-                        transition: isTransitioning ? 'transform 1.5s ease-in-out' : 'none'
-                    }}>
-                        {extendedImages.map((imgSrc, index) => {
-                            const isActive = index === currentIndex;
-                            // Outgoing slide is the one immediately before the current one
-                            const isPrev = index === currentIndex - 1 || (currentIndex === 0 && index === extendedImages.length - 2);
-                            // Note: Wrap around logic for prev might be tricky with cloning. 
-                            // If we slide 0 -> 1, 0 is prev.
-                            // If we slide N -> Clone, N is prev.
-                            // We just need to ensure the one TO THE LEFT is scaled up.
-
-                            return (
-                                <div
-                                    key={index}
-                                    style={{ width: '100%', minWidth: '100%', height: '100%' }}
-                                >
-                                    <img
-                                        src={imgSrc}
-                                        alt="The Serenity Spa"
-                                        className={`hero-bg-image ${isActive ? 'active' : ''} ${index === currentIndex - 1 ? 'prev' : ''}`}
-                                    />
-                                </div>
-                            );
-                        })}
-                    </div>
+                {/* Slider Window */}
+                <div className="hero-slider-track" style={{
+                    transform: `translateX(-${currentIndex * 100}%)`,
+                    transition: isTransitioning ? 'transform 1.5s ease-in-out' : 'none',
+                    display: 'flex',
+                    width: '100%'
+                }}>
+                    {extendedImages.map((imgSrc, index) => {
+                        const isActive = index === currentIndex;
+                        return (
+                            <div
+                                key={index}
+                                style={{ position: 'relative', width: '100%', minWidth: '100%', minHeight: '600px', height: '100vh', backgroundColor: '#000' }}
+                            >
+                                <Image
+                                    src={imgSrc}
+                                    alt="The Serenity Spa"
+                                    fill
+                                    priority={index < 2}
+                                    sizes="100vw"
+                                    style={{ objectFit: 'cover' }}
+                                    className={`hero-bg-image ${isActive ? 'active' : ''} ${index === currentIndex - 1 ? 'prev' : ''}`}
+                                />
+                            </div>
+                        );
+                    })}
                 </div>
 
                 {/* Content Overlay */}

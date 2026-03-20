@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Image from 'next/image';
 import { useScrollAnimation } from '../hooks/useScrollAnimation';
 
 const BranchCard = ({ name, image, description, address, delay }) => {
@@ -20,13 +21,14 @@ const BranchCard = ({ name, image, description, address, delay }) => {
             onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-10px)'}
             onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
         >
-            <div style={{ height: '300px', overflow: 'hidden' }}>
-                <img
+            <div style={{ position: 'relative', height: '300px', overflow: 'hidden' }}>
+                <Image
                     src={image}
                     alt={name}
-                    style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.5s ease' }}
-                    onMouseEnter={(e) => e.target.style.transform = 'scale(1.1)'}
-                    onMouseLeave={(e) => e.target.style.transform = 'scale(1)'}
+                    fill
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                    style={{ objectFit: 'cover', transition: 'transform 0.5s ease' }}
+                    className="hover-scale"
                 />
             </div>
             <div style={{ padding: '2rem' }}>
