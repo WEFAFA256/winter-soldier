@@ -1,10 +1,26 @@
-import React from 'react';
+'use client';
+
+import React, { useState } from 'react';
 import { useScrollAnimation } from '../hooks/useScrollAnimation';
 
 const Contact = () => {
     const formRef = useScrollAnimation('animate-float-up');
     const infoRef = useScrollAnimation('animate-float-up');
     const mapRef = useScrollAnimation('animate-scale-in');
+    
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [submitted, setSubmitted] = useState(false);
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setIsSubmitting(true);
+        // Simulate an API call
+        setTimeout(() => {
+            setIsSubmitting(false);
+            setSubmitted(true);
+            setTimeout(() => setSubmitted(false), 5000); // Clear after 5s
+        }, 1500);
+    };
 
     return (
         <section id="contact" style={{
@@ -166,13 +182,28 @@ const Contact = () => {
 
                     {/* Contact Form */}
                     <div ref={formRef} className="animate-on-scroll delay-200">
-                        <form style={{
-                            backgroundColor: '#fff',
-                            padding: '3rem',
-                            borderRadius: '15px',
-                            boxShadow: '0 10px 30px rgba(0,0,0,0.08)'
-                        }}>
-                            <h3 style={{ marginBottom: '2rem', color: 'var(--color-primary)', fontFamily: '"Times New Roman", Times, serif' }}>Send us a Message</h3>
+                        {submitted ? (
+                            <div style={{
+                                backgroundColor: '#fff',
+                                padding: '3rem',
+                                borderRadius: '15px',
+                                boxShadow: '0 10px 30px rgba(0,0,0,0.08)',
+                                textAlign: 'center'
+                            }}>
+                                <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>✨</div>
+                                <h3 style={{ color: 'var(--color-primary)', marginBottom: '1rem' }}>Thank You!</h3>
+                                <p style={{ color: 'var(--color-text-light)' }}>
+                                    Your message has been sent successfully. We'll get back to you shortly.
+                                </p>
+                            </div>
+                        ) : (
+                            <form onSubmit={handleSubmit} style={{
+                                backgroundColor: '#fff',
+                                padding: '3rem',
+                                borderRadius: '15px',
+                                boxShadow: '0 10px 30px rgba(0,0,0,0.08)'
+                            }}>
+                                <h3 style={{ marginBottom: '2rem', color: 'var(--color-primary)', fontFamily: '"Times New Roman", Times, serif' }}>Send us a Message</h3>
 
                             <div style={{ marginBottom: '1.5rem' }}>
                                 <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500', color: 'var(--color-text)' }}>Your Name</label>
@@ -271,6 +302,7 @@ const Contact = () => {
                                 Send Message
                             </button>
                         </form>
+                    )}
                     </div>
                 </div>
             </div>

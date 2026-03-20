@@ -132,7 +132,7 @@ const HotelPage = () => {
                             marginBottom: '1rem',
                             maxWidth: '100%'
                         }}>
-                            <h1 style={{
+                            <div style={{
                                 fontSize: 'clamp(2rem, 5vw, 4rem)',
                                 marginBottom: '0',
                                 fontFamily: '"Times New Roman", Times, serif',
@@ -144,7 +144,7 @@ const HotelPage = () => {
                                 whiteSpace: 'nowrap'
                             }}>
                                 THE MARINA STAYS
-                            </h1>
+                            </div>
                             <h1 className="typewriter-effect" style={{
                                 position: 'absolute',
                                 top: 0,

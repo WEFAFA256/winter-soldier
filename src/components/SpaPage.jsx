@@ -131,8 +131,8 @@ const SpaPage = () => {
                             marginBottom: '1rem',
                             maxWidth: '100%' // Ensure mobile fit
                         }}>
-                            {/* Invisible Spacer to set exact width */}
-                            <h1 style={{
+                            {/* Invisible Spacer to set exact width (using div for SEO) */}
+                            <div style={{
                                 fontSize: 'clamp(2rem, 5vw, 4rem)',
                                 fontWeight: '800',
                                 fontFamily: '"Times New Roman", Times, serif',
@@ -142,12 +142,12 @@ const SpaPage = () => {
                                 padding: 0,
                                 pointerEvents: 'none',
                                 width: 'max-content',
-                                whiteSpace: 'nowrap' // Keep single line unless really small
+                                whiteSpace: 'nowrap'
                             }}>
                                 THE SERENITY SPA
-                            </h1>
+                            </div>
 
-                            {/* Animated Overlay */}
+                            {/* Animated Overlay - Semantic H1 */}
                             <h1
                                 className="typewriter-effect"
                                 style={{
