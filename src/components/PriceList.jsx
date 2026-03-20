@@ -49,6 +49,7 @@ const PriceList = () => {
                                     src={img} 
                                     alt={`Price List ${index + 1}`} 
                                     fill
+                                    sizes="(max-width: 768px) 100vw, 800px"
                                     style={{ objectFit: 'contain' }}
                                     className="pricelist-image" 
                                 />

@@ -1,4 +1,5 @@
 import React from 'react';
+import Image from 'next/image';
 
 const ImageModal = ({ isOpen, onClose, imageSrc, title }) => {
     if (!isOpen) return null;
@@ -18,14 +19,16 @@ const ImageModal = ({ isOpen, onClose, imageSrc, title }) => {
                 justifyContent: 'center',
                 zIndex: 9999,
                 cursor: 'pointer',
+                backdropFilter: 'blur(5px)'
             }}
         >
             <div
                 onClick={(e) => e.stopPropagation()}
                 style={{
                     position: 'relative',
-                    maxWidth: '90%',
-                    maxHeight: '90%',
+                    width: '90vw',
+                    height: '80vh',
+                    maxWidth: '1200px',
                     cursor: 'default',
                 }}
             >
@@ -33,24 +36,26 @@ const ImageModal = ({ isOpen, onClose, imageSrc, title }) => {
                     onClick={onClose}
                     style={{
                         position: 'absolute',
-                        top: '-40px',
+                        top: '-50px',
                         right: '0',
                         background: 'transparent',
                         border: 'none',
                         color: 'white',
-                        fontSize: '2rem',
+                        fontSize: '2.5rem',
                         cursor: 'pointer',
                         padding: '0.5rem',
+                        zIndex: 10
                     }}
                 >
-                    ✕
+                    &times;
                 </button>
-                <img
+                <Image
                     src={imageSrc}
-                    alt={title}
+                    alt={title || "Full size image"}
+                    fill
+                    sizes="90vw"
+                    priority
                     style={{
-                        maxWidth: '100%',
-                        maxHeight: '90vh',
                         objectFit: 'contain',
                         borderRadius: '10px',
                     }}
