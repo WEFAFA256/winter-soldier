@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import ServiceCard from './ServiceCard';
 
 const HotelRoomsPage = () => {
@@ -90,14 +91,13 @@ const HotelRoomsPage = () => {
                     }}
                     onClick={() => setSelectedImage(null)}
                 >
-                    <div style={{ position: 'relative', maxWidth: '90%', maxHeight: '90%' }}>
-                        <img
+                    <div style={{ position: 'relative', width: '90vw', maxWidth: '1000px', height: '70vh' }}>
+                        <Image
                             src={selectedImage}
                             alt="Room Detail"
+                            fill
+                            sizes="90vw"
                             style={{
-                                width: '100%',
-                                height: 'auto',
-                                maxHeight: '80vh',
                                 objectFit: 'contain',
                                 borderRadius: '8px',
                                 boxShadow: '0 5px 30px rgba(0,0,0,0.5)'

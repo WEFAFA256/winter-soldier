@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 
 const Navbar = ({ homePageBusiness = 'spa' }) => {
@@ -31,12 +32,16 @@ const Navbar = ({ homePageBusiness = 'spa' }) => {
         logo: '/assets/hotel-logo.png',
         name: 'THE MARINA STAYS',
         color: '#8B4513',
-        logoStyle: { height: '60px', width: 'auto', objectFit: 'contain', borderRadius: '10px' }
+        logoStyle: { height: '60px', width: 'auto', borderRadius: '10px' },
+        logoWidth: 80,
+        logoHeight: 60
     } : {
         logo: '/assets/logo.jpg',
         name: 'THE SERENITY SPA',
         color: 'var(--color-primary)',
-        logoStyle: { height: '50px', width: '50px', objectFit: 'contain', borderRadius: '50%' }
+        logoStyle: { height: '50px', width: '50px', borderRadius: '50%' },
+        logoWidth: 50,
+        logoHeight: 50
     };
 
     // Dynamic navigation links based on section
@@ -96,10 +101,13 @@ const Navbar = ({ homePageBusiness = 'spa' }) => {
                 <div className="container" style={{ display: 'flex', justifyContent: isHome ? 'flex-end' : 'space-between', alignItems: 'center' }}>
                     {!isHome && (
                         <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', fontSize: '1.5rem', fontWeight: '700', color: isTransparent ? 'var(--color-white)' : branding.color, fontFamily: 'inherit', textDecoration: 'none' }}>
-                            <img
+                            <Image
                                 src={branding.logo}
                                 alt={branding.name}
+                                width={branding.logoWidth}
+                                height={branding.logoHeight}
                                 style={branding.logoStyle}
+                                priority
                             />
                             {branding.name}
                         </Link>
@@ -154,7 +162,14 @@ const Navbar = ({ homePageBusiness = 'spa' }) => {
                 {/* Sidebar Logo with Circular Text */}
                 <div className="sidebar-logo-wrapper">
                     <div className="sidebar-image-container">
-                        <img src={branding.logo} alt={branding.name} className="sidebar-image" />
+                        <Image 
+                            src={branding.logo} 
+                            alt={branding.name} 
+                            width={branding.logoWidth * 1.5} 
+                            height={branding.logoHeight * 1.5} 
+                            className="sidebar-image" 
+                            priority
+                        />
                     </div>
                     <div className="circular-text-container">
                         <svg viewBox="0 0 200 200" className="circular-text-svg">

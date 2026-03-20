@@ -72,6 +72,12 @@ img {
   padding: 0 2rem;
 }
 
+@media (max-width: 768px) {
+  .container {
+    padding: 0 1.25rem !important;
+  }
+}
+
 .section-padding {
   padding: 5rem 0;
 }
@@ -160,6 +166,11 @@ img {
 
 .animate-float-up {
   animation: floatInUp 1s ease-out forwards;
+}
+
+/* Fix for mobile 100vh */
+section[style*="height: 100vh"] {
+  height: 100svh !important;
 }
 
 .animate-float-left {
@@ -684,7 +695,8 @@ img {
   }
 
   .hero-title {
-    font-size: 3rem !important;
+    font-size: clamp(2.2rem, 8vw, 2.8rem) !important;
+    line-height: 1.1;
   }
 
   .hero-text {
@@ -693,7 +705,12 @@ img {
   }
 
   .section-padding {
-    padding: 3rem 0;
+    padding: 3.5rem 0 !important;
+  }
+  
+  /* Reduction of large gaps in flex layouts */
+  .section-padding > .container > div[style*="display: flex"] {
+    gap: 1.5rem !important;
   }
 
   /* Services Page Mobile Fixes */
@@ -873,7 +890,10 @@ img {
   }
 
   .booking-image {
-    display: none !important;
+    display: block !important;
+    min-height: 300px !important;
+    height: 300px !important;
+    order: -1; /* Show image at the top on mobile */
   }
 }
 

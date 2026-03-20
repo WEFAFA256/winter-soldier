@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
+import Image from 'next/image';
 import QRCodeModal from './QRCodeModal';
 
 const BookingContent = ({ businessType = 'spa' }) => {
@@ -457,15 +458,20 @@ const BookingContent = ({ businessType = 'spa' }) => {
                                 </div>
                             </div>
                             <div style={{
-                                backgroundImage: `url(${branding.image1})`,
-                                backgroundSize: 'cover',
-                                backgroundPosition: 'center',
                                 position: 'relative',
                                 minHeight: '500px',
                                 overflow: 'hidden'
                             }}
                                 className="booking-image"
                             >
+                                <Image 
+                                    src={branding.image1} 
+                                    alt="Booking Step 1" 
+                                    fill 
+                                    style={{ objectFit: 'cover' }}
+                                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 400px"
+                                    priority
+                                />
                                 <div style={{
                                     position: 'absolute',
                                     bottom: '2rem',
@@ -619,15 +625,19 @@ const BookingContent = ({ businessType = 'spa' }) => {
                                 </div>
                             </div>
                             <div style={{
-                                backgroundImage: `url(${branding.image2})`,
-                                backgroundSize: 'cover',
-                                backgroundPosition: 'center',
                                 position: 'relative',
                                 minHeight: '500px',
                                 overflow: 'hidden'
                             }}
                                 className="booking-image"
                             >
+                                <Image 
+                                    src={branding.image2} 
+                                    alt={formData.serviceType} 
+                                    fill 
+                                    style={{ objectFit: 'cover' }}
+                                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 400px"
+                                />
                                 <div style={{
                                     position: 'absolute',
                                     bottom: '2rem',
@@ -779,15 +789,19 @@ const BookingContent = ({ businessType = 'spa' }) => {
                                 </div>
                             </div>
                             <div style={{
-                                backgroundImage: `url(${branding.image3})`,
-                                backgroundSize: 'cover',
-                                backgroundPosition: 'center',
                                 position: 'relative',
                                 minHeight: '500px',
                                 overflow: 'hidden'
                             }}
                                 className="booking-image"
                             >
+                                <Image 
+                                    src={branding.image3} 
+                                    alt="Complete Booking" 
+                                    fill 
+                                    style={{ objectFit: 'cover' }}
+                                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 400px"
+                                />
                                 <div style={{
                                     position: 'absolute',
                                     bottom: '2rem',

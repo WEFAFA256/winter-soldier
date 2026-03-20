@@ -63,14 +63,14 @@ const ServiceCard = ({ title, image, description, delay, fullImage, onLearnMore,
             <div
                 ref={imageRef}
                 className={`animate-on-scroll ${delay} service-card-image`}
-                style={{ height: '250px', overflow: 'hidden', flexShrink: 0 }}
+                style={{ height: '250px', overflow: 'hidden', flexShrink: 0, position: 'relative' }}
             >
-                <img
+                <Image
                     src={image}
                     alt={title}
+                    fill
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                     style={{
-                        width: '100%',
-                        height: '100%',
                         objectFit: 'cover',
                         objectPosition: needsCrop ? 'right top' : 'center', /* Anchor right for price visibility */
                         transform: baseTransform,
