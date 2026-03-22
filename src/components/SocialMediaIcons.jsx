@@ -58,19 +58,18 @@ const SocialMediaIcons = ({ mode = 'spa' }) => {
                     rel="noopener noreferrer"
                     className="social-icon"
                     style={{
-                        width: '45px',
-                        height: '45px',
+                        width: '40px',
+                        height: '40px',
                         borderRadius: '50%',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        boxShadow: '0 4px 15px rgba(0,0,0,0.4)',
+                        boxShadow: '0 4px 15px rgba(0,0,0,0.3)',
                         cursor: 'pointer',
                         transition: 'transform 0.3s ease',
                         animation: `bounce 2s infinite ${social.delay}`,
                         overflow: 'hidden',
                         backgroundColor: '#fff',
-                        border: '2px solid #fff'
                     }}
                     onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.2)'}
                     onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
@@ -79,8 +78,8 @@ const SocialMediaIcons = ({ mode = 'spa' }) => {
                         src={social.image}
                         alt={social.name}
                         style={{
-                            width: social.name === 'Email' ? '70%' : '100%',
-                            height: social.name === 'Email' ? '70%' : '100%',
+                            width: social.name === 'Email' ? '75%' : '100%',
+                            height: social.name === 'Email' ? '75%' : '100%',
                             objectFit: social.name === 'Email' ? 'contain' : 'cover',
                         }}
                     />
