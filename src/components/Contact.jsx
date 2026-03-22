@@ -172,7 +172,7 @@ const Contact = () => {
                                     <div>
                                         <h4 style={{ marginBottom: '0.5rem', fontSize: '1.2rem', color: 'var(--color-primary)' }}>Email Us</h4>
                                         <p style={{ color: 'var(--color-text-light)', lineHeight: '1.6' }}>
-                                            <a href="mailto:hello@serenityspa.com" style={{ color: 'inherit', textDecoration: 'none' }}>hello@serenityspa.com</a>
+                                            <a href="mailto:marinastaysbookings@gmail.com" style={{ color: 'inherit', textDecoration: 'none' }}>marinastaysbookings@gmail.com</a>
                                         </p>
                                     </div>
                                 </div>

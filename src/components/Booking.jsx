@@ -82,7 +82,7 @@ const BookingContent = ({ businessType = 'spa' }) => {
         },
         marketingText: 'Available 24/7 • Professional therapists • Premium experience',
         emailSubject: 'Spa Booking Request',
-        contactEmail: 'hello@serenityspa.com'
+        contactEmail: 'marinastaysbookings@gmail.com'
     };
 
     const servicePrice = branding.pricing[formData.serviceType] || (isHotel ? 100000 : 150000);
