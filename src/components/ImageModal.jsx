@@ -49,8 +49,7 @@ const ImageModal = ({ isOpen, onClose, imageSrc, title }) => {
                 >
                     &times;
                 </button>
-                <Image
-                    src={imageSrc}
+                <Image quality={100} src={imageSrc}
                     alt={title || "Full size image"}
                     fill
                     sizes="90vw"

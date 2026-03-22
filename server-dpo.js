@@ -16,7 +16,7 @@ const PORT = 3001;
 const DPO_COMPANY_TOKEN = process.env.DPO_COMPANY_TOKEN || 'YOUR_DPO_COMPANY_TOKEN'; // Get from DPO dashboard
 const DPO_SERVICE_TYPE = process.env.DPO_SERVICE_TYPE || '3854'; // Your service type ID
 const DPO_BASE_URL = 'https://secure.3gdirectpay.com';
-const APP_URL = 'http://localhost:5173'; // Frontend URL
+const APP_URL = 'http://localhost:3000'; // Frontend URL
 
 // Health check
 app.get('/health', (req, res) => {

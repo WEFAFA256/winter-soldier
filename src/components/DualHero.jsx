@@ -7,25 +7,25 @@ import Image from 'next/image';
 const DualHero = ({ onBusinessChange }) => {
     // Define Hotel and Spa images separately
     const hotelImages = [
-        '/assets/hotel-bg.jpg',
-        '/assets/hotel-bg-2.jpg',
-        '/assets/hotel-slide-3.jpg',
-        '/assets/hotel-extra-1.jpg',
-        '/assets/hotel-extra-2.jpg',
-        '/assets/hotel-extra-3.jpg',
-        '/assets/hotel-extra-4.jpg',
-        '/assets/hotel-extra-5.jpg',
-        '/assets/hotel-extra-6.jpg',
-        '/assets/hotel-extra-7.jpg',
-        '/assets/hotel-extra-8.jpg'
+        'https://lusvuwwlcdgowauvdpoh.supabase.co/storage/v1/object/public/website-assets/assets/hotel-bg.jpg',
+        'https://lusvuwwlcdgowauvdpoh.supabase.co/storage/v1/object/public/website-assets/assets/hotel-bg-2.jpg',
+        'https://lusvuwwlcdgowauvdpoh.supabase.co/storage/v1/object/public/website-assets/assets/hotel-slide-3.jpg',
+        'https://lusvuwwlcdgowauvdpoh.supabase.co/storage/v1/object/public/website-assets/assets/hotel-extra-1.jpg',
+        'https://lusvuwwlcdgowauvdpoh.supabase.co/storage/v1/object/public/website-assets/assets/hotel-extra-2.jpg',
+        'https://lusvuwwlcdgowauvdpoh.supabase.co/storage/v1/object/public/website-assets/assets/hotel-extra-3.jpg',
+        'https://lusvuwwlcdgowauvdpoh.supabase.co/storage/v1/object/public/website-assets/assets/hotel-extra-4.jpg',
+        'https://lusvuwwlcdgowauvdpoh.supabase.co/storage/v1/object/public/website-assets/assets/hotel-extra-5.jpg',
+        'https://lusvuwwlcdgowauvdpoh.supabase.co/storage/v1/object/public/website-assets/assets/hotel-extra-6.jpg',
+        'https://lusvuwwlcdgowauvdpoh.supabase.co/storage/v1/object/public/website-assets/assets/hotel-extra-7.jpg',
+        'https://lusvuwwlcdgowauvdpoh.supabase.co/storage/v1/object/public/website-assets/assets/hotel-extra-8.jpg'
     ];
 
     const spaImages = [
-        '/assets/spa-bg.jpg',
-        '/assets/spa-bg-2.jpg',
-        '/assets/spa-slide-3.jpg',
-        '/assets/spa-new-1.jpg',
-        '/assets/spa-new-2.jpg'
+        'https://lusvuwwlcdgowauvdpoh.supabase.co/storage/v1/object/public/website-assets/assets/spa-bg.jpg',
+        'https://lusvuwwlcdgowauvdpoh.supabase.co/storage/v1/object/public/website-assets/assets/spa-bg-2.jpg',
+        'https://lusvuwwlcdgowauvdpoh.supabase.co/storage/v1/object/public/website-assets/assets/spa-slide-3.jpg',
+        'https://lusvuwwlcdgowauvdpoh.supabase.co/storage/v1/object/public/website-assets/assets/spa-new-1.jpg',
+        'https://lusvuwwlcdgowauvdpoh.supabase.co/storage/v1/object/public/website-assets/assets/spa-new-2.jpg'
     ];
 
     // Interleave images to maintain H, S, H, S pattern
@@ -83,7 +83,7 @@ const DualHero = ({ onBusinessChange }) => {
     const currentBusiness = (currentIndex % 2 === 0) ? 'hotel' : 'spa';
 
     const spaContent = {
-        logo: '/assets/logo.jpg',
+        logo: 'https://lusvuwwlcdgowauvdpoh.supabase.co/storage/v1/object/public/website-assets/assets/logo.jpg',
         name: 'THE SERENITY SPA',
         tagline: 'Your Oasis of Relaxation',
         location: 'Makerere, Kampala',
@@ -94,7 +94,7 @@ const DualHero = ({ onBusinessChange }) => {
     };
 
     const hotelContent = {
-        logo: '/assets/hotel-logo.png',
+        logo: 'https://lusvuwwlcdgowauvdpoh.supabase.co/storage/v1/object/public/website-assets/assets/hotel-logo.png',
         name: 'THE MARINA STAYS',
         tagline: 'Entebbe\'s Premier Residences',
         location: 'Entebbe, Uganda',
@@ -119,11 +119,10 @@ const DualHero = ({ onBusinessChange }) => {
             <div style={{ position: 'relative', width: '100%' }}>
                 <div style={{ position: 'relative', width: '100%', height: '100vh', backgroundColor: '#000' }}>
                     {extendedImages.map((imgSrc, index) => {
-                        // Only render current and next image for performance, or use opacity strategy but optimize visibility
                         const isActive = index === currentIndex;
                         const isPrev = index === (currentIndex - 1 + extendedImages.length) % extendedImages.length;
-                        
-                        // To keep it smooth but light, we only show active and prev during transition
+
+                        // Keep prev mounted so opacity fade is smooth; hide all others
                         if (!isActive && !isPrev) return null;
 
                         return (
@@ -137,14 +136,20 @@ const DualHero = ({ onBusinessChange }) => {
                                     height: '100%',
                                     opacity: isActive ? 1 : 0,
                                     transition: 'opacity 1.5s ease-in-out',
-                                    zIndex: isActive ? 1 : 0
+                                    zIndex: isActive ? 1 : 0,
+                                    overflow: 'hidden',
                                 }}
                             >
+                                {/* key={`${index}-${currentIndex}`} forces CSS animation restart
+                                    when this slide becomes active, giving a clean Ken Burns zoom
+                                    from scale(1) every time with no snap-back glitch */}
                                 <Image
+                                    key={isActive ? `active-${index}` : `prev-${index}`}
+                                    quality={100}
                                     src={imgSrc}
                                     alt={`Slide ${index}`}
                                     fill
-                                    priority={index < 2} // Preload only first two images
+                                    priority={index < 2}
                                     sizes="100vw"
                                     style={{
                                         objectFit: 'cover',
@@ -217,7 +222,7 @@ const DualHero = ({ onBusinessChange }) => {
                         letterSpacing: '2px',
                         opacity: 0,
                         margin: 0,
-                        padding: 0,
+                        padding: '0 0.5rem 0 0', // Added padding-right to prevent clipping
                         pointerEvents: 'none',
                         width: 'max-content' // Ensure it takes full width of text
                     }}>
@@ -242,7 +247,7 @@ const DualHero = ({ onBusinessChange }) => {
                             textShadow: 'none',
                             borderRightColor: content.color,
                             margin: 0, // Reset margin
-                            padding: 0,
+                            padding: '0 0.5rem 0 0', // Added padding-right to prevent clipping
                             animationDelay: '0.5s',
                             opacity: textVisible ? 1 : 0,
                             transition: 'opacity 0.5s ease-in-out'

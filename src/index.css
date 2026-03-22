@@ -1302,11 +1302,12 @@ section[style*="height: 100vh"] {
   white-space: nowrap;
   border-right: 2px solid rgba(255, 255, 255, 0.75);
   animation:
-    typeWriter 3.5s steps(40, end) forwards,
+    typeWriter 3s cubic-bezier(0.1, 0, 0.1, 1) forwards,
     blinkCursor .75s step-end infinite;
   display: inline-block;
   vertical-align: bottom;
   width: 0;
+  padding-right: 0.5rem; /* Safety buffer for last characters */
   /* Start at 0 */
 }
 
@@ -1487,6 +1488,7 @@ section[style*="height: 100vh"] {
   width: max-content;
   animation: scrollMarquee 40s linear infinite;
   padding-left: 2rem;
+  will-change: transform;
 }
 
 .reviews-track:hover {

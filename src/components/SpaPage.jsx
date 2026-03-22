@@ -14,11 +14,11 @@ import Reviews from './Reviews';
 const SpaPage = () => {
     // Slideshow State
     const originalImages = [
-        '/assets/spa-hero-bg-2.jpg',
-        '/assets/spa-hero-bg.jpg',
-        '/assets/spa-new-3.jpg',
-        '/assets/spa-new-1.jpg',
-        '/assets/spa-new-2.jpg'
+        'https://lusvuwwlcdgowauvdpoh.supabase.co/storage/v1/object/public/website-assets/assets/spa-hero-bg-2.jpg',
+        'https://lusvuwwlcdgowauvdpoh.supabase.co/storage/v1/object/public/website-assets/assets/spa-hero-bg.jpg',
+        'https://lusvuwwlcdgowauvdpoh.supabase.co/storage/v1/object/public/website-assets/assets/spa-new-3.jpg',
+        'https://lusvuwwlcdgowauvdpoh.supabase.co/storage/v1/object/public/website-assets/assets/spa-new-1.jpg',
+        'https://lusvuwwlcdgowauvdpoh.supabase.co/storage/v1/object/public/website-assets/assets/spa-new-2.jpg'
     ];
     // Clone first image for seamless loop
     const extendedImages = [...originalImages, originalImages[0]];
@@ -79,25 +79,28 @@ const SpaPage = () => {
                 {/* Slider Window */}
                 <div className="hero-slider-track" style={{
                     transform: `translateX(-${currentIndex * 100}%)`,
-                    transition: isTransitioning ? 'transform 1.5s ease-in-out' : 'none',
+                    transition: isTransitioning ? 'transform 1.5s cubic-bezier(0.645, 0.045, 0.355, 1)' : 'none',
                     display: 'flex',
-                    width: '100%'
+                    width: '100%',
+                    willChange: 'transform'
                 }}>
                     {extendedImages.map((imgSrc, index) => {
                         const isActive = index === currentIndex;
                         return (
                             <div
                                 key={index}
-                                style={{ position: 'relative', width: '100%', minWidth: '100%', minHeight: '600px', height: '100vh', backgroundColor: '#000' }}
+                                style={{ position: 'relative', width: '100%', minWidth: '100%', minHeight: '600px', height: '100vh', backgroundColor: '#000', overflow: 'hidden' }}
                             >
                                 <Image
+                                    key={isActive ? `active-${index}` : `idle-${index}`}
+                                    quality={100}
                                     src={imgSrc}
                                     alt="The Serenity Spa"
                                     fill
                                     priority={index < 2}
                                     sizes="100vw"
                                     style={{ objectFit: 'cover' }}
-                                    className={`hero-bg-image ${isActive ? 'active' : ''} ${index === currentIndex - 1 ? 'prev' : ''}`}
+                                    className={isActive ? 'zoom-animate' : 'zoom-exit'}
                                 />
                             </div>
                         );
@@ -139,7 +142,7 @@ const SpaPage = () => {
                                 letterSpacing: '2px',
                                 opacity: 0,
                                 margin: 0,
-                                padding: 0,
+                                padding: '0 0.5rem 0 0', // Added padding-right to prevent clipping
                                 pointerEvents: 'none',
                                 width: 'max-content',
                                 whiteSpace: 'nowrap'
@@ -164,7 +167,7 @@ const SpaPage = () => {
                                     textShadow: 'none',
                                     borderRightColor: '#005C53',
                                     margin: 0,
-                                    padding: 0,
+                                    padding: '0 0.5rem 0 0', // Added padding-right to prevent clipping
                                     animationDelay: '0.5s',
                                     whiteSpace: 'nowrap',
                                     overflow: 'hidden'

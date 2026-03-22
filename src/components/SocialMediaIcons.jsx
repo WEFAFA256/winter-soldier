@@ -5,20 +5,20 @@ import React from 'react';
 const SocialMediaIcons = () => {
     const socials = [
         {
-            name: 'Instagram',
-            image: '/assets/instagram-icon.jpg',
-            url: 'https://www.instagram.com/theserenityspaug/',
+            name: 'Email',
+            image: 'https://lusvuwwlcdgowauvdpoh.supabase.co/storage/v1/object/public/website-assets/assets/email-icon.svg',
+            url: 'mailto:info@serenityspa-ug.com',
             delay: '0s'
         },
         {
             name: 'WhatsApp',
-            image: '/assets/whatsapp-icon.jpg',
+            image: 'https://lusvuwwlcdgowauvdpoh.supabase.co/storage/v1/object/public/website-assets/assets/whatsapp-icon.jpg',
             url: 'https://wa.me/256764001922',
             delay: '0.2s'
         },
         {
             name: 'Phone',
-            image: '/assets/phone-icon.jpg',
+            image: 'https://lusvuwwlcdgowauvdpoh.supabase.co/storage/v1/object/public/website-assets/assets/phone-icon.jpg',
             url: 'tel:+256764001922',
             delay: '0.4s'
         },
@@ -41,7 +41,7 @@ const SocialMediaIcons = () => {
                 <a
                     key={index}
                     href={social.url}
-                    target={social.name === 'Phone' ? '_self' : '_blank'}
+                    target={social.name === 'Phone' || social.name === 'Email' ? '_self' : '_blank'}
                     rel="noopener noreferrer"
                     className="social-icon"
                     style={{
@@ -65,9 +65,9 @@ const SocialMediaIcons = () => {
                         src={social.image}
                         alt={social.name}
                         style={{
-                            width: '100%',
-                            height: '100%',
-                            objectFit: 'cover',
+                            width: social.name === 'Email' ? '75%' : '100%',
+                            height: social.name === 'Email' ? '75%' : '100%',
+                            objectFit: social.name === 'Email' ? 'contain' : 'cover',
                         }}
                     />
                 </a>

@@ -8,14 +8,14 @@ const HotelPriceList = () => {
     const router = useRouter();
     // Using images from public/assets/hotel_pricelist
     const images = [
-        '/assets/hotel_pricelist/price1.jpg',
-        '/assets/hotel_pricelist/price2.jpg',
-        '/assets/hotel_pricelist/price3.jpg',
-        '/assets/hotel_pricelist/price4.jpg',
-        '/assets/hotel_pricelist/price5.jpg',
-        '/assets/hotel_pricelist/price6.jpg',
-        '/assets/hotel_pricelist/price7.jpg',
-        '/assets/hotel_pricelist/price8.jpg'
+        'https://lusvuwwlcdgowauvdpoh.supabase.co/storage/v1/object/public/website-assets/assets/hotel_pricelist/price1.jpg',
+        'https://lusvuwwlcdgowauvdpoh.supabase.co/storage/v1/object/public/website-assets/assets/hotel_pricelist/price2.jpg',
+        'https://lusvuwwlcdgowauvdpoh.supabase.co/storage/v1/object/public/website-assets/assets/hotel_pricelist/price3.jpg',
+        'https://lusvuwwlcdgowauvdpoh.supabase.co/storage/v1/object/public/website-assets/assets/hotel_pricelist/price4.jpg',
+        'https://lusvuwwlcdgowauvdpoh.supabase.co/storage/v1/object/public/website-assets/assets/hotel_pricelist/price5.jpg',
+        'https://lusvuwwlcdgowauvdpoh.supabase.co/storage/v1/object/public/website-assets/assets/hotel_pricelist/price6.jpg',
+        'https://lusvuwwlcdgowauvdpoh.supabase.co/storage/v1/object/public/website-assets/assets/hotel_pricelist/price7.jpg',
+        'https://lusvuwwlcdgowauvdpoh.supabase.co/storage/v1/object/public/website-assets/assets/hotel_pricelist/price8.jpg'
     ];
     const [currentIndex, setCurrentIndex] = useState(0);
 
@@ -65,8 +65,7 @@ const HotelPriceList = () => {
                     >
                         {images.map((img, index) => (
                             <div key={index} className="pricelist-slide" style={{ position: 'relative', minWidth: '100%', minHeight: '500px' }}>
-                                <Image
-                                    src={img}
+                                <Image quality={100} src={img}
                                     alt={`Hotel Price List ${index + 1}`}
                                     fill
                                     style={{ objectFit: 'contain' }}

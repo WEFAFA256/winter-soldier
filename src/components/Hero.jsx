@@ -8,12 +8,12 @@ const Hero = () => {
     const btnRef = useScrollAnimation('animate-float-up');
 
     const slides = [
-        '/assets/slide_1.jpg',
-        '/assets/slide_2.jpg',
-        '/assets/slide_3.jpg',
-        '/assets/slide_4.jpg',
-        '/assets/slide_5.jpg',
-        '/assets/slide_6.jpg'
+        'https://lusvuwwlcdgowauvdpoh.supabase.co/storage/v1/object/public/website-assets/assets/slide_1.jpg',
+        'https://lusvuwwlcdgowauvdpoh.supabase.co/storage/v1/object/public/website-assets/assets/slide_2.jpg',
+        'https://lusvuwwlcdgowauvdpoh.supabase.co/storage/v1/object/public/website-assets/assets/slide_3.jpg',
+        'https://lusvuwwlcdgowauvdpoh.supabase.co/storage/v1/object/public/website-assets/assets/slide_4.jpg',
+        'https://lusvuwwlcdgowauvdpoh.supabase.co/storage/v1/object/public/website-assets/assets/slide_5.jpg',
+        'https://lusvuwwlcdgowauvdpoh.supabase.co/storage/v1/object/public/website-assets/assets/slide_6.jpg'
     ];
 
     const [currentSlide, setCurrentSlide] = useState(0);

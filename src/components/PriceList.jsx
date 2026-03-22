@@ -45,8 +45,7 @@ const PriceList = () => {
                     >
                         {images.map((img, index) => (
                             <div key={index} className="pricelist-slide" style={{ position: 'relative', height: 'auto', minHeight: '500px' }}>
-                                <Image 
-                                    src={img} 
+                                <Image quality={100} src={img} 
                                     alt={`Price List ${index + 1}`} 
                                     fill
                                     sizes="(max-width: 768px) 100vw, 800px"

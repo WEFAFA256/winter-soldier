@@ -66,7 +66,7 @@ const ServiceCard = ({ title, image, description, delay, fullImage, onLearnMore,
                 className={`animate-on-scroll ${delay} service-card-image`}
                 style={{ height: '250px', overflow: 'hidden', flexShrink: 0, position: 'relative' }}
             >
-                <Image
+                <Image quality={100} 
                     src={image}
                     alt={title}
                     fill

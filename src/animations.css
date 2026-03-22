@@ -103,7 +103,8 @@
 .animate-typewriter {
   overflow: hidden;
   white-space: nowrap;
-  animation: typewriter 1.5s steps(40) forwards;
+  animation: typewriter 1.5s cubic-bezier(0.1, 0, 0.1, 1) forwards;
+  padding-right: 0.5rem;
 }
 
 .animate-fade-in-up {
@@ -341,16 +342,31 @@
   transition: transform 0.2s cubic-bezier(0.23, 1, 0.32, 1);
 }
 
-/* Hero Zoom Animations */
-@keyframes zoomSlowDual {
-  from { transform: scale(1); }
-  to { transform: scale(1.05); }
+/* ─── Ken Burns Hero Zoom ─── */
+/* Runs for exactly the slide interval (6s). fill-mode:both holds
+   the final scale so there is ZERO snap-back on transition. */
+@keyframes kenBurns {
+  0%   { transform: scale(1);     }
+  100% { transform: scale(1.08);  }
 }
 
 .zoom-animate {
-  animation: zoomSlowDual 6s ease-out forwards;
+  animation: kenBurns 6s ease-out both;
+  will-change: transform;
 }
 
+/* When a slide is leaving it just holds its final scale — no jump */
 .zoom-exit {
-  transform: scale(1.05);
+  transform: scale(1.08);
+  will-change: transform;
+}
+
+/* ─── Smooth hero cross-fade overlays ─── */
+@keyframes heroFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.hero-slide-fade-in {
+  animation: heroFadeIn 1.2s ease-in-out forwards;
 }

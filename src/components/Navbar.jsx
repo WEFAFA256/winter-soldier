@@ -29,14 +29,14 @@ const Navbar = ({ homePageBusiness = 'spa' }) => {
 
     // Dynamic branding based on section (or homepage business state)
     const branding = (isHome ? homePageBusiness === 'hotel' : isHotelSection) ? {
-        logo: '/assets/hotel-logo.png',
+        logo: 'https://lusvuwwlcdgowauvdpoh.supabase.co/storage/v1/object/public/website-assets/assets/hotel-logo.png',
         name: 'THE MARINA STAYS',
         color: '#8B4513',
         logoStyle: { height: '60px', width: 'auto', borderRadius: '10px' },
         logoWidth: 80,
         logoHeight: 60
     } : {
-        logo: '/assets/logo.jpg',
+        logo: 'https://lusvuwwlcdgowauvdpoh.supabase.co/storage/v1/object/public/website-assets/assets/logo.jpg',
         name: 'THE SERENITY SPA',
         color: 'var(--color-primary)',
         logoStyle: { height: '50px', width: '50px', borderRadius: '50%' },
@@ -100,9 +100,8 @@ const Navbar = ({ homePageBusiness = 'spa' }) => {
             >
                 <div className="container" style={{ display: 'flex', justifyContent: isHome ? 'flex-end' : 'space-between', alignItems: 'center' }}>
                     {!isHome && (
-                        <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', fontSize: '1.5rem', fontWeight: '700', color: isTransparent ? 'var(--color-white)' : branding.color, fontFamily: 'inherit', textDecoration: 'none' }}>
-                            <Image
-                                src={branding.logo}
+                         <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', fontSize: '1.5rem', fontWeight: '700', color: isTransparent ? 'var(--color-white)' : branding.color, fontFamily: 'inherit', textDecoration: 'none', paddingRight: '0.5rem' }}>
+                            <Image quality={100} src={branding.logo}
                                 alt={branding.name}
                                 width={branding.logoWidth}
                                 height={branding.logoHeight}
@@ -162,8 +161,7 @@ const Navbar = ({ homePageBusiness = 'spa' }) => {
                 {/* Sidebar Logo with Circular Text */}
                 <div className="sidebar-logo-wrapper">
                     <div className="sidebar-image-container">
-                        <Image 
-                            src={branding.logo} 
+                        <Image quality={100} src={branding.logo} 
                             alt={branding.name} 
                             width={branding.logoWidth * 1.5} 
                             height={branding.logoHeight * 1.5} 

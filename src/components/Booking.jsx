@@ -41,9 +41,9 @@ const BookingContent = ({ businessType = 'spa' }) => {
         serviceLabel: 'Room Type',
         dateLabel: 'Check-in Date',
         timeLabel: 'Arrival Time',
-        image1: '/assets/hotel-slide-3.jpg',
-        image2: '/assets/hotel-hero-bg-2.jpg',
-        image3: '/assets/hotel-bg.jpg',
+        image1: 'https://lusvuwwlcdgowauvdpoh.supabase.co/storage/v1/object/public/website-assets/assets/hotel-slide-3.jpg',
+        image2: 'https://lusvuwwlcdgowauvdpoh.supabase.co/storage/v1/object/public/website-assets/assets/hotel-hero-bg-2.jpg',
+        image3: 'https://lusvuwwlcdgowauvdpoh.supabase.co/storage/v1/object/public/website-assets/assets/hotel-bg.jpg',
         pricing: {
             'Economy Stay': 110000,
             'Deluxe Queen': 295000,
@@ -464,8 +464,7 @@ const BookingContent = ({ businessType = 'spa' }) => {
                             }}
                                 className="booking-image"
                             >
-                                <Image 
-                                    src={branding.image1} 
+                                <Image quality={100} src={branding.image1} 
                                     alt="Booking Step 1" 
                                     fill 
                                     style={{ objectFit: 'cover' }}
@@ -631,8 +630,7 @@ const BookingContent = ({ businessType = 'spa' }) => {
                             }}
                                 className="booking-image"
                             >
-                                <Image 
-                                    src={branding.image2} 
+                                <Image quality={100} src={branding.image2} 
                                     alt={formData.serviceType} 
                                     fill 
                                     style={{ objectFit: 'cover' }}
@@ -795,8 +793,7 @@ const BookingContent = ({ businessType = 'spa' }) => {
                             }}
                                 className="booking-image"
                             >
-                                <Image 
-                                    src={branding.image3} 
+                                <Image quality={100} src={branding.image3} 
                                     alt="Complete Booking" 
                                     fill 
                                     style={{ objectFit: 'cover' }}

@@ -15,8 +15,7 @@ const About = () => {
                     <div style={{ flex: '1 1 400px' }}>
                         <div ref={imgRef} className="animate-on-scroll" style={{ position: 'relative' }}>
                             <div style={{ position: 'relative', width: '100%', height: 'auto', minHeight: '300px' }}>
-                                <Image
-                                    src="/assets/ambience.png"
+                                <Image quality={100} src="https://lusvuwwlcdgowauvdpoh.supabase.co/storage/v1/object/public/website-assets/assets/ambience.png"
                                     alt="Spa Ambience"
                                     fill
                                     sizes="(max-width: 768px) 100vw, 50vw"

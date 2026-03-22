@@ -11,16 +11,16 @@ import Reviews from './Reviews';
 const HotelPage = () => {
     // Slideshow State
     const originalImages = [
-        '/assets/hotel-hero-bg-2.jpg',
-        '/assets/hotel-hero-bg.jpg',
-        '/assets/hotel-extra-1.jpg',
-        '/assets/hotel-extra-2.jpg',
-        '/assets/hotel-extra-3.jpg',
-        '/assets/hotel-extra-4.jpg',
-        '/assets/hotel-extra-5.jpg',
-        '/assets/hotel-extra-6.jpg',
-        '/assets/hotel-extra-7.jpg',
-        '/assets/hotel-extra-8.jpg'
+        'https://lusvuwwlcdgowauvdpoh.supabase.co/storage/v1/object/public/website-assets/assets/hotel-hero-bg-2.jpg',
+        'https://lusvuwwlcdgowauvdpoh.supabase.co/storage/v1/object/public/website-assets/assets/hotel-hero-bg.jpg',
+        'https://lusvuwwlcdgowauvdpoh.supabase.co/storage/v1/object/public/website-assets/assets/hotel-extra-1.jpg',
+        'https://lusvuwwlcdgowauvdpoh.supabase.co/storage/v1/object/public/website-assets/assets/hotel-extra-2.jpg',
+        'https://lusvuwwlcdgowauvdpoh.supabase.co/storage/v1/object/public/website-assets/assets/hotel-extra-3.jpg',
+        'https://lusvuwwlcdgowauvdpoh.supabase.co/storage/v1/object/public/website-assets/assets/hotel-extra-4.jpg',
+        'https://lusvuwwlcdgowauvdpoh.supabase.co/storage/v1/object/public/website-assets/assets/hotel-extra-5.jpg',
+        'https://lusvuwwlcdgowauvdpoh.supabase.co/storage/v1/object/public/website-assets/assets/hotel-extra-6.jpg',
+        'https://lusvuwwlcdgowauvdpoh.supabase.co/storage/v1/object/public/website-assets/assets/hotel-extra-7.jpg',
+        'https://lusvuwwlcdgowauvdpoh.supabase.co/storage/v1/object/public/website-assets/assets/hotel-extra-8.jpg'
     ];
     // Clone first image for seamless loop
     const extendedImages = [...originalImages, originalImages[0]];
@@ -81,25 +81,28 @@ const HotelPage = () => {
                 {/* Slider Window */}
                 <div className="hero-slider-track" style={{
                     transform: `translateX(-${currentIndex * 100}%)`,
-                    transition: isTransitioning ? 'transform 1.5s ease-in-out' : 'none',
+                    transition: isTransitioning ? 'transform 1.5s cubic-bezier(0.645, 0.045, 0.355, 1)' : 'none',
                     display: 'flex',
-                    width: '100%'
+                    width: '100%',
+                    willChange: 'transform'
                 }}>
                     {extendedImages.map((imgSrc, index) => {
                         const isActive = index === currentIndex;
                         return (
                             <div
                                 key={index}
-                                style={{ position: 'relative', width: '100%', minWidth: '100%', minHeight: '600px', height: '100vh', backgroundColor: '#000' }}
+                                style={{ position: 'relative', width: '100%', minWidth: '100%', minHeight: '600px', height: '100vh', backgroundColor: '#000', overflow: 'hidden' }}
                             >
                                 <Image
+                                    key={isActive ? `active-${index}` : `idle-${index}`}
+                                    quality={100}
                                     src={imgSrc}
                                     alt="The Marina Stays"
                                     fill
                                     priority={index < 2}
                                     sizes="100vw"
                                     style={{ objectFit: 'cover' }}
-                                    className={`hero-bg-image ${isActive ? 'active' : ''} ${index === currentIndex - 1 ? 'prev' : ''}`}
+                                    className={isActive ? 'zoom-animate' : 'zoom-exit'}
                                 />
                             </div>
                         );
@@ -130,8 +133,10 @@ const HotelPage = () => {
                             position: 'relative',
                             display: 'inline-block',
                             marginBottom: '1rem',
-                            maxWidth: '100%'
                         }}>
+                            {/* Invisible spacer — width:max-content forces parent to be
+                                exactly as wide as the text, so the typewriter h1's width:100%
+                                always expands to the full text width (no clipped last letter) */}
                             <div style={{
                                 fontSize: 'clamp(2rem, 5vw, 4rem)',
                                 marginBottom: '0',
@@ -139,9 +144,10 @@ const HotelPage = () => {
                                 color: '#8B4513',
                                 opacity: 0,
                                 margin: 0,
-                                padding: 0,
+                                padding: '0 1rem 0 0', // Aggressive padding-right
                                 pointerEvents: 'none',
-                                whiteSpace: 'nowrap'
+                                whiteSpace: 'nowrap',
+                                width: 'max-content',
                             }}>
                                 THE MARINA STAYS
                             </div>
@@ -157,9 +163,10 @@ const HotelPage = () => {
                                 color: '#8B4513',
                                 borderRightColor: '#8B4513',
                                 margin: 0,
-                                padding: 0,
+                                padding: '0 1rem 0 0', // Aggressive padding-right
                                 whiteSpace: 'nowrap',
-                                overflow: 'hidden'
+                                overflow: 'hidden',
+                                display: 'inline-block', // Ensure inline-block for proper width scaling
                             }}>
                                 THE MARINA STAYS
                             </h1>
@@ -217,32 +224,32 @@ const HotelPage = () => {
                     }}>
                         {[
                             {
-                                image: '/assets/hotel_specials/nojito_closeup.jpg',
+                                image: 'https://lusvuwwlcdgowauvdpoh.supabase.co/storage/v1/object/public/website-assets/assets/hotel_specials/nojito_closeup.jpg',
                                 title: 'Classic Nojito',
                                 desc: 'Our signature Nojito with fresh lime, ice & cherries'
                             },
                             {
-                                image: '/assets/hotel_specials/nojito_menu.jpg',
+                                image: 'https://lusvuwwlcdgowauvdpoh.supabase.co/storage/v1/object/public/website-assets/assets/hotel_specials/nojito_menu.jpg',
                                 title: 'Nojito Menu',
                                 desc: 'Refreshing Nojitos - Classic, Coco Le Blue, Lavender & More'
                             },
                             {
-                                image: '/assets/hotel_specials/cocktails_1.jpg',
+                                image: 'https://lusvuwwlcdgowauvdpoh.supabase.co/storage/v1/object/public/website-assets/assets/hotel_specials/cocktails_1.jpg',
                                 title: 'Signature Cocktails',
                                 desc: 'Premium Cocktails from Oak & Tonic Bar'
                             },
                             {
-                                image: '/assets/hotel_specials/cocktails_menu.jpg',
+                                image: 'https://lusvuwwlcdgowauvdpoh.supabase.co/storage/v1/object/public/website-assets/assets/hotel_specials/cocktails_menu.jpg',
                                 title: 'Cocktails & Juices',
                                 desc: 'Fresh Juices, Cocktails & Marina\'s Special Blends'
                             },
                             {
-                                image: '/assets/hotel_specials/cafe_menu.jpg',
+                                image: 'https://lusvuwwlcdgowauvdpoh.supabase.co/storage/v1/object/public/website-assets/assets/hotel_specials/cafe_menu.jpg',
                                 title: 'Café Menu',
                                 desc: 'Espresso, Cappuccino, Latte & More from Marina Cafeteria'
                             },
                             {
-                                image: '/assets/hotel_specials/breakfast_menu.jpg',
+                                image: 'https://lusvuwwlcdgowauvdpoh.supabase.co/storage/v1/object/public/website-assets/assets/hotel_specials/breakfast_menu.jpg',
                                 title: 'Breakfast Specials',
                                 desc: 'Toasted Bread, Eggs, Sausages, Pancakes & More'
                             }
@@ -267,8 +274,7 @@ const HotelPage = () => {
                                     alignItems: 'center',
                                     justifyContent: 'center'
                                 }}>
-                                    <Image
-                                        src={special.image}
+                                    <Image quality={100} src={special.image}
                                         alt={special.title}
                                         fill
                                         sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
