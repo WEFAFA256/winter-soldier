@@ -59,9 +59,9 @@ const Contact = () => {
                     </p>
                 </div>
 
-                <div className="contact-grid" style={{ display: 'grid', gap: '4rem', alignItems: 'start' }}>
+                <div className="contact-grid" style={{ display: 'grid', width: '100%', gap: '4rem', alignItems: 'start' }}>
                     {/* Contact Info & Map */}
-                    <div ref={infoRef} className="animate-on-scroll">
+                    <div className="contact-info-card">
                         <div style={{
                             backgroundColor: '#fff',
                             borderRadius: '15px',
@@ -179,7 +179,7 @@ const Contact = () => {
                     </div>
 
                     {/* Contact Form */}
-                    <div ref={formRef} className="animate-on-scroll delay-200">
+                    <div className="contact-form-wrapper">
                         {submitted ? (
                             <div style={{
                                 backgroundColor: '#fff',
