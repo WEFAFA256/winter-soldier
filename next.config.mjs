@@ -4,8 +4,7 @@ const nextConfig = {
   images: {
     // Serve originals from Supabase with zero compression or downscaling.
     // This ensures 100% original quality on ALL devices — desktop and mobile.
-    // Enable Next.js optimization now that source images are reasonably sized.
-    unoptimized: false,
+    unoptimized: true,
     remotePatterns: [
       {
         protocol: 'https',
