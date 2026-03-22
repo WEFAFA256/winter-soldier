@@ -774,32 +774,59 @@ section[style*="height: 100vh"] {
 
   /* Sidebar Mobile Adjustments */
   .sidebar {
-    padding: 1.5rem 1rem;
+    padding: 3rem 1.5rem;
+    width: 100vw;
+    right: -100vw; /* Use vw for absolute precision */
   }
 
   .sidebar-logo-wrapper {
-    width: 180px;
-    height: 180px;
-    margin-bottom: 1.5rem;
+    width: 160px;
+    height: 160px;
+    margin-bottom: 2rem;
   }
 
   .sidebar-image-container {
-    width: 100px;
-    height: 100px;
+    width: 90px;
+    height: 90px;
   }
 
   .circular-text-content {
-    font-size: 10px;
-    letter-spacing: 1px;
+    font-size: 9px;
+    letter-spacing: 1.5px;
   }
 
   .sidebar-link {
-    font-size: 1.5rem;
+    font-size: 1.75rem;
   }
 
-  .sidebar-separator {
-    width: 80px;
-    margin: 0.75rem 0 1.5rem;
+  /* Fix Hero Buttons (Stacking) */
+  .hero-buttons-container {
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 1rem !important;
+  }
+  
+  .hero-buttons-container a {
+    margin: 0 !important;
+    width: 80% !important;
+    text-align: center !important;
+  }
+
+  /* Fixed Footer Overlap */
+  footer {
+    padding-bottom: 6rem !important; /* Space for floating social icons */
+  }
+}
+
+@media (max-width: 480px) {
+  /* Prevent Typewriter Bleeding on tiny screens */
+  .typewriter-effect, .typewriter-invisible-spacer {
+    font-size: clamp(1.8rem, 10vw, 2.5rem) !important;
+    padding-right: 1rem !important; /* Reduce the clipping fix padding on mobile */
+  }
+  
+  .typewriter-invisible-spacer {
+    padding-right: 1.5rem !important;
   }
 }
 

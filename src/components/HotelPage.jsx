@@ -185,7 +185,7 @@ const HotelPage = () => {
                             Experience luxury accommodation with stunning lake views, world-class amenities,
                             and exceptional hospitality at Entebbe's finest private hotel.
                         </p>
-                        <div style={{ marginTop: '2rem' }}>
+                        <div className="hero-buttons-container" style={{ marginTop: '2rem', display: 'flex', justifyContent: 'center', gap: '1rem', flexWrap: 'wrap' }}>
                             <Link
                                 href="/hotel/rooms"
                                 style={{

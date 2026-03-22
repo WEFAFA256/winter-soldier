@@ -185,7 +185,7 @@ const SpaPage = () => {
                         <p className="animate-fade-in-up delay-300" style={{ fontSize: '1.1rem', opacity: 0.9 }}>
                             📍 Makerere, Kampala
                         </p>
-                        <div className="animate-scale-in delay-400" style={{ marginTop: '2rem' }}>
+                        <div className="animate-scale-in delay-400 hero-buttons-container" style={{ marginTop: '2rem', display: 'flex', justifyContent: 'center', gap: '1rem', flexWrap: 'wrap' }}>
                             <Link
                                 href="/spa/services"
                                 className="magnetic"

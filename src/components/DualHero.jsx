@@ -296,6 +296,7 @@ const DualHero = ({ onBusinessChange }) => {
 
                 {/* Buttons */}
                 <div
+                    className="hero-buttons-container"
                     style={{
                         display: 'flex',
                         gap: '1rem',
