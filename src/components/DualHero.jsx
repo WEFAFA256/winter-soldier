@@ -222,11 +222,12 @@ const DualHero = ({ onBusinessChange }) => {
                         letterSpacing: '2px',
                         opacity: 0,
                         margin: 0,
-                        padding: '0 0.5rem 0 0', // Added padding-right to prevent clipping
+                        padding: '0 2rem 0 0', // Even more generous padding
                         pointerEvents: 'none',
-                        width: 'max-content' // Ensure it takes full width of text
+                        width: 'max-content',
+                        whiteSpace: 'nowrap'
                     }}>
-                        {content.name}
+                        {content.name}&nbsp;&nbsp;
                     </h1>
 
                     {/* Animated Overlay */}
@@ -246,11 +247,15 @@ const DualHero = ({ onBusinessChange }) => {
                             letterSpacing: '2px',
                             textShadow: 'none',
                             borderRightColor: content.color,
-                            margin: 0, // Reset margin
-                            padding: '0 0.5rem 0 0', // Added padding-right to prevent clipping
+                            margin: 0,
+                            padding: '0 2rem 0 0', // Even more generous padding
                             animationDelay: '0.5s',
                             opacity: textVisible ? 1 : 0,
-                            transition: 'opacity 0.5s ease-in-out'
+                            transition: 'opacity 0.5s ease-in-out',
+                            whiteSpace: 'nowrap',
+                            overflow: 'hidden',
+                            boxSizing: 'content-box',
+                            display: 'inline-block'
                         }}
                     >
                         {content.name}

@@ -100,7 +100,7 @@ const Navbar = ({ homePageBusiness = 'spa' }) => {
             >
                 <div className="container" style={{ display: 'flex', justifyContent: isHome ? 'flex-end' : 'space-between', alignItems: 'center' }}>
                     {!isHome && (
-                         <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', fontSize: '1.5rem', fontWeight: '700', color: isTransparent ? 'var(--color-white)' : branding.color, fontFamily: 'inherit', textDecoration: 'none', paddingRight: '0.5rem' }}>
+                         <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', fontSize: '1.5rem', fontWeight: '700', color: isTransparent ? 'var(--color-white)' : branding.color, fontFamily: 'inherit', textDecoration: 'none', paddingRight: '1.5rem' }}>
                             <Image quality={100} src={branding.logo}
                                 alt={branding.name}
                                 width={branding.logoWidth}

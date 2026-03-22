@@ -144,12 +144,12 @@ const HotelPage = () => {
                                 color: '#8B4513',
                                 opacity: 0,
                                 margin: 0,
-                                padding: '0 1rem 0 0', // Aggressive padding-right
+                                padding: '0 2rem 0 0', // Even more generous padding
                                 pointerEvents: 'none',
                                 whiteSpace: 'nowrap',
                                 width: 'max-content',
                             }}>
-                                THE MARINA STAYS
+                                THE MARINA STAYS&nbsp;&nbsp;
                             </div>
                             <h1 className="typewriter-effect" style={{
                                 position: 'absolute',
@@ -163,10 +163,12 @@ const HotelPage = () => {
                                 color: '#8B4513',
                                 borderRightColor: '#8B4513',
                                 margin: 0,
-                                padding: '0 1rem 0 0', // Aggressive padding-right
+                                padding: '0 2rem 0 0', // Even more generous padding
                                 whiteSpace: 'nowrap',
                                 overflow: 'hidden',
-                                display: 'inline-block', // Ensure inline-block for proper width scaling
+                                display: 'inline-block',
+                                boxSizing: 'content-box', // Ensure padding is extra to width
+                                minWidth: 'fit-content' // Try to avoid width: 100% constraints
                             }}>
                                 THE MARINA STAYS
                             </h1>

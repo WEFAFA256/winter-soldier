@@ -142,12 +142,12 @@ const SpaPage = () => {
                                 letterSpacing: '2px',
                                 opacity: 0,
                                 margin: 0,
-                                padding: '0 0.5rem 0 0', // Added padding-right to prevent clipping
+                                padding: '0 2rem 0 0', // Even more generous padding
                                 pointerEvents: 'none',
                                 width: 'max-content',
                                 whiteSpace: 'nowrap'
                             }}>
-                                THE SERENITY SPA
+                                THE SERENITY SPA&nbsp;&nbsp;
                             </div>
 
                             {/* Animated Overlay - Semantic H1 */}
@@ -167,10 +167,13 @@ const SpaPage = () => {
                                     textShadow: 'none',
                                     borderRightColor: '#005C53',
                                     margin: 0,
-                                    padding: '0 0.5rem 0 0', // Added padding-right to prevent clipping
+                                    padding: '0 2rem 0 0', // Even more generous padding
                                     animationDelay: '0.5s',
                                     whiteSpace: 'nowrap',
-                                    overflow: 'hidden'
+                                    overflow: 'hidden',
+                                    display: 'inline-block',
+                                    boxSizing: 'content-box',
+                                    minWidth: 'fit-content'
                                 }}
                             >
                                 THE SERENITY SPA
