@@ -353,12 +353,16 @@
 .zoom-animate {
   animation: kenBurns 6s ease-out both;
   will-change: transform;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
 }
 
 /* When a slide is leaving it just holds its final scale — no jump */
 .zoom-exit {
   transform: scale(1.08);
   will-change: transform;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
 }
 
 /* ─── Smooth hero cross-fade overlays ─── */

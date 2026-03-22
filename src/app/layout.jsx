@@ -43,6 +43,8 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+        <link rel="preconnect" href="https://lusvuwwlcdgowauvdpoh.supabase.co" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://lusvuwwlcdgowauvdpoh.supabase.co" />
       </head>
       <body>
         <a href="#main-content" className="skip-link" style={{ 

@@ -866,8 +866,22 @@ section[style*="height: 100vh"] {
 /* Booking Page Styles */
 .booking-card {
   display: grid;
-  grid-template-columns: minmax(300px, 1fr) 400px;
+  grid-template-columns: 1fr 400px;
   gap: 0;
+  width: 100%;
+}
+
+@media (max-width: 1024px) {
+  .booking-card {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .booking-card {
+    display: flex !important;
+    flex-direction: column !important;
+  }
 }
 
 .booking-image {

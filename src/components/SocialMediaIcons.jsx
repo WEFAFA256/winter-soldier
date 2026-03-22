@@ -38,12 +38,12 @@ const SocialMediaIcons = ({ mode }) => {
         <div
             style={{
                 position: 'fixed',
-                bottom: '2rem',
+                bottom: 'clamp(2rem, 8vh, 4rem)', // safer bottom on mobile
                 left: '50%',
                 transform: 'translateX(-50%)',
                 display: 'flex',
                 flexDirection: 'row',
-                gap: '1rem',
+                gap: 'clamp(0.8rem, 3vw, 1.5rem)',
                 zIndex: 1000,
             }}
         >
