@@ -1,3 +1,4 @@
+import { Analytics } from "@vercel/analytics/next"
 import '../index.css';
 import '../App.css';
 import '../animations.css';
@@ -20,6 +21,7 @@ export default function RootLayout({ children }) {
           <ScrollToTop />
           {children}
           <SocialMediaIcons />
+          <Analytics />
         </div>
       </body>
     </html>

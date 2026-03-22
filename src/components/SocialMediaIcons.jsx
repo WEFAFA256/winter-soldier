@@ -1,16 +1,13 @@
 'use client';
 
-import React from 'react';
+import { usePathname } from 'next/navigation';
 
-const SocialMediaIcons = ({ mode = 'spa' }) => {
-    // Uganda country code is 256
-    const isHotel = mode === 'hotel';
+const SocialMediaIcons = ({ mode }) => {
+    const pathname = usePathname();
     
-    // Numbers: 
-    // Spaside WhatsApp: 0705657285
-    // Hotelside WhatsApp: 0758547586
-    // Spaside Phone: 0764001922
-    // Hotelside Phone: 0742641607
+    // Determine mode: if passed prop exists, use it. Otherwise detect from URL.
+    const currentMode = mode || (pathname?.startsWith('/hotel') ? 'hotel' : 'spa');
+    const isHotel = currentMode === 'hotel';
     
     const whatsappNum = isHotel ? '256758547586' : '256705657285';
     const phoneNum = isHotel ? '0742641607' : '0764001922';
