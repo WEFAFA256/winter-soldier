@@ -36,6 +36,7 @@ const SocialMediaIcons = ({ mode }) => {
 
     return (
         <div
+            className="social-icons-container"
             style={{
                 position: 'fixed',
                 bottom: '1.5rem', 

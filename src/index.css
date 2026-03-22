@@ -803,17 +803,24 @@ section[style*="height: 100vh"] {
 }
 
 @media (max-width: 768px) {
+  .contact-grid {
+    gap: 1.5rem !important; /* Drastically reduce gap to prevent 'lost' feeling */
+  }
+
   .contact-section {
-    padding: 3.5rem 0 !important;
+    padding: 3rem 0 !important;
   }
   
   .contact-title {
-    font-size: 2.1rem !important;
+    font-size: 1.8rem !important; /* Smaller, better fit */
     margin-bottom: 0.5rem !important;
   }
-  
-  .contact-grid {
-    gap: 2rem !important;
+
+  /* Fix the guest review leakage */
+  .reviews-marquee-container {
+    max-width: 100vw !important;
+    overflow-x: hidden !important;
+    padding: 2rem 0 !important;
   }
 
   /* Shrink the map height slightly for better vertical flow */
@@ -824,49 +831,20 @@ section[style*="height: 100vh"] {
 
 /* --- UNIFIED MOBILE REFINEMENT --- */
 @media (max-width: 768px) {
-  .hero-mobile-logo {
-    width: 70px !important;
-    height: 70px !important;
-    border-width: 2px !important;
-  }
-  
-  .hero-mobile-title {
-    font-size: 1.6rem !important;
-    letter-spacing: 0.5px !important;
-    padding-right: 0.5rem !important;
-  }
-
-  .hero-mobile-tagline {
-    font-size: 0.9rem !important;
-    margin-bottom: 0.25rem !important;
-  }
-
-  /* Elegant Mobile Buttons */
-  .hero-buttons-container {
+  /* Re-position Social Icons to not block form buttons */
+  .social-icons-container {
+    bottom: 2rem !important;
+    right: 1.5rem !important;
+    left: auto !important;
+    transform: none !important;
     flex-direction: column !important;
-    align-items: center !important;
-    gap: 0.75rem !important;
-    width: 100% !important;
-    margin-top: 1rem !important;
-  }
-  
-  .hero-buttons-container a {
-    margin: 0 !important;
-    width: auto !important;
-    min-width: 180px !important;
-    max-width: 85% !important;
-    padding: 0.6rem 1.4rem !important;
-    font-size: 0.9rem !important;
-    border-radius: 30px !important;
-    text-align: center !important;
-    display: inline-flex !important;
-    justify-content: center !important;
+    gap: 0.8rem !important;
     align-items: center !important;
   }
 
-  .typewriter-effect, .typewriter-invisible-spacer {
-    font-size: 1.6rem !important;
-    padding-right: 0.5rem !important;
+  .social-icon {
+    width: 36px !important;
+    height: 36px !important;
   }
 
   html, body {
