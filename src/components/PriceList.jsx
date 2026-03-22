@@ -44,7 +44,7 @@ const PriceList = () => {
                         style={{ transform: `translateX(-${currentIndex * 100}%)` }}
                     >
                         {images.map((img, index) => (
-                            <div key={index} className="pricelist-slide" style={{ position: 'relative', height: 'auto', minHeight: '500px' }}>
+                            <div key={index} className="pricelist-slide" style={{ position: 'relative', height: 'auto', minHeight: '300px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                 <Image quality={100} src={img} 
                                     alt={`Price List ${index + 1}`} 
                                     fill

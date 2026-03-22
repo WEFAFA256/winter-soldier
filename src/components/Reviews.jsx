@@ -24,7 +24,7 @@ const Reviews = ({ type }) => {
     const loopedReviews = [...reviews, ...reviews];
 
     return (
-        <section className="section-padding" style={{ backgroundColor: '#f9f9f9', overflow: 'hidden' }}>
+        <section className="section-padding" style={{ backgroundColor: '#f9f9f9', overflowX: 'hidden', width: '100%', maxWidth: '100vw' }}>
             <div className="container" style={{ textAlign: 'center', marginBottom: '2rem' }}>
                 <h2 className="gradient-text scroll-reveal" style={{ fontSize: '2.5rem' }}>Guest Reviews</h2>
                 <p className="scroll-reveal delay-200" style={{ color: '#666' }}>What our guests are saying</p>
