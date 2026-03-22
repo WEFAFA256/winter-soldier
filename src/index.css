@@ -808,12 +808,23 @@ section[style*="height: 100vh"] {
   }
 
   .contact-section {
-    padding: 3rem 0 !important;
+    padding: 2.5rem 0 !important;
+    overflow-x: hidden !important; /* Safety guard */
   }
   
   .contact-title {
-    font-size: 1.8rem !important; /* Smaller, better fit */
+    font-size: 1.6rem !important; /* Shrunk from 1.8rem */
     margin-bottom: 0.5rem !important;
+  }
+
+  /* Shrink the form container padding to give content room */
+  .contact-form {
+    padding: 1.5rem !important;
+  }
+  
+  .contact-form h3 {
+    font-size: 1.3rem !important;
+    margin-bottom: 1.5rem !important;
   }
 
   /* Fix the guest review leakage */

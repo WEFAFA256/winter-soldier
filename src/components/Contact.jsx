@@ -195,9 +195,9 @@ const Contact = () => {
                                 </p>
                             </div>
                         ) : (
-                            <form onSubmit={handleSubmit} style={{
+                            <form onSubmit={handleSubmit} className="contact-form" style={{
                                 backgroundColor: '#fff',
-                                padding: '3rem',
+                                padding: '3rem', /* Fallback for desktop */
                                 borderRadius: '15px',
                                 boxShadow: '0 10px 30px rgba(0,0,0,0.08)'
                             }}>
