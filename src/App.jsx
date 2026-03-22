@@ -55,7 +55,7 @@ function AppContent() {
         <Route path="/booking" element={<Booking businessType="spa" />} />
       </Routes>
 
-      <SocialMediaIcons />
+      <SocialMediaIcons mode={(location.pathname.startsWith('/hotel') || (location.pathname === '/' && homePageBusiness === 'hotel')) ? 'hotel' : 'spa'} />
 
       <Footer mode={(location.pathname.startsWith('/hotel') || (location.pathname === '/' && homePageBusiness === 'hotel')) ? 'hotel' : 'spa'} />
     </div>

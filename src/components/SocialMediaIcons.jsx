@@ -2,24 +2,37 @@
 
 import React from 'react';
 
-const SocialMediaIcons = () => {
+const SocialMediaIcons = ({ mode = 'spa' }) => {
+    // Uganda country code is 256
+    const isHotel = mode === 'hotel';
+    
+    // Numbers: 
+    // Spaside WhatsApp: 0705657285
+    // Hotelside WhatsApp: 0758547586
+    // Spaside Phone: 0764001922
+    // Hotelside Phone: 0742641607
+    
+    const whatsappNum = isHotel ? '256758547586' : '256705657285';
+    const phoneNum = isHotel ? '0742641607' : '0764001922';
+    const message = isHotel ? encodeURIComponent('Hello, I would like to book a stay at The Marina Stays.') : encodeURIComponent('Hello, I would like to book a session at Serenity Spa.');
+
     const socials = [
         {
             name: 'Email',
             image: 'https://lusvuwwlcdgowauvdpoh.supabase.co/storage/v1/object/public/website-assets/assets/email-icon.svg',
-            url: 'mailto:info@serenityspa-ug.com',
+            url: 'mailto:marinastaysbookings@gmail.com',
             delay: '0s'
         },
         {
             name: 'WhatsApp',
             image: 'https://lusvuwwlcdgowauvdpoh.supabase.co/storage/v1/object/public/website-assets/assets/whatsapp-icon.jpg',
-            url: 'https://wa.me/256764001922',
+            url: `https://wa.me/${whatsappNum}?text=${message}`,
             delay: '0.2s'
         },
         {
             name: 'Phone',
             image: 'https://lusvuwwlcdgowauvdpoh.supabase.co/storage/v1/object/public/website-assets/assets/phone-icon.jpg',
-            url: 'tel:+256764001922',
+            url: `tel:${phoneNum}`,
             delay: '0.4s'
         },
     ];
@@ -41,22 +54,23 @@ const SocialMediaIcons = () => {
                 <a
                     key={index}
                     href={social.url}
-                    target={social.name === 'Phone' || social.name === 'Email' ? '_self' : '_blank'}
+                    target={social.name === 'WhatsApp' ? '_blank' : '_self'}
                     rel="noopener noreferrer"
                     className="social-icon"
                     style={{
-                        width: '40px',
-                        height: '40px',
+                        width: '45px',
+                        height: '45px',
                         borderRadius: '50%',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        boxShadow: '0 4px 15px rgba(0,0,0,0.3)',
+                        boxShadow: '0 4px 15px rgba(0,0,0,0.4)',
                         cursor: 'pointer',
                         transition: 'transform 0.3s ease',
                         animation: `bounce 2s infinite ${social.delay}`,
                         overflow: 'hidden',
                         backgroundColor: '#fff',
+                        border: '2px solid #fff'
                     }}
                     onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.2)'}
                     onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
@@ -65,8 +79,8 @@ const SocialMediaIcons = () => {
                         src={social.image}
                         alt={social.name}
                         style={{
-                            width: social.name === 'Email' ? '75%' : '100%',
-                            height: social.name === 'Email' ? '75%' : '100%',
+                            width: social.name === 'Email' ? '70%' : '100%',
+                            height: social.name === 'Email' ? '70%' : '100%',
                             objectFit: social.name === 'Email' ? 'contain' : 'cover',
                         }}
                     />
