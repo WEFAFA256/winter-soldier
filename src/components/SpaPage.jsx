@@ -123,51 +123,51 @@ const SpaPage = () => {
                         color: '#ffffff',
                         textShadow: '2px 2px 4px rgba(0,0,0,0.5)',
                         zIndex: 2,
-                        paddingTop: 'clamp(100px, 22vh, 200px)' // Consistent spacing (lowered)
+                        paddingTop: 'clamp(80px, 12vh, 120px)' 
                     }}
                 >
-                    <div className="container">
+                    <div className="container" style={{ maxWidth: '100%', padding: '0 1rem' }}>
                         {/* Business Name with Typewriter Wrapper */}
                         <div style={{
                             position: 'relative',
                             display: 'inline-block',
-                            marginBottom: '1rem',
-                            maxWidth: '100%' // Ensure mobile fit
+                            marginBottom: '0.5rem',
+                            maxWidth: '90%'
                         }}>
-                            {/* Invisible Spacer to set exact width (using div for SEO) */}
-                            <div style={{
-                                fontSize: 'clamp(2rem, 5vw, 4rem)',
+                            {/* Invisible Spacer */}
+                            <div className="hero-mobile-title" style={{
+                                fontSize: 'clamp(1.4rem, 4.5vw, 3.5rem)',
                                 fontWeight: '800',
                                 fontFamily: '"Times New Roman", Times, serif',
-                                letterSpacing: '2px',
+                                letterSpacing: '1px',
                                 opacity: 0,
                                 margin: 0,
-                                padding: '0 2rem 0 0', // Even more generous padding
+                                padding: '0 0.5rem 0 0',
                                 pointerEvents: 'none',
                                 width: 'max-content',
                                 whiteSpace: 'nowrap'
                             }}>
-                                THE SERENITY SPA&nbsp;&nbsp;
+                                THE SERENITY SPA&nbsp;
                             </div>
 
-                            {/* Animated Overlay - Semantic H1 */}
+                            {/* Animated Overlay */}
                             <h1
-                                className="typewriter-effect"
+                                className="typewriter-effect hero-mobile-title"
                                 style={{
                                     position: 'absolute',
                                     top: 0,
                                     left: 0,
                                     width: '0',
                                     height: '100%',
-                                    fontSize: 'clamp(2rem, 5vw, 4rem)',
+                                    fontSize: 'clamp(1.4rem, 4.5vw, 3.5rem)',
                                     fontWeight: '800',
                                     color: '#005C53',
                                     fontFamily: '"Times New Roman", Times, serif',
-                                    letterSpacing: '2px',
+                                    letterSpacing: '1px',
                                     textShadow: 'none',
                                     borderRightColor: '#005C53',
                                     margin: 0,
-                                    padding: '0 2rem 0 0', // Even more generous padding
+                                    padding: '0 0.5rem 0 0',
                                     animationDelay: '0.5s',
                                     whiteSpace: 'nowrap',
                                     overflow: 'hidden',
@@ -179,30 +179,28 @@ const SpaPage = () => {
                                 THE SERENITY SPA
                             </h1>
                         </div>
-                        <p className="animate-fade-in-up delay-200" style={{ fontSize: '1.5rem', fontStyle: 'italic', marginBottom: '0.5rem' }}>
+                        <p className="animate-fade-in-up delay-200 hero-mobile-tagline" style={{ fontSize: 'clamp(1rem, 2.5vw, 1.5rem)', fontStyle: 'italic', marginBottom: '0.2rem' }}>
                             Your Oasis of Relaxation
                         </p>
-                        <p className="animate-fade-in-up delay-300" style={{ fontSize: '1.1rem', opacity: 0.9 }}>
+                        <p className="animate-fade-in-up delay-300" style={{ fontSize: '0.9rem', opacity: 0.9 }}>
                             📍 Makerere, Kampala
                         </p>
-                        <div className="animate-scale-in delay-400 hero-buttons-container" style={{ marginTop: '2rem', display: 'flex', justifyContent: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+                        <div className="animate-scale-in delay-400 hero-buttons-container" style={{ marginTop: '1.5rem', display: 'flex', justifyContent: 'center', gap: '1rem', flexWrap: 'wrap' }}>
                             <Link
                                 href="/spa/services"
                                 className="magnetic"
                                 style={{
-                                    padding: '1rem 2.5rem',
+                                    padding: '0.8rem 1.8rem',
                                     backgroundColor: '#ffffff',
-                                    color: 'var(--color-primary)',
+                                    color: '#005C53',
                                     borderRadius: '50px',
                                     fontWeight: '600',
-                                    fontSize: '1.1rem',
+                                    fontSize: '1rem',
                                     textDecoration: 'none',
                                     display: 'inline-block',
                                     boxShadow: '0 5px 20px rgba(0, 0, 0, 0.3)',
                                     transition: 'transform 0.3s ease'
                                 }}
-                                onMouseEnter={(e) => e.target.style.transform = 'translateY(-3px)'}
-                                onMouseLeave={(e) => e.target.style.transform = 'translateY(0)'}
                             >
                                 Book Spa Service
                             </Link>
@@ -210,27 +208,17 @@ const SpaPage = () => {
                                 href="/spa/services#vip-section"
                                 className="magnetic animate-pulse-gold"
                                 style={{
-                                    padding: '1rem 2.5rem',
+                                    padding: '0.8rem 1.8rem',
                                     backgroundColor: 'transparent',
                                     color: '#ffffff',
                                     border: '2px solid #C5A059',
                                     borderRadius: '50px',
                                     fontWeight: '600',
-                                    fontSize: '1.1rem',
+                                    fontSize: '1rem',
                                     textDecoration: 'none',
                                     display: 'inline-block',
-                                    marginLeft: '1rem',
-                                    marginTop: '1rem', // Stack on mobile if needed
                                     boxShadow: '0 5px 20px rgba(0, 0, 0, 0.2)',
                                     transition: 'all 0.3s ease'
-                                }}
-                                onMouseEnter={(e) => {
-                                    e.target.style.transform = 'translateY(-3px)';
-                                    e.target.style.backgroundColor = '#C5A059';
-                                }}
-                                onMouseLeave={(e) => {
-                                    e.target.style.transform = 'translateY(0)';
-                                    e.target.style.backgroundColor = 'transparent';
                                 }}
                             >
                                 VIP Specials

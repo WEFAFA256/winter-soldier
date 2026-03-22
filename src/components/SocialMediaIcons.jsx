@@ -38,12 +38,12 @@ const SocialMediaIcons = ({ mode }) => {
         <div
             style={{
                 position: 'fixed',
-                bottom: 'clamp(2rem, 8vh, 4rem)', // safer bottom on mobile
+                bottom: '1.5rem', 
                 left: '50%',
                 transform: 'translateX(-50%)',
                 display: 'flex',
                 flexDirection: 'row',
-                gap: 'clamp(0.8rem, 3vw, 1.5rem)',
+                gap: '1rem',
                 zIndex: 1000,
             }}
         >
@@ -55,13 +55,13 @@ const SocialMediaIcons = ({ mode }) => {
                     rel="noopener noreferrer"
                     className="social-icon"
                     style={{
-                        width: '40px',
-                        height: '40px',
+                        width: '32px',
+                        height: '32px',
                         borderRadius: '50%',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        boxShadow: '0 4px 15px rgba(0,0,0,0.3)',
+                        boxShadow: '0 2px 10px rgba(0,0,0,0.2)',
                         cursor: 'pointer',
                         transition: 'transform 0.3s ease',
                         animation: `bounce 2s infinite ${social.delay}`,

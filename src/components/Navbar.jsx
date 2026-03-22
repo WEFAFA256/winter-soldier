@@ -90,7 +90,7 @@ const Navbar = ({ homePageBusiness = 'spa' }) => {
                     left: 0,
                     width: '100%',
                     zIndex: 1000,
-                    padding: '1.5rem 0',
+                    padding: scrolled ? '0.6rem 0' : '0.8rem 0',
                     transition: 'all 0.3s ease',
                     backgroundColor: isTransparent ? 'transparent' : 'rgba(255, 255, 255, 0.95)',
                     boxShadow: isTransparent ? 'none' : '0 2px 10px rgba(0,0,0,0.1)',

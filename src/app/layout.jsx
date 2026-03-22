@@ -32,9 +32,12 @@ export const metadata = {
     images: ['https://lusvuwwlcdgowauvdpoh.supabase.co/storage/v1/object/public/website-assets/assets/hotel-bg.jpg'],
   },
   icons: {
-    icon: '/assets/logo.jpg', // Using existing logo as favicon fallback
+    icon: '/assets/logo.jpg', 
     shortcut: '/assets/logo.jpg',
     apple: '/assets/logo.jpg',
+  },
+  verification: {
+    google: 'JnEdnVzzMOxxzLYSqskXnDYC-MeuPgsNzMOnftniCO4',
   },
 }
 
@@ -43,6 +46,7 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+        <meta name="google-site-verification" content="JnEdnVzzMOxxzLYSqskXnDYC-MeuPgsNzMOnftniCO4" />
         <link rel="preconnect" href="https://lusvuwwlcdgowauvdpoh.supabase.co" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://lusvuwwlcdgowauvdpoh.supabase.co" />
       </head>

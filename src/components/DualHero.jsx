@@ -177,93 +177,96 @@ const DualHero = ({ onBusinessChange }) => {
                     alignItems: 'center',
                     zIndex: 2,
                     textAlign: 'center',
-                    paddingTop: 'clamp(60px, 12vh, 100px)',
-                    paddingBottom: '2rem',
-                    paddingLeft: '1rem',
-                    paddingRight: '1rem'
+                paddingTop: 'clamp(40px, 8vh, 60px)',
+                paddingBottom: '2rem',
+                paddingLeft: '1rem',
+                paddingRight: '1rem'
+            }}
+        >
+            {/* Logo with Fade Animation */}
+            <div
+                className={`logo-container`}
+                style={{
+                    marginBottom: '1rem',
+                    opacity: textVisible ? 1 : 0,
+                    transition: 'opacity 0.5s ease-in-out'
                 }}
             >
-                {/* Logo with Fade Animation */}
-                <div
-                    className={`logo-container`}
+                <img
+                    src={content.logo}
+                    alt={content.name}
+                    className="hero-mobile-logo"
                     style={{
-                        marginBottom: '2rem',
+                        width: 'clamp(80px, 15vw, 150px)',
+                        height: 'clamp(80px, 15vw, 150px)',
+                        objectFit: 'contain',
+                        borderRadius: '50%',
+                        boxShadow: '0 10px 40px rgba(0, 0, 0, 0.3)',
+                        transition: 'all 0.8s ease-in-out',
+                        border: '4px solid rgba(255, 255, 255, 0.3)'
+                    }}
+                />
+            </div>
+
+            {/* Business Name with Fade */}
+            {/* Business Name with Typewriter Wrapper */}
+            <div style={{
+                position: 'relative',
+                display: 'inline-block',
+                marginBottom: '0.5rem',
+                maxWidth: '90%'
+            }}>
+                {/* Invisible Spacer to set exact width */}
+                <h1 className="hero-mobile-title" style={{
+                    fontSize: 'clamp(1.4rem, 4.5vw, 3.5rem)',
+                    fontWeight: '800',
+                    fontFamily: '"Times New Roman", Times, serif',
+                    letterSpacing: '1px',
+                    opacity: 0,
+                    margin: 0,
+                    padding: '0 0.5rem 0 0', 
+                    pointerEvents: 'none',
+                    width: 'max-content',
+                    whiteSpace: 'nowrap'
+                }}>
+                    {content.name}&nbsp;
+                </h1>
+
+                {/* Animated Overlay */}
+                <h1
+                    key={content.name}
+                    className="typewriter-effect hero-mobile-title"
+                    style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        width: '0',
+                        height: '100%',
+                        fontSize: 'clamp(1.4rem, 4.5vw, 3.5rem)',
+                        fontWeight: '800',
+                        color: content.color,
+                        fontFamily: '"Times New Roman", Times, serif',
+                        letterSpacing: '1px',
+                        textShadow: 'none',
+                        borderRightColor: content.color,
+                        margin: 0,
+                        padding: '0 0.5rem 0 0',
+                        animationDelay: '0.5s',
                         opacity: textVisible ? 1 : 0,
-                        transition: 'opacity 0.5s ease-in-out'
+                        transition: 'opacity 0.5s ease-in-out',
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        boxSizing: 'content-box',
+                        display: 'inline-block'
                     }}
                 >
-                    <img
-                        src={content.logo}
-                        alt={content.name}
-                        style={{
-                            width: 'clamp(120px, 20vw, 180px)',
-                            height: 'clamp(120px, 20vw, 180px)',
-                            objectFit: 'contain',
-                            borderRadius: '50%',
-                            boxShadow: '0 10px 40px rgba(0, 0, 0, 0.3)',
-                            transition: 'all 0.8s ease-in-out',
-                            border: '5px solid rgba(255, 255, 255, 0.3)'
-                        }}
-                    />
-                </div>
-
-                {/* Business Name with Fade */}
-                {/* Business Name with Typewriter Wrapper */}
-                <div style={{
-                    position: 'relative',
-                    display: 'inline-block',
-                    marginBottom: '1rem'
-                }}>
-                    {/* Invisible Spacer to set exact width */}
-                    <h1 style={{
-                        fontSize: 'clamp(1.8rem, 5vw, 4rem)',
-                        fontWeight: '800',
-                        fontFamily: '"Times New Roman", Times, serif',
-                        letterSpacing: '2px',
-                        opacity: 0,
-                        margin: 0,
-                        padding: '0 2rem 0 0', // Even more generous padding
-                        pointerEvents: 'none',
-                        width: 'max-content',
-                        whiteSpace: 'nowrap'
-                    }}>
-                        {content.name}&nbsp;&nbsp;
-                    </h1>
-
-                    {/* Animated Overlay */}
-                    <h1
-                        key={content.name}
-                        className="typewriter-effect"
-                        style={{
-                            position: 'absolute',
-                            top: 0,
-                            left: 0,
-                            width: '0',
-                            height: '100%',
-                            fontSize: 'clamp(1.8rem, 5vw, 4rem)',
-                            fontWeight: '800',
-                            color: content.color,
-                            fontFamily: '"Times New Roman", Times, serif',
-                            letterSpacing: '2px',
-                            textShadow: 'none',
-                            borderRightColor: content.color,
-                            margin: 0,
-                            padding: '0 2rem 0 0', // Even more generous padding
-                            animationDelay: '0.5s',
-                            opacity: textVisible ? 1 : 0,
-                            transition: 'opacity 0.5s ease-in-out',
-                            whiteSpace: 'nowrap',
-                            overflow: 'hidden',
-                            boxSizing: 'content-box',
-                            display: 'inline-block'
-                        }}
-                    >
-                        {content.name}
-                    </h1>
-                </div>
+                    {content.name}
+                </h1>
+            </div>
 
                 {/* Tagline */}
                 <p
+                    className="hero-mobile-tagline"
                     style={{
                         fontSize: 'clamp(1rem, 2.5vw, 1.5rem)',
                         fontStyle: 'italic',

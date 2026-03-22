@@ -776,63 +776,75 @@ section[style*="height: 100vh"] {
   .sidebar {
     padding: 3rem 1.5rem;
     width: 100vw;
-    right: -100vw; /* Use vw for absolute precision */
+    right: -100vw; 
+  }
+}
+
+/* --- UNIFIED MOBILE REFINEMENT --- */
+@media (max-width: 768px) {
+  .hero-mobile-logo {
+    width: 70px !important;
+    height: 70px !important;
+    border-width: 2px !important;
+  }
+  
+  .hero-mobile-title {
+    font-size: 1.6rem !important;
+    letter-spacing: 0.5px !important;
+    padding-right: 0.5rem !important;
   }
 
-  .sidebar-logo-wrapper {
-    width: 160px;
-    height: 160px;
-    margin-bottom: 2rem;
+  .hero-mobile-tagline {
+    font-size: 0.9rem !important;
+    margin-bottom: 0.25rem !important;
   }
 
-  .sidebar-image-container {
-    width: 90px;
-    height: 90px;
-  }
-
-  .circular-text-content {
-    font-size: 9px;
-    letter-spacing: 1.5px;
-  }
-
-  .sidebar-link {
-    font-size: 1.75rem;
-  }
-
-  /* Fix Hero Buttons (Stacking) */
+  /* Elegant Mobile Buttons */
   .hero-buttons-container {
     flex-direction: column !important;
     align-items: center !important;
-    gap: 1rem !important;
+    gap: 0.75rem !important;
+    width: 100% !important;
+    margin-top: 1rem !important;
   }
   
   .hero-buttons-container a {
     margin: 0 !important;
-    width: 80% !important;
+    width: auto !important;
+    min-width: 180px !important;
+    max-width: 85% !important;
+    padding: 0.6rem 1.4rem !important;
+    font-size: 0.9rem !important;
+    border-radius: 30px !important;
     text-align: center !important;
+    display: inline-flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+  }
+
+  .typewriter-effect, .typewriter-invisible-spacer {
+    font-size: 1.6rem !important;
+    padding-right: 0.5rem !important;
+  }
+
+  html, body {
+    max-width: 100vw !important;
+    overflow-x: hidden !important;
+    position: relative;
   }
 
   /* Fixed Footer Overlap */
   footer {
-    padding-bottom: 6rem !important; /* Space for floating social icons */
+    padding-bottom: 7rem !important; 
   }
 }
 
 @media (max-width: 480px) {
-  /* Prevent Typewriter Bleeding on tiny screens */
+  .hero-mobile-title {
+    font-size: 1.45rem !important;
+  }
   .typewriter-effect, .typewriter-invisible-spacer {
-    font-size: clamp(1.8rem, 10vw, 2.5rem) !important;
-    padding-right: 1rem !important; /* Reduce the clipping fix padding on mobile */
-  }
-  
-  .typewriter-invisible-spacer {
-    padding-right: 1.5rem !important;
-  }
-}
-
-@media (max-width: 480px) {
-  .hero-title {
-    font-size: 2.5rem !important;
+    font-size: 1.45rem !important;
   }
 
   .hero-text {
