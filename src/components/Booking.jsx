@@ -363,16 +363,18 @@ const BookingContent = ({ businessType = 'spa' }) => {
                                 </p>
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
                                     <div>
-                                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500', color: 'var(--color-text)' }}>
+                                        <label htmlFor="booking-name" style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500', color: 'var(--color-text)' }}>
                                             <span style={{ marginRight: '0.3rem' }}>👤</span> Full Name *
                                         </label>
                                         <input
+                                            id="booking-name"
                                             type="text"
                                             name="name"
                                             value={formData.name}
                                             onChange={handleInputChange}
                                             placeholder="Enter your full name"
                                             required
+                                            aria-required="true"
                                             style={{
                                                 width: '100%',
                                                 padding: '0.8rem',
@@ -394,16 +396,18 @@ const BookingContent = ({ businessType = 'spa' }) => {
                                         />
                                     </div>
                                     <div>
-                                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500', color: 'var(--color-text)' }}>
+                                        <label htmlFor="booking-email" style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500', color: 'var(--color-text)' }}>
                                             <span style={{ marginRight: '0.3rem' }}>✉️</span> Email Address *
                                         </label>
                                         <input
+                                            id="booking-email"
                                             type="email"
                                             name="email"
                                             value={formData.email}
                                             onChange={handleInputChange}
                                             placeholder="your.email@example.com"
                                             required
+                                            aria-required="true"
                                             style={{
                                                 width: '100%',
                                                 padding: '0.8rem',
@@ -425,16 +429,18 @@ const BookingContent = ({ businessType = 'spa' }) => {
                                         />
                                     </div>
                                     <div>
-                                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500', color: 'var(--color-text)' }}>
+                                        <label htmlFor="booking-phone" style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500', color: 'var(--color-text)' }}>
                                             <span style={{ marginRight: '0.3rem' }}>📱</span> Phone Number *
                                         </label>
                                         <input
+                                            id="booking-phone"
                                             type="tel"
                                             name="phone"
                                             value={formData.phone}
                                             onChange={handleInputChange}
                                             placeholder="+256 XXX XXXXXX"
                                             required
+                                            aria-required="true"
                                             style={{
                                                 width: '100%',
                                                 padding: '0.8rem',

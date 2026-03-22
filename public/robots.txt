@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /booking/
+
+Sitemap: https://serenityspa-marina.com/sitemap.xml

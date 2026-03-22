@@ -67,7 +67,7 @@ const HotelPage = () => {
     return (
         <div>
             {/* Hotel Hero Section */}
-            <section style={{ position: 'relative', width: '100%', overflow: 'hidden' }}>
+            <section style={{ position: 'relative', width: '100%', overflow: 'hidden' }} role="region" aria-label="Hotel Image Slideshow">
                 <div style={{
                     position: 'absolute',
                     top: 0,
@@ -92,12 +92,13 @@ const HotelPage = () => {
                             <div
                                 key={index}
                                 style={{ position: 'relative', width: '100%', minWidth: '100%', minHeight: '600px', height: '100vh', backgroundColor: '#000', overflow: 'hidden' }}
+                                aria-hidden={!isActive}
                             >
                                 <Image
                                     key={isActive ? `active-${index}` : `idle-${index}`}
                                     quality={100}
                                     src={imgSrc}
-                                    alt="The Marina Stays"
+                                    alt={`The Marina Stays - Luxury lakeside suite ${index + 1}`}
                                     fill
                                     priority={index < 2}
                                     sizes="100vw"

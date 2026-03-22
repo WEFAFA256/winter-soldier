@@ -10,13 +10,19 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-const PORT = 3001;
+const PORT = process.env.PORT || 3001;
 
 // DPO Pay Configuration
-const DPO_COMPANY_TOKEN = process.env.DPO_COMPANY_TOKEN || 'YOUR_DPO_COMPANY_TOKEN'; // Get from DPO dashboard
-const DPO_SERVICE_TYPE = process.env.DPO_SERVICE_TYPE || '3854'; // Your service type ID
-const DPO_BASE_URL = 'https://secure.3gdirectpay.com';
-const APP_URL = 'http://localhost:3000'; // Frontend URL
+const DPO_COMPANY_TOKEN = process.env.DPO_COMPANY_TOKEN;
+const DPO_SERVICE_TYPE = process.env.DPO_SERVICE_TYPE || '3854'; 
+const DPO_BASE_URL = process.env.DPO_BASE_URL || 'https://secure.3gdirectpay.com';
+const APP_URL = process.env.APP_URL || 'http://localhost:3000';
+
+// Verify critical environment variables
+if (!DPO_COMPANY_TOKEN) {
+    console.error('❌ CRITICAL ERROR: DPO_COMPANY_TOKEN is not set in environment variables!');
+    console.warn('⚠️ Payments will fail until DPO_COMPANY_TOKEN is added to your .env file.');
+}
 
 // Health check
 app.get('/health', (req, res) => {

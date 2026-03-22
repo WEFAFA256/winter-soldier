@@ -135,6 +135,11 @@ const Navbar = ({ homePageBusiness = 'spa' }) => {
                     <div
                         className={`hamburger-menu ${isTransparent ? 'light-bg' : 'dark-bg'}`}
                         onClick={toggleSidebar}
+                        role="button"
+                        aria-expanded={sidebarOpen}
+                        aria-label="Toggle navigation menu"
+                        tabIndex={0}
+                        onKeyDown={(e) => e.key === 'Enter' && toggleSidebar()}
                     >
                         <span style={{ transform: sidebarOpen ? 'rotate(45deg) translate(5px, 6px)' : 'none' }}></span>
                         <span style={{ opacity: sidebarOpen ? 0 : 1 }}></span>
