@@ -1,5 +1,5 @@
 export default async function sitemap() {
-  const baseUrl = 'https://serenityspa-marina.com';
+  const baseUrl = 'https://www.executiveserenityspa.com';
 
   // In a real app, you could fetch dynamic routes like /gallery/[id] here.
   // For now, we define the static routes dynamically.

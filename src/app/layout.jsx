@@ -6,13 +6,14 @@ import ScrollToTop from '../components/ScrollToTop';
 import SocialMediaIcons from '../components/SocialMediaIcons';
 
 export const metadata = {
+  metadataBase: new URL('https://www.executiveserenityspa.com'),
   title: 'THE SERENITY SPA & MARINA STAYS-Luxury Oasis & Residences Entebbe',
   description: 'Experience premier wellness at Serenity Spa and luxury lakeside stays at The Marina Stays. Your sanctuary for relaxation and comfort in Uganda.',
   keywords: 'Spa Kampala, Wellness Entebbe, Luxury Hotel Uganda, Lake Victoria Stay, Serenity Spa, Marina Stays',
   openGraph: {
     title: 'THE SERENITY SPA & MARINA STAYS',
     description: 'Your oasis of relaxation and premier residences in Entebbe.',
-    url: 'https://serenityspa-marina.com',
+    url: 'https://www.executiveserenityspa.com',
     siteName: 'Serenity Spa & Marina Stays',
     images: [
       {

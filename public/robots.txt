@@ -3,4 +3,4 @@ Allow: /
 Disallow: /api/
 Disallow: /booking/
 
-Sitemap: https://serenityspa-marina.com/sitemap.xml
+Sitemap: https://www.executiveserenityspa.com/sitemap.xml

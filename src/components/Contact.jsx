@@ -23,10 +23,8 @@ const Contact = () => {
     };
 
     return (
-        <section id="contact" style={{
+        <section id="contact" className="contact-section" style={{
             backgroundColor: '#f8fbfc',
-            paddingTop: '6rem',
-            paddingBottom: '6rem',
             position: 'relative',
             overflow: 'hidden'
         }}>
@@ -43,7 +41,7 @@ const Contact = () => {
 
             <div className="container" style={{ position: 'relative', zIndex: 1 }}>
                 <div style={{ textAlign: 'center', marginBottom: '4rem' }}>
-                    <h2 style={{
+                    <h2 className="contact-title" style={{
                         fontSize: '3rem',
                         marginBottom: '1rem',
                         fontFamily: '"Times New Roman", Times, serif',
@@ -61,7 +59,7 @@ const Contact = () => {
                     </p>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4rem', alignItems: 'start' }}>
+                <div className="contact-grid" style={{ display: 'grid', gap: '4rem', alignItems: 'start' }}>
                     {/* Contact Info & Map */}
                     <div ref={infoRef} className="animate-on-scroll">
                         <div style={{

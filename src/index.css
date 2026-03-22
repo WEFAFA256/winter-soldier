@@ -780,6 +780,48 @@ section[style*="height: 100vh"] {
   }
 }
 
+.contact-section {
+  padding: 6rem 0 !important;
+}
+
+.contact-title {
+  font-size: 3rem;
+  transition: font-size 0.3s ease;
+}
+
+.contact-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4rem;
+}
+
+@media (max-width: 992px) {
+  .contact-grid {
+    grid-template-columns: 1fr !important;
+    gap: 3rem !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .contact-section {
+    padding: 3.5rem 0 !important;
+  }
+  
+  .contact-title {
+    font-size: 2.1rem !important;
+    margin-bottom: 0.5rem !important;
+  }
+  
+  .contact-grid {
+    gap: 2rem !important;
+  }
+
+  /* Shrink the map height slightly for better vertical flow */
+  .contact-grid iframe {
+    height: 250px !important;
+  }
+}
+
 /* --- UNIFIED MOBILE REFINEMENT --- */
 @media (max-width: 768px) {
   .hero-mobile-logo {
