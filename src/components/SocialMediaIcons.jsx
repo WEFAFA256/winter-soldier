@@ -82,9 +82,10 @@ const SocialMediaIcons = ({ mode }) => {
                             src={social.image}
                             alt={social.name}
                             style={{
-                                width: '100%',
-                                height: '100%',
-                                objectFit: 'cover',
+                                width: social.name === 'Email' ? '65%' : '100%',
+                                height: social.name === 'Email' ? '65%' : '100%',
+                                objectFit: social.name === 'Email' ? 'contain' : 'cover',
+                                padding: social.name === 'Email' ? '2px' : '0',
                             }}
                         />
                     )}

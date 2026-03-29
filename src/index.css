@@ -232,7 +232,7 @@ section[style*="height: 100vh"] {
 }
 
 .zoom-exit {
-  transform: scale(1);
+  transform: scale(1.15);
 }
 
 .hero-slideshow {
