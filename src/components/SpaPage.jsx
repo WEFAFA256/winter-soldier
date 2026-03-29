@@ -92,7 +92,7 @@ const SpaPage = () => {
                                 style={{ position: 'relative', width: '100%', minWidth: '100%', minHeight: '600px', height: '100vh', backgroundColor: '#000', overflow: 'hidden' }}
                             >
                                 <Image
-                                    key={isActive ? `active-${index}` : `idle-${index}`}
+                                    key={index}
                                     quality={100}
                                     src={imgSrc}
                                     alt="The Serenity Spa"

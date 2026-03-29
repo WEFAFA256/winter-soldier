@@ -95,7 +95,7 @@ const HotelPage = () => {
                                 aria-hidden={!isActive}
                             >
                                 <Image
-                                    key={isActive ? `active-${index}` : `idle-${index}`}
+                                    key={index}
                                     quality={100}
                                     src={imgSrc}
                                     alt={`The Marina Stays - Luxury lakeside suite ${index + 1}`}

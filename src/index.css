@@ -228,7 +228,10 @@ section[style*="height: 100vh"] {
 }
 
 .zoom-animate {
-  animation: kenBurns 10s linear forwards !important;
+  animation: kenBurns 6s linear forwards !important;
+  will-change: transform;
+  backface-visibility: hidden;
+  perspective: 1000px;
 }
 
 .zoom-exit {
@@ -271,7 +274,8 @@ section[style*="height: 100vh"] {
 
 .hero-slide.active .hero-slide-image,
 .hero-slide.prev .hero-slide-image {
-  animation: zoomIn 6s linear forwards;
+  animation: zoomIn 5s linear forwards;
+  will-change: transform;
 }
 
 .hero-slide.prev {

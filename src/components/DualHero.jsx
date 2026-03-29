@@ -144,7 +144,7 @@ const DualHero = ({ onBusinessChange }) => {
                                     when this slide becomes active, giving a clean Ken Burns zoom
                                     from scale(1) every time with no snap-back glitch */}
                                 <Image
-                                    key={isActive ? `active-${index}` : `prev-${index}`}
+                                    key={index}
                                     quality={100}
                                     src={imgSrc}
                                     alt={`Slide ${index}`}
