@@ -1,5 +1,6 @@
+'use client';
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 import { useScrollAnimation } from '../hooks/useScrollAnimation';
 
 const Hero = () => {
@@ -79,7 +80,7 @@ const Hero = () => {
                     Where calmness meets luxury.
                 </p>
                 <div ref={btnRef} className="animate-on-scroll delay-400">
-                    <Link to="/services" className="btn">
+                    <Link href="/services" className="btn">
                         Book an Appointment
                     </Link>
                 </div>

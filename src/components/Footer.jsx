@@ -1,6 +1,12 @@
+'use client';
 import React from 'react';
+import { usePathname } from 'next/navigation';
+import { useBusiness } from '../../app/BusinessContext';
 
-const Footer = ({ mode }) => {
+const Footer = () => {
+    const pathname = usePathname();
+    const { businessMode } = useBusiness();
+    const mode = (pathname.startsWith('/hotel') || (pathname === '/' && businessMode === 'hotel')) ? 'hotel' : 'spa';
     const currentYear = new Date().getFullYear();
 
     if (mode === 'hotel') {
