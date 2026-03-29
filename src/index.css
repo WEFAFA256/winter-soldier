@@ -214,8 +214,25 @@ section[style*="height: 100vh"] {
   }
 
   to {
-    transform: scale(1.1);
+    transform: scale(1.15);
   }
+}
+
+@keyframes kenBurns {
+  0% {
+    transform: scale(1);
+  }
+  100% {
+    transform: scale(1.15);
+  }
+}
+
+.zoom-animate {
+  animation: kenBurns 10s linear forwards !important;
+}
+
+.zoom-exit {
+  transform: scale(1);
 }
 
 .hero-slideshow {
