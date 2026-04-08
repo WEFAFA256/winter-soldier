@@ -24,8 +24,7 @@ const DualHero = ({ onBusinessChange }) => {
         'https://lusvuwwlcdgowauvdpoh.supabase.co/storage/v1/object/public/website-assets/assets/spa-bg.jpg',
         'https://lusvuwwlcdgowauvdpoh.supabase.co/storage/v1/object/public/website-assets/assets/spa-bg-2.jpg',
         'https://lusvuwwlcdgowauvdpoh.supabase.co/storage/v1/object/public/website-assets/assets/spa-slide-3.jpg',
-        'https://lusvuwwlcdgowauvdpoh.supabase.co/storage/v1/object/public/website-assets/assets/spa-new-1.jpg',
-        'https://lusvuwwlcdgowauvdpoh.supabase.co/storage/v1/object/public/website-assets/assets/spa-new-2.jpg'
+        'https://lusvuwwlcdgowauvdpoh.supabase.co/storage/v1/object/public/website-assets/assets/spa-new-1.jpg'
     ];
 
     // Interleave images to maintain H, S, H, S pattern
@@ -63,7 +62,7 @@ const DualHero = ({ onBusinessChange }) => {
                 }, 100);
             }, 800);
 
-        }, 6000);
+        }, 10000);
 
         return () => {
             clearInterval(interval);
@@ -135,7 +134,7 @@ const DualHero = ({ onBusinessChange }) => {
                                     width: '100%',
                                     height: '100%',
                                     opacity: isActive ? 1 : 0,
-                                    transition: 'opacity 1.5s ease-in-out',
+                                    transition: 'opacity 4.5s ease-in-out',
                                     zIndex: isActive ? 1 : 0,
                                     overflow: 'hidden',
                                 }}
