@@ -2,8 +2,14 @@ import { NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
 
-// Define the path to the JSON file
+// Define the paths
 const dataFilePath = path.join(process.cwd(), 'public', 'gallery.json');
+const uploadDir = path.join(process.cwd(), 'public', 'uploads');
+
+// Ensure upload directory exists
+if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir, { recursive: true });
+}
 
 // Helper function to read data
 const readData = () => {
@@ -37,34 +43,42 @@ export async function GET() {
 
 export async function POST(req) {
     try {
-        const body = await req.json();
+        const formData = await req.formData();
         
-        // Very basic authentication check for the admin
+        // Auth check
         const authHeader = req.headers.get('authorization');
         if (authHeader !== 'Bearer Serenityspa256.') {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        const { src, alt, delay } = body;
+        const file = formData.get('file');
+        const alt = formData.get('alt') || 'Gallery Image';
         
-        if (!src || !alt) {
-            return NextResponse.json({ error: 'Source and alt text are required' }, { status: 400 });
+        if (!file) {
+            return NextResponse.json({ error: 'No file uploaded' }, { status: 400 });
         }
 
+        const buffer = Buffer.from(await file.arrayBuffer());
+        const fileName = `${Date.now()}-${file.name.replace(/\s+/g, '-')}`;
+        const filePath = path.join(uploadDir, fileName);
+        
+        // Save the file
+        fs.writeFileSync(filePath, buffer);
+        
         const images = readData();
         const newImage = {
             id: Date.now().toString(),
-            src,
-            alt,
-            delay: delay || 'delay-100'
+            src: `/uploads/${fileName}`,
+            alt: alt,
+            delay: 'delay-100'
         };
         
-        images.unshift(newImage); // Add to the top
+        images.unshift(newImage);
         
         if (writeData(images)) {
-            return NextResponse.json({ message: 'Image added successfully', image: newImage }, { status: 201 });
+            return NextResponse.json({ message: 'Image uploaded successfully', image: newImage }, { status: 201 });
         } else {
-            return NextResponse.json({ error: 'Failed to save data' }, { status: 500 });
+            return NextResponse.json({ error: 'Failed to update database' }, { status: 500 });
         }
     } catch (error) {
         console.error("Error in POST:", error);
@@ -87,17 +101,26 @@ export async function DELETE(req) {
         }
 
         let images = readData();
-        const initialLength = images.length;
-        images = images.filter(img => img.id !== id);
+        const imageToDelete = images.find(img => img.id === id);
         
-        if (images.length === initialLength) {
+        if (!imageToDelete) {
             return NextResponse.json({ error: 'Image not found' }, { status: 404 });
         }
+
+        // Delete from filesystem if it's a local file
+        if (imageToDelete.src.startsWith('/uploads/')) {
+            const filePath = path.join(process.cwd(), 'public', imageToDelete.src);
+            if (fs.existsSync(filePath)) {
+                fs.unlinkSync(filePath);
+            }
+        }
+
+        images = images.filter(img => img.id !== id);
         
         if (writeData(images)) {
             return NextResponse.json({ message: 'Image removed successfully' }, { status: 200 });
         } else {
-            return NextResponse.json({ error: 'Failed to save data' }, { status: 500 });
+            return NextResponse.json({ error: 'Failed to update database' }, { status: 500 });
         }
     } catch (error) {
         console.error("Error in DELETE:", error);

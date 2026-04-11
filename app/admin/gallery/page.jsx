@@ -9,7 +9,9 @@ export default function AdminGalleryPage() {
     const [password, setPassword] = useState('');
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     
-    const [newImage, setNewImage] = useState({ src: '', alt: '' });
+    const [newImageFile, setNewImageFile] = useState(null);
+    const [imagePreview, setImagePreview] = useState(null);
+    const [altText, setAltText] = useState('');
     const [adding, setAdding] = useState(false);
     const [error, setError] = useState('');
 
@@ -42,24 +44,47 @@ export default function AdminGalleryPage() {
         }
     };
 
+    const handleFileChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            setNewImageFile(file);
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setImagePreview(reader.result);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
     const handleAddImage = async (e) => {
         e.preventDefault();
+        if (!newImageFile) {
+            setError('Please select an image first');
+            return;
+        }
+
         setAdding(true);
         setError('');
+        
+        const formData = new FormData();
+        formData.append('file', newImageFile);
+        formData.append('alt', altText);
+
         try {
             const res = await fetch('/api/gallery', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
                     'Authorization': `Bearer ${password}`,
                 },
-                body: JSON.stringify(newImage),
+                body: formData,
             });
             
             if (res.ok) {
                 const added = await res.json();
                 setImages([added.image, ...images]);
-                setNewImage({ src: '', alt: '' });
+                setNewImageFile(null);
+                setImagePreview(null);
+                setAltText('');
             } else {
                 const err = await res.json();
                 setError(err.error || 'Failed to add image');
@@ -123,36 +148,49 @@ export default function AdminGalleryPage() {
             <h1 style={{ textAlign: 'center', marginBottom: '40px', fontSize: '2.5rem', color: '#333' }}>Gallery Admin</h1>
             
             <div style={{ backgroundColor: 'white', padding: '30px', borderRadius: '10px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)', marginBottom: '40px' }}>
-                <h2 style={{ marginBottom: '20px', fontSize: '1.5rem', color: '#444' }}>Add New Image</h2>
+                <h2 style={{ marginBottom: '20px', fontSize: '1.5rem', color: '#444' }}>Add New Image from Device</h2>
                 {error && <p style={{ color: 'red', marginBottom: '15px' }}>{error}</p>}
                 
-                <form onSubmit={handleAddImage} style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
-                    <div style={{ flex: '1', minWidth: '300px' }}>
-                        <input
-                            type="url"
-                            placeholder="Image URL (e.g. https://images.unsplash.com/...)"
-                            value={newImage.src}
-                            onChange={(e) => setNewImage({ ...newImage, src: e.target.value })}
-                            required
-                            style={{ width: '100%', padding: '12px', borderRadius: '5px', border: '1px solid #ddd' }}
-                        />
+                <form onSubmit={handleAddImage} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                    <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap', alignItems: 'center' }}>
+                        <div style={{ flex: '1', minWidth: '300px' }}>
+                            <label style={{ display: 'block', marginBottom: '8px', color: '#666', fontWeight: '500' }}>Select Image:</label>
+                            <input
+                                type="file"
+                                accept="image/*"
+                                onChange={handleFileChange}
+                                style={{ width: '100%', padding: '10px', borderRadius: '5px', border: '1px solid #ddd', background: '#f9f9f9' }}
+                                required
+                            />
+                        </div>
+                        <div style={{ flex: '1', minWidth: '200px' }}>
+                            <label style={{ display: 'block', marginBottom: '8px', color: '#666', fontWeight: '500' }}>Description (Alt Text):</label>
+                            <input
+                                type="text"
+                                placeholder="e.g. Massage Therapy Session"
+                                value={altText}
+                                onChange={(e) => setAltText(e.target.value)}
+                                required
+                                style={{ width: '100%', padding: '12px', borderRadius: '5px', border: '1px solid #ddd' }}
+                            />
+                        </div>
                     </div>
-                    <div style={{ flex: '1', minWidth: '200px' }}>
-                        <input
-                            type="text"
-                            placeholder="Alt text describing the image"
-                            value={newImage.alt}
-                            onChange={(e) => setNewImage({ ...newImage, alt: e.target.value })}
-                            required
-                            style={{ width: '100%', padding: '12px', borderRadius: '5px', border: '1px solid #ddd' }}
-                        />
-                    </div>
+
+                    {imagePreview && (
+                        <div style={{ marginTop: '10px' }}>
+                            <p style={{ marginBottom: '8px', color: '#666', fontWeight: '500' }}>Preview:</p>
+                            <div style={{ position: 'relative', width: '200px', height: '150px', borderRadius: '8px', overflow: 'hidden', border: '2px solid #eee' }}>
+                                <img src={imagePreview} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                            </div>
+                        </div>
+                    )}
+
                     <button 
                         type="submit" 
-                        disabled={adding}
-                        style={{ padding: '12px 30px', backgroundColor: '#10b981', color: 'white', border: 'none', borderRadius: '5px', cursor: adding ? 'not-allowed' : 'pointer', fontWeight: 'bold' }}
+                        disabled={adding || !newImageFile}
+                        style={{ alignSelf: 'flex-start', padding: '12px 40px', backgroundColor: (adding || !newImageFile) ? '#ccc' : '#10b981', color: 'white', border: 'none', borderRadius: '5px', cursor: (adding || !newImageFile) ? 'not-allowed' : 'pointer', fontWeight: 'bold', fontSize: '1rem', transition: 'background 0.3s' }}
                     >
-                        {adding ? 'Adding...' : 'Add Image'}
+                        {adding ? 'Uploading...' : 'Upload & Add to Gallery'}
                     </button>
                 </form>
             </div>
