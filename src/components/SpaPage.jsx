@@ -98,7 +98,7 @@ const SpaPage = () => {
                                     priority={index < 2}
                                     sizes="100vw"
                                     style={{ 
-                                        objectFit: index === 0 || index === extendedImages.length - 1 ? 'cover' : 'contain',
+                                        objectFit: index === 0 || index === images.length - 1 ? 'cover' : 'contain',
                                         backgroundColor: '#F5F5DC' 
                                     }}
                                     className={isActive ? 'zoom-animate' : 'zoom-exit'}
