@@ -28,11 +28,11 @@ const DualHero = ({ onBusinessChange }) => {
         '/assets/spa-new-2.jpg'
     ];
 
-    // Interleave images to maintain H, S, H, S pattern
+    // Interleave images to maintain S, H, S, H pattern
     const originalImages = [];
     hotelImages.forEach((hImg, index) => {
-        originalImages.push(hImg);
         originalImages.push(spaImages[index % spaImages.length]);
+        originalImages.push(hImg);
     });
 
     const extendedImages = originalImages;
@@ -45,7 +45,7 @@ const DualHero = ({ onBusinessChange }) => {
     useEffect(() => {
         setIsMounted(true);
         if (onBusinessChange) {
-            onBusinessChange('hotel');
+            onBusinessChange('spa');
         }
     }, [onBusinessChange]);
 
@@ -74,13 +74,13 @@ const DualHero = ({ onBusinessChange }) => {
 
     // Update Business Type based on index
     useEffect(() => {
-        const nextBusiness = (currentIndex % 2 === 0) ? 'hotel' : 'spa';
+        const nextBusiness = (currentIndex % 2 === 0) ? 'spa' : 'hotel';
         if (onBusinessChange) {
             onBusinessChange(nextBusiness);
         }
     }, [currentIndex, onBusinessChange]);
 
-    const currentBusiness = (currentIndex % 2 === 0) ? 'hotel' : 'spa';
+    const currentBusiness = (currentIndex % 2 === 0) ? 'spa' : 'hotel';
 
     const spaContent = {
         logo: '/assets/logo.jpg',
