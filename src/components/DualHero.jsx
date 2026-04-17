@@ -7,25 +7,25 @@ import Image from 'next/image';
 const DualHero = ({ onBusinessChange }) => {
     // Define Hotel and Spa images separately
     const hotelImages = [
-        'https://lusvuwwlcdgowauvdpoh.supabase.co/storage/v1/object/public/website-assets/assets/hotel-bg.jpg',
-        'https://lusvuwwlcdgowauvdpoh.supabase.co/storage/v1/object/public/website-assets/assets/hotel-bg-2.jpg',
-        'https://lusvuwwlcdgowauvdpoh.supabase.co/storage/v1/object/public/website-assets/assets/hotel-slide-3.jpg',
-        'https://lusvuwwlcdgowauvdpoh.supabase.co/storage/v1/object/public/website-assets/assets/hotel-extra-1.jpg',
-        'https://lusvuwwlcdgowauvdpoh.supabase.co/storage/v1/object/public/website-assets/assets/hotel-extra-2.jpg',
-        'https://lusvuwwlcdgowauvdpoh.supabase.co/storage/v1/object/public/website-assets/assets/hotel-extra-3.jpg',
-        'https://lusvuwwlcdgowauvdpoh.supabase.co/storage/v1/object/public/website-assets/assets/hotel-extra-4.jpg',
-        'https://lusvuwwlcdgowauvdpoh.supabase.co/storage/v1/object/public/website-assets/assets/hotel-extra-5.jpg',
-        'https://lusvuwwlcdgowauvdpoh.supabase.co/storage/v1/object/public/website-assets/assets/hotel-extra-6.jpg',
-        'https://lusvuwwlcdgowauvdpoh.supabase.co/storage/v1/object/public/website-assets/assets/hotel-extra-7.jpg',
-        'https://lusvuwwlcdgowauvdpoh.supabase.co/storage/v1/object/public/website-assets/assets/hotel-extra-8.jpg'
+        '/assets/hotel-bg.jpg',
+        '/assets/hotel-bg-2.jpg',
+        '/assets/hotel-slide-3.jpg',
+        '/assets/hotel-extra-1.jpg',
+        '/assets/hotel-extra-2.jpg',
+        '/assets/hotel-extra-3.jpg',
+        '/assets/hotel-extra-4.jpg',
+        '/assets/hotel-extra-5.jpg',
+        '/assets/hotel-extra-6.jpg',
+        '/assets/hotel-extra-7.jpg',
+        '/assets/hotel-extra-8.jpg'
     ];
 
     const spaImages = [
-        'https://lusvuwwlcdgowauvdpoh.supabase.co/storage/v1/object/public/website-assets/assets/spa-bg.jpg',
-        'https://lusvuwwlcdgowauvdpoh.supabase.co/storage/v1/object/public/website-assets/assets/spa-bg-2.jpg',
-        'https://lusvuwwlcdgowauvdpoh.supabase.co/storage/v1/object/public/website-assets/assets/spa-slide-3.jpg',
-        'https://lusvuwwlcdgowauvdpoh.supabase.co/storage/v1/object/public/website-assets/assets/spa-new-1.jpg',
-        'https://lusvuwwlcdgowauvdpoh.supabase.co/storage/v1/object/public/website-assets/assets/spa-new-2.jpg'
+        '/assets/spa-bg.jpg',
+        '/assets/spa-bg-2.jpg',
+        '/assets/spa-slide-3.jpg',
+        '/assets/spa-new-1.jpg',
+        '/assets/spa-new-2.jpg'
     ];
 
     // Interleave images to maintain H, S, H, S pattern
@@ -83,7 +83,7 @@ const DualHero = ({ onBusinessChange }) => {
     const currentBusiness = (currentIndex % 2 === 0) ? 'hotel' : 'spa';
 
     const spaContent = {
-        logo: 'https://lusvuwwlcdgowauvdpoh.supabase.co/storage/v1/object/public/website-assets/assets/logo.jpg',
+        logo: '/assets/logo.jpg',
         name: 'THE SERENITY SPA',
         tagline: 'Your Oasis of Relaxation',
         location: 'Makerere, Kampala',
@@ -94,7 +94,7 @@ const DualHero = ({ onBusinessChange }) => {
     };
 
     const hotelContent = {
-        logo: 'https://lusvuwwlcdgowauvdpoh.supabase.co/storage/v1/object/public/website-assets/assets/hotel-logo.png',
+        logo: '/assets/hotel-logo.png',
         name: 'THE MARINA STAYS',
         tagline: 'Entebbe\'s Premier Residences',
         location: 'Entebbe, Uganda',
@@ -344,3 +344,4 @@ const DualHero = ({ onBusinessChange }) => {
 };
 
 export default DualHero;
+

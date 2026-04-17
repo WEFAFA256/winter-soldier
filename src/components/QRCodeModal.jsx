@@ -253,3 +253,4 @@ const QRCodeModal = ({ isOpen, onClose, bookingData }) => {
 
 export default QRCodeModal;
 
+

@@ -26,3 +26,4 @@ export const BusinessProvider = ({ children }) => {
 };
 
 export const useBusiness = () => useContext(BusinessContext);
+

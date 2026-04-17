@@ -24,7 +24,7 @@ const Contact = () => {
 
     return (
         <section id="contact" className="contact-section" style={{
-            backgroundColor: '#f8fbfc',
+            backgroundColor: '#f0faf9',
             position: 'relative',
             overflow: 'hidden'
         }}>
@@ -309,3 +309,4 @@ const Contact = () => {
 };
 
 export default Contact;
+

@@ -6,19 +6,31 @@ import Image from 'next/image';
 import Services from './Services';
 import Gallery from './Gallery';
 import Contact from './Contact';
-import PriceList from './PriceList';
 import { useScrollReveal } from '../hooks/useAnimations';
 
-import Reviews from './Reviews';
+import price1 from '../assets/pricelist/price1.jpg';
+import price2 from '../assets/pricelist/price2.jpg';
+import price3 from '../assets/pricelist/price3.jpg';
+import price4 from '../assets/pricelist/price4.jpg';
+import price5 from '../assets/pricelist/price5.jpg';
+import price6 from '../assets/pricelist/price6.jpg';
+import price7 from '../assets/pricelist/price7.jpg';
+import price8 from '../assets/pricelist/price8.jpg';
+import price9 from '../assets/pricelist/price9.jpg';
 
 const SpaPage = () => {
     // Slideshow State
     const originalImages = [
-        'https://lusvuwwlcdgowauvdpoh.supabase.co/storage/v1/object/public/website-assets/assets/spa-hero-bg-2.jpg',
-        'https://lusvuwwlcdgowauvdpoh.supabase.co/storage/v1/object/public/website-assets/assets/spa-hero-bg.jpg',
-        'https://lusvuwwlcdgowauvdpoh.supabase.co/storage/v1/object/public/website-assets/assets/spa-new-3.jpg',
-        'https://lusvuwwlcdgowauvdpoh.supabase.co/storage/v1/object/public/website-assets/assets/spa-new-1.jpg',
-        'https://lusvuwwlcdgowauvdpoh.supabase.co/storage/v1/object/public/website-assets/assets/spa-new-2.jpg'
+        '/assets/spa-hero-bg-2.jpg',
+        price1,
+        price2,
+        price3,
+        price4,
+        price5,
+        price6,
+        price7,
+        price8,
+        price9
     ];
     // Clone first image for seamless loop
     const extendedImages = [...originalImages, originalImages[0]];
@@ -89,7 +101,7 @@ const SpaPage = () => {
                         return (
                             <div
                                 key={index}
-                                style={{ position: 'relative', width: '100%', minWidth: '100%', minHeight: '600px', height: '100vh', backgroundColor: '#000', overflow: 'hidden' }}
+                                style={{ position: 'relative', width: '100%', minWidth: '100%', minHeight: '400px', height: '75vh', backgroundColor: '#000', overflow: 'hidden' }}
                             >
                                 <Image
                                     key={index}
@@ -99,7 +111,10 @@ const SpaPage = () => {
                                     fill
                                     priority={index < 2}
                                     sizes="100vw"
-                                    style={{ objectFit: 'cover' }}
+                                    style={{ 
+                                        objectFit: index === 0 || index === extendedImages.length - 1 ? 'cover' : 'contain',
+                                        backgroundColor: '#F5F5DC' 
+                                    }}
                                     className={isActive ? 'zoom-animate' : 'zoom-exit'}
                                 />
                             </div>
@@ -209,7 +224,7 @@ const SpaPage = () => {
                                 className="magnetic animate-pulse-gold"
                                 style={{
                                     padding: '0.8rem 1.8rem',
-                                    backgroundColor: 'transparent',
+                                    backgroundColor: '#005C53',
                                     color: '#ffffff',
                                     border: '2px solid #C5A059',
                                     borderRadius: '50px',
@@ -217,7 +232,7 @@ const SpaPage = () => {
                                     fontSize: '1rem',
                                     textDecoration: 'none',
                                     display: 'inline-block',
-                                    boxShadow: '0 5px 20px rgba(0, 0, 0, 0.2)',
+                                    boxShadow: '0 5px 20px rgba(0, 0, 0, 0.4)',
                                     transition: 'all 0.3s ease'
                                 }}
                             >
@@ -228,11 +243,6 @@ const SpaPage = () => {
                 </div>
             </section >
 
-            {/* Price List */}
-            <PriceList />
-
-            {/* Reviews */}
-            <Reviews type="spa" />
 
             {/* Contact */}
             <Contact />
@@ -241,3 +251,4 @@ const SpaPage = () => {
 };
 
 export default SpaPage;
+

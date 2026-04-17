@@ -16,13 +16,13 @@ const SocialMediaIcons = ({ mode }) => {
     const socials = [
         {
             name: 'Email',
-            image: 'https://lusvuwwlcdgowauvdpoh.supabase.co/storage/v1/object/public/website-assets/assets/email-icon.svg',
+            image: '/assets/email-icon.svg',
             url: 'mailto:marinastaysbookings@gmail.com',
             delay: '0s'
         },
         {
             name: 'WhatsApp',
-            image: 'https://lusvuwwlcdgowauvdpoh.supabase.co/storage/v1/object/public/website-assets/assets/whatsapp-icon.jpg',
+            image: '/assets/whatsapp-icon.jpg',
             url: `https://wa.me/${whatsappNum}?text=${message}`,
             delay: '0.2s'
         },
@@ -96,3 +96,4 @@ const SocialMediaIcons = ({ mode }) => {
 };
 
 export default SocialMediaIcons;
+

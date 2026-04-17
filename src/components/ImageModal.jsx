@@ -65,3 +65,4 @@ const ImageModal = ({ isOpen, onClose, imageSrc, title }) => {
 };
 
 export default ImageModal;
+

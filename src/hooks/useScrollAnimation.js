@@ -31,3 +31,4 @@ export const useScrollAnimation = (animationClass = 'animate-float-up', threshol
 
   return ref;
 };
+

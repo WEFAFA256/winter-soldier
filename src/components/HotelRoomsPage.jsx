@@ -27,28 +27,28 @@ const HotelRoomsPage = () => {
                         {[
                             {
                                 title: 'Economy Stay',
-                                image: 'https://lusvuwwlcdgowauvdpoh.supabase.co/storage/v1/object/public/website-assets/assets/hotel_rooms/economy_stay.jpg',
+                                image: '/assets/hotel_rooms/economy_stay.jpg',
                                 description: 'Budget friendly option with essential amenities. Includes Breakfast, Room Service, and access to Foot Spa. Ideal for solo travelers.',
                                 price: '30$ / UGX 100K',
                                 delay: 'delay-100'
                             },
                             {
                                 title: 'Deluxe Queen',
-                                image: 'https://lusvuwwlcdgowauvdpoh.supabase.co/storage/v1/object/public/website-assets/assets/hotel_rooms/deluxe_queen.jpg',
+                                image: '/assets/hotel_rooms/deluxe_queen.jpg',
                                 description: 'Perfect comfort & luxury. Self-contained with Queen Size Bed, Aerial & Airport View. Includes Breakfast and Spa access.',
                                 price: '80$ / UGX 250K',
                                 delay: 'delay-200'
                             },
                             {
                                 title: 'Deluxe Twinbed',
-                                image: 'https://lusvuwwlcdgowauvdpoh.supabase.co/storage/v1/object/public/website-assets/assets/hotel_rooms/deluxe_twin.jpg',
+                                image: '/assets/hotel_rooms/deluxe_twin.jpg',
                                 description: 'Spacious twin bed setup. Includes all Deluxe amenities plus Music Party Free access. Great for friends or colleagues.',
                                 price: '100$ / UGX 350K',
                                 delay: 'delay-300'
                             },
                             {
                                 title: 'Penthouse Deluxe',
-                                image: 'https://lusvuwwlcdgowauvdpoh.supabase.co/storage/v1/object/public/website-assets/assets/hotel_rooms/penthouse_deluxe.jpg',
+                                image: '/assets/hotel_rooms/penthouse_deluxe.jpg',
                                 description: 'Premium Luxury. King Size Bed, Laundry Service, and Party Free access. The ultimate experience for up to 3 adults.',
                                 price: '130$ / UGX 450K',
                                 delay: 'delay-100'
@@ -125,3 +125,4 @@ const HotelRoomsPage = () => {
 };
 
 export default HotelRoomsPage;
+

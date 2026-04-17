@@ -29,14 +29,14 @@ const Navbar = ({ homePageBusiness = 'spa' }) => {
 
     // Dynamic branding based on section (or homepage business state)
     const branding = (isHome ? homePageBusiness === 'hotel' : isHotelSection) ? {
-        logo: 'https://lusvuwwlcdgowauvdpoh.supabase.co/storage/v1/object/public/website-assets/assets/hotel-logo.png',
+        logo: '/assets/hotel-logo.png',
         name: 'THE MARINA STAYS',
         color: '#8B4513',
         logoStyle: { height: '60px', width: 'auto', borderRadius: '10px' },
         logoWidth: 80,
         logoHeight: 60
     } : {
-        logo: 'https://lusvuwwlcdgowauvdpoh.supabase.co/storage/v1/object/public/website-assets/assets/logo.jpg',
+        logo: '/assets/logo.jpg',
         name: 'THE SERENITY SPA',
         color: 'var(--color-primary)',
         logoStyle: { height: '50px', width: '50px', borderRadius: '50%' },
@@ -208,4 +208,5 @@ const Navbar = ({ homePageBusiness = 'spa' }) => {
 };
 
 export default Navbar;
+
 

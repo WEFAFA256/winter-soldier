@@ -242,3 +242,4 @@ app.listen(PORT, () => {
     console.log(`DPO Pay Server running on http://localhost:${PORT}`);
     console.log(`Company Token: ${DPO_COMPANY_TOKEN === 'YOUR_DPO_COMPANY_TOKEN' ? '⚠️  NOT SET' : '✅ Configured'}`);
 });
+

@@ -60,3 +60,4 @@ for (const file of files) {
 }
 
 console.log('Update complete.');
+

@@ -11,16 +11,16 @@ import Reviews from './Reviews';
 const HotelPage = () => {
     // Slideshow State
     const originalImages = [
-        'https://lusvuwwlcdgowauvdpoh.supabase.co/storage/v1/object/public/website-assets/assets/hotel-hero-bg-2.jpg',
-        'https://lusvuwwlcdgowauvdpoh.supabase.co/storage/v1/object/public/website-assets/assets/hotel-hero-bg.jpg',
-        'https://lusvuwwlcdgowauvdpoh.supabase.co/storage/v1/object/public/website-assets/assets/hotel-extra-1.jpg',
-        'https://lusvuwwlcdgowauvdpoh.supabase.co/storage/v1/object/public/website-assets/assets/hotel-extra-2.jpg',
-        'https://lusvuwwlcdgowauvdpoh.supabase.co/storage/v1/object/public/website-assets/assets/hotel-extra-3.jpg',
-        'https://lusvuwwlcdgowauvdpoh.supabase.co/storage/v1/object/public/website-assets/assets/hotel-extra-4.jpg',
-        'https://lusvuwwlcdgowauvdpoh.supabase.co/storage/v1/object/public/website-assets/assets/hotel-extra-5.jpg',
-        'https://lusvuwwlcdgowauvdpoh.supabase.co/storage/v1/object/public/website-assets/assets/hotel-extra-6.jpg',
-        'https://lusvuwwlcdgowauvdpoh.supabase.co/storage/v1/object/public/website-assets/assets/hotel-extra-7.jpg',
-        'https://lusvuwwlcdgowauvdpoh.supabase.co/storage/v1/object/public/website-assets/assets/hotel-extra-8.jpg'
+        '/assets/hotel-hero-bg-2.jpg',
+        '/assets/hotel-hero-bg.jpg',
+        '/assets/hotel-extra-1.jpg',
+        '/assets/hotel-extra-2.jpg',
+        '/assets/hotel-extra-3.jpg',
+        '/assets/hotel-extra-4.jpg',
+        '/assets/hotel-extra-5.jpg',
+        '/assets/hotel-extra-6.jpg',
+        '/assets/hotel-extra-7.jpg',
+        '/assets/hotel-extra-8.jpg'
     ];
     // Clone first image for seamless loop
     const extendedImages = [...originalImages, originalImages[0]];
@@ -227,32 +227,32 @@ const HotelPage = () => {
                     }}>
                         {[
                             {
-                                image: 'https://lusvuwwlcdgowauvdpoh.supabase.co/storage/v1/object/public/website-assets/assets/hotel_specials/nojito_closeup.jpg',
+                                image: '/assets/hotel_specials/nojito_closeup.jpg',
                                 title: 'Classic Nojito',
                                 desc: 'Our signature Nojito with fresh lime, ice & cherries'
                             },
                             {
-                                image: 'https://lusvuwwlcdgowauvdpoh.supabase.co/storage/v1/object/public/website-assets/assets/hotel_specials/nojito_menu.jpg',
+                                image: '/assets/hotel_specials/nojito_menu.jpg',
                                 title: 'Nojito Menu',
                                 desc: 'Refreshing Nojitos - Classic, Coco Le Blue, Lavender & More'
                             },
                             {
-                                image: 'https://lusvuwwlcdgowauvdpoh.supabase.co/storage/v1/object/public/website-assets/assets/hotel_specials/cocktails_1.jpg',
+                                image: '/assets/hotel_specials/cocktails_1.jpg',
                                 title: 'Signature Cocktails',
                                 desc: 'Premium Cocktails from Oak & Tonic Bar'
                             },
                             {
-                                image: 'https://lusvuwwlcdgowauvdpoh.supabase.co/storage/v1/object/public/website-assets/assets/hotel_specials/cocktails_menu.jpg',
+                                image: '/assets/hotel_specials/cocktails_menu.jpg',
                                 title: 'Cocktails & Juices',
                                 desc: 'Fresh Juices, Cocktails & Marina\'s Special Blends'
                             },
                             {
-                                image: 'https://lusvuwwlcdgowauvdpoh.supabase.co/storage/v1/object/public/website-assets/assets/hotel_specials/cafe_menu.jpg',
+                                image: '/assets/hotel_specials/cafe_menu.jpg',
                                 title: 'Café Menu',
                                 desc: 'Espresso, Cappuccino, Latte & More from Marina Cafeteria'
                             },
                             {
-                                image: 'https://lusvuwwlcdgowauvdpoh.supabase.co/storage/v1/object/public/website-assets/assets/hotel_specials/breakfast_menu.jpg',
+                                image: '/assets/hotel_specials/breakfast_menu.jpg',
                                 title: 'Breakfast Specials',
                                 desc: 'Toasted Bread, Eggs, Sausages, Pancakes & More'
                             }
@@ -307,3 +307,4 @@ const HotelPage = () => {
 };
 
 export default HotelPage;
+

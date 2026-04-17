@@ -57,3 +57,4 @@ const Reviews = ({ type }) => {
 };
 
 export default Reviews;
+
