@@ -63,7 +63,7 @@ const DualHero = ({ onBusinessChange }) => {
                 }, 100);
             }, 800);
 
-        }, 6000);
+        }, 10000);
 
         return () => {
             clearInterval(interval);
@@ -135,7 +135,7 @@ const DualHero = ({ onBusinessChange }) => {
                                     width: '100%',
                                     height: '100%',
                                     opacity: isActive ? 1 : 0,
-                                    transition: 'opacity 1.5s ease-in-out',
+                                    transition: 'opacity 4.5s ease-in-out',
                                     zIndex: isActive ? 1 : 0,
                                     overflow: 'hidden',
                                 }}

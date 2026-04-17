@@ -22,44 +22,18 @@ const HotelPage = () => {
         '/assets/hotel-extra-7.jpg',
         '/assets/hotel-extra-8.jpg'
     ];
-    // Clone first image for seamless loop
-    const extendedImages = [...originalImages, originalImages[0]];
+    // No need for seamless loop clone if doing crossfade
+    const images = originalImages;
 
     const [currentIndex, setCurrentIndex] = useState(0);
-    const [isTransitioning, setIsTransitioning] = useState(true);
-    const [isMounted, setIsMounted] = useState(false);
 
-    // Initial mount effect
-    useEffect(() => {
-        setIsMounted(true);
-    }, []);
-
-    // Cycle images every 6 seconds
+    // Cycle images every 9 seconds smoothly
     useEffect(() => {
         const interval = setInterval(() => {
-            setCurrentIndex(prev => prev + 1);
-        }, 6000);
+            setCurrentIndex(prev => (prev + 1) % images.length);
+        }, 9000);
         return () => clearInterval(interval);
-    }, []);
-
-    // Handle Seamless Loop Reset
-    useEffect(() => {
-        if (currentIndex === originalImages.length) {
-            // Reached clone. Wait 1s transition, then snap reset.
-            const timeout = setTimeout(() => {
-                setIsTransitioning(false);
-                setCurrentIndex(0);
-            }, 1550);
-            return () => clearTimeout(timeout);
-        } else if (currentIndex === 0 && !isTransitioning) {
-            // Snapped back. Re-enable transition.
-            requestAnimationFrame(() => {
-                requestAnimationFrame(() => {
-                    setIsTransitioning(true);
-                });
-            });
-        }
-    }, [currentIndex, isTransitioning, originalImages.length]);
+    }, [images.length]);
 
     // Initialize scroll reveal animations
     useScrollReveal();
@@ -67,7 +41,7 @@ const HotelPage = () => {
     return (
         <div>
             {/* Hotel Hero Section */}
-            <section style={{ position: 'relative', width: '100%', overflow: 'hidden' }} role="region" aria-label="Hotel Image Slideshow">
+            <section style={{ position: 'relative', width: '100%', overflow: 'hidden', height: '100vh', minHeight: '600px', backgroundColor: '#000' }} role="region" aria-label="Hotel Image Slideshow">
                 <div style={{
                     position: 'absolute',
                     top: 0,
@@ -78,24 +52,36 @@ const HotelPage = () => {
                     zIndex: 2
                 }}></div>
 
-                {/* Slider Window */}
-                <div className="hero-slider-track" style={{
-                    transform: `translateX(-${currentIndex * 100}%)`,
-                    transition: isTransitioning ? 'transform 1.5s cubic-bezier(0.645, 0.045, 0.355, 1)' : 'none',
-                    display: 'flex',
+                {/* Crossfade Window */}
+                <div style={{
                     width: '100%',
-                    willChange: 'transform'
+                    height: '100%',
+                    position: 'absolute',
+                    top: 0,
+                    left: 0
                 }}>
-                    {extendedImages.map((imgSrc, index) => {
+                    {images.map((imgSrc, index) => {
                         const isActive = index === currentIndex;
+                        const isPrev = index === (currentIndex - 1 + images.length) % images.length;
+                        if (!isActive && !isPrev) return null;
+
                         return (
                             <div
                                 key={index}
-                                style={{ position: 'relative', width: '100%', minWidth: '100%', minHeight: '600px', height: '100vh', backgroundColor: '#000', overflow: 'hidden' }}
+                                style={{
+                                    position: 'absolute',
+                                    top: 0,
+                                    left: 0,
+                                    width: '100%',
+                                    height: '100%',
+                                    opacity: isActive ? 1 : 0,
+                                    transition: 'opacity 4.5s ease-in-out',
+                                    zIndex: isActive ? 1 : 0,
+                                    overflow: 'hidden'
+                                }}
                                 aria-hidden={!isActive}
                             >
                                 <Image
-                                    key={index}
                                     quality={100}
                                     src={imgSrc}
                                     alt={`The Marina Stays - Luxury lakeside suite ${index + 1}`}
