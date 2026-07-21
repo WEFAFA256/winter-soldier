@@ -1,15 +1,17 @@
 import { NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
+import { v2 as cloudinary } from 'cloudinary';
 
-// Define the paths
+// Configure Cloudinary
+cloudinary.config({
+    cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || 'njzctr4m',
+    api_key: process.env.CLOUDINARY_API_KEY || '143573632263644',
+    api_secret: process.env.CLOUDINARY_API_SECRET || 'bRjjHhCZmsSnqvoJHhKg5D9SMOA',
+});
+
+// Define the path for fallback local metadata store
 const dataFilePath = path.join(process.cwd(), 'public', 'gallery.json');
-const uploadDir = path.join(process.cwd(), 'public', 'uploads');
-
-// Ensure upload directory exists
-if (!fs.existsSync(uploadDir)) {
-    fs.mkdirSync(uploadDir, { recursive: true });
-}
 
 // Helper function to read data
 const readData = () => {
@@ -58,17 +60,28 @@ export async function POST(req) {
             return NextResponse.json({ error: 'No file uploaded' }, { status: 400 });
         }
 
-        const buffer = Buffer.from(await file.arrayBuffer());
-        const fileName = `${Date.now()}-${file.name.replace(/\s+/g, '-')}`;
-        const filePath = path.join(uploadDir, fileName);
-        
-        // Save the file
-        fs.writeFileSync(filePath, buffer);
-        
+        const arrayBuffer = await file.arrayBuffer();
+        const buffer = Buffer.from(arrayBuffer);
+
+        // Upload directly to Cloudinary using upload_stream
+        const uploadResult = await new Promise((resolve, reject) => {
+            const stream = cloudinary.uploader.upload_stream(
+                {
+                    folder: 'serenity_gallery',
+                    resource_type: 'image',
+                },
+                (error, result) => {
+                    if (error) reject(error);
+                    else resolve(result);
+                }
+            );
+            stream.end(buffer);
+        });
+
         const images = readData();
         const newImage = {
-            id: Date.now().toString(),
-            src: `/uploads/${fileName}`,
+            id: uploadResult.public_id,
+            src: uploadResult.secure_url,
             alt: alt,
             delay: 'delay-100'
         };
@@ -76,13 +89,13 @@ export async function POST(req) {
         images.unshift(newImage);
         
         if (writeData(images)) {
-            return NextResponse.json({ message: 'Image uploaded successfully', image: newImage }, { status: 201 });
+            return NextResponse.json({ message: 'Image uploaded successfully to Cloudinary', image: newImage }, { status: 201 });
         } else {
             return NextResponse.json({ error: 'Failed to update database' }, { status: 500 });
         }
     } catch (error) {
-        console.error("Error in POST:", error);
-        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+        console.error("Error in POST to Cloudinary:", error);
+        return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 });
     }
 }
 
@@ -107,11 +120,12 @@ export async function DELETE(req) {
             return NextResponse.json({ error: 'Image not found' }, { status: 404 });
         }
 
-        // Delete from filesystem if it's a local file
-        if (imageToDelete.src.startsWith('/uploads/')) {
-            const filePath = path.join(process.cwd(), 'public', imageToDelete.src);
-            if (fs.existsSync(filePath)) {
-                fs.unlinkSync(filePath);
+        // Delete from Cloudinary if it's stored on Cloudinary
+        if (imageToDelete.id.includes('serenity_gallery') || imageToDelete.src.includes('cloudinary')) {
+            try {
+                await cloudinary.uploader.destroy(imageToDelete.id);
+            } catch (cErr) {
+                console.error("Cloudinary delete error:", cErr);
             }
         }
 
