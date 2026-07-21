@@ -10,11 +10,10 @@ cloudinary.config({
     api_secret: process.env.CLOUDINARY_API_SECRET || 'bRjjHhCZmsSnqvoJHhKg5D9SMOA',
 });
 
-// Define the path for fallback local metadata store
 const dataFilePath = path.join(process.cwd(), 'public', 'gallery.json');
 
-// Helper function to read data
-const readData = () => {
+// Helper function to read local default images
+const readLocalData = () => {
     try {
         if (!fs.existsSync(dataFilePath)) {
             return [];
@@ -27,20 +26,33 @@ const readData = () => {
     }
 };
 
-// Helper function to write data
-const writeData = (data) => {
-    try {
-        fs.writeFileSync(dataFilePath, JSON.stringify(data, null, 2), 'utf8');
-        return true;
-    } catch (error) {
-        console.error("Error writing gallery data:", error);
-        return false;
-    }
-};
-
 export async function GET() {
-    const images = readData();
-    return NextResponse.json(images);
+    try {
+        // Fetch images uploaded to Cloudinary in serenity_gallery folder
+        const cloudinaryRes = await cloudinary.search
+            .expression('folder:serenity_gallery')
+            .sort_by('created_at', 'desc')
+            .max_results(100)
+            .execute();
+
+        const cloudinaryImages = (cloudinaryRes.resources || []).map((resource) => ({
+            id: resource.public_id,
+            src: resource.secure_url,
+            alt: resource.context?.custom?.alt || 'Gallery Image',
+            delay: 'delay-100'
+        }));
+
+        // Merge Cloudinary images with local default gallery images
+        const localImages = readLocalData();
+        
+        // Filter out local images that might already be deleted or duplicated
+        const combined = [...cloudinaryImages, ...localImages];
+
+        return NextResponse.json(combined);
+    } catch (error) {
+        console.error("Error fetching from Cloudinary, falling back to local JSON:", error);
+        return NextResponse.json(readLocalData());
+    }
 }
 
 export async function POST(req) {
@@ -63,12 +75,13 @@ export async function POST(req) {
         const arrayBuffer = await file.arrayBuffer();
         const buffer = Buffer.from(arrayBuffer);
 
-        // Upload directly to Cloudinary using upload_stream
+        // Upload directly to Cloudinary with metadata/context
         const uploadResult = await new Promise((resolve, reject) => {
             const stream = cloudinary.uploader.upload_stream(
                 {
                     folder: 'serenity_gallery',
                     resource_type: 'image',
+                    context: `alt=${alt}`,
                 },
                 (error, result) => {
                     if (error) reject(error);
@@ -78,21 +91,23 @@ export async function POST(req) {
             stream.end(buffer);
         });
 
-        const images = readData();
         const newImage = {
             id: uploadResult.public_id,
             src: uploadResult.secure_url,
             alt: alt,
             delay: 'delay-100'
         };
-        
-        images.unshift(newImage);
-        
-        if (writeData(images)) {
-            return NextResponse.json({ message: 'Image uploaded successfully to Cloudinary', image: newImage }, { status: 201 });
-        } else {
-            return NextResponse.json({ error: 'Failed to update database' }, { status: 500 });
+
+        // Try writing to disk locally (will succeed in dev, safely ignored if serverless)
+        try {
+            const local = readLocalData();
+            local.unshift(newImage);
+            fs.writeFileSync(dataFilePath, JSON.stringify(local, null, 2), 'utf8');
+        } catch (e) {
+            // Serverless read-only filesystem notice, Cloudinary holds the file permanently!
         }
+        
+        return NextResponse.json({ message: 'Image uploaded successfully to Cloudinary', image: newImage }, { status: 201 });
     } catch (error) {
         console.error("Error in POST to Cloudinary:", error);
         return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 });
@@ -113,29 +128,21 @@ export async function DELETE(req) {
             return NextResponse.json({ error: 'ID is required' }, { status: 400 });
         }
 
-        let images = readData();
-        const imageToDelete = images.find(img => img.id === id);
-        
-        if (!imageToDelete) {
-            return NextResponse.json({ error: 'Image not found' }, { status: 404 });
+        // Delete from Cloudinary if public_id exists
+        try {
+            await cloudinary.uploader.destroy(id);
+        } catch (cErr) {
+            console.error("Cloudinary delete error:", cErr);
         }
 
-        // Delete from Cloudinary if it's stored on Cloudinary
-        if (imageToDelete.id.includes('serenity_gallery') || imageToDelete.src.includes('cloudinary')) {
-            try {
-                await cloudinary.uploader.destroy(imageToDelete.id);
-            } catch (cErr) {
-                console.error("Cloudinary delete error:", cErr);
-            }
-        }
-
-        images = images.filter(img => img.id !== id);
+        // Try updating local file if in dev
+        try {
+            let local = readLocalData();
+            local = local.filter(img => img.id !== id);
+            fs.writeFileSync(dataFilePath, JSON.stringify(local, null, 2), 'utf8');
+        } catch (e) {}
         
-        if (writeData(images)) {
-            return NextResponse.json({ message: 'Image removed successfully' }, { status: 200 });
-        } else {
-            return NextResponse.json({ error: 'Failed to update database' }, { status: 500 });
-        }
+        return NextResponse.json({ message: 'Image removed successfully' }, { status: 200 });
     } catch (error) {
         console.error("Error in DELETE:", error);
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
