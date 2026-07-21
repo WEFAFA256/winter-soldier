@@ -12,6 +12,22 @@ const Services = () => {
     const router = useRouter();
     const headerRef = useScrollAnimation('animate-float-up');
     const [modalState, setModalState] = useState({ isOpen: false, imageSrc: '', title: '' });
+    const [dynamicServices, setDynamicServices] = useState([]);
+
+    useEffect(() => {
+        const fetchServices = async () => {
+            try {
+                const res = await fetch('/api/content');
+                const data = await res.json();
+                if (data && data.services) {
+                    setDynamicServices(data.services);
+                }
+            } catch (err) {
+                console.error("Failed to fetch services content", err);
+            }
+        };
+        fetchServices();
+    }, []);
 
     const openModal = (imageSrc, title) => {
         setModalState({ isOpen: true, imageSrc, title });
@@ -40,7 +56,7 @@ const Services = () => {
     // Initialize scroll reveal animations
     useScrollReveal();
 
-    const services = [
+    const fallbackServices = [
         // --- 150K Tier ---
         {
             title: 'Swedish Massage',
@@ -312,6 +328,8 @@ const Services = () => {
             price: 1200000
         }
     ];
+
+    const services = dynamicServices.length > 0 ? dynamicServices : fallbackServices;
 
     // Filter services based on price
 

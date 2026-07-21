@@ -6,8 +6,25 @@ import Image from 'next/image';
 
 const HotelPriceList = () => {
     const router = useRouter();
+    const [contentData, setContentData] = useState(null);
+
+    useEffect(() => {
+        const fetchContent = async () => {
+            try {
+                const res = await fetch('/api/content');
+                const data = await res.json();
+                if (data && data.hotelPriceList) {
+                    setContentData(data.hotelPriceList);
+                }
+            } catch (err) {
+                console.error("Failed to fetch hotel price list content", err);
+            }
+        };
+        fetchContent();
+    }, []);
+
     // Using images from public/assets/hotel_pricelist
-    const images = [
+    const defaultImages = [
         '/assets/hotel_pricelist/price1.jpg',
         '/assets/hotel_pricelist/price2.jpg',
         '/assets/hotel_pricelist/price3.jpg',
@@ -17,9 +34,11 @@ const HotelPriceList = () => {
         '/assets/hotel_pricelist/price7.jpg',
         '/assets/hotel_pricelist/price8.jpg'
     ];
+    const images = contentData?.images || defaultImages;
     const [currentIndex, setCurrentIndex] = useState(0);
 
     useEffect(() => {
+        if (images.length === 0) return;
         const interval = setInterval(() => {
             setCurrentIndex((prevIndex) => (prevIndex + 1) % images.length);
         }, 4000); // 4 seconds per slide

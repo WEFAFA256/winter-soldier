@@ -9,8 +9,25 @@ import { useScrollReveal } from '../hooks/useAnimations';
 import Reviews from './Reviews';
 
 const HotelPage = () => {
+    const [contentData, setContentData] = useState(null);
+
+    useEffect(() => {
+        const fetchContent = async () => {
+            try {
+                const res = await fetch('/api/content');
+                const data = await res.json();
+                if (data && data.hotelPage) {
+                    setContentData(data.hotelPage);
+                }
+            } catch (err) {
+                console.error("Failed to fetch hotel page content", err);
+            }
+        };
+        fetchContent();
+    }, []);
+
     // Slideshow State
-    const originalImages = [
+    const originalImages = contentData?.heroImages || [
         '/assets/hotel-hero-bg-2.jpg',
         '/assets/hotel-hero-bg.jpg',
         '/assets/hotel-extra-1.jpg',
@@ -29,6 +46,7 @@ const HotelPage = () => {
 
     // Cycle images every 9 seconds smoothly
     useEffect(() => {
+        if (images.length === 0) return;
         const interval = setInterval(() => {
             setCurrentIndex(prev => (prev + 1) % images.length);
         }, 9000);
@@ -162,14 +180,13 @@ const HotelPage = () => {
                         </div>
 
                         <p style={{ fontSize: '1.5rem', fontStyle: 'italic', marginBottom: '0.5rem' }}>
-                            Entebbe's Premier Residences
+                            {contentData?.tagline || "Entebbe's Premier Residences"}
                         </p>
                         <p style={{ fontSize: '1.1rem', opacity: 0.9, marginBottom: '1rem' }}>
-                            📍 Entebbe, Uganda
+                            📍 {contentData?.location || "Entebbe, Uganda"}
                         </p>
                         <p style={{ fontSize: '1.1rem', maxWidth: '700px', margin: '0 auto 2rem', lineHeight: '1.8' }}>
-                            Experience luxury accommodation with stunning lake views, world-class amenities,
-                            and exceptional hospitality at Entebbe's finest private hotel.
+                            {contentData?.description || "Experience luxury accommodation with stunning lake views, world-class amenities, and exceptional hospitality at Entebbe's finest private hotel."}
                         </p>
                         <div className="hero-buttons-container" style={{ marginTop: '2rem', display: 'flex', justifyContent: 'center', gap: '1rem', flexWrap: 'wrap' }}>
                             <Link
@@ -193,10 +210,10 @@ const HotelPage = () => {
                     </div>
                 </div>
             </section>
-
+ 
             {/* Hotel Price List */}
             <HotelPriceList />
-
+ 
             {/* Hotel Specials */}
             <section style={{ padding: '5rem 0', backgroundColor: '#f5f5f5' }}>
                 <div className="container">
@@ -211,7 +228,7 @@ const HotelPage = () => {
                         gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
                         gap: '2rem'
                     }}>
-                        {[
+                        {(contentData?.specials || [
                             {
                                 image: '/assets/hotel_specials/nojito_closeup.jpg',
                                 title: 'Classic Nojito',
@@ -242,7 +259,7 @@ const HotelPage = () => {
                                 title: 'Breakfast Specials',
                                 desc: 'Toasted Bread, Eggs, Sausages, Pancakes & More'
                             }
-                        ].map((special, index) => (
+                        ]).map((special, index) => (
                             <div
                                 key={index}
                                 className={`scroll-reveal-float hover-lift delay-${(index + 3) * 100}`}

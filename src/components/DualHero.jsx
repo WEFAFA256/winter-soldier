@@ -5,8 +5,25 @@ import Link from 'next/link';
 import Image from 'next/image';
 
 const DualHero = ({ onBusinessChange }) => {
-    // Define Hotel and Spa images separately
-    const hotelImages = [
+    const [contentData, setContentData] = useState(null);
+
+    useEffect(() => {
+        const fetchContent = async () => {
+            try {
+                const res = await fetch('/api/content');
+                const data = await res.json();
+                if (data && data.homepage) {
+                    setContentData(data.homepage);
+                }
+            } catch (err) {
+                console.error("Failed to fetch homepage content", err);
+            }
+        };
+        fetchContent();
+    }, []);
+
+    // Define Fallback Hotel and Spa images
+    const defaultHotelImages = [
         '/assets/hotel-bg.jpg',
         '/assets/hotel-bg-2.jpg',
         '/assets/hotel-slide-3.jpg',
@@ -20,7 +37,7 @@ const DualHero = ({ onBusinessChange }) => {
         '/assets/hotel-extra-8.jpg'
     ];
 
-    const spaImages = [
+    const defaultSpaImages = [
         '/assets/spa-bg.jpg',
         '/assets/spa-bg-2.jpg',
         '/assets/spa-slide-3.jpg',
@@ -28,12 +45,16 @@ const DualHero = ({ onBusinessChange }) => {
         '/assets/spa-new-2.jpg'
     ];
 
+    const hotelImages = contentData?.hotelHeroImages || defaultHotelImages;
+    const spaImages = contentData?.spaHeroImages || defaultSpaImages;
+
     // Interleave images to maintain S, H, S, H pattern
     const originalImages = [];
-    hotelImages.forEach((hImg, index) => {
-        originalImages.push(spaImages[index % spaImages.length]);
-        originalImages.push(hImg);
-    });
+    const maxLen = Math.max(spaImages.length, hotelImages.length);
+    for (let i = 0; i < maxLen; i++) {
+        if (spaImages[i % spaImages.length]) originalImages.push(spaImages[i % spaImages.length]);
+        if (hotelImages[i % hotelImages.length]) originalImages.push(hotelImages[i % hotelImages.length]);
+    }
 
     const extendedImages = originalImages;
 
@@ -50,6 +71,7 @@ const DualHero = ({ onBusinessChange }) => {
     }, [onBusinessChange]);
 
     useEffect(() => {
+        if (originalImages.length === 0) return;
         let fadeOutTimer;
         let fadeInTimer;
 
@@ -74,15 +96,16 @@ const DualHero = ({ onBusinessChange }) => {
 
     // Update Business Type based on index
     useEffect(() => {
+        if (originalImages.length === 0) return;
         const nextBusiness = (currentIndex % 2 === 0) ? 'spa' : 'hotel';
         if (onBusinessChange) {
             onBusinessChange(nextBusiness);
         }
-    }, [currentIndex, onBusinessChange]);
+    }, [currentIndex, onBusinessChange, originalImages.length]);
 
     const currentBusiness = (currentIndex % 2 === 0) ? 'spa' : 'hotel';
 
-    const spaContent = {
+    const defaultSpaContent = {
         logo: '/assets/logo.jpg',
         name: 'THE SERENITY SPA',
         tagline: 'Your Oasis of Relaxation',
@@ -93,7 +116,7 @@ const DualHero = ({ onBusinessChange }) => {
         color: '#005C53' 
     };
 
-    const hotelContent = {
+    const defaultHotelContent = {
         logo: '/assets/hotel-logo.png',
         name: 'THE MARINA STAYS',
         tagline: 'Entebbe\'s Premier Residences',
@@ -103,6 +126,9 @@ const DualHero = ({ onBusinessChange }) => {
         link: '/hotel',
         color: '#8B4513'
     };
+
+    const spaContent = contentData?.spaContent || defaultSpaContent;
+    const hotelContent = contentData?.hotelContent || defaultHotelContent;
 
     const content = currentBusiness === 'spa' ? spaContent : hotelContent;
 

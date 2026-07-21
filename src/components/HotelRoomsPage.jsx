@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import ServiceCard from './ServiceCard';
@@ -8,6 +8,55 @@ import ServiceCard from './ServiceCard';
 const HotelRoomsPage = () => {
     const router = useRouter();
     const [selectedImage, setSelectedImage] = useState(null);
+    const [dynamicRooms, setDynamicRooms] = useState([]);
+
+    useEffect(() => {
+        const fetchRooms = async () => {
+            try {
+                const res = await fetch('/api/content');
+                const data = await res.json();
+                if (data && data.rooms) {
+                    setDynamicRooms(data.rooms);
+                }
+            } catch (err) {
+                console.error("Failed to fetch hotel rooms content", err);
+            }
+        };
+        fetchRooms();
+    }, []);
+
+    const fallbackRooms = [
+        {
+            title: 'Economy Stay',
+            image: '/assets/hotel_rooms/economy_stay.jpg',
+            description: 'Budget friendly option with essential amenities. Includes Breakfast, Room Service, and access to Foot Spa. Ideal for solo travelers.',
+            price: '30$ / UGX 100K',
+            delay: 'delay-100'
+        },
+        {
+            title: 'Deluxe Queen',
+            image: '/assets/hotel_rooms/deluxe_queen.jpg',
+            description: 'Perfect comfort & luxury. Self-contained with Queen Size Bed, Aerial & Airport View. Includes Breakfast and Spa access.',
+            price: '80$ / UGX 250K',
+            delay: 'delay-200'
+        },
+        {
+            title: 'Deluxe Twinbed',
+            image: '/assets/hotel_rooms/deluxe_twin.jpg',
+            description: 'Spacious twin bed setup. Includes all Deluxe amenities plus Music Party Free access. Great for friends or colleagues.',
+            price: '100$ / UGX 350K',
+            delay: 'delay-300'
+        },
+        {
+            title: 'Penthouse Deluxe',
+            image: '/assets/hotel_rooms/penthouse_deluxe.jpg',
+            description: 'Premium Luxury. King Size Bed, Laundry Service, and Party Free access. The ultimate experience for up to 3 adults.',
+            price: '130$ / UGX 450K',
+            delay: 'delay-100'
+        }
+    ];
+
+    const rooms = dynamicRooms.length > 0 ? dynamicRooms : fallbackRooms;
 
     return (
         <div style={{ paddingTop: '100px', backgroundColor: '#FAF0E6', minHeight: '100vh' }}>
@@ -24,36 +73,7 @@ const HotelRoomsPage = () => {
                         gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
                         gap: '2rem'
                     }}>
-                        {[
-                            {
-                                title: 'Economy Stay',
-                                image: '/assets/hotel_rooms/economy_stay.jpg',
-                                description: 'Budget friendly option with essential amenities. Includes Breakfast, Room Service, and access to Foot Spa. Ideal for solo travelers.',
-                                price: '30$ / UGX 100K',
-                                delay: 'delay-100'
-                            },
-                            {
-                                title: 'Deluxe Queen',
-                                image: '/assets/hotel_rooms/deluxe_queen.jpg',
-                                description: 'Perfect comfort & luxury. Self-contained with Queen Size Bed, Aerial & Airport View. Includes Breakfast and Spa access.',
-                                price: '80$ / UGX 250K',
-                                delay: 'delay-200'
-                            },
-                            {
-                                title: 'Deluxe Twinbed',
-                                image: '/assets/hotel_rooms/deluxe_twin.jpg',
-                                description: 'Spacious twin bed setup. Includes all Deluxe amenities plus Music Party Free access. Great for friends or colleagues.',
-                                price: '100$ / UGX 350K',
-                                delay: 'delay-300'
-                            },
-                            {
-                                title: 'Penthouse Deluxe',
-                                image: '/assets/hotel_rooms/penthouse_deluxe.jpg',
-                                description: 'Premium Luxury. King Size Bed, Laundry Service, and Party Free access. The ultimate experience for up to 3 adults.',
-                                price: '130$ / UGX 450K',
-                                delay: 'delay-100'
-                            }
-                        ].map((room, index) => (
+                        {rooms.map((room, index) => (
                             <ServiceCard
                                 key={index}
                                 title={room.title}

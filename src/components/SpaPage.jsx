@@ -19,8 +19,25 @@ import price8 from '../assets/pricelist/price8.jpg';
 import price9 from '../assets/pricelist/price9.jpg';
 
 const SpaPage = () => {
+    const [contentData, setContentData] = useState(null);
+
+    useEffect(() => {
+        const fetchContent = async () => {
+            try {
+                const res = await fetch('/api/content');
+                const data = await res.json();
+                if (data && data.spaPage) {
+                    setContentData(data.spaPage);
+                }
+            } catch (err) {
+                console.error("Failed to fetch spa page content", err);
+            }
+        };
+        fetchContent();
+    }, []);
+
     // Slideshow State
-    const originalImages = [
+    const originalImages = contentData?.heroImages || [
         '/assets/spa-hero-bg-2.jpg',
         price1,
         price2,
@@ -39,6 +56,7 @@ const SpaPage = () => {
 
     // Cycle images every 9 seconds smoothly
     useEffect(() => {
+        if (images.length === 0) return;
         const interval = setInterval(() => {
             setCurrentIndex(prev => (prev + 1) % images.length);
         }, 9000);
