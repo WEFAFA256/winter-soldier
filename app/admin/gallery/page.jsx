@@ -35,8 +35,8 @@ export default function AdminGalleryPage() {
 
     const handleLogin = (e) => {
         e.preventDefault();
-        // Simple client side check, we will also verify headers on API request
-        if (password === 'Serenityspa256.') {
+        // Trim whitespace to prevent mobile keyboard trailing space issues
+        if (password.trim() === 'Serenityspa256.') {
             setIsAuthenticated(true);
             setError('');
         } else {
@@ -130,6 +130,9 @@ export default function AdminGalleryPage() {
                                 type="password" 
                                 value={password} 
                                 onChange={(e) => setPassword(e.target.value)}
+                                autoCapitalize="none"
+                                autoCorrect="off"
+                                spellCheck="false"
                                 style={{ width: '100%', padding: '10px', borderRadius: '5px', border: '1px solid #ccc' }}
                                 required
                             />
