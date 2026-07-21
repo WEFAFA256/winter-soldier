@@ -147,7 +147,7 @@ export default function AdminGalleryPage() {
     }
 
     return (
-        <div style={{ padding: '40px 16px', maxWidth: '1200px', margin: '0 auto', backgroundColor: '#fafafa', minHeight: '100vh', boxSizing: 'border-box', overflowX: 'hidden' }}>
+        <div style={{ paddingTop: '100px', paddingBottom: '40px', paddingLeft: '16px', paddingRight: '16px', maxWidth: '1200px', margin: '0 auto', backgroundColor: '#fafafa', minHeight: '100vh', boxSizing: 'border-box', overflowX: 'hidden' }}>
             <h1 style={{ textAlign: 'center', marginBottom: '24px', fontSize: '1.8rem', color: '#333' }}>Gallery Admin</h1>
             
             <div style={{ backgroundColor: 'white', padding: '20px 16px', borderRadius: '10px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)', marginBottom: '30px', boxSizing: 'border-box' }}>
