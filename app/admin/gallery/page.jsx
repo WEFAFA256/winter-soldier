@@ -119,13 +119,13 @@ export default function AdminGalleryPage() {
 
     if (!isAuthenticated) {
         return (
-            <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#f5f5f5' }}>
-                <div style={{ backgroundColor: 'white', padding: '40px', borderRadius: '10px', boxShadow: '0 4px 6px rgba(0,0,0,0.1)', maxWidth: '400px', width: '100%' }}>
-                    <h2 style={{ marginBottom: '20px', textAlign: 'center', color: '#333' }}>Admin Login</h2>
-                    {error && <p style={{ color: 'red', textAlign: 'center', marginBottom: '15px' }}>{error}</p>}
+            <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#f5f5f5', padding: '16px' }}>
+                <div style={{ backgroundColor: 'white', padding: '24px 20px', borderRadius: '12px', boxShadow: '0 4px 6px rgba(0,0,0,0.1)', maxWidth: '400px', width: '100%', boxSizing: 'border-box' }}>
+                    <h2 style={{ marginBottom: '20px', textAlign: 'center', color: '#333', fontSize: '1.5rem' }}>Admin Login</h2>
+                    {error && <p style={{ color: 'red', textAlign: 'center', marginBottom: '15px', fontSize: '0.9rem' }}>{error}</p>}
                     <form onSubmit={handleLogin}>
                         <div style={{ marginBottom: '20px' }}>
-                            <label style={{ display: 'block', marginBottom: '8px', color: '#666' }}>Password:</label>
+                            <label style={{ display: 'block', marginBottom: '8px', color: '#666', fontSize: '0.9rem' }}>Password:</label>
                             <input 
                                 type="password" 
                                 value={password} 
@@ -133,11 +133,11 @@ export default function AdminGalleryPage() {
                                 autoCapitalize="none"
                                 autoCorrect="off"
                                 spellCheck="false"
-                                style={{ width: '100%', padding: '10px', borderRadius: '5px', border: '1px solid #ccc' }}
+                                style={{ width: '100%', padding: '12px', borderRadius: '6px', border: '1px solid #ccc', boxSizing: 'border-box', fontSize: '1rem' }}
                                 required
                             />
                         </div>
-                        <button type="submit" style={{ width: '100%', padding: '10px', backgroundColor: '#333', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer' }}>
+                        <button type="submit" style={{ width: '100%', padding: '12px', backgroundColor: '#333', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold', fontSize: '1rem' }}>
                             Login
                         </button>
                     </form>
@@ -147,42 +147,42 @@ export default function AdminGalleryPage() {
     }
 
     return (
-        <div style={{ padding: '80px 20px', maxWidth: '1200px', margin: '0 auto', backgroundColor: '#fafafa', minHeight: '100vh' }}>
-            <h1 style={{ textAlign: 'center', marginBottom: '40px', fontSize: '2.5rem', color: '#333' }}>Gallery Admin</h1>
+        <div style={{ padding: '40px 16px', maxWidth: '1200px', margin: '0 auto', backgroundColor: '#fafafa', minHeight: '100vh', boxSizing: 'border-box', overflowX: 'hidden' }}>
+            <h1 style={{ textAlign: 'center', marginBottom: '24px', fontSize: '1.8rem', color: '#333' }}>Gallery Admin</h1>
             
-            <div style={{ backgroundColor: 'white', padding: '30px', borderRadius: '10px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)', marginBottom: '40px' }}>
-                <h2 style={{ marginBottom: '20px', fontSize: '1.5rem', color: '#444' }}>Add New Image from Device</h2>
-                {error && <p style={{ color: 'red', marginBottom: '15px' }}>{error}</p>}
+            <div style={{ backgroundColor: 'white', padding: '20px 16px', borderRadius: '10px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)', marginBottom: '30px', boxSizing: 'border-box' }}>
+                <h2 style={{ marginBottom: '16px', fontSize: '1.3rem', color: '#444' }}>Add New Image from Device</h2>
+                {error && <p style={{ color: 'red', marginBottom: '15px', fontSize: '0.9rem' }}>{error}</p>}
                 
-                <form onSubmit={handleAddImage} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                    <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap', alignItems: 'center' }}>
-                        <div style={{ flex: '1', minWidth: '300px' }}>
-                            <label style={{ display: 'block', marginBottom: '8px', color: '#666', fontWeight: '500' }}>Select Image:</label>
+                <form onSubmit={handleAddImage} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                    <div style={{ display: 'flex', gap: '16px', flexDirection: 'column' }}>
+                        <div style={{ width: '100%' }}>
+                            <label style={{ display: 'block', marginBottom: '8px', color: '#666', fontWeight: '500', fontSize: '0.9rem' }}>Select Image:</label>
                             <input
                                 type="file"
                                 accept="image/*"
                                 onChange={handleFileChange}
-                                style={{ width: '100%', padding: '10px', borderRadius: '5px', border: '1px solid #ddd', background: '#f9f9f9' }}
+                                style={{ width: '100%', padding: '10px', borderRadius: '5px', border: '1px solid #ddd', background: '#f9f9f9', boxSizing: 'border-box' }}
                                 required
                             />
                         </div>
-                        <div style={{ flex: '1', minWidth: '200px' }}>
-                            <label style={{ display: 'block', marginBottom: '8px', color: '#666', fontWeight: '500' }}>Description (Alt Text):</label>
+                        <div style={{ width: '100%' }}>
+                            <label style={{ display: 'block', marginBottom: '8px', color: '#666', fontWeight: '500', fontSize: '0.9rem' }}>Description (Alt Text):</label>
                             <input
                                 type="text"
                                 placeholder="e.g. Massage Therapy Session"
                                 value={altText}
                                 onChange={(e) => setAltText(e.target.value)}
                                 required
-                                style={{ width: '100%', padding: '12px', borderRadius: '5px', border: '1px solid #ddd' }}
+                                style={{ width: '100%', padding: '12px', borderRadius: '5px', border: '1px solid #ddd', boxSizing: 'border-box', fontSize: '0.95rem' }}
                             />
                         </div>
                     </div>
 
                     {imagePreview && (
                         <div style={{ marginTop: '10px' }}>
-                            <p style={{ marginBottom: '8px', color: '#666', fontWeight: '500' }}>Preview:</p>
-                            <div style={{ position: 'relative', width: '200px', height: '150px', borderRadius: '8px', overflow: 'hidden', border: '2px solid #eee' }}>
+                            <p style={{ marginBottom: '8px', color: '#666', fontWeight: '500', fontSize: '0.9rem' }}>Preview:</p>
+                            <div style={{ position: 'relative', width: '100%', maxWidth: '240px', height: '160px', borderRadius: '8px', overflow: 'hidden', border: '2px solid #eee' }}>
                                 <img src={imagePreview} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                             </div>
                         </div>
@@ -191,7 +191,7 @@ export default function AdminGalleryPage() {
                     <button 
                         type="submit" 
                         disabled={adding || !newImageFile}
-                        style={{ alignSelf: 'flex-start', padding: '12px 40px', backgroundColor: (adding || !newImageFile) ? '#ccc' : '#10b981', color: 'white', border: 'none', borderRadius: '5px', cursor: (adding || !newImageFile) ? 'not-allowed' : 'pointer', fontWeight: 'bold', fontSize: '1rem', transition: 'background 0.3s' }}
+                        style={{ width: '100%', padding: '14px', backgroundColor: (adding || !newImageFile) ? '#ccc' : '#10b981', color: 'white', border: 'none', borderRadius: '6px', cursor: (adding || !newImageFile) ? 'not-allowed' : 'pointer', fontWeight: 'bold', fontSize: '1rem', transition: 'background 0.3s' }}
                     >
                         {adding ? 'Uploading...' : 'Upload & Add to Gallery'}
                     </button>
@@ -202,11 +202,11 @@ export default function AdminGalleryPage() {
                 <p style={{ textAlign: 'center' }}>Loading gallery...</p>
             ) : (
                 <div>
-                    <h2 style={{ marginBottom: '20px', fontSize: '1.5rem', color: '#444' }}>Current Images ({images.length})</h2>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '20px' }}>
+                    <h2 style={{ marginBottom: '20px', fontSize: '1.3rem', color: '#444' }}>Current Images ({images.length})</h2>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '16px' }}>
                         {images.map((img) => (
-                            <div key={img.id} style={{ backgroundColor: 'white', borderRadius: '8px', overflow: 'hidden', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
-                                <div style={{ position: 'relative', height: '200px', width: '100%' }}>
+                            <div key={img.id} style={{ backgroundColor: 'white', borderRadius: '8px', overflow: 'hidden', boxShadow: '0 2px 4px rgba(0,0,0,0.1)', display: 'flex', flexDirection: 'column' }}>
+                                <div style={{ position: 'relative', height: '150px', width: '100%' }}>
                                     <Image 
                                         src={img.src} 
                                         alt={img.alt}
@@ -214,13 +214,13 @@ export default function AdminGalleryPage() {
                                         style={{ objectFit: 'cover' }}
                                     />
                                 </div>
-                                <div style={{ padding: '15px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                    <p style={{ margin: 0, fontWeight: '500', color: '#333', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '150px' }} title={img.alt}>
+                                <div style={{ padding: '12px 10px', display: 'flex', flexDirection: 'column', gap: '8px', flex: 1, justifyContent: 'space-between' }}>
+                                    <p style={{ margin: 0, fontWeight: '500', color: '#333', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: '0.85rem' }} title={img.alt}>
                                         {img.alt}
                                     </p>
                                     <button 
                                         onClick={() => handleRemoveImage(img.id)}
-                                        style={{ backgroundColor: '#ef4444', color: 'white', border: 'none', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', fontSize: '0.85rem' }}
+                                        style={{ backgroundColor: '#ef4444', color: 'white', border: 'none', padding: '8px 10px', borderRadius: '4px', cursor: 'pointer', fontSize: '0.8rem', width: '100%', fontWeight: '500' }}
                                     >
                                         Remove
                                     </button>
