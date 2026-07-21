@@ -755,6 +755,18 @@ export default function AdminDashboardPage() {
                         </div>
                     )}
 
+                    {/* Bottom Save Action Bar */}
+                    <div style={{ marginTop: '32px', paddingTop: '20px', borderTop: '1px solid #e2e8f0', display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
+                        <button 
+                            onClick={handleSaveContent} 
+                            disabled={saving}
+                            className="admin-save-btn admin-full-mobile"
+                            style={{ padding: '14px 28px', fontSize: '1rem' }}
+                        >
+                            {saving ? '💾 Saving Changes...' : '💾 Save All Website Changes'}
+                        </button>
+                    </div>
+
                 </div>
 
             </div>
