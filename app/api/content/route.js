@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
+import axios from 'axios';
 
 const SUPABASE_URL = 'https://lusvuwwlcdgowauvdpoh.supabase.co';
 const SUPABASE_SERVICE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx1c3Z1d3dsY2Rnb3dhdXZkcG9oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQxNzEyMDksImV4cCI6MjA4OTc0NzIwOX0.a3gTaqX7-zh7pKuQ3tQhu9g4uRV5U6UW4unjh9NsaTM';
@@ -24,23 +25,21 @@ const readLocalContent = () => {
 
 export async function GET() {
     try {
-        // Try reading from Supabase Storage first
-        const res = await fetch(SUPABASE_FILE_URL, {
+        // Read from Supabase Storage using Axios
+        const response = await axios.get(SUPABASE_FILE_URL, {
             headers: {
                 'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
-                'cache-control': 'no-cache'
+                'Cache-Control': 'no-cache'
             }
         });
         
-        if (res.ok) {
-            const data = await res.json();
-            return NextResponse.json(data);
+        if (response.data) {
+            return NextResponse.json(response.data);
         }
         
-        console.warn(`Supabase fetch failed with status ${res.status}, falling back to local JSON`);
         return NextResponse.json(readLocalContent());
     } catch (error) {
-        console.error("Error fetching content from Supabase, falling back to local JSON:", error);
+        console.error("Error fetching content from Supabase, falling back to local JSON:", error.message);
         return NextResponse.json(readLocalContent());
     }
 }
@@ -54,25 +53,17 @@ export async function POST(req) {
         }
 
         const newContent = await req.json();
-        const contentBuffer = Buffer.from(JSON.stringify(newContent, null, 2));
 
-        // 1. Upload/Upsert directly to Supabase Storage
-        const supabaseRes = await fetch(SUPABASE_FILE_URL, {
-            method: 'POST',
+        // 1. Upload/Upsert directly to Supabase Storage using Axios
+        await axios.post(SUPABASE_FILE_URL, newContent, {
             headers: {
                 'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
                 'Content-Type': 'application/json',
                 'x-upsert': 'true',
-            },
-            body: contentBuffer,
+            }
         });
 
-        if (!supabaseRes.ok) {
-            const errMsg = await supabaseRes.text();
-            throw new Error(`Supabase Storage upload failed: ${errMsg}`);
-        }
-
-        // 2. Try writing to local disk (will succeed in local dev, safely ignored on Vercel)
+        // 2. Try writing to local disk (succeeds in local dev, ignored on Vercel)
         try {
             fs.writeFileSync(contentFilePath, JSON.stringify(newContent, null, 2), 'utf8');
         } catch (e) {
@@ -81,7 +72,7 @@ export async function POST(req) {
         
         return NextResponse.json({ message: 'Content updated successfully in Cloud Storage', content: newContent }, { status: 200 });
     } catch (error) {
-        console.error("Error in POST content:", error);
+        console.error("Error in POST content:", error.response?.data || error.message);
         return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 });
     }
 }
