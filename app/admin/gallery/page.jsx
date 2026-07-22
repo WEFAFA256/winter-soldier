@@ -46,7 +46,9 @@ export default function AdminDashboardPage() {
 
     const handleLogin = (e) => {
         e.preventDefault();
-        if (password.trim() === 'Serenityspa256.') {
+        const trimmedPassword = password.trim();
+        if (trimmedPassword === 'Serenityspa256.') {
+            setPassword(trimmedPassword);
             setIsAuthenticated(true);
             setError('');
         } else {
@@ -62,7 +64,7 @@ export default function AdminDashboardPage() {
             const res = await fetch('/api/upload', {
                 method: 'POST',
                 headers: {
-                    'Authorization': `Bearer ${password}`,
+                    'Authorization': `Bearer ${password.trim()}`,
                 },
                 body: formData,
             });
@@ -88,7 +90,7 @@ export default function AdminDashboardPage() {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${password}`,
+                    'Authorization': `Bearer ${password.trim()}`,
                 },
                 body: JSON.stringify(siteContent),
             });
@@ -127,7 +129,7 @@ export default function AdminDashboardPage() {
                 const res = await fetch('/api/gallery', {
                     method: 'POST',
                     headers: {
-                        'Authorization': `Bearer ${password}`,
+                        'Authorization': `Bearer ${password.trim()}`,
                     },
                     body: (() => {
                         const fd = new FormData();
@@ -156,7 +158,7 @@ export default function AdminDashboardPage() {
             const res = await fetch(`/api/gallery?id=${id}`, {
                 method: 'DELETE',
                 headers: {
-                    'Authorization': `Bearer ${password}`,
+                    'Authorization': `Bearer ${password.trim()}`,
                 },
             });
             if (res.ok) {

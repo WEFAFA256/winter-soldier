@@ -13,7 +13,7 @@ export async function POST(req) {
         const formData = await req.formData();
         
         // Auth check
-        const authHeader = req.headers.get('authorization');
+        const authHeader = req.headers.get('authorization')?.trim();
         if (authHeader !== 'Bearer Serenityspa256.') {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
