@@ -97,10 +97,19 @@ export default function AdminDashboardPage() {
             if (res.ok) {
                 alert('Changes saved successfully!');
             } else {
-                alert('Failed to save changes');
+                let errMsg = 'Failed to save changes';
+                try {
+                    const data = await res.json();
+                    errMsg = data.error || errMsg;
+                } catch (e) {
+                    console.error("Failed to parse error response", e);
+                }
+                console.error("Save failed with status:", res.status, errMsg);
+                alert(`Failed to save changes: ${errMsg}`);
             }
         } catch (err) {
-            alert('Error saving changes');
+            console.error("Error during save content API call:", err);
+            alert(`Error saving changes: ${err.message || err}`);
         } finally {
             setSaving(false);
         }
