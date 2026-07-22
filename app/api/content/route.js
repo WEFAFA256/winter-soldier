@@ -1,12 +1,14 @@
 import { NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
+import { v2 as cloudinary } from 'cloudinary';
 import axios from 'axios';
 
-const SUPABASE_URL = 'https://lusvuwwlcdgowauvdpoh.supabase.co';
-const SUPABASE_SERVICE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx1c3Z1d3dsY2Rnb3dhdXZkcG9oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQxNzEyMDksImV4cCI6MjA4OTc0NzIwOX0.a3gTaqX7-zh7pKuQ3tQhu9g4uRV5U6UW4unjh9NsaTM';
-const BUCKET = 'website-assets';
-const SUPABASE_FILE_URL = `${SUPABASE_URL}/storage/v1/object/${BUCKET}/site-content.json`;
+cloudinary.config({
+    cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || 'njzctr4m',
+    api_key: process.env.CLOUDINARY_API_KEY || '143573632263644',
+    api_secret: process.env.CLOUDINARY_API_SECRET || 'bRjjHhCZmsSnqvoJHhKg5D9SMOA',
+});
 
 const contentFilePath = path.join(process.cwd(), 'public', 'site-content.json');
 
@@ -25,13 +27,9 @@ const readLocalContent = () => {
 
 export async function GET() {
     try {
-        // Read from Supabase Storage using Axios
-        const response = await axios.get(SUPABASE_FILE_URL, {
-            headers: {
-                'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
-                'Cache-Control': 'no-cache'
-            }
-        });
+        // Read from Cloudinary raw upload using a cache buster
+        const cloudUrl = `https://res.cloudinary.com/njzctr4m/raw/upload/site-content.json?cb=${Date.now()}`;
+        const response = await axios.get(cloudUrl);
         
         if (response.data) {
             return NextResponse.json(response.data);
@@ -39,7 +37,7 @@ export async function GET() {
         
         return NextResponse.json(readLocalContent());
     } catch (error) {
-        console.error("Error fetching content from Supabase, falling back to local JSON:", error.message);
+        console.error("Error fetching content from Cloudinary, falling back to local JSON:", error.message);
         return NextResponse.json(readLocalContent());
     }
 }
@@ -53,26 +51,34 @@ export async function POST(req) {
         }
 
         const newContent = await req.json();
+        const jsonStr = JSON.stringify(newContent, null, 2);
 
-        // 1. Upload/Upsert directly to Supabase Storage using Axios
-        await axios.post(SUPABASE_FILE_URL, newContent, {
-            headers: {
-                'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
-                'Content-Type': 'application/json',
-                'x-upsert': 'true',
-            }
+        // 1. Upload to Cloudinary as a raw text asset
+        await new Promise((resolve, reject) => {
+            cloudinary.uploader.upload(
+                'data:text/plain;base64,' + Buffer.from(jsonStr).toString('base64'),
+                {
+                    public_id: 'site-content.json',
+                    resource_type: 'raw',
+                    invalidate: true
+                },
+                (error, result) => {
+                    if (error) reject(error);
+                    else resolve(result);
+                }
+            );
         });
 
         // 2. Try writing to local disk (succeeds in local dev, ignored on Vercel)
         try {
-            fs.writeFileSync(contentFilePath, JSON.stringify(newContent, null, 2), 'utf8');
+            fs.writeFileSync(contentFilePath, jsonStr, 'utf8');
         } catch (e) {
             // Read-only filesystem is expected on Vercel/serverless
         }
         
-        return NextResponse.json({ message: 'Content updated successfully in Cloud Storage', content: newContent }, { status: 200 });
+        return NextResponse.json({ message: 'Content updated successfully in Cloudinary', content: newContent }, { status: 200 });
     } catch (error) {
-        console.error("Error in POST content:", error.response?.data || error.message);
+        console.error("Error in POST content:", error.message);
         return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 });
     }
 }
