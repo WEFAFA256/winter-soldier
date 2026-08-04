@@ -1,23 +1,50 @@
 'use client';
 
+import React, { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 
 const SocialMediaIcons = ({ mode }) => {
     const pathname = usePathname();
+    const [contactData, setContactData] = useState(null);
+
+    useEffect(() => {
+        const fetchContactData = async () => {
+            try {
+                const res = await fetch('/api/content');
+                const data = await res.json();
+                if (data && data.contact) {
+                    setContactData(data.contact);
+                }
+            } catch (err) {
+                console.error('Error fetching contact info for floating icons:', err);
+            }
+        };
+        fetchContactData();
+    }, []);
     
     // Determine mode: if passed prop exists, use it. Otherwise detect from URL.
     const currentMode = mode || (pathname?.startsWith('/hotel') ? 'hotel' : 'spa');
     const isHotel = currentMode === 'hotel';
     
-    const whatsappNum = isHotel ? '256758547586' : '256705657285';
-    const phoneNum = isHotel ? '0742641607' : '0764001922';
+    const whatsappNum = isHotel 
+        ? (contactData?.hotel?.whatsapp || '256758547586') 
+        : (contactData?.spa?.whatsapp || '256705657285');
+        
+    const phoneNum = isHotel 
+        ? (contactData?.hotel?.phone || '0742641607') 
+        : (contactData?.spa?.phone || '0764001922');
+        
+    const emailAddress = isHotel 
+        ? (contactData?.hotel?.email || 'marinastaysbookings@gmail.com') 
+        : (contactData?.spa?.email || 'marinastaysbookings@gmail.com');
+        
     const message = isHotel ? encodeURIComponent('Hello, I would like to book a stay at The Marina Stays.') : encodeURIComponent('Hello, I would like to book a session at Serenity Spa.');
 
     const socials = [
         {
             name: 'Email',
             image: '/assets/email-icon.svg',
-            url: 'mailto:marinastaysbookings@gmail.com',
+            url: `mailto:${emailAddress}`,
             delay: '0s'
         },
         {

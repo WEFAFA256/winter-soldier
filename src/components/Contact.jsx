@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useScrollAnimation } from '../hooks/useScrollAnimation';
 
 const Contact = () => {
@@ -10,6 +10,31 @@ const Contact = () => {
     
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitted, setSubmitted] = useState(false);
+    const [contactInfo, setContactInfo] = useState(null);
+
+    useEffect(() => {
+        const fetchContactInfo = async () => {
+            try {
+                const res = await fetch('/api/content');
+                const data = await res.json();
+                if (data && data.contact && data.contact.spa) {
+                    setContactInfo(data.contact.spa);
+                }
+            } catch (err) {
+                console.error("Failed to fetch contact page content", err);
+            }
+        };
+        fetchContactInfo();
+    }, []);
+
+    // Fallbacks
+    const address = contactInfo?.address || "Makerere Hill Road, Kiyindi, 2 Close\nKampala, Uganda";
+    const phone = contactInfo?.phone || "0764 001922";
+    const email = contactInfo?.email || "marinastaysbookings@gmail.com";
+    const mapQuery = contactInfo?.mapQuery || "0.326564,32.564663";
+    
+    const mapEmbedUrl = `https://maps.google.com/maps?q=${encodeURIComponent(mapQuery)}&z=16&output=embed`;
+    const mapDirectionsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapQuery)}`;
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -72,7 +97,7 @@ const Contact = () => {
                             {/* Map Section */}
                             <div style={{ position: 'relative', height: '300px', overflow: 'hidden' }}>
                                 <iframe
-                                    src="https://maps.google.com/maps?q=0.326564,32.564663&z=16&output=embed"
+                                    src={mapEmbedUrl}
                                     width="100%"
                                     height="100%"
                                     style={{ border: 0 }}
@@ -93,7 +118,7 @@ const Contact = () => {
                                     fontSize: '0.9rem',
                                     cursor: 'pointer'
                                 }}
-                                    onClick={() => window.open('https://www.google.com/maps/search/?api=1&query=0.326564,32.564663', '_blank')}
+                                    onClick={() => window.open(mapDirectionsUrl, '_blank')}
                                 >
                                     📍 Get Directions
                                 </div>
@@ -118,9 +143,8 @@ const Contact = () => {
                                     </div>
                                     <div>
                                         <h4 style={{ marginBottom: '0.5rem', fontSize: '1.2rem', color: 'var(--color-primary)' }}>Visit Our Sanctuary</h4>
-                                        <p style={{ color: 'var(--color-text-light)', lineHeight: '1.6' }}>
-                                            Makerere Hill Road, Kiyindi, 2 Close<br />
-                                            Kampala, Uganda
+                                        <p style={{ color: 'var(--color-text-light)', lineHeight: '1.6', whiteSpace: 'pre-line' }}>
+                                            {address}
                                         </p>
                                     </div>
                                 </div>
@@ -144,7 +168,7 @@ const Contact = () => {
                                     <div>
                                         <h4 style={{ marginBottom: '0.5rem', fontSize: '1.2rem', color: 'var(--color-primary)' }}>Call Us Anytime</h4>
                                         <p style={{ color: 'var(--color-text-light)', lineHeight: '1.6' }}>
-                                            <a href="tel:0764001922" style={{ color: 'inherit', textDecoration: 'none' }}>0764 001922</a>
+                                            <a href={`tel:${phone.replace(/\s+/g, '')}`} style={{ color: 'inherit', textDecoration: 'none' }}>{phone}</a>
                                             <br />
                                             <span style={{ fontSize: '0.9rem', color: '#888' }}>Available 24/7 for bookings</span>
                                         </p>
@@ -170,7 +194,7 @@ const Contact = () => {
                                     <div>
                                         <h4 style={{ marginBottom: '0.5rem', fontSize: '1.2rem', color: 'var(--color-primary)' }}>Email Us</h4>
                                         <p style={{ color: 'var(--color-text-light)', lineHeight: '1.6' }}>
-                                            <a href="mailto:marinastaysbookings@gmail.com" style={{ color: 'inherit', textDecoration: 'none' }}>marinastaysbookings@gmail.com</a>
+                                            <a href={`mailto:${email}`} style={{ color: 'inherit', textDecoration: 'none' }}>{email}</a>
                                         </p>
                                     </div>
                                 </div>

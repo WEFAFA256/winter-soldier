@@ -298,6 +298,7 @@ export default function AdminDashboardPage() {
                         { id: 'hotel', label: '🏨 Hotel Stays & Specials' },
                         { id: 'services', label: '💅 Spa Services' },
                         { id: 'rooms', label: '🛏️ Hotel Rooms' },
+                        { id: 'contact', label: '📞 Contact & Socials' },
                     ].map(tab => (
                         <button
                             key={tab.id}
@@ -762,6 +763,112 @@ export default function AdminDashboardPage() {
                                         <button onClick={() => handleRemoveItem('rooms', idx)} className="admin-delete-btn" style={{ alignSelf: 'flex-start' }}>Delete</button>
                                     </div>
                                 ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* TAB 7: CONTACT & SOCIALS */}
+                    {activeTab === 'contact' && (
+                        <div>
+                            <div style={{ marginBottom: '20px' }}>
+                                <h2 style={{ fontSize: '1.4rem', margin: '0 0 4px', color: '#0f172a' }}>Contact & Social Media Handles</h2>
+                                <p style={{ color: '#64748b', margin: 0, fontSize: '0.9rem' }}>Edit the contact information shown on the website and the numbers/links used by the floating quick-contact buttons.</p>
+                            </div>
+
+                            <div className="admin-grid-2">
+                                {/* Spa Contact & Socials */}
+                                <div className="admin-subcard">
+                                    <h3 style={{ color: '#005C53', margin: '0 0 16px', fontSize: '1.1rem', fontWeight: '700' }}>💆 Spa Contact & Floating Icons</h3>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                                        <div>
+                                            <label className="admin-label">WhatsApp Number (with country code, e.g. 256705657285):</label>
+                                            <input type="text" value={siteContent.contact?.spa?.whatsapp || ''} onChange={(e) => {
+                                                const updated = { ...siteContent };
+                                                if (!updated.contact) updated.contact = { spa: {}, hotel: {} };
+                                                if (!updated.contact.spa) updated.contact.spa = {};
+                                                updated.contact.spa.whatsapp = e.target.value;
+                                                setSiteContent(updated);
+                                            }} className="admin-input" />
+                                        </div>
+                                        <div>
+                                            <label className="admin-label">Phone Number (floating icon & page display):</label>
+                                            <input type="text" value={siteContent.contact?.spa?.phone || ''} onChange={(e) => {
+                                                const updated = { ...siteContent };
+                                                if (!updated.contact) updated.contact = { spa: {}, hotel: {} };
+                                                if (!updated.contact.spa) updated.contact.spa = {};
+                                                updated.contact.spa.phone = e.target.value;
+                                                setSiteContent(updated);
+                                            }} className="admin-input" />
+                                        </div>
+                                        <div>
+                                            <label className="admin-label">Email Address:</label>
+                                            <input type="text" value={siteContent.contact?.spa?.email || ''} onChange={(e) => {
+                                                const updated = { ...siteContent };
+                                                if (!updated.contact) updated.contact = { spa: {}, hotel: {} };
+                                                if (!updated.contact.spa) updated.contact.spa = {};
+                                                updated.contact.spa.email = e.target.value;
+                                                setSiteContent(updated);
+                                            }} className="admin-input" />
+                                        </div>
+                                        <div>
+                                            <label className="admin-label">Physical Address (Contact Section):</label>
+                                            <textarea rows={2} value={siteContent.contact?.spa?.address || ''} onChange={(e) => {
+                                                const updated = { ...siteContent };
+                                                if (!updated.contact) updated.contact = { spa: {}, hotel: {} };
+                                                if (!updated.contact.spa) updated.contact.spa = {};
+                                                updated.contact.spa.address = e.target.value;
+                                                setSiteContent(updated);
+                                            }} className="admin-textarea" />
+                                        </div>
+                                        <div>
+                                            <label className="admin-label">Map Embed Coordinates (lat,lng or address):</label>
+                                            <input type="text" value={siteContent.contact?.spa?.mapQuery || ''} onChange={(e) => {
+                                                const updated = { ...siteContent };
+                                                if (!updated.contact) updated.contact = { spa: {}, hotel: {} };
+                                                if (!updated.contact.spa) updated.contact.spa = {};
+                                                updated.contact.spa.mapQuery = e.target.value;
+                                                setSiteContent(updated);
+                                            }} className="admin-input" placeholder="e.g. 0.326564,32.564663" />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Hotel Contact & Socials */}
+                                <div className="admin-subcard">
+                                    <h3 style={{ color: '#8B4513', margin: '0 0 16px', fontSize: '1.1rem', fontWeight: '700' }}>🏨 Hotel Contact & Floating Icons</h3>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                                        <div>
+                                            <label className="admin-label">WhatsApp Number (with country code, e.g. 256758547586):</label>
+                                            <input type="text" value={siteContent.contact?.hotel?.whatsapp || ''} onChange={(e) => {
+                                                const updated = { ...siteContent };
+                                                if (!updated.contact) updated.contact = { spa: {}, hotel: {} };
+                                                if (!updated.contact.hotel) updated.contact.hotel = {};
+                                                updated.contact.hotel.whatsapp = e.target.value;
+                                                setSiteContent(updated);
+                                            }} className="admin-input" />
+                                        </div>
+                                        <div>
+                                            <label className="admin-label">Phone Number (floating icon):</label>
+                                            <input type="text" value={siteContent.contact?.hotel?.phone || ''} onChange={(e) => {
+                                                const updated = { ...siteContent };
+                                                if (!updated.contact) updated.contact = { spa: {}, hotel: {} };
+                                                if (!updated.contact.hotel) updated.contact.hotel = {};
+                                                updated.contact.hotel.phone = e.target.value;
+                                                setSiteContent(updated);
+                                            }} className="admin-input" />
+                                        </div>
+                                        <div>
+                                            <label className="admin-label">Email Address (floating icon):</label>
+                                            <input type="text" value={siteContent.contact?.hotel?.email || ''} onChange={(e) => {
+                                                const updated = { ...siteContent };
+                                                if (!updated.contact) updated.contact = { spa: {}, hotel: {} };
+                                                if (!updated.contact.hotel) updated.contact.hotel = {};
+                                                updated.contact.hotel.email = e.target.value;
+                                                setSiteContent(updated);
+                                            }} className="admin-input" />
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     )}

@@ -408,5 +408,19 @@
       "price": "130$ / UGX 450K",
       "delay": "delay-100"
     }
-  ]
+  ],
+  "contact": {
+    "spa": {
+      "phone": "0764001922",
+      "whatsapp": "256705657285",
+      "email": "marinastaysbookings@gmail.com",
+      "address": "Makerere Hill Road, Kiyindi, 2 Close\nKampala, Uganda",
+      "mapQuery": "0.326564,32.564663"
+    },
+    "hotel": {
+      "phone": "0742641607",
+      "whatsapp": "256758547586",
+      "email": "marinastaysbookings@gmail.com"
+    }
+  }
 }
