@@ -299,6 +299,7 @@ export default function AdminDashboardPage() {
                         { id: 'services', label: '💅 Spa Services' },
                         { id: 'rooms', label: '🛏️ Hotel Rooms' },
                         { id: 'contact', label: '📞 Contact & Socials' },
+                        { id: 'blogs', label: '✍️ Spa Blog' },
                     ].map(tab => (
                         <button
                             key={tab.id}
@@ -869,6 +870,245 @@ export default function AdminDashboardPage() {
                                         </div>
                                     </div>
                                 </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* TAB 8: SPA BLOGS */}
+                    {activeTab === 'blogs' && (
+                        <div>
+                            <div className="admin-section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+                                <div>
+                                    <h2 style={{ fontSize: '1.4rem', margin: '0 0 4px', color: '#0f172a' }}>Spa Blog Manager</h2>
+                                    <p style={{ color: '#64748b', margin: 0, fontSize: '0.9rem' }}>Create, update, and manage blog posts, cover images, and block elements.</p>
+                                </div>
+                                <button 
+                                    onClick={() => handleAddItem('blogs', { 
+                                        id: Date.now().toString(),
+                                        title: 'New Wellness Post', 
+                                        slug: `new-wellness-post-${Date.now()}`,
+                                        date: new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
+                                        readTime: '5 min read',
+                                        excerpt: 'A short overview summary of this self-care topic.',
+                                        coverImage: '/assets/service1.jpg',
+                                        content: [
+                                            { type: 'paragraph', text: 'Start writing your wellness tips here...' }
+                                        ]
+                                    })}
+                                    className="admin-btn-primary admin-full-mobile"
+                                >
+                                    + Create New Post
+                                </button>
+                            </div>
+
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                                {(siteContent.blogs || []).map((post, postIdx) => (
+                                    <div key={post.id || postIdx} className="admin-subcard" style={{ border: '1px solid #00BCD4' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', borderBottom: '1px solid #f1f5f9', paddingBottom: '12px' }}>
+                                            <h3 style={{ margin: 0, fontSize: '1.15rem', color: '#005C53', fontWeight: '700' }}>
+                                                {post.title || 'Untitled Post'}
+                                            </h3>
+                                            <button 
+                                                onClick={() => handleRemoveItem('blogs', postIdx)}
+                                                className="admin-delete-btn"
+                                                style={{ padding: '6px 12px' }}
+                                            >
+                                                Delete Post
+                                            </button>
+                                        </div>
+
+                                        <div className="admin-grid-2" style={{ marginBottom: '16px' }}>
+                                            <div>
+                                                <label className="admin-label">Post Title:</label>
+                                                <input 
+                                                    type="text" 
+                                                    value={post.title || ''} 
+                                                    onChange={(e) => handleListChange('blogs', postIdx, 'title', e.target.value)} 
+                                                    className="admin-input" 
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="admin-label">URL Slug (lowercase, hyphens, e.g. self-care-routines):</label>
+                                                <input 
+                                                    type="text" 
+                                                    value={post.slug || ''} 
+                                                    onChange={(e) => handleListChange('blogs', postIdx, 'slug', e.target.value)} 
+                                                    className="admin-input" 
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="admin-label">Date (e.g. August 4, 2026):</label>
+                                                <input 
+                                                    type="text" 
+                                                    value={post.date || ''} 
+                                                    onChange={(e) => handleListChange('blogs', postIdx, 'date', e.target.value)} 
+                                                    className="admin-input" 
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="admin-label">Read Time (e.g. 5 min read):</label>
+                                                <input 
+                                                    type="text" 
+                                                    value={post.readTime || ''} 
+                                                    onChange={(e) => handleListChange('blogs', postIdx, 'readTime', e.target.value)} 
+                                                    className="admin-input" 
+                                                />
+                                            </div>
+                                            <div style={{ gridColumn: '1 / -1' }}>
+                                                <label className="admin-label">Excerpt Summary:</label>
+                                                <textarea 
+                                                    rows={2} 
+                                                    value={post.excerpt || ''} 
+                                                    onChange={(e) => handleListChange('blogs', postIdx, 'excerpt', e.target.value)} 
+                                                    className="admin-textarea" 
+                                                />
+                                            </div>
+                                            <div style={{ gridColumn: '1 / -1' }}>
+                                                <label className="admin-label">Cover Image:</label>
+                                                <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
+                                                    <img src={post.coverImage} alt="Cover" style={{ width: '80px', height: '50px', objectFit: 'cover', borderRadius: '4px', border: '1px solid #cbd5e1' }} />
+                                                    <input 
+                                                        type="file" 
+                                                        accept="image/*" 
+                                                        onChange={(e) => handleListImageUpload('blogs', postIdx, e.target.files[0], 'coverImage')} 
+                                                        className="admin-file-input" 
+                                                        style={{ flex: 1 }}
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Dynamic Content Blocks Builder */}
+                                        <div style={{ backgroundColor: '#f8fafc', padding: '16px', borderRadius: '8px', border: '1px dashed #cbd5e1' }}>
+                                            <h4 style={{ margin: '0 0 12px', fontSize: '0.95rem', color: '#334155', fontWeight: '600' }}>Article Content Blocks</h4>
+                                            
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '16px' }}>
+                                                {(post.content || []).map((block, blockIdx) => (
+                                                    <div key={blockIdx} style={{ display: 'flex', gap: '12px', backgroundColor: '#ffffff', padding: '12px', borderRadius: '6px', border: '1px solid #e2e8f0', alignItems: 'flex-start' }}>
+                                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', flexShrink: 0 }}>
+                                                            <span style={{ fontSize: '0.75rem', fontWeight: 'bold', textTransform: 'uppercase', color: block.type === 'heading' ? '#8B4513' : block.type === 'image' ? '#0284c7' : '#0f172a' }}>
+                                                                {block.type}
+                                                            </span>
+                                                            <button 
+                                                                type="button" 
+                                                                onClick={() => {
+                                                                    const updated = { ...siteContent };
+                                                                    updated.blogs[postIdx].content = updated.blogs[postIdx].content.filter((_, i) => i !== blockIdx);
+                                                                    setSiteContent(updated);
+                                                                }}
+                                                                className="admin-delete-btn" 
+                                                                style={{ fontSize: '0.75rem', padding: '2px 6px' }}
+                                                            >
+                                                                Remove
+                                                            </button>
+                                                        </div>
+
+                                                        <div style={{ flexGrow: 1 }}>
+                                                            {block.type === 'paragraph' && (
+                                                                <textarea 
+                                                                    rows={3} 
+                                                                    value={block.text || ''} 
+                                                                    onChange={(e) => {
+                                                                        const updated = { ...siteContent };
+                                                                        updated.blogs[postIdx].content[blockIdx].text = e.target.value;
+                                                                        setSiteContent(updated);
+                                                                    }} 
+                                                                    className="admin-textarea" 
+                                                                    placeholder="Paragraph text..."
+                                                                />
+                                                            )}
+                                                            {block.type === 'heading' && (
+                                                                <input 
+                                                                    type="text" 
+                                                                    value={block.text || ''} 
+                                                                    onChange={(e) => {
+                                                                        const updated = { ...siteContent };
+                                                                        updated.blogs[postIdx].content[blockIdx].text = e.target.value;
+                                                                        setSiteContent(updated);
+                                                                    }} 
+                                                                    className="admin-input" 
+                                                                    placeholder="Heading text..."
+                                                                />
+                                                            )}
+                                                            {block.type === 'image' && (
+                                                                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                                                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                                                                        <img src={block.url || '/assets/service1.jpg'} alt="Block illustration" style={{ width: '60px', height: '40px', objectFit: 'cover', borderRadius: '4px', border: '1px solid #cbd5e1' }} />
+                                                                        <input 
+                                                                            type="file" 
+                                                                            accept="image/*" 
+                                                                            onChange={async (e) => {
+                                                                                if (!e.target.files[0]) return;
+                                                                                const url = await uploadImage(e.target.files[0]);
+                                                                                if (url) {
+                                                                                    const updated = { ...siteContent };
+                                                                                    updated.blogs[postIdx].content[blockIdx].url = url;
+                                                                                    setSiteContent(updated);
+                                                                                }
+                                                                            }} 
+                                                                            className="admin-file-input" 
+                                                                        />
+                                                                    </div>
+                                                                    <input 
+                                                                        type="text" 
+                                                                        value={block.caption || ''} 
+                                                                        onChange={(e) => {
+                                                                            const updated = { ...siteContent };
+                                                                            updated.blogs[postIdx].content[blockIdx].caption = e.target.value;
+                                                                            setSiteContent(updated);
+                                                                        }} 
+                                                                        className="admin-input" 
+                                                                        placeholder="Image caption (optional)..."
+                                                                    />
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+
+                                            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                                                <button 
+                                                    type="button" 
+                                                    onClick={() => {
+                                                        const updated = { ...siteContent };
+                                                        updated.blogs[postIdx].content.push({ type: 'paragraph', text: '' });
+                                                        setSiteContent(updated);
+                                                    }} 
+                                                    className="admin-btn-primary" 
+                                                    style={{ fontSize: '0.85rem', padding: '6px 12px' }}
+                                                >
+                                                    + Add Paragraph Block
+                                                </button>
+                                                <button 
+                                                    type="button" 
+                                                    onClick={() => {
+                                                        const updated = { ...siteContent };
+                                                        updated.blogs[postIdx].content.push({ type: 'heading', text: '' });
+                                                        setSiteContent(updated);
+                                                    }} 
+                                                    className="admin-btn-primary" 
+                                                    style={{ fontSize: '0.85rem', padding: '6px 12px', backgroundColor: '#8B4513' }}
+                                                >
+                                                    + Add Heading Block
+                                                </button>
+                                                <button 
+                                                    type="button" 
+                                                    onClick={() => {
+                                                        const updated = { ...siteContent };
+                                                        updated.blogs[postIdx].content.push({ type: 'image', url: '/assets/service1.jpg', caption: '' });
+                                                        setSiteContent(updated);
+                                                    }} 
+                                                    className="admin-btn-primary" 
+                                                    style={{ fontSize: '0.85rem', padding: '6px 12px', backgroundColor: '#0284c7' }}
+                                                >
+                                                    + Add Image Block
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                ))}
                             </div>
                         </div>
                     )}

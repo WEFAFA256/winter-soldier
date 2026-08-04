@@ -422,5 +422,35 @@
       "whatsapp": "256758547586",
       "email": "marinastaysbookings@gmail.com"
     }
-  }
+  },
+  "blogs": [
+    {
+      "id": "1",
+      "title": "5 Benefits of Regular Massage Therapy",
+      "slug": "benefits-of-massage-therapy",
+      "date": "August 4, 2026",
+      "readTime": "3 min read",
+      "excerpt": "Discover how regular massage therapy can reduce stress, alleviate pain, improve blood circulation, and boost wellness.",
+      "coverImage": "/assets/service1.jpg",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "Regular massage therapy is more than just a relaxing escape; it is a fundamental pillar of wellness. Over time, physical stress, emotional pressure, and bad posture can create tension in our bodies. A professional massage session is designed to break down these knots and encourage healing."
+        },
+        {
+          "type": "heading",
+          "text": "1. Stress Reduction and Mental Clarity"
+        },
+        {
+          "type": "paragraph",
+          "text": "One of the most immediate effects of a massage is a deep sense of calm. Studies show that massage reduces cortisol (the body's primary stress hormone) while boosting serotonin and dopamine, the hormones responsible for happiness and relaxation."
+        },
+        {
+          "type": "image",
+          "url": "/assets/spa-bg.jpg",
+          "caption": "A peaceful massage room setup at The Serenity Spa"
+        }
+      ]
+    }
+  ]
 }

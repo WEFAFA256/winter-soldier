@@ -59,6 +59,7 @@ const Navbar = ({ homePageBusiness = 'spa' }) => {
         { name: 'Spa', path: '/spa' },
         { name: 'Services', path: '/spa/services' },
         { name: 'Gallery', path: '/spa/gallery' },
+        { name: 'Blog', path: '/spa/blog' },
         { name: 'Hotel', path: '/hotel' }
     ] : [
         { name: 'Home', path: '/' },
