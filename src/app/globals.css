@@ -85,6 +85,11 @@ html {
   box-shadow: 0 8px 22px rgba(197, 168, 128, 0.4) !important;
 }
 
+/* ─── Hide Legacy Solox Mobile Nav Wrapper (Replaced by React MobileDrawer) ─── */
+.mobile-nav__wrapper {
+  display: none !important;
+}
+
 /* ─── Hide Topbar / Header-Top Bars (not part of our design) ─── */
 .main-header__topbar,
 .topbar,

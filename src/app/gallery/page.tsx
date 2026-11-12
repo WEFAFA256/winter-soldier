@@ -418,16 +418,17 @@ export default function GalleryPage() {
                 </Link>
               </div>
 
-              <nav className="main-header__nav main-menu">
-                <ul className="main-menu__list" style={{ display: "flex", listStyle: "none", gap: "28px", margin: 0, padding: 0 }}>
-                  <li><Link href="/" style={{ color: "#ffffff", textDecoration: "none", fontSize: "14px", fontWeight: 600, letterSpacing: "1px", textTransform: "uppercase" }}>Home</Link></li>
-                  <li><Link href="/services" style={{ color: "#ffffff", textDecoration: "none", fontSize: "14px", fontWeight: 600, letterSpacing: "1px", textTransform: "uppercase" }}>Services &amp; Packages</Link></li>
-                  <li className="current"><Link href="/gallery" style={{ color: "#c5a880", textDecoration: "none", fontSize: "14px", fontWeight: 600, letterSpacing: "1px", textTransform: "uppercase" }}>Gallery</Link></li>
-                  <li><Link href="/blog" style={{ color: "#ffffff", textDecoration: "none", fontSize: "14px", fontWeight: 600, letterSpacing: "1px", textTransform: "uppercase" }}>Blog</Link></li>
+              <nav className="main-header__nav main-menu d-none d-xl-block">
+                <ul className="main-menu__list d-none d-xl-flex" style={{ listStyle: "none", gap: "24px", margin: 0, padding: 0 }}>
+                  <li><Link href="/" style={{ color: "#ffffff", textDecoration: "none", fontSize: "13px", fontWeight: 600, letterSpacing: "1px", textTransform: "uppercase" }}>Home</Link></li>
+                  <li><Link href="/services" style={{ color: "#ffffff", textDecoration: "none", fontSize: "13px", fontWeight: 600, letterSpacing: "1px", textTransform: "uppercase" }}>Services &amp; Packages</Link></li>
+                  <li className="current"><Link href="/gallery" style={{ color: "#c5a880", textDecoration: "none", fontSize: "13px", fontWeight: 600, letterSpacing: "1px", textTransform: "uppercase" }}>Gallery</Link></li>
+                  <li><Link href="/booking" style={{ color: "#ffffff", textDecoration: "none", fontSize: "13px", fontWeight: 600, letterSpacing: "1px", textTransform: "uppercase" }}>Book Appointment</Link></li>
+                  <li><Link href="/blog" style={{ color: "#ffffff", textDecoration: "none", fontSize: "13px", fontWeight: 600, letterSpacing: "1px", textTransform: "uppercase" }}>Blog</Link></li>
                 </ul>
               </nav>
 
-              <div className="main-header__right" style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+              <div className="main-header__right" style={{ display: "flex", alignItems: "center", gap: "12px" }}>
                 <a
                   href={`https://wa.me/${whatsappNumber}`}
                   target="_blank"
@@ -436,7 +437,7 @@ export default function GalleryPage() {
                   style={{
                     backgroundColor: "#c5a880",
                     color: "#0e1317",
-                    padding: "10px 22px",
+                    padding: "8px 16px",
                     borderRadius: "4px",
                     fontWeight: 700,
                     fontSize: "12px",
@@ -444,22 +445,33 @@ export default function GalleryPage() {
                     textTransform: "uppercase",
                     display: "inline-flex",
                     alignItems: "center",
-                    gap: "8px",
+                    gap: "6px",
                     textDecoration: "none"
                   }}
                 >
                   <i className="fab fa-whatsapp" style={{ fontSize: "15px" }}></i>
-                  <span>WhatsApp Concierge</span>
+                  <span className="d-none d-sm-inline">WhatsApp</span>
                 </a>
 
                 <div
-                  className="mobile-nav__btn mobile-nav__toggler d-lg-none"
-                  onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                  style={{ cursor: "pointer", display: "flex", flexDirection: "column", gap: "5px", padding: "8px" }}
+                  className="mobile-nav__btn mobile-nav__toggler d-xl-none"
+                  onClick={() => setMobileMenuOpen(true)}
+                  style={{
+                    cursor: "pointer",
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "center",
+                    gap: "5px",
+                    padding: "8px 10px",
+                    background: "rgba(197, 168, 128, 0.1)",
+                    border: "1px solid rgba(197, 168, 128, 0.35)",
+                    borderRadius: "6px"
+                  }}
+                  aria-label="Toggle navigation menu"
                 >
-                  <span style={{ width: "24px", height: "2px", backgroundColor: "#fff", display: "block" }}></span>
-                  <span style={{ width: "24px", height: "2px", backgroundColor: "#fff", display: "block" }}></span>
-                  <span style={{ width: "24px", height: "2px", backgroundColor: "#fff", display: "block" }}></span>
+                  <span style={{ width: "22px", height: "2px", backgroundColor: "#c5a880", display: "block" }}></span>
+                  <span style={{ width: "22px", height: "2px", backgroundColor: "#c5a880", display: "block" }}></span>
+                  <span style={{ width: "22px", height: "2px", backgroundColor: "#c5a880", display: "block" }}></span>
                 </div>
               </div>
             </div>
@@ -469,36 +481,7 @@ export default function GalleryPage() {
           <MobileDrawer isOpen={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} />
         </header>
 
-        {/* --- PAGE HERO BANNER --- */}
-        <section
-          className="page-header"
-          style={{
-            position: "relative",
-            padding: "80px 0",
-            backgroundImage: "url(/assets/images/backgrounds/page-header-bg-1-1.jpg)",
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-            textAlign: "center"
-          }}
-        >
-          <div style={{ position: "absolute", inset: 0, backgroundColor: "rgba(14,19,23,0.78)" }}></div>
-          <div className="container" style={{ position: "relative", zIndex: 2 }}>
-            <span style={{ color: "#c5a880", fontFamily: "Alex Brush, cursive", fontSize: "2rem", display: "block", marginBottom: "8px" }}>
-              Visual Sanctuary
-            </span>
-            <h1 style={{ fontFamily: "Cormorant, serif", fontSize: "3.2rem", fontWeight: 700, color: "#ffffff", margin: "0 0 12px 0", textTransform: "capitalize" }}>
-              Our Spa Photo Gallery
-            </h1>
-            <p style={{ maxWidth: "640px", margin: "0 auto 20px auto", color: "#c4cfde", fontSize: "1.05rem", lineHeight: 1.6 }}>
-              A curated look into our tranquil suites, aromatherapy setups, private massage therapy rooms, and wellness environment in Kampala.
-            </p>
-            <div style={{ display: "inline-flex", alignItems: "center", gap: "10px", color: "#9ca3af", fontSize: "13px", textTransform: "uppercase", letterSpacing: "1.5px" }}>
-              <Link href="/" style={{ color: "#c5a880", textDecoration: "none" }}>Home</Link>
-              <span>/</span>
-              <span style={{ color: "#ffffff" }}>Gallery</span>
-            </div>
-          </div>
-        </section>
+        
 
         {/* --- BALANCED GALLERY GRID (4-COLUMN RESPONSIVE LAYOUT) --- */}
         <section style={{ padding: "70px 0 90px 0" }}>
@@ -521,7 +504,7 @@ export default function GalleryPage() {
                 {images.map((img, index) => {
                   const fallbackImg = `/assets/images/instagram/instagram-2-${(index % 5) + 1}.jpg`;
                   return (
-                    <div key={img.id || index} className="col-xl-3 col-lg-4 col-md-6 col-12">
+                    <div key={img.id || index} className="col-xl-3 col-lg-4 col-md-6 col-12 gallery-card-animated" style={{ animationDelay: `${(index % 12) * 0.04}s` }}>
                       <div
                         style={{
                           height: "250px",
@@ -798,6 +781,25 @@ export default function GalleryPage() {
           </div>
         )}
       </div>
+    
+      {/* ── COOL GALLERY ENTRANCE & HOVER ANIMATION STYLES ── */}
+      <style>{`
+        @keyframes galleryFloatIn {
+          from {
+            opacity: 0;
+            transform: translateY(24px) scale(0.96);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+          }
+        }
+        .gallery-card-animated {
+          animation: galleryFloatIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+          will-change: transform, opacity;
+        }
+      `}</style>
+  
     </>
   );
 }

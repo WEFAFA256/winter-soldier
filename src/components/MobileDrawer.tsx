@@ -169,6 +169,47 @@ export default function MobileDrawer({ isOpen, onClose }: MobileDrawerProps) {
             <i className="fab fa-whatsapp" style={{ fontSize: '16px' }}></i>
             <span>WhatsApp Booking</span>
           </a>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginTop: '10px' }}>
+            <a
+              href="tel:+256781945510"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '6px',
+                padding: '10px',
+                borderRadius: '6px',
+                backgroundColor: 'rgba(197, 168, 128, 0.15)',
+                border: '1px solid rgba(197, 168, 128, 0.3)',
+                color: '#c5a880',
+                fontSize: '12px',
+                fontWeight: 600,
+                textDecoration: 'none',
+              }}
+            >
+              <i className="fas fa-phone-alt"></i> Call Us
+            </a>
+            <a
+              href="mailto:theserenityspakla@gmail.com"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '6px',
+                padding: '10px',
+                borderRadius: '6px',
+                backgroundColor: 'rgba(197, 168, 128, 0.15)',
+                border: '1px solid rgba(197, 168, 128, 0.3)',
+                color: '#c5a880',
+                fontSize: '12px',
+                fontWeight: 600,
+                textDecoration: 'none',
+              }}
+            >
+              <i className="fas fa-envelope"></i> Email
+            </a>
+          </div>
         </div>
       </div>
     </>
