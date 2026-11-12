@@ -52,31 +52,6 @@ html {
   display: none !important;
 }
 
-/* Fallback: ensure the first hero slide is immediately visible before owlCarousel initializes */
-.main-slider-two__carousel:not(.owl-loaded) .item {
-  display: none;
-}
-
-.main-slider-two__carousel:not(.owl-loaded) .item:first-child {
-  display: block !important;
-  width: 100% !important;
-}
-
-.main-slider-two__carousel:not(.owl-loaded) .item:first-child .main-slider-two__bg img:nth-child(1),
-.main-slider-two__carousel:not(.owl-loaded) .item:first-child .main-slider-two__sub-title,
-.main-slider-two__carousel:not(.owl-loaded) .item:first-child .main-slider-two__title,
-.main-slider-two__carousel:not(.owl-loaded) .item:first-child .main-slider-two__btn {
-  opacity: 1 !important;
-  filter: none !important;
-  transform: none !important;
-  visibility: visible !important;
-}
-
-/* Ensure WOW animations don't stay hidden if WOW.js is delayed */
-.wow {
-  visibility: visible !important;
-}
-
 /* Prevent button styling glitches */
 .solox-btn {
   display: inline-block;
@@ -84,11 +59,6 @@ html {
   appearance: none;
   outline: none !important;
   text-decoration: none !important;
-}
-
-/* Remove slide text animation overlay block */
-.main-slider-two__title::after {
-  display: none !important;
 }
 
 .solox-btn span {

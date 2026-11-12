@@ -40,6 +40,17 @@ export default function Home() {
           (window as any).soloxInitLoad();
         } catch (e) {}
       }
+
+      if ((window as any).WOW) {
+        try {
+          new (window as any).WOW({
+            boxClass: "wow",
+            animateClass: "animated",
+            mobile: true,
+            live: true,
+          }).init();
+        } catch (e) {}
+      }
     };
 
     // Initialize once without jarring destroying/rebuilding cycles
