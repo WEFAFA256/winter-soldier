@@ -1,36 +1,29 @@
 {
-  "name": "winter-soldier",
-  "private": true,
+  "name": "solox-dark-spa",
   "version": "1.0.0",
-  "type": "module",
+  "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
-    "server": "node server.js",
-    "server:dpo": "node server-dpo.js"
+    "lint": "next lint"
   },
   "dependencies": {
-    "@vercel/analytics": "^2.0.1",
-    "axios": "^1.13.2",
-    "cloudinary": "^2.10.0",
-    "cors": "^2.8.5",
-    "dotenv": "^17.2.3",
-    "express": "^5.2.1",
-    "next": "^16.2.0",
-    "next-cloudinary": "^6.17.5",
-    "qrcode": "^1.5.4",
-    "react": "^19.2.4",
-    "react-dom": "^19.2.4",
-    "uuid": "^13.0.0",
-    "xml2js": "^0.6.2"
+    "cloudinary": "^2.11.0",
+    "clsx": "^2.1.1",
+    "lucide-react": "^0.468.0",
+    "next": "^15.1.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "tailwind-merge": "^2.5.5"
   },
   "devDependencies": {
-    "@types/node": "^20.11.0",
-    "@types/react": "19.0.2",
-    "@types/react-dom": "19.0.2",
-    "eslint": "^9.39.1",
-    "eslint-config-next": "^16.2.0"
+    "@types/node": "^22.10.2",
+    "@types/react": "^19.0.1",
+    "@types/react-dom": "^19.0.1",
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.4.49",
+    "tailwindcss": "^3.4.17",
+    "typescript": "^5.7.2"
   }
 }

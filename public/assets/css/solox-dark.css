@@ -1,0 +1,458 @@
+:root {
+  --solox-text: #6e6b70;
+  --solox-text-rgb: 110, 107, 112;
+  --solox-white: #141215;
+  --solox-white-rgb: 20, 18, 21;
+  --solox-black: #fff;
+  --solox-black-rgb: 255, 255, 255;
+  --solox-black3: #000;
+  --solox-black3-rgb: 0, 0, 0;
+  --solox-black4: #121013;
+  --solox-black4-rgb: 18, 16, 19;
+  --solox-gray: #1c1a1d;
+  --solox-gray-rgb: 28, 26, 29;
+  --solox-border-color: #2f2d30;
+  --solox-border-color-rgb: 47, 45, 48;
+}
+
+.main-slider-one__bg::after {
+  background-image: url(../images/shapes/hero-slider-1-1-dark.png);
+}
+
+body,
+.service-four,
+.contact-three__team,
+.main-footer-two__social a,
+.gallery-one__card,
+.sidebar__comments__icon,
+.why-choose-three,
+.video-one,
+.main-header--two.sticky-header--cloned,
+.work-process-one__item__thumb-wrap,
+.testimonials-two,
+.contact-one__form .solox-btn::before,
+.contact-map,
+.opening,
+.blog-one,
+.sidebar-one__overlay,
+.sidebar-one__content,
+.instagram-one,
+.why-choose-one,
+.testimonials-one,
+.about-one {
+  background-color: var(--solox-white);
+}
+
+.sidebar-one__title,
+.sidebar-one__close,
+.main-header--four .main-header__cart,
+.main-header--four .main-header__search,
+.main-footer-two__social a:hover,
+.main-footer-two__social a,
+.service-sidebar__contact__number,
+.service-sidebar__contact__title,
+.service-sidebar__title,
+.team-details__icon i,
+.team-details__icon__text,
+.package-card__price,
+.membership-one__tab__list li.active-btn span,
+.membership-one__tab__list li:hover span,
+.gallery-one__filter__list li.active span,
+.gallery-one__filter__list li:hover span,
+.faq-page-search__form__btn,
+.faq-page__contact__number,
+.faq-page__contact__title,
+.sidebar__comments__icon,
+.sidebar__tags a,
+.sidebar__tags a:hover,
+.sidebar__projects__card__title,
+.error-404__search__btn,
+.page-header__title,
+.product__item__btn a:hover,
+.product__item__link,
+.product__item__link:hover,
+.offer-one__card__link:hover,
+.testimonials-three__meta__designation::before,
+.testimonials-three__meta__designation,
+.testimonials-three__meta__title,
+.service-card-two__icon,
+.gallery-two__info__title,
+.team-card__email > a,
+.funfact-three__icon,
+.why-choose-three__item__icon,
+.why-choose-three__item__title,
+.why-choose-three .sec-title__title,
+.about-two__info__text,
+.video-one__btn .video-popup,
+.video-one__btn .curved-circle--item span,
+.video-one__title,
+.funfact-two .sec-title__tagline,
+.funfact-two .sec-title__title,
+.instagram-two a::before,
+.main-header--two .main-menu .main-menu__list > li > a,
+.main-header--two .main-header__cart,
+.main-header--two .main-header__search,
+.main-slider-two__sub-title,
+.main-slider-two__title,
+.work-process-one__item__thumb__number,
+.testimonials-two__item__quote,
+.testimonials-two__meta__name,
+.contact-one__form .sec-title__title,
+.contact-one__form .sec-title__tagline,
+.contact-one__info__icon:hover,
+.footer-widget__newsletter button[type=submit]:hover,
+.footer-widget__social a:hover,
+.footer-widget__social a,
+.footer-widget__info li a:hover,
+.footer-widget__links li a:hover,
+.footer-widget__title,
+.cta-two__sub-title,
+.cta-two__title,
+.opening__info,
+.opening__title,
+.opening__icon,
+.blog-card__date,
+.blog-card-three__date span,
+.blog-card-three__meta li,
+.testimonials-four__carousel.owl-carousel .owl-nav button:hover,
+.team-card-two__social__list a:hover,
+.contact__input-box i,
+.contact__input-box .bootstrap-select > .dropdown-toggle::before,
+.contact .sec-title__title,
+.funfact-one__count,
+.funfact-one__text,
+.funfact-one__icon,
+.instagram-one a::before,
+.why-choose-one__list__icon,
+.service-one__item:hover .service-one__item__title,
+.video-two__btn .video-popup,
+.video-two__btn .curved-circle--item span,
+.video-two__title,
+.client-carousel-one .owl-theme .owl-nav button:hover,
+.team-two__carousel.owl-carousel .owl-nav button:hover,
+.about-one__image__info__icon,
+.feature-one__item__icon,
+.why-choose-four__list__icon,
+.contact-three__fact:hover .contact-three__fact__icon,
+.main-slider-one__title,
+.service-four__content__customer__text,
+.service-four__content__customer__count,
+.service-card-four__title,
+.about-four__video .video-popup:hover,
+.about-four__opening:hover .about-four__opening__icon,
+.service-card-four:hover .service-card-four__icon,
+.main-slider-four__title,
+.main-slider-four__social a,
+.blog-card-four__date span,
+.blog-card-four__meta li,
+.blog-card-four__title,
+.team-card-three__designation,
+.team-card-three__title,
+.team-card-three__social a:hover,
+.massage .sec-title-two__title,
+.massage__tabs li:hover,
+.massage__tabs li.active-btn,
+.massage__tabs li:hover .massage__tabs__icon,
+.massage__tabs li.active-btn .massage__tabs__icon,
+.main-slider-four__social a:hover,
+.product__item__two__btn a,
+.product__item__two__btn a:hover,
+.video-three__content .sec-title-two__title,
+.video-three__content .sec-title-two__tagline,
+.video-three .video-popup:hover,
+.service-card-five__back__title,
+.service-card-five__back__icon,
+.video-three__content__text,
+.sidebar-one__newsletter button[type=submit],
+.main-slider-five__social a:hover,
+.sidebar-one__social a,
+.sidebar-one__social a:hover,
+.team-card-two__social > i,
+.product-two__carousel.owl-carousel .owl-nav button:hover,
+.main-header--four .main-menu .main-menu__list > li > a,
+.main-slider-one__sub-title {
+  color: var(--solox-black);
+}
+
+.contact-one__form .form-one__control__icon,
+.contact-one__form .bootstrap-select > .dropdown-toggle,
+.contact-one__form input[type=text],
+.contact-one__form input[type=email],
+.contact-one__form textarea {
+  color: var(--solox-black);
+  border-color: rgba(var(--solox-black-rgb), 0.2);
+}
+
+.main-slider-two__bg::before,
+.main-slider-one__bg::before {
+  background-color: var(--solox-gray);
+  opacity: 0.5;
+}
+
+.membership-one__card .solox-btn::before,
+.comments-one__card__reply::before,
+.offer-one__card__link::after,
+.gallery-two__card,
+.funfact-two__content .solox-btn::before,
+.contact-one__content,
+.about-one__image__info,
+.background-black,
+.cta-two__content .solox-btn::before,
+.blog-card__content,
+.about-one__content__list li {
+  background-color: var(--solox-gray);
+}
+
+.cta-one__title,
+.product-details__buttons .solox-btn,
+.cart-page__buttons .solox-btn,
+.main-header--two .main-header__btn:hover {
+  color: var(--solox-gray);
+}
+
+.main-slider-one__carousel.owl-carousel .owl-nav button {
+  background-color: rgba(var(--solox-black-rgb), 0.1);
+  color: var(--solox-black);
+}
+
+.main-slider-one circle {
+  stroke: var(--solox-white);
+}
+
+.service-card-four::after,
+.main-slider-two__carousel .owl-dots .owl-dot span,
+.main-slider-one__carousel .owl-dots .owl-dot span {
+  border-color: var(--solox-black);
+}
+
+.scroll-to-top--two .scroll-to-top__inner,
+.main-slider-five__carousel.owl-carousel .owl-dots button:hover,
+.main-slider-five__carousel.owl-carousel .owl-dots button.active,
+.video-three .video-popup,
+.main-header--four .solox-btn--icon::before,
+.main-header--four .solox-btn--icon::after,
+.main-slider-four__carousel.owl-carousel .owl-dots button::after,
+.main-slider-four__carousel.owl-carousel .owl-dots button,
+.about-four__video .video-popup,
+.service-card-four__icon,
+.gallery-one__card__icon::after,
+.gallery-one__card__icon::before,
+.main-slider-two__carousel .owl-dots .owl-dot:hover span,
+.main-slider-two__carousel .owl-dots .owl-dot.active span,
+.main-header--two .main-header__btn::after,
+.main-header--two .main-header__btn,
+.cta-two__content .solox-btn,
+.cta-two__content .solox-btn::after,
+.blog-card__image__link::before,
+.blog-card__image__link::after,
+.blog-card-three__image__link::before,
+.blog-card-three__image__link::after,
+.funfact-one__item:not(:first-of-type)::before,
+.main-slider-one__carousel .owl-dots .owl-dot:hover span,
+.main-slider-one__carousel .owl-dots .owl-dot.active span {
+  background-color: var(--solox-black);
+}
+
+.why-choose-three__content__text {
+  color: rgba(var(--solox-black-rgb), 0.6);
+}
+
+.contact-one__info__icon,
+.about-one__flower {
+  background-color: var(--solox-black4);
+}
+
+.about-one__image__info::after {
+  border-image: linear-gradient(-45deg, rgba(var(--solox-base-rgb), 1) 0%, rgba(var(--solox-black3-rgb), 1) 100%) 1;
+}
+
+.client-carousel-one .client-carousel__one__item:hover {
+  background-color: var(--solox-gray);
+}
+
+.blog-card-three:hover .blog-card-three__content,
+.sidebar-one__social a,
+.sidebar-one__newsletter input[type=text],
+.massage,
+.main-header--four.sticky-header--cloned,
+.about-four__opening__icon,
+.demo-one__card,
+.service-card-two,
+.about-two__info__content,
+.contact,
+.contact__bg,
+.video-two__bg,
+.video-two {
+  background-color: var(--solox-black3);
+}
+
+.instagram-one a::after {
+  background-color: rgba(var(--solox-black3-rgb), 0.5);
+}
+
+.contact-three__form .bootstrap-select > .dropdown-toggle,
+.contact-three__form input[type=text],
+.contact-three__form input[type=email],
+.contact-three__form textarea,
+.contact__input-box textarea,
+.contact__input-box input[type=date],
+.contact__input-box input[type=text],
+.contact__input-box input[type=email] {
+  color: var(--solox-black);
+  border-color: rgba(var(--solox-black-rgb, 255, 255, 255), 0.15);
+}
+
+.contact__input-box .bootstrap-select > .dropdown-toggle {
+  color: var(--solox-black) !important;
+}
+
+.team-two .sec-title-two,
+.gift-card-one__inner,
+.contact__input-box .bootstrap-select > .dropdown-toggle {
+  border-color: rgba(var(--solox-black-rgb, 255, 255, 255), 0.15);
+}
+
+.contact__input-box .bootstrap-select .dropdown-menu > li:hover > a,
+.contact__input-box .bootstrap-select .dropdown-menu > li.selected > a {
+  color: var(--solox-black);
+}
+
+.blog-card-three__image__link,
+.package-card__image__link,
+.gallery-two__card__hover,
+.blog-card__image__link {
+  background-color: rgba(var(--solox-gray-rgb), 0.5);
+}
+
+.opening__info--last,
+.main-footer__bottom__inner {
+  border-color: rgba(var(--solox-black-rgb), 0.2);
+}
+
+.google-map iframe {
+  filter: grayscale(100%) invert(92%) contrast(83%);
+}
+
+.cta-two__thumb__two__thumb,
+.cta-two__thumb__one__thumb {
+  border-color: var(--solox-black);
+}
+
+.main-header--four .solox-btn--icon:hover,
+.offer-one__card__title,
+.cta-two__content .solox-btn:hover {
+  color: var(--solox-white);
+}
+
+.main-footer-two .footer-widget--contact__info li,
+.main-footer-two .footer-widget__info li,
+.main-footer-two .footer-widget__links li,
+.main-footer-two .footer-widget__text,
+.footer-widget__newsletter input[type=text]:focus {
+  color: var(--solox-text);
+}
+
+.membership-three--home-five .membership-three__shape-two,
+.membership-three--home-five .membership-three__shape-one,
+.product-two__shape-two,
+.product-two__shape-one,
+.why-choose-four__shape-two,
+.why-choose-four__shape-one,
+.faq-page-search__shape-1,
+.faq-page-search__shape-2,
+.faq-page-search__shape-3,
+.why-choose-one__shape-1,
+.contact-one__inner-shape,
+.contact-one__content__shape-2,
+.contact-one__content__shape-1 {
+  opacity: 0.1;
+}
+
+.why-choose-four--home-five .why-choose-four__shape-one,
+.about-four__shape,
+.membership-three__shape-one,
+.membership-three__shape-two {
+  opacity: 0.05;
+}
+
+.main-slider-five__social a,
+.massage__tabs li,
+.massage .sec-title-two,
+.about-four__opening__time,
+.about-four__opening,
+.membership-three__item,
+.membership-three .sec-title-two,
+.why-choose-four__content__text,
+.why-choose-three__item:nth-child(1),
+.why-choose-three__item:nth-child(2),
+.why-choose-three__item:nth-child(3),
+.funfact-two__item:nth-child(1),
+.funfact-two__item:nth-child(2),
+.funfact-two__item:nth-child(3),
+.main-header--two .main-header__right,
+.main-header--two {
+  border-color: rgba(var(--solox-black-rgb), 0.1);
+}
+
+.service-sidebar__discount,
+.faq-page-search__inner,
+.testimonials-three__item__content,
+.testimonials-three,
+.service-page--home,
+.team-card__image__bg,
+.funfact-three__bg,
+.faq-one {
+  background-blend-mode: color-burn;
+}
+
+.team-form-one__bg,
+.main-slider-three__bg,
+.about-two__bg {
+  mix-blend-mode: color-burn;
+}
+
+.about-three__author__meta img,
+.about-three__thumb__border img,
+.about-two__content__author__meta img {
+  filter: brightness(0) invert(1) drop-shadow(2px 4px 6px var(--solox-white));
+}
+
+.cart-page__table__meta-img img,
+.product__item__img img {
+  mix-blend-mode: normal;
+}
+
+.page-header__bg::before {
+  background-image: url(../images/shapes/page-header-cloud-dark.png);
+}
+
+.sidebar__projects__card__content {
+  background: linear-gradient(to bottom, rgba(var(--solox-black-rgb), 0) 40%, var(--solox-white) 100%);
+}
+
+.main-slider-five .active .main-slider-five__shape-two,
+.main-slider-five .active .main-slider-five__shape,
+.client-carousel-three .client-carousel__one__item img {
+  opacity: 0.2;
+}
+
+.client-carousel-three .client-carousel__one__item:hover img {
+  opacity: 1;
+}
+
+.testimonials-four__bg::after {
+  background-image: linear-gradient(90deg, rgb(var(--solox-white-rgb)) 0%, rgba(var(--solox-white-rgb), 0.5) 100%);
+}
+
+.why-choose-four__list__text::before {
+  background-color: rgba(var(--solox-black-rgb), 0.1);
+}
+
+.team-card-three__image::after {
+  background-color: rgba(var(--solox-white-rgb), 0.7);
+}
+
+.instagram-one--home-four {
+  background-color: transparent;
+}
+/*# sourceMappingURL=solox-dark.css.map */

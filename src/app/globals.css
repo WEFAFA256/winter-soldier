@@ -1,0 +1,197 @@
+/* ─── Preloader Disabled: Content Immediately Visible ─── */
+.preloader {
+  display: none !important;
+}
+
+/* ─── Ultra-Smooth Global Scrolling & Visual Rendering ─── */
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ─── Main Hero Slider Rules: Prevent Any Horizontal Overflow & Ensure Persistence ─── */
+.main-slider-two {
+  position: relative !important;
+  width: 100% !important;
+  overflow: hidden !important;
+}
+
+.main-slider-two__carousel {
+  position: relative !important;
+  width: 100% !important;
+  overflow: hidden !important;
+  display: block !important;
+  min-height: 520px;
+}
+
+.main-slider-two__carousel .owl-stage-outer {
+  overflow: hidden !important;
+  position: relative !important;
+  width: 100% !important;
+}
+
+/* Fix Hero Slider First Load Glitch: Make background slide transitions ultra smooth, avoiding harsh blur/warp snaps */
+.main-slider-two__bg img {
+  filter: none !important;
+  transition: transform 1.2s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.8s ease-in-out !important;
+}
+
+.main-slider-two__bg img:nth-child(1) {
+  transform: scale(1.05);
+  opacity: 1;
+}
+
+.main-slider-two .active .main-slider-two__bg img:nth-child(1) {
+  transform: scale(1) !important;
+  opacity: 1 !important;
+  filter: none !important;
+}
+
+.main-slider-two__bg img:nth-child(2) {
+  display: none !important;
+}
+
+/* Fallback: ensure the first hero slide is immediately visible before owlCarousel initializes */
+.main-slider-two__carousel:not(.owl-loaded) .item {
+  display: none;
+}
+
+.main-slider-two__carousel:not(.owl-loaded) .item:first-child {
+  display: block !important;
+  width: 100% !important;
+}
+
+.main-slider-two__carousel:not(.owl-loaded) .item:first-child .main-slider-two__bg img:nth-child(1),
+.main-slider-two__carousel:not(.owl-loaded) .item:first-child .main-slider-two__sub-title,
+.main-slider-two__carousel:not(.owl-loaded) .item:first-child .main-slider-two__title,
+.main-slider-two__carousel:not(.owl-loaded) .item:first-child .main-slider-two__btn {
+  opacity: 1 !important;
+  filter: none !important;
+  transform: none !important;
+  visibility: visible !important;
+}
+
+/* Ensure WOW animations don't stay hidden if WOW.js is delayed */
+.wow {
+  visibility: visible !important;
+}
+
+/* Prevent button styling glitches */
+.solox-btn {
+  display: inline-block;
+  vertical-align: middle;
+  appearance: none;
+  outline: none !important;
+  text-decoration: none !important;
+}
+
+/* Remove slide text animation overlay block */
+.main-slider-two__title::after {
+  display: none !important;
+}
+
+.solox-btn span {
+  position: relative;
+  z-index: 2;
+  display: inline-block;
+}
+
+/* ─── Luxury Serenity Gold Button ─── */
+.serenity-gold-btn {
+  background: linear-gradient(135deg, #c5a880 0%, #9e7f53 100%) !important;
+  color: #0e1317 !important;
+  font-weight: 700 !important;
+  border-radius: 4px !important;
+  border: none !important;
+  box-shadow: 0 4px 14px rgba(197, 168, 128, 0.25) !important;
+  transition: all 0.3s ease !important;
+}
+
+.serenity-gold-btn:hover {
+  background: linear-gradient(135deg, #d6be97 0%, #b39263 100%) !important;
+  color: #0e1317 !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 8px 22px rgba(197, 168, 128, 0.4) !important;
+}
+
+/* ─── Hide Topbar / Header-Top Bars (not part of our design) ─── */
+.main-header__topbar,
+.topbar,
+.top-bar,
+.header-top,
+.main-header__info,
+[class*="topbar"],
+[class*="top-bar"] {
+  display: none !important;
+}
+
+/* ─── Clean up header - hide search/cart we don't use ─── */
+.main-header__search,
+.main-header__cart,
+.search-popup {
+  display: none !important;
+}
+
+/* ─── Hide Legacy jQuery Cursors to Prevent Any Clash ─── */
+.custom-cursor__cursor,
+.custom-cursor__cursor-two {
+  display: none !important;
+}
+
+/* ─── Luxury Custom Cursor (Strictly & Uniformly Small Everywhere) ─── */
+@media (pointer: fine) {
+  *,
+  *::before,
+  *::after {
+    cursor: none !important;
+  }
+}
+
+.luxury-cursor__ring,
+.luxury-cursor__ring.cursor-hover {
+  width: 20px !important;
+  height: 20px !important;
+  max-width: 20px !important;
+  max-height: 20px !important;
+  min-width: 20px !important;
+  min-height: 20px !important;
+  border-radius: 50% !important;
+  border: 1px solid rgba(197, 157, 95, 0.85) !important;
+  background-color: transparent !important;
+  position: fixed !important;
+  left: 0 !important;
+  top: 0 !important;
+  pointer-events: none !important;
+  z-index: 99999999 !important;
+  box-shadow: none !important;
+  opacity: 0;
+  will-change: transform, opacity;
+  transition: opacity 0.25s ease, border-color 0.25s ease, background-color 0.25s ease;
+}
+
+.luxury-cursor__dot,
+.luxury-cursor__dot.cursor-hover {
+  width: 4px !important;
+  height: 4px !important;
+  max-width: 4px !important;
+  max-height: 4px !important;
+  min-width: 4px !important;
+  min-height: 4px !important;
+  border-radius: 50% !important;
+  background-color: #c59d5f !important;
+  position: fixed !important;
+  left: 0 !important;
+  top: 0 !important;
+  pointer-events: none !important;
+  z-index: 99999999 !important;
+  opacity: 0;
+  will-change: transform, opacity;
+  transition: opacity 0.25s ease;
+}
+
+/* Tactile response on click */
+.luxury-cursor__ring.cursor-active {
+  border-color: #dfbe82 !important;
+  background-color: rgba(197, 157, 95, 0.2) !important;
+}

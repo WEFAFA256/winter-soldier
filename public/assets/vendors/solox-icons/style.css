@@ -1,0 +1,138 @@
+@font-face {
+  font-family: 'icomoon';
+  src:  url('fonts/icomoon.eot?jhxopv');
+  src:  url('fonts/icomoon.eot?jhxopv#iefix') format('embedded-opentype'),
+    url('fonts/icomoon.ttf?jhxopv') format('truetype'),
+    url('fonts/icomoon.woff?jhxopv') format('woff'),
+    url('fonts/icomoon.svg?jhxopv#icomoon') format('svg');
+  font-weight: normal;
+  font-style: normal;
+  font-display: block;
+}
+
+[class^="icon-"], [class*=" icon-"] {
+  /* use !important to prevent issues with browser extensions that change fonts */
+  font-family: 'icomoon' !important;
+  speak: never;
+  font-style: normal;
+  font-weight: normal;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1;
+
+  /* Better Font Rendering =========== */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.icon-clock:before {
+  content: "\e923";
+}
+.icon-phone-call:before {
+  content: "\e924";
+}
+.icon-close:before {
+  content: "\e91e";
+}
+.icon-minus1:before {
+  content: "\e91c";
+}
+.icon-28-plus:before {
+  content: "\e91d";
+}
+.icon-magnifying-glass:before {
+  content: "\e900";
+}
+.icon-shopping-cart:before {
+  content: "\e901";
+}
+.icon-down-arrow:before {
+  content: "\e902";
+}
+.icon-up-arrow:before {
+  content: "\e919";
+}
+.icon-left-arrow:before {
+  content: "\e91a";
+}
+.icon-right-arrow:before {
+  content: "\e91b";
+}
+.icon-booking:before {
+  content: "\e903";
+}
+.icon-group:before {
+  content: "\e904";
+}
+.icon-tag:before {
+  content: "\e905";
+}
+.icon-stones:before {
+  content: "\e906";
+}
+.icon-giftbox:before {
+  content: "\e907";
+}
+.icon-herbal:before {
+  content: "\e908";
+}
+.icon-aromatherapy:before {
+  content: "\e909";
+}
+.icon-fire-control:before {
+  content: "\e90a";
+}
+.icon-stones-1:before {
+  content: "\e90b";
+}
+.icon-spa:before {
+  content: "\e90c";
+}
+.icon-tick:before {
+  content: "\e90d";
+}
+.icon-lotus:before {
+  content: "\e90e";
+}
+.icon-massage:before {
+  content: "\e90f";
+}
+.icon-customer-service:before {
+  content: "\e910";
+}
+.icon-alarm-clock:before {
+  content: "\e911";
+}
+.icon-face-mask:before {
+  content: "\e912";
+}
+.icon-relax:before {
+  content: "\e913";
+}
+.icon-facebook-app-symbol:before {
+  content: "\e914";
+}
+.icon-twitter:before {
+  content: "\e915";
+}
+.icon-instagram:before {
+  content: "\e916";
+}
+.icon-linkedin:before {
+  content: "\e917";
+}
+.icon-pinterest:before {
+  content: "\e918";
+}
+.icon-bamboo:before {
+  content: "\e91f";
+}
+.icon-phone-call1:before {
+  content: "\e920";
+}
+.icon-minus:before {
+  content: "\e921";
+}
+.icon-plus-1:before {
+  content: "\e922";
+}
