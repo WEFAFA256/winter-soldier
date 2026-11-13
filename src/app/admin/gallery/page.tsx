@@ -21,8 +21,18 @@ interface GalleryItem {
   delay?: string;
 }
 
+interface BlogPost {
+  id: string;
+  title: string;
+  excerpt: string;
+  content: string;
+  image: string;
+  date: string;
+  author: string;
+}
+
 export default function AdminGalleryPage() {
-  const [activeTab, setActiveTab] = useState<"gallery" | "services" | "info">("gallery");
+  const [activeTab, setActiveTab] = useState<"gallery" | "services" | "blog" | "info">("gallery");
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -35,6 +45,21 @@ export default function AdminGalleryPage() {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [imageAlt, setImageAlt] = useState("");
   const [uploadingGallery, setUploadingGallery] = useState(false);
+
+  // Blog State
+  const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
+  const [showAddBlog, setShowAddBlog] = useState(false);
+  const [blogImageFile, setBlogImageFile] = useState<File | null>(null);
+  const [blogImagePreview, setBlogImagePreview] = useState<string | null>(null);
+  const [uploadingBlog, setUploadingBlog] = useState(false);
+  const [newBlog, setNewBlog] = useState<Partial<BlogPost>>({
+    title: "",
+    excerpt: "",
+    content: "",
+    image: "",
+    date: new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "long", year: "numeric" }),
+    author: "Admin",
+  });
 
   // Site Content State
   const [siteContent, setSiteContent] = useState<any>(null);
@@ -76,7 +101,16 @@ export default function AdminGalleryPage() {
         setGalleryImages(galData);
       }
 
-      // 2. Load Content
+      // 2. Load Blog Posts
+      try {
+        const blogRes = await fetch("/api/blog");
+        if (blogRes.ok) {
+          const blogData = await blogRes.json();
+          setBlogPosts(blogData);
+        }
+      } catch {}
+
+      // 3. Load Content
       const contentRes = await fetch("/api/content");
       if (contentRes.ok) {
         const cData = await contentRes.json();
@@ -176,6 +210,78 @@ export default function AdminGalleryPage() {
       }
     } catch (e: any) {
       alert("Error deleting image: " + e.message);
+    }
+  };
+
+  // Add Blog Post
+  const handleAddBlogPost = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newBlog.title || !newBlog.content) {
+      alert("Please enter at least a title and content.");
+      return;
+    }
+    setUploadingBlog(true);
+    let imageUrl = newBlog.image || "";
+
+    // Upload image if selected
+    if (blogImageFile) {
+      const uploadedUrl = await uploadImageFile(blogImageFile);
+      if (uploadedUrl) imageUrl = uploadedUrl;
+    }
+
+    const post: BlogPost = {
+      id: Date.now().toString(),
+      title: newBlog.title || "",
+      excerpt: newBlog.excerpt || "",
+      content: newBlog.content || "",
+      image: imageUrl,
+      date: newBlog.date || new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "long", year: "numeric" }),
+      author: newBlog.author || "Admin",
+    };
+
+    try {
+      const res = await fetch("/api/blog", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${password.trim()}`,
+        },
+        body: JSON.stringify(post),
+      });
+
+      if (res.ok) {
+        setBlogPosts([post, ...blogPosts]);
+        setNewBlog({ title: "", excerpt: "", content: "", image: "", date: new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "long", year: "numeric" }), author: "Admin" });
+        setBlogImageFile(null);
+        setBlogImagePreview(null);
+        setShowAddBlog(false);
+        alert("Blog post published!");
+      } else {
+        const err = await res.json();
+        alert(err.error || "Failed to publish blog post");
+      }
+    } catch (err: any) {
+      alert("Error: " + err.message);
+    } finally {
+      setUploadingBlog(false);
+    }
+  };
+
+  // Delete Blog Post
+  const handleDeleteBlogPost = async (id: string) => {
+    if (!confirm("Delete this blog post permanently?")) return;
+    try {
+      const res = await fetch(`/api/blog?id=${encodeURIComponent(id)}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${password.trim()}` },
+      });
+      if (res.ok) {
+        setBlogPosts(blogPosts.filter((p) => p.id !== id));
+      } else {
+        alert("Failed to delete post.");
+      }
+    } catch (e: any) {
+      alert("Error: " + e.message);
     }
   };
 
@@ -351,6 +457,7 @@ export default function AdminGalleryPage() {
         {[
           { id: "gallery", label: "📸 Spa Gallery", count: galleryImages.length },
           { id: "services", label: "💅 Treatments & Pricing", count: services.length },
+          { id: "blog", label: "📝 Blog Posts", count: blogPosts.length },
           { id: "info", label: "💆 Contacts & Info" },
         ].map((tab) => (
           <button
@@ -624,7 +731,90 @@ export default function AdminGalleryPage() {
               </div>
             )}
 
-            {/* TAB 3: CONTACTS & SPA INFO */}
+            {/* TAB 3: BLOG MANAGER */}
+            {activeTab === "blog" && (
+              <div className="space-y-8">
+                {/* Add Blog Button */}
+                <div className="flex justify-between items-center">
+                  <div>
+                    <h3 className="text-base font-bold text-white">Blog Posts</h3>
+                    <p className="text-xs text-gray-400 mt-1">Create and manage blog articles displayed on the blog page.</p>
+                  </div>
+                  <button
+                    onClick={() => setShowAddBlog(!showAddBlog)}
+                    className="px-5 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider"
+                    style={{ backgroundColor: "#c2a74e", color: "#0e1317" }}
+                  >
+                    {showAddBlog ? "✕ Cancel" : "+ New Blog Post"}
+                  </button>
+                </div>
+
+                {/* Add Blog Form */}
+                {showAddBlog && (
+                  <form onSubmit={handleAddBlogPost} className="p-6 rounded-2xl bg-[#161c22] border border-[#c2a74e]/40 space-y-5 shadow-xl">
+                    <h4 className="text-sm font-bold text-[#c2a74e] uppercase tracking-wider">New Blog Post</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-300 mb-1">Post Title *</label>
+                        <input type="text" required placeholder="e.g. 5 Benefits of Hot Stone Massage" value={newBlog.title || ""} onChange={(e) => setNewBlog({ ...newBlog, title: e.target.value })} className="w-full px-4 py-2.5 rounded-lg bg-[#0e1317] border border-gray-700 text-xs text-white outline-none focus:border-[#c2a74e]" />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-300 mb-1">Author</label>
+                        <input type="text" placeholder="Admin" value={newBlog.author || ""} onChange={(e) => setNewBlog({ ...newBlog, author: e.target.value })} className="w-full px-4 py-2.5 rounded-lg bg-[#0e1317] border border-gray-700 text-xs text-white outline-none focus:border-[#c2a74e]" />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-300 mb-1">Short Excerpt (shown on blog card)</label>
+                      <input type="text" placeholder="A brief teaser for the article..." value={newBlog.excerpt || ""} onChange={(e) => setNewBlog({ ...newBlog, excerpt: e.target.value })} className="w-full px-4 py-2.5 rounded-lg bg-[#0e1317] border border-gray-700 text-xs text-white outline-none focus:border-[#c2a74e]" />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-300 mb-1">Full Content *</label>
+                      <textarea required rows={6} placeholder="Write your full blog article here..." value={newBlog.content || ""} onChange={(e) => setNewBlog({ ...newBlog, content: e.target.value })} className="w-full px-4 py-2.5 rounded-lg bg-[#0e1317] border border-gray-700 text-xs text-white outline-none focus:border-[#c2a74e] resize-y" />
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-300 mb-1">Cover Image</label>
+                        <input type="file" accept="image/*" onChange={(e) => { const f = e.target.files?.[0]; if (f) { setBlogImageFile(f); setBlogImagePreview(URL.createObjectURL(f)); } }} className="w-full text-xs text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-[#c2a74e] file:text-[#0e1317] hover:file:opacity-90 cursor-pointer" />
+                        {blogImagePreview && <img src={blogImagePreview} alt="Preview" className="mt-3 w-24 h-16 object-cover rounded-lg border border-gray-700" />}
+                      </div>
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-300 mb-1">Date</label>
+                        <input type="text" value={newBlog.date || ""} onChange={(e) => setNewBlog({ ...newBlog, date: e.target.value })} className="w-full px-4 py-2.5 rounded-lg bg-[#0e1317] border border-gray-700 text-xs text-white outline-none focus:border-[#c2a74e]" />
+                      </div>
+                    </div>
+                    <button type="submit" disabled={uploadingBlog} className="px-8 py-3 rounded-lg font-bold text-xs uppercase tracking-wider disabled:opacity-50" style={{ backgroundColor: "#c2a74e", color: "#0e1317" }}>
+                      {uploadingBlog ? "Publishing..." : "✓ Publish Blog Post"}
+                    </button>
+                  </form>
+                )}
+
+                {/* Blog Posts List */}
+                {blogPosts.length === 0 ? (
+                  <div className="text-center py-16 text-gray-500">
+                    <p className="text-4xl mb-3">📝</p>
+                    <p className="text-sm">No blog posts yet. Create your first one above.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {blogPosts.map((post) => (
+                      <div key={post.id} className="p-5 rounded-xl bg-[#161c22] border border-gray-800 shadow-md flex gap-5 items-start">
+                        {post.image && (
+                          <img src={post.image} alt={post.title} className="w-24 h-20 object-cover rounded-lg flex-shrink-0 border border-gray-700" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-bold text-white text-sm truncate">{post.title}</h4>
+                          <p className="text-xs text-[#c2a74e] mt-0.5">{post.date} · by {post.author}</p>
+                          <p className="text-xs text-gray-400 mt-1 line-clamp-2">{post.excerpt || post.content?.substring(0, 120)}</p>
+                        </div>
+                        <button onClick={() => handleDeleteBlogPost(post.id)} className="p-2 text-red-400 hover:text-red-300 hover:bg-red-950/40 rounded transition-colors text-xs flex-shrink-0" title="Delete">🗑️</button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* TAB 4: CONTACTS & SPA INFO */}
             {activeTab === "info" && siteContent && (
               <div className="p-8 rounded-2xl bg-[#161c22] border border-gray-800 space-y-6 max-w-3xl">
                 <h3 className="text-base font-bold text-white mb-2" style={{ color: "#c2a74e" }}>
