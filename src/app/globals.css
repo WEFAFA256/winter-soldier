@@ -196,3 +196,20 @@ img {
   border-color: #c2a74e !important;
   background-color: rgba(194, 167, 78, 0.2) !important;
 }
+
+/* Floating moving cloud effect on homepage hero background */
+.main-slider-two::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 220px;
+  background-image: url(/assets/images/shapes/page-header-cloud-dark.png);
+  background-repeat: repeat-x;
+  animation: cloudMove 60s linear 0s infinite;
+  background-position: bottom center;
+  z-index: 2;
+  pointer-events: none;
+}
+
