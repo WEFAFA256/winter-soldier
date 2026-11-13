@@ -608,6 +608,35 @@ export default function Home() {
                             </div>
                         </div>
                     </div>
+
+                    <!-- Featured Card 5 -->
+                    <div class="item">
+                        <div class="team-card" style="background: #1a1a1a; border-radius: 8px; overflow: hidden; border: 1px solid rgba(194, 167, 78, 0.2); transition: all 0.4s ease;">
+                            <div class="team-card__image" style="position: relative; overflow: hidden;">
+                                <div style="position: absolute; top: 15px; left: 15px; z-index: 5;">
+                                    <span style="background: linear-gradient(135deg, #c2a74e, #c2a74e); color: #161616; font-size: 11px; font-weight: 700; letter-spacing: 1.5px; padding: 4px 12px; border-radius: 3px; display: inline-block; text-transform: uppercase;">FEATURED</span>
+                                </div>
+                                <img src="/assets/images/team/team-1-5.jpg" alt="Maya Lin" style="width: 100%; height: 320px; object-fit: cover;">
+                            </div>
+                            <div class="team-card__content text-center" style="padding: 25px 20px;">
+                                <h6 class="team-card__designation" style="color: #c2a74e; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px;">Deep Tissue & Recovery Expert</h6>
+                                <h3 class="team-card__title" style="font-size: 22px; margin-bottom: 15px; color: #fff;">
+                                    <a href="team-details.html" style="color: #fff;">Maya Lin</a>
+                                </h3>
+                                <div style="margin-bottom: 20px;">
+                                    <span class="fa fa-star" style="color: #c2a74e; font-size: 12px;"></span>
+                                    <span class="fa fa-star" style="color: #c2a74e; font-size: 12px;"></span>
+                                    <span class="fa fa-star" style="color: #c2a74e; font-size: 12px;"></span>
+                                    <span class="fa fa-star" style="color: #c2a74e; font-size: 12px;"></span>
+                                    <span class="fa fa-star" style="color: #c2a74e; font-size: 12px;"></span>
+                                    <span style="color: #888; font-size: 12px; margin-left: 6px;">(4.95/5.0)</span>
+                                </div>
+                                <a href="team-details.html" class="solox-btn solox-btn--base" style="width: 100%; text-align: center; padding: 10px 0;">
+                                    <span>View Profile</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>

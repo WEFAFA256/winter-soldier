@@ -62,4 +62,16 @@ export const specialistsData: Specialist[] = [
     badge: "FEATURED",
     bio: "Harnessing basalt lava stones and Himalayan salt compression to relieve deep myofascial tension.",
   },
+  {
+    id: "item5",
+    hash: "item5",
+    name: "Maya Lin",
+    slug: "maya-lin",
+    designation: "Deep Tissue & Recovery Specialist",
+    rating: 4.95,
+    reviewCount: 104,
+    image: "/assets/images/team/team-1-5.jpg",
+    badge: "FEATURED",
+    bio: "Expert therapist specializing in tailored deep tissue realignment, reflexology, and chronic tension relief.",
+  },
 ];
