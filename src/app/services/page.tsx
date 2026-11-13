@@ -769,7 +769,7 @@ export default function ServicesPage() {
             style={{
               position: "absolute",
               inset: 0,
-              backgroundImage: "url('/assets/service1.jpg')",
+              backgroundImage: "url('/assets/images/backgrounds/services-header-bg.jpg')",
               backgroundSize: "cover",
               backgroundPosition: "center",
               transform: heroVisible ? "scale(1)" : "scale(1.08)",
