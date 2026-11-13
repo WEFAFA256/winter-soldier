@@ -335,11 +335,150 @@ const INITIAL_IMAGES: GalleryImage[] = [
 
 const whatsappNumber = "256781945510";
 
+
+// ── Scroll-reveal gallery card (re-triggers on every scroll pass) ───────────
+function GalleryCard({
+  img,
+  index,
+  fallbackImg,
+  onClick,
+}: {
+  img: GalleryImage;
+  index: number;
+  fallbackImg: string;
+  onClick: () => void;
+}) {
+  const ref = React.useRef<HTMLDivElement>(null);
+  const [visible, setVisible] = React.useState(false);
+  const timerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  React.useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    // Column-based stagger for natural masonry cascade
+    const colDelay = (index % 4) * 85;
+    const obs = new IntersectionObserver(
+      ([entry]) => {
+        if (timerRef.current) clearTimeout(timerRef.current);
+        if (entry.isIntersecting) {
+          timerRef.current = setTimeout(() => setVisible(true), colDelay);
+        } else {
+          setVisible(false);
+        }
+      },
+      { threshold: 0.06, rootMargin: "0px 0px -30px 0px" }
+    );
+    obs.observe(el);
+    return () => { obs.disconnect(); if (timerRef.current) clearTimeout(timerRef.current); };
+  }, [index]);
+
+  return (
+    <div
+      ref={ref}
+      className="col-xl-3 col-lg-4 col-md-6 col-12"
+      style={{
+        opacity: visible ? 1 : 0,
+        transform: visible ? "translateY(0px) scale(1)" : "translateY(44px) scale(0.95)",
+        transition: visible
+          ? `opacity 0.6s cubic-bezier(0.16,1,0.3,1), transform 0.6s cubic-bezier(0.16,1,0.3,1)`
+          : `opacity 0.25s ease, transform 0.25s ease`,
+        willChange: "opacity, transform",
+      }}
+    >
+      <div
+        className="gallery-card-inner"
+        onClick={onClick}
+        style={{
+          height: "250px",
+          borderRadius: "10px",
+          overflow: "hidden",
+          position: "relative",
+          cursor: "pointer",
+          backgroundColor: "#161c22",
+          border: "1px solid rgba(197,168,128,0.2)",
+          boxShadow: "0 6px 20px rgba(0,0,0,0.35)",
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.transform = "translateY(-8px)";
+          e.currentTarget.style.borderColor = "rgba(197,168,128,0.55)";
+          e.currentTarget.style.boxShadow = "0 16px 36px rgba(197,168,128,0.18)";
+          const imgEl = e.currentTarget.querySelector(".gallery-img") as HTMLElement;
+          if (imgEl) imgEl.style.transform = "scale(1.1)";
+          const overlay = e.currentTarget.querySelector(".gallery-overlay") as HTMLElement;
+          if (overlay) overlay.style.opacity = "1";
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.transform = "translateY(0)";
+          e.currentTarget.style.borderColor = "rgba(197,168,128,0.2)";
+          e.currentTarget.style.boxShadow = "0 6px 20px rgba(0,0,0,0.35)";
+          const imgEl = e.currentTarget.querySelector(".gallery-img") as HTMLElement;
+          if (imgEl) imgEl.style.transform = "scale(1)";
+          const overlay = e.currentTarget.querySelector(".gallery-overlay") as HTMLElement;
+          if (overlay) overlay.style.opacity = "0";
+        }}
+      >
+        <img
+          src={img.src}
+          alt={img.alt || "The Serenity Spa"}
+          loading="lazy"
+          className="gallery-img"
+          style={{
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+            transition: "transform 0.6s cubic-bezier(0.16,1,0.3,1)",
+            willChange: "transform",
+          }}
+          onError={(e) => { (e.target as HTMLImageElement).src = fallbackImg; }}
+        />
+        {/* Hover Overlay with gold shimmer */}
+        <div
+          className="gallery-overlay"
+          style={{
+            position: "absolute",
+            inset: 0,
+            background: "linear-gradient(135deg, rgba(197,168,128,0.12), rgba(14,19,23,0.6))",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            opacity: 0,
+            transition: "opacity 0.3s ease",
+          }}
+        >
+          <div
+            style={{
+              width: "52px",
+              height: "52px",
+              borderRadius: "50%",
+              backgroundColor: "#c5a880",
+              color: "#0e1317",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: "20px",
+              boxShadow: "0 6px 20px rgba(0,0,0,0.5)",
+            }}
+          >
+            <i className="fas fa-search-plus"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function GalleryPage() {
   const [images, setImages] = useState<GalleryImage[]>(INITIAL_IMAGES);
   const [loading, setLoading] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [heroVisible, setHeroVisible] = useState(false);
+
+  // Hero entrance animation (subtle delay to feel intentional)
+  useEffect(() => {
+    const t = setTimeout(() => setHeroVisible(true), 80);
+    return () => clearTimeout(t);
+  }, []);
 
   useEffect(() => {
     const fetchGallery = async () => {
@@ -483,8 +622,66 @@ export default function GalleryPage() {
 
         
 
+        {/* ─── LUXURY GALLERY HERO BANNER ─── */}
+        <div
+          style={{
+            position: "relative",
+            height: "300px",
+            overflow: "hidden",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              backgroundImage: "url('https://res.cloudinary.com/njzctr4m/image/upload/v1784667206/serenity_gallery/u7wll8tto5yxjt4ptcbl.jpg')",
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+              transform: heroVisible ? "scale(1)" : "scale(1.08)",
+              transition: "transform 1.4s cubic-bezier(0.16, 1, 0.3, 1)",
+              filter: "brightness(0.3)",
+            }}
+          />
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              background: "linear-gradient(135deg, rgba(197,168,128,0.08) 0%, rgba(14,19,23,0.8) 100%)",
+            }}
+          />
+          <div
+            style={{
+              position: "relative",
+              zIndex: 2,
+              textAlign: "center",
+              padding: "0 20px",
+              opacity: heroVisible ? 1 : 0,
+              transform: heroVisible ? "translateY(0)" : "translateY(28px)",
+              transition: "opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.2s, transform 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.2s",
+            }}
+          >
+            <span style={{ color: "#c5a880", fontFamily: "'Great Vibes', cursive, Cormorant, serif", fontSize: "1.5rem", display: "block", marginBottom: "10px" }}>
+              A Visual Journey
+            </span>
+            <h1 style={{ fontFamily: "Cormorant, serif", fontSize: "clamp(1.9rem, 4.5vw, 2.9rem)", fontWeight: 700, color: "#ffffff", margin: "0 0 12px 0", lineHeight: 1.15 }}>
+              Our Sanctuary Gallery
+            </h1>
+            <p style={{ color: "rgba(255,255,255,0.7)", fontSize: "clamp(0.85rem, 2vw, 0.95rem)", maxWidth: "520px", margin: "0 auto 16px auto", lineHeight: 1.6 }}>
+              Glimpses of luxury, serenity, and the art of healing touch at The Serenity Spa Kampala.
+            </p>
+            <nav style={{ fontSize: "12px", color: "rgba(255,255,255,0.5)", letterSpacing: "1.5px", textTransform: "uppercase" }}>
+              <a href="/" style={{ color: "rgba(255,255,255,0.5)", textDecoration: "none" }}>Home</a>
+              <span style={{ margin: "0 8px", color: "#c5a880" }}>/</span>
+              <span style={{ color: "#c5a880" }}>Gallery</span>
+            </nav>
+          </div>
+        </div>
+
         {/* --- BALANCED GALLERY GRID (4-COLUMN RESPONSIVE LAYOUT) --- */}
-        <section style={{ padding: "70px 0 90px 0" }}>
+        <section style={{ padding: "60px 0 90px 0" }}>
           <div className="container">
             {loading ? (
               <div style={{ textAlign: "center", padding: "80px 0" }}>
@@ -504,90 +701,13 @@ export default function GalleryPage() {
                 {images.map((img, index) => {
                   const fallbackImg = `/assets/images/instagram/instagram-2-${(index % 5) + 1}.jpg`;
                   return (
-                    <div key={img.id || index} className="col-xl-3 col-lg-4 col-md-6 col-12 gallery-card-animated" style={{ animationDelay: `${(index % 12) * 0.04}s` }}>
-                      <div
-                        style={{
-                          height: "250px",
-                          borderRadius: "10px",
-                          overflow: "hidden",
-                          position: "relative",
-                          cursor: "pointer",
-                          backgroundColor: "#161c22",
-                          border: "1px solid rgba(197,168,128,0.2)",
-                          boxShadow: "0 6px 20px rgba(0,0,0,0.35)",
-                          transition: "all 0.3s ease",
-                        }}
-                        onClick={() => setSelectedIndex(index)}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.transform = "translateY(-6px)";
-                          e.currentTarget.style.borderColor = "rgba(197,168,128,0.5)";
-                          e.currentTarget.style.boxShadow = "0 12px 28px rgba(197,168,128,0.15)";
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.transform = "translateY(0)";
-                          e.currentTarget.style.borderColor = "rgba(197,168,128,0.2)";
-                          e.currentTarget.style.boxShadow = "0 6px 20px rgba(0,0,0,0.35)";
-                        }}
-                      >
-                        <img
-                          src={img.src}
-                          alt={img.alt || "The Serenity Spa"}
-                          loading="lazy"
-                          style={{
-                            width: "100%",
-                            height: "100%",
-                            objectFit: "cover",
-                            transition: "transform 0.5s ease",
-                          }}
-                          onMouseEnter={(e) => {
-                            (e.target as HTMLElement).style.transform = "scale(1.08)";
-                          }}
-                          onMouseLeave={(e) => {
-                            (e.target as HTMLElement).style.transform = "scale(1)";
-                          }}
-                          onError={(e) => {
-                            (e.target as HTMLImageElement).src = fallbackImg;
-                          }}
-                        />
-
-                        {/* Hover Overlay */}
-                        <div
-                          style={{
-                            position: "absolute",
-                            inset: 0,
-                            backgroundColor: "rgba(14,19,23,0.55)",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            opacity: 0,
-                            transition: "opacity 0.3s ease",
-                          }}
-                          onMouseEnter={(e) => {
-                            (e.currentTarget as HTMLElement).style.opacity = "1";
-                          }}
-                          onMouseLeave={(e) => {
-                            (e.currentTarget as HTMLElement).style.opacity = "0";
-                          }}
-                        >
-                          <div
-                            style={{
-                              width: "48px",
-                              height: "48px",
-                              borderRadius: "50%",
-                              backgroundColor: "#c5a880",
-                              color: "#0e1317",
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              fontSize: "18px",
-                              boxShadow: "0 4px 12px rgba(0,0,0,0.4)",
-                            }}
-                          >
-                            <i className="fas fa-search-plus"></i>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
+                    <GalleryCard
+                      key={img.id || index}
+                      img={img}
+                      index={index}
+                      fallbackImg={fallbackImg}
+                      onClick={() => setSelectedIndex(index)}
+                    />
                   );
                 })}
               </div>
@@ -601,7 +721,7 @@ export default function GalleryPage() {
             <div className="row g-4">
               <div className="col-lg-4 col-md-6">
                 <Link href="/" style={{ display: "flex", alignItems: "center", gap: "10px", textDecoration: "none", marginBottom: "18px" }}>
-                  <img src="/assets/images/logo-light.png" alt="The Serenity Spa" style={{ height: "40px" }} />
+                  <img src="/assets/logo.jpg" alt="The Serenity Spa" style={{ height: "46px", width: "46px", borderRadius: "50%", objectFit: "cover", border: "2px solid rgba(197,168,128,0.5)" }} />
                   <span style={{ fontFamily: "Cormorant, serif", fontSize: "1.4rem", fontWeight: 700, color: "#ffffff" }}>
                     THE SERENITY SPA
                   </span>
@@ -782,22 +902,14 @@ export default function GalleryPage() {
         )}
       </div>
     
-      {/* ── COOL GALLERY ENTRANCE & HOVER ANIMATION STYLES ── */}
+      {/* ── LUXURY GALLERY STYLES ── */}
       <style>{`
-        @keyframes galleryFloatIn {
-          from {
-            opacity: 0;
-            transform: translateY(24px) scale(0.96);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0) scale(1);
-          }
+        * { -webkit-font-smoothing: antialiased; }
+        .gallery-card-inner {
+          transition: transform 0.4s cubic-bezier(0.16,1,0.3,1), border-color 0.3s ease, box-shadow 0.35s ease;
         }
-        .gallery-card-animated {
-          animation: galleryFloatIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
-          will-change: transform, opacity;
-        }
+        html { scroll-behavior: smooth; }
+        img { transition: opacity 0.4s ease; }
       `}</style>
   
     </>

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import Link from "next/link";
 import CustomCursor from "@/components/CustomCursor";
 import MobileDrawer from "@/components/MobileDrawer";
@@ -301,6 +301,233 @@ function getWhatsAppLink(title: string, price: number | string): string {
   return `https://wa.me/${whatsappNumber}?text=${text}`;
 }
 
+
+// ── Scroll-reveal service card (re-triggers on every scroll pass) ───────────
+function ServiceCard({
+  service,
+  index,
+  imgSrc,
+  fallbackImg,
+  onLearnMore,
+}: {
+  service: Service;
+  index: number;
+  imgSrc: string;
+  fallbackImg: string;
+  onLearnMore: () => void;
+}) {
+  const ref = React.useRef<HTMLDivElement>(null);
+  const [visible, setVisible] = React.useState(false);
+  const timerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  React.useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    // Stagger: column offset + a tiny row nudge for natural cascade feel
+    const colDelay = (index % 3) * 100;
+    const obs = new IntersectionObserver(
+      ([entry]) => {
+        if (timerRef.current) clearTimeout(timerRef.current);
+        if (entry.isIntersecting) {
+          // Float IN with column-stagger when entering viewport
+          timerRef.current = setTimeout(() => setVisible(true), colDelay);
+        } else {
+          // Float OUT instantly when leaving — card resets for next scroll
+          setVisible(false);
+        }
+      },
+      { threshold: 0.08, rootMargin: "0px 0px -40px 0px" }
+    );
+    obs.observe(el);
+    return () => { obs.disconnect(); if (timerRef.current) clearTimeout(timerRef.current); };
+  }, [index]);
+
+  return (
+    <div
+      ref={ref}
+      className="col-lg-4 col-md-6 col-12"
+      style={{
+        opacity: visible ? 1 : 0,
+        transform: visible ? "translateY(0px) scale(1)" : "translateY(48px) scale(0.97)",
+        transition: visible
+          ? `opacity 0.65s cubic-bezier(0.16,1,0.3,1), transform 0.65s cubic-bezier(0.16,1,0.3,1)`
+          : `opacity 0.3s ease, transform 0.3s ease`,
+        willChange: "opacity, transform",
+      }}
+    >
+      <div
+        className="spa-card-inner"
+        style={{
+          backgroundColor: "#161c22",
+          borderRadius: "12px",
+          overflow: "hidden",
+          border: "1px solid rgba(197,168,128,0.2)",
+          boxShadow: "0 8px 24px rgba(0,0,0,0.35)",
+          display: "flex",
+          flexDirection: "column",
+          height: "100%",
+        }}
+      >
+        {/* IMAGE — click to open flyer modal */}
+        <div
+          onClick={onLearnMore}
+          style={{ height: "220px", overflow: "hidden", position: "relative", cursor: "pointer", backgroundColor: "#0e1317" }}
+        >
+          <img
+            src={imgSrc}
+            alt={service.title}
+            loading="lazy"
+            className="spa-card-img"
+            style={{ width: "100%", height: "100%", objectFit: service.needsCrop ? "cover" : "contain" }}
+            onError={(e) => { (e.target as HTMLImageElement).src = fallbackImg; }}
+          />
+          {/* View Flyer badge only — no price on the image */}
+          <div
+            style={{
+              position: "absolute",
+              bottom: "12px",
+              left: "14px",
+              backgroundColor: "rgba(14,19,23,0.75)",
+              backdropFilter: "blur(4px)",
+              color: "#c5a880",
+              padding: "3px 10px",
+              borderRadius: "4px",
+              fontSize: "11px",
+              fontWeight: 600,
+              display: "flex",
+              alignItems: "center",
+              gap: "5px",
+              border: "1px solid rgba(197,168,128,0.3)",
+            }}
+          >
+            <i className="fas fa-search-plus"></i> View Flyer
+          </div>
+        </div>
+
+        {/* BODY */}
+        <div style={{ padding: "20px 22px", display: "flex", flexDirection: "column", flex: 1 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "10px" }}>
+            <h3
+              style={{
+                fontFamily: "Cormorant, serif",
+                fontSize: "1.3rem",
+                fontWeight: 700,
+                color: "#ffffff",
+                margin: 0,
+                lineHeight: 1.2,
+                flex: 1,
+                paddingRight: "10px",
+              }}
+            >
+              {service.title}
+            </h3>
+            {/* Price shown in card body, not on image */}
+            <span
+              style={{
+                color: "#c5a880",
+                fontWeight: 800,
+                fontSize: "0.82rem",
+                whiteSpace: "nowrap",
+                letterSpacing: "0.3px",
+              }}
+            >
+              {formatPrice(service.price)}
+            </span>
+          </div>
+          <p
+            style={{
+              color: "#9ca3af",
+              fontSize: "0.88rem",
+              lineHeight: 1.55,
+              marginBottom: "18px",
+              flex: 1,
+              display: "-webkit-box",
+              WebkitLineClamp: 3,
+              WebkitBoxOrient: "vertical",
+              overflow: "hidden",
+              minHeight: "4em",
+            }}
+          >
+            {service.description || "A soothing treatment designed to revitalize mind, body, and senses."}
+          </p>
+
+          {/* ACTIONS */}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "10px",
+              marginTop: "auto",
+              paddingTop: "14px",
+              borderTop: "1px solid rgba(255,255,255,0.06)",
+            }}
+          >
+            <button
+              onClick={onLearnMore}
+              style={{
+                flex: 1,
+                padding: "9px 12px",
+                backgroundColor: "transparent",
+                border: "1px solid rgba(197,168,128,0.4)",
+                color: "#c5a880",
+                borderRadius: "4px",
+                fontSize: "12px",
+                fontWeight: 600,
+                cursor: "pointer",
+                transition: "background-color 0.2s ease",
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "rgba(197,168,128,0.1)"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent"; }}
+            >
+              Learn More
+            </button>
+            <Link
+              href={`/booking?service=${encodeURIComponent(service.title)}&price=${encodeURIComponent(String(service.price))}`}
+              style={{
+                flex: 1.3,
+                padding: "9px 12px",
+                backgroundColor: "#c5a880",
+                border: "1px solid #c5a880",
+                color: "#0e1317",
+                borderRadius: "4px",
+                fontSize: "12px",
+                fontWeight: 700,
+                textDecoration: "none",
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "6px",
+                transition: "background-color 0.2s ease",
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "#d6bd96"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "#c5a880"; }}
+            >
+              <i className="fas fa-calendar-check"></i> Book Now
+            </Link>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// --- Intersection Observer hook for scroll-triggered reveal ---
+function useScrollReveal() {
+  const ref = useRef<HTMLDivElement>(null);
+  const [visible, setVisible] = useState(false);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) { setVisible(true); obs.disconnect(); } },
+      { threshold: 0.08, rootMargin: "0px 0px -40px 0px" }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+  return { ref, visible };
+}
+
 export default function ServicesPage() {
   const [services, setServices] = useState<Service[]>(INITIAL_SERVICES);
   const [loading, setLoading] = useState(false);
@@ -308,6 +535,14 @@ export default function ServicesPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [modalService, setModalService] = useState<Service | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const heroRef = useRef<HTMLDivElement>(null);
+  const [heroVisible, setHeroVisible] = useState(false);
+
+  // Hero reveal on mount (slight delay so it feels intentional not glitchy)
+  useEffect(() => {
+    const t = setTimeout(() => setHeroVisible(true), 80);
+    return () => clearTimeout(t);
+  }, []);
 
   useEffect(() => {
     const fetchServices = async () => {
@@ -406,8 +641,8 @@ export default function ServicesPage() {
                 </Link>
               </div>
 
-              <nav className="main-header__nav main-menu d-none d-xl-block">
-                <ul className="main-menu__list d-none d-xl-flex" style={{ listStyle: "none", gap: "24px", margin: 0, padding: 0 }}>
+              <nav className="main-header__nav main-menu" style={{ display: "flex", alignItems: "center" }}>
+                <ul style={{ listStyle: "none", gap: "24px", margin: 0, padding: 0, display: "flex", alignItems: "center" }} className="d-none d-xl-flex">
                   <li><Link href="/" style={{ color: "#ffffff", textDecoration: "none", fontSize: "13px", fontWeight: 600, letterSpacing: "1px", textTransform: "uppercase" }}>Home</Link></li>
                   <li className="current"><Link href="/services" style={{ color: "#c5a880", textDecoration: "none", fontSize: "13px", fontWeight: 600, letterSpacing: "1px", textTransform: "uppercase" }}>Services &amp; Packages</Link></li>
                   <li><Link href="/gallery" style={{ color: "#ffffff", textDecoration: "none", fontSize: "13px", fontWeight: 600, letterSpacing: "1px", textTransform: "uppercase" }}>Gallery</Link></li>
@@ -469,7 +704,67 @@ export default function ServicesPage() {
           <MobileDrawer isOpen={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} />
         </header>
 
-        
+        {/* ─── LUXURY HERO BANNER ─── */}
+        <div
+          ref={heroRef}
+          style={{
+            position: "relative",
+            height: "340px",
+            overflow: "hidden",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          {/* Background image */}
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              backgroundImage: "url('/assets/service1.jpg')",
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+              transform: heroVisible ? "scale(1)" : "scale(1.08)",
+              transition: "transform 1.4s cubic-bezier(0.16, 1, 0.3, 1)",
+              filter: "brightness(0.35)",
+            }}
+          />
+          {/* Gold gradient overlay */}
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              background: "linear-gradient(135deg, rgba(197,168,128,0.08) 0%, rgba(14,19,23,0.75) 100%)",
+            }}
+          />
+          {/* Text content */}
+          <div
+            style={{
+              position: "relative",
+              zIndex: 2,
+              textAlign: "center",
+              padding: "0 20px",
+              opacity: heroVisible ? 1 : 0,
+              transform: heroVisible ? "translateY(0)" : "translateY(28px)",
+              transition: "opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.2s, transform 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.2s",
+            }}
+          >
+            <span style={{ color: "#c5a880", fontFamily: "'Great Vibes', cursive, Cormorant, serif", fontSize: "1.5rem", display: "block", marginBottom: "10px", letterSpacing: "2px" }}>
+              Indulge &amp; Rejuvenate
+            </span>
+            <h1 style={{ fontFamily: "Cormorant, serif", fontSize: "clamp(2rem, 5vw, 3.2rem)", fontWeight: 700, color: "#ffffff", margin: "0 0 12px 0", lineHeight: 1.15 }}>
+              Our Spa Services &amp; Wellness Rituals
+            </h1>
+            <p style={{ color: "rgba(255,255,255,0.75)", fontSize: "clamp(0.85rem, 2vw, 1rem)", maxWidth: "600px", margin: "0 auto 18px auto", lineHeight: 1.6 }}>
+              Explore our complete collection of 30 authentic therapies in Kampala — from restorative Swedish strokes to exclusive multi-hand rituals and royal Turkish hammam packages.
+            </p>
+            <nav style={{ fontSize: "12px", color: "rgba(255,255,255,0.5)", letterSpacing: "1.5px", textTransform: "uppercase" }}>
+              <Link href="/" style={{ color: "rgba(255,255,255,0.5)", textDecoration: "none" }}>Home</Link>
+              <span style={{ margin: "0 8px", color: "#c5a880" }}>/</span>
+              <span style={{ color: "#c5a880" }}>Services</span>
+            </nav>
+          </div>
+        </div>
 
         {/* --- FILTER & SEARCH CONTROLS --- */}
         <section style={{ padding: "40px 0 20px 0", backgroundColor: "#11161b" }}>
@@ -573,211 +868,20 @@ export default function ServicesPage() {
                   const imgSrc = service.image || fallbackImg;
 
                   return (
-                    <div key={service.title || index} className="col-lg-4 col-md-6 col-12 spa-card-animated" style={{ animationDelay: `${(index % 9) * 0.06}s` }}>
-                      <div
-                        style={{
-                          backgroundColor: "#161c22",
-                          borderRadius: "12px",
-                          overflow: "hidden",
-                          border: "1px solid rgba(197,168,128,0.2)",
-                          boxShadow: "0 8px 24px rgba(0,0,0,0.35)",
-                          display: "flex",
-                          flexDirection: "column",
-                          height: "100%",
-                          transition: "transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease",
-                        }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.transform = "translateY(-6px)";
-                          e.currentTarget.style.borderColor = "rgba(197,168,128,0.5)";
-                          e.currentTarget.style.boxShadow = "0 14px 32px rgba(197,168,128,0.12)";
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.transform = "translateY(0)";
-                          e.currentTarget.style.borderColor = "rgba(197,168,128,0.2)";
-                          e.currentTarget.style.boxShadow = "0 8px 24px rgba(0,0,0,0.35)";
-                        }}
-                      >
-                        {/* --- CARD IMAGE CONTAINER (COMPACT 220PX HEIGHT) --- */}
-                        <div
-                          style={{
-                            height: "220px",
-                            position: "relative",
-                            overflow: "hidden",
-                            cursor: "pointer",
-                            backgroundColor: "#11161b",
-                          }}
-                          onClick={() => setModalService(service)}
-                        >
-                          <img
-                            src={imgSrc}
-                            alt={service.title}
-                            loading="lazy"
-                            style={{
-                              width: "100%",
-                              height: "100%",
-                              objectFit: "cover",
-                              transition: "transform 0.5s ease",
-                            }}
-                            onMouseEnter={(e) => {
-                              (e.target as HTMLElement).style.transform = "scale(1.08)";
-                            }}
-                            onMouseLeave={(e) => {
-                              (e.target as HTMLElement).style.transform = "scale(1)";
-                            }}
-                            onError={(e) => {
-                              (e.target as HTMLImageElement).src = fallbackImg;
-                            }}
-                          />
-
-                          {/* Floating Price Tag */}
-                          <div
-                            style={{
-                              position: "absolute",
-                              top: "14px",
-                              right: "14px",
-                              background: "linear-gradient(135deg, #c5a880 0%, #9e7f53 100%)",
-                              color: "#0e1317",
-                              padding: "4px 12px",
-                              borderRadius: "20px",
-                              fontWeight: 800,
-                              fontSize: "12px",
-                              letterSpacing: "0.5px",
-                              boxShadow: "0 4px 12px rgba(0,0,0,0.4)",
-                            }}
-                          >
-                            {formatPrice(service.price)}
-                          </div>
-
-                          {/* Zoom / View Flyer Badge */}
-                          <div
-                            style={{
-                              position: "absolute",
-                              bottom: "12px",
-                              left: "14px",
-                              backgroundColor: "rgba(14,19,23,0.75)",
-                              backdropFilter: "blur(4px)",
-                              color: "#c5a880",
-                              padding: "3px 10px",
-                              borderRadius: "4px",
-                              fontSize: "11px",
-                              fontWeight: 600,
-                              display: "flex",
-                              alignItems: "center",
-                              gap: "5px",
-                              border: "1px solid rgba(197,168,128,0.3)",
-                            }}
-                          >
-                            <i className="fas fa-search-plus"></i> View Flyer
-                          </div>
-                        </div>
-
-                        {/* --- CARD BODY --- */}
-                        <div style={{ padding: "20px 22px", display: "flex", flexDirection: "column", flex: 1 }}>
-                          <h3
-                            style={{
-                              fontFamily: "Cormorant, serif",
-                              fontSize: "1.35rem",
-                              fontWeight: 700,
-                              color: "#ffffff",
-                              margin: "0 0 10px 0",
-                              lineHeight: 1.25,
-                            }}
-                          >
-                            {service.title}
-                          </h3>
-
-                          <p
-                            style={{
-                              color: "#9ca3af",
-                              fontSize: "0.88rem",
-                              lineHeight: 1.55,
-                              marginBottom: "18px",
-                              flex: 1,
-                              display: "-webkit-box",
-                              WebkitLineClamp: 3,
-                              WebkitBoxOrient: "vertical",
-                              overflow: "hidden",
-                              minHeight: "4em",
-                            }}
-                          >
-                            {service.description || "A soothing treatment designed to revitalize mind, body, and senses."}
-                          </p>
-
-                          {/* --- ACTION BUTTONS --- */}
-                          <div
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: "10px",
-                              marginTop: "auto",
-                              paddingTop: "14px",
-                              borderTop: "1px solid rgba(255,255,255,0.06)",
-                            }}
-                          >
-                            <button
-                              onClick={() => setModalService(service)}
-                              style={{
-                                flex: 1,
-                                padding: "9px 12px",
-                                backgroundColor: "transparent",
-                                border: "1px solid rgba(197,168,128,0.4)",
-                                color: "#c5a880",
-                                borderRadius: "4px",
-                                fontSize: "12px",
-                                fontWeight: 600,
-                                cursor: "pointer",
-                                transition: "all 0.2s ease",
-                              }}
-                              onMouseEnter={(e) => {
-                                e.currentTarget.style.backgroundColor = "rgba(197,168,128,0.1)";
-                              }}
-                              onMouseLeave={(e) => {
-                                e.currentTarget.style.backgroundColor = "transparent";
-                              }}
-                            >
-                              Learn More
-                            </button>
-
-                            <a
-                              href={getWhatsAppLink(service.title, service.price)}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              style={{
-                                flex: 1.3,
-                                padding: "9px 12px",
-                                backgroundColor: "#c5a880",
-                                border: "1px solid #c5a880",
-                                color: "#0e1317",
-                                borderRadius: "4px",
-                                fontSize: "12px",
-                                fontWeight: 700,
-                                textDecoration: "none",
-                                display: "inline-flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                                gap: "6px",
-                                transition: "all 0.2s ease",
-                              }}
-                              onMouseEnter={(e) => {
-                                e.currentTarget.style.backgroundColor = "#d6bd96";
-                              }}
-                              onMouseLeave={(e) => {
-                                e.currentTarget.style.backgroundColor = "#c5a880";
-                              }}
-                            >
-                              <i className="fab fa-whatsapp"></i> Book Now
-                            </a>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
+                    <ServiceCard
+                      key={service.title || index}
+                      service={service}
+                      index={index}
+                      imgSrc={imgSrc}
+                      fallbackImg={fallbackImg}
+                      onLearnMore={() => setModalService(service)}
+                    />
                   );
                 })}
               </div>
             )}
           </div>
         </section>
-
         {/* --- VIP & EXCLUSIVE RETREAT BANNER --- */}
         <section
           style={{
@@ -916,7 +1020,7 @@ export default function ServicesPage() {
             <div className="row g-4">
               <div className="col-lg-4 col-md-6">
                 <Link href="/" style={{ display: "flex", alignItems: "center", gap: "10px", textDecoration: "none", marginBottom: "18px" }}>
-                  <img src="/assets/images/logo-light.png" alt="The Serenity Spa" style={{ height: "40px" }} />
+                  <img src="/assets/logo.jpg" alt="The Serenity Spa" style={{ height: "46px", width: "46px", borderRadius: "50%", objectFit: "cover", border: "2px solid rgba(197,168,128,0.5)" }} />
                   <span style={{ fontFamily: "Cormorant, serif", fontSize: "1.4rem", fontWeight: 700, color: "#ffffff" }}>
                     THE SERENITY SPA
                   </span>
@@ -1055,7 +1159,7 @@ export default function ServicesPage() {
                 <p style={{ color: "#c4cfde", fontSize: "13px", lineHeight: 1.5, margin: "0 0 14px 0" }}>
                   {modalService.description}
                 </p>
-                <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px" }}>
+                <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px", flexWrap: "wrap" }}>
                   <button
                     onClick={() => setModalService(null)}
                     style={{
@@ -1070,10 +1174,9 @@ export default function ServicesPage() {
                   >
                     Close
                   </button>
-                  <a
-                    href={getWhatsAppLink(modalService.title, modalService.price)}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                  <Link
+                    href={`/booking?service=${encodeURIComponent(modalService.title)}&price=${encodeURIComponent(String(modalService.price))}`}
+                    onClick={() => setModalService(null)}
                     style={{
                       padding: "10px 24px",
                       backgroundColor: "#c5a880",
@@ -1087,7 +1190,27 @@ export default function ServicesPage() {
                       gap: "8px",
                     }}
                   >
-                    <i className="fab fa-whatsapp"></i> Book This Treatment
+                    <i className="fas fa-calendar-check"></i> Book Online Pass
+                  </Link>
+                  <a
+                    href={getWhatsAppLink(modalService.title, modalService.price)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      padding: "10px 18px",
+                      backgroundColor: "transparent",
+                      border: "1px solid #25D366",
+                      color: "#25D366",
+                      borderRadius: "4px",
+                      fontWeight: 600,
+                      fontSize: "13px",
+                      textDecoration: "none",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: "8px",
+                    }}
+                  >
+                    <i className="fab fa-whatsapp"></i> WhatsApp
                   </a>
                 </div>
               </div>
@@ -1096,25 +1219,40 @@ export default function ServicesPage() {
         )}
       </div>
     
-      {/* ── COOL ENTRANCE & HOVER ANIMATION STYLES ── */}
+      {/* ── LUXURY SMOOTH STYLES ── */}
       <style>{`
-        @keyframes cardFloatIn {
-          from {
-            opacity: 0;
-            transform: translateY(28px) scale(0.97);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0) scale(1);
-          }
+        * { -webkit-font-smoothing: antialiased; }
+
+        /* Smooth hover on service cards */
+        .spa-card-inner {
+          transition: transform 0.4s cubic-bezier(0.16,1,0.3,1), border-color 0.3s ease, box-shadow 0.35s ease;
         }
-        .spa-card-animated {
-          animation: cardFloatIn 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
-          will-change: transform, opacity;
+        .spa-card-inner:hover {
+          transform: translateY(-10px) !important;
+          border-color: rgba(197,168,128,0.55) !important;
+          box-shadow: 0 22px 44px rgba(197,168,128,0.15) !important;
         }
-        .spa-card-animated:hover img {
-          transform: scale(1.08) !important;
+        .spa-card-img {
+          transition: transform 0.65s cubic-bezier(0.16,1,0.3,1);
+          will-change: transform;
         }
+        .spa-card-inner:hover .spa-card-img {
+          transform: scale(1.08);
+        }
+
+        /* Smooth gold filter pill hover */
+        .filter-pill {
+          transition: background-color 0.22s ease, color 0.22s ease, border-color 0.22s ease, transform 0.2s ease;
+        }
+        .filter-pill:hover {
+          transform: translateY(-2px);
+        }
+
+        /* Smooth scroll site-wide */
+        html { scroll-behavior: smooth; }
+
+        /* Smooth image loading fade */
+        img { transition: opacity 0.4s ease; }
       `}</style>
   
     </>

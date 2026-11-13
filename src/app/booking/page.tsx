@@ -1,11 +1,13 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect, Suspense } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import CustomCursor from "@/components/CustomCursor";
 import MobileDrawer from "@/components/MobileDrawer";
+import QRCode from "qrcode";
 
-/* ─── Real Services ───────────────────────────────────────────── */
+/* ─── Real Services Catalog ───────────────────────────────────────────── */
 const SERVICES = [
   { name: "Swedish Massage", price: 150000 },
   { name: "Body Scrubs", price: 150000 },
@@ -42,28 +44,33 @@ const TIME_SLOTS = [
 const WHATSAPP_NUMBER = "256781945510";
 const EMAIL = "theserenityspakla@gmail.com";
 
-function formatPrice(p: number) {
-  return `UGX ${p.toLocaleString()}`;
+function formatPrice(p: number | string) {
+  const num = typeof p === "number" ? p : parseInt(String(p).replace(/\D/g, ""), 10);
+  return isNaN(num) ? String(p) : `UGX ${num.toLocaleString()}`;
 }
 
 function getTodayString() {
   const d = new Date();
-  d.setDate(d.getDate()); // today
   return d.toISOString().split("T")[0];
 }
 
-/* ─── Gold input style ─────────────────────────────────────────── */
+function generateBookingId() {
+  const ts = Date.now().toString(36).toUpperCase();
+  const rand = Math.random().toString(36).substring(2, 6).toUpperCase();
+  return `SSP-${ts}-${rand}`;
+}
+
 const inputStyle: React.CSSProperties = {
   width: "100%",
   background: "rgba(255,255,255,0.04)",
   border: "1px solid rgba(197, 168, 128, 0.25)",
-  borderRadius: "6px",
+  borderRadius: "8px",
   padding: "13px 16px",
   color: "#ffffff",
   fontSize: "14px",
   outline: "none",
   fontFamily: "inherit",
-  transition: "border-color 0.25s",
+  transition: "border-color 0.25s, box-shadow 0.25s",
 };
 
 const labelStyle: React.CSSProperties = {
@@ -73,27 +80,49 @@ const labelStyle: React.CSSProperties = {
   letterSpacing: "1.5px",
   textTransform: "uppercase",
   color: "#c5a880",
-  marginBottom: "7px",
+  marginBottom: "8px",
 };
 
-/* ─── Component ────────────────────────────────────────────────── */
-export default function BookingPage() {
+function BookingFormInner() {
+  const searchParams = useSearchParams();
+  const initialService = searchParams.get("service") || searchParams.get("serviceName") || "";
+
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [submitted, setSubmitted] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [bookingSummary, setBookingSummary] = useState<{
+    id: string;
+    name: string;
+    phone: string;
+    email: string;
+    service: string;
+    price: number;
+    date: string;
+    time: string;
+    notes: string;
+  } | null>(null);
 
-  /* form state */
   const [form, setForm] = useState({
     name: "",
     phone: "",
     email: "",
-    service: "",
+    service: initialService,
     date: "",
     time: "",
     notes: "",
   });
 
-  const selectedService = SERVICES.find((s) => s.name === form.service);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+
+  // Sync service from URL if provided
+  useEffect(() => {
+    if (initialService) {
+      setForm((prev) => ({ ...prev, service: initialService }));
+    }
+  }, [initialService]);
+
+  const selectedService = SERVICES.find(
+    (s) => s.name.toLowerCase() === form.service.toLowerCase()
+  );
 
   function handleChange(
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
@@ -101,57 +130,111 @@ export default function BookingPage() {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   }
 
-  function buildWhatsAppMessage() {
-    const svc = selectedService;
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!form.name || !form.phone || !form.service || !form.date || !form.time) {
+      alert("Please fill in all required fields (Name, Phone, Service, Date, Time).");
+      return;
+    }
+
+    const price = selectedService ? selectedService.price : 150000;
+    const newId = generateBookingId();
+
+    const summary = {
+      id: newId,
+      name: form.name,
+      phone: form.phone,
+      email: form.email,
+      service: form.service,
+      price: price,
+      date: form.date,
+      time: form.time,
+      notes: form.notes,
+    };
+
+    setBookingSummary(summary);
+    setSubmitted(true);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  // Generate QR Code onto canvas once submitted
+  useEffect(() => {
+    if (submitted && bookingSummary && canvasRef.current) {
+      const qrData = [
+        `THE SERENITY SPA KAMPALA`,
+        `BOOKING CONFIRMATION`,
+        `Booking ID: ${bookingSummary.id}`,
+        `Client: ${bookingSummary.name}`,
+        `Phone: ${bookingSummary.phone}`,
+        `Service: ${bookingSummary.service}`,
+        `Amount: UGX ${bookingSummary.price.toLocaleString()}`,
+        `Date: ${bookingSummary.date}`,
+        `Time: ${bookingSummary.time}`,
+        `Payment: Pay at Venue / Cash / MoMo`,
+      ].join("\n");
+
+      QRCode.toCanvas(
+        canvasRef.current,
+        qrData,
+        {
+          width: 220,
+          margin: 1,
+          color: {
+            dark: "#0e1317",
+            light: "#ffffff",
+          },
+        },
+        (error) => {
+          if (error) console.error("QR Code generation error:", error);
+        }
+      );
+    }
+  }, [submitted, bookingSummary]);
+
+  function downloadQRCode() {
+    if (!canvasRef.current || !bookingSummary) return;
+    const url = canvasRef.current.toDataURL("image/png");
+    const a = document.createElement("a");
+    a.download = `serenity-spa-booking-${bookingSummary.id}.png`;
+    a.href = url;
+    a.click();
+  }
+
+  function openWhatsAppWithSummary() {
+    if (!bookingSummary) return;
     const lines = [
-      `🌿 *New Booking Request — The Serenity Spa*`,
+      `🌿 *Booking Confirmation — The Serenity Spa*`,
       ``,
-      `👤 Name: ${form.name}`,
-      `📞 Phone: ${form.phone}`,
-      form.email ? `📧 Email: ${form.email}` : "",
-      `💆 Service: ${form.service}${svc ? ` (${formatPrice(svc.price)})` : ""}`,
-      `📅 Date: ${form.date}`,
-      `🕐 Time: ${form.time}`,
-      form.notes ? `📝 Notes: ${form.notes}` : "",
+      `🔖 *Booking ID:* ${bookingSummary.id}`,
+      `👤 *Client:* ${bookingSummary.name}`,
+      `📞 *Phone:* ${bookingSummary.phone}`,
+      bookingSummary.email ? `📧 *Email:* ${bookingSummary.email}` : "",
+      `💆 *Service:* ${bookingSummary.service}`,
+      `💰 *Amount:* ${formatPrice(bookingSummary.price)}`,
+      `📅 *Date:* ${bookingSummary.date}`,
+      `🕐 *Time:* ${bookingSummary.time}`,
+      bookingSummary.notes ? `📝 *Notes:* ${bookingSummary.notes}` : "",
+      ``,
+      `_I have completed my reservation on the website and will present my QR confirmation pass._`,
     ]
       .filter(Boolean)
       .join("\n");
-    return encodeURIComponent(lines);
+
+    window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(lines)}`, "_blank");
   }
 
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    if (!form.name || !form.phone || !form.service || !form.date || !form.time) return;
-
-    setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      setSubmitted(true);
-      /* open WhatsApp */
-      const msg = buildWhatsAppMessage();
-      window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${msg}`, "_blank");
-    }, 600);
-  }
-
-  function resetForm() {
+  function resetBooking() {
     setSubmitted(false);
+    setBookingSummary(null);
     setForm({ name: "", phone: "", email: "", service: "", date: "", time: "", notes: "" });
   }
-
-  /* ─── NAV ────────────────────────────────────────────────────── */
-  const NAV_LINKS = [
-    { label: "Home", href: "/" },
-    { label: "Services", href: "/services" },
-    { label: "Gallery", href: "/gallery" },
-    { label: "Blog", href: "/blog" },
-  ];
 
   return (
     <>
       <CustomCursor />
       <MobileDrawer isOpen={drawerOpen} onClose={() => setDrawerOpen(false)} />
 
-      {/* ── HEADER ──────────────────────────────────────────────── */}
+      {/* ── HEADER ── */}
       <header
         style={{
           position: "fixed",
@@ -159,8 +242,8 @@ export default function BookingPage() {
           left: 0,
           right: 0,
           zIndex: 9000,
-          background: "rgba(14, 19, 23, 0.97)",
-          borderBottom: "1px solid rgba(197, 168, 128, 0.15)",
+          background: "rgba(14, 19, 23, 0.98)",
+          borderBottom: "1px solid rgba(197, 168, 128, 0.18)",
           backdropFilter: "blur(12px)",
         }}
       >
@@ -168,8 +251,8 @@ export default function BookingPage() {
           style={{
             maxWidth: "1280px",
             margin: "0 auto",
-            padding: "0 24px",
-            height: "72px",
+            padding: "0 20px",
+            height: "76px",
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
@@ -180,12 +263,19 @@ export default function BookingPage() {
             <img
               src="/assets/logo.jpg"
               alt="Serenity Spa"
-              style={{ width: 46, height: 46, borderRadius: "50%", objectFit: "cover", border: "2px solid rgba(197,168,128,0.5)" }}
+              style={{
+                width: 48,
+                height: 48,
+                borderRadius: "50%",
+                objectFit: "cover",
+                border: "2px solid rgba(197,168,128,0.6)",
+                display: "block",
+              }}
             />
             <span
               style={{
                 fontFamily: "Cormorant, serif",
-                fontSize: "1.2rem",
+                fontSize: "1.25rem",
                 fontWeight: 700,
                 color: "#ffffff",
                 letterSpacing: "1.5px",
@@ -194,22 +284,28 @@ export default function BookingPage() {
                 lineHeight: 1.1,
               }}
             >
-              <span>SERENITY</span>
-              <span style={{ color: "#c5a880", fontSize: "0.75rem", letterSpacing: "3px", fontWeight: 400 }}>SPA</span>
+              <span>THE SERENITY</span>
+              <span style={{ color: "#c5a880", fontSize: "0.72rem", letterSpacing: "3px", fontWeight: 400 }}>SPA KAMPALA</span>
             </span>
           </Link>
 
           {/* Desktop nav */}
-          <nav style={{ display: "flex", gap: "32px", alignItems: "center" }} className="d-none d-lg-flex">
-            {NAV_LINKS.map((l) => (
+          <nav style={{ display: "flex", gap: "30px", alignItems: "center" }} className="d-none d-xl-flex">
+            {[
+              { label: "Home", href: "/" },
+              { label: "Services & Packages", href: "/services" },
+              { label: "Gallery", href: "/gallery" },
+              { label: "Book Appointment", href: "/booking" },
+              { label: "Blog", href: "/blog" },
+            ].map((l) => (
               <Link
                 key={l.href}
                 href={l.href}
                 style={{
-                  color: "#d4d4d4",
-                  fontSize: "12px",
+                  color: l.href === "/booking" ? "#c5a880" : "#d4d4d4",
+                  fontSize: "13px",
                   fontWeight: 600,
-                  letterSpacing: "1.5px",
+                  letterSpacing: "1.2px",
                   textTransform: "uppercase",
                   textDecoration: "none",
                   transition: "color 0.2s",
@@ -218,129 +314,138 @@ export default function BookingPage() {
                 {l.label}
               </Link>
             ))}
-            <Link
-              href="/booking"
+          </nav>
+
+          {/* Header right */}
+          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+            <a
+              href={`https://wa.me/${WHATSAPP_NUMBER}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="serenity-gold-btn"
               style={{
-                padding: "9px 20px",
-                background: "linear-gradient(135deg, #c5a880, #a8865f)",
-                color: "#0e1317",
-                borderRadius: "5px",
-                fontSize: "11px",
-                fontWeight: 800,
-                letterSpacing: "1.5px",
+                padding: "8px 16px",
+                borderRadius: "4px",
+                fontSize: "12px",
+                fontWeight: 700,
+                letterSpacing: "0.8px",
                 textTransform: "uppercase",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "6px",
                 textDecoration: "none",
               }}
             >
-              Book Now
-            </Link>
-          </nav>
+              <i className="fab fa-whatsapp" style={{ fontSize: "15px" }}></i>
+              <span className="d-none d-sm-inline">WhatsApp</span>
+            </a>
 
-          {/* Hamburger */}
-          <button
-            className="d-lg-none"
-            onClick={() => setDrawerOpen(true)}
-            aria-label="Open menu"
-            style={{
-              background: "transparent",
-              border: "1px solid rgba(197,168,128,0.3)",
-              borderRadius: "6px",
-              padding: "8px 10px",
-              cursor: "pointer",
-              color: "#c5a880",
-            }}
-          >
-            <span style={{ display: "block", width: "20px", height: "2px", background: "#c5a880", marginBottom: "4px" }} />
-            <span style={{ display: "block", width: "20px", height: "2px", background: "#c5a880", marginBottom: "4px" }} />
-            <span style={{ display: "block", width: "20px", height: "2px", background: "#c5a880" }} />
-          </button>
+            <div
+              className="mobile-nav__btn mobile-nav__toggler d-xl-none"
+              onClick={() => setDrawerOpen(true)}
+              style={{
+                cursor: "pointer",
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "center",
+                gap: "5px",
+                padding: "8px 10px",
+                background: "rgba(197, 168, 128, 0.1)",
+                border: "1px solid rgba(197, 168, 128, 0.35)",
+                borderRadius: "6px",
+              }}
+              aria-label="Toggle navigation menu"
+            >
+              <span style={{ width: "22px", height: "2px", backgroundColor: "#c5a880", display: "block" }}></span>
+              <span style={{ width: "22px", height: "2px", backgroundColor: "#c5a880", display: "block" }}></span>
+              <span style={{ width: "22px", height: "2px", backgroundColor: "#c5a880", display: "block" }}></span>
+            </div>
+          </div>
         </div>
       </header>
 
-      {/* ── MAIN ─────────────────────────────────────────────────── */}
+      {/* ── MAIN CONTENT ── */}
       <main
         style={{
           minHeight: "100vh",
-          background: "linear-gradient(170deg, #0a0e12 0%, #0e1317 50%, #111820 100%)",
-          paddingTop: "72px",
+          background: "linear-gradient(175deg, #0a0e12 0%, #0e1317 40%, #111820 100%)",
+          paddingTop: "76px",
           paddingBottom: "80px",
         }}
       >
-        {/* Hero strip */}
+        {/* Compact Title Section */}
         <div
           style={{
-            background: "linear-gradient(135deg, rgba(197,168,128,0.08) 0%, transparent 60%)",
-            borderBottom: "1px solid rgba(197,168,128,0.1)",
-            padding: "60px 24px 50px",
+            padding: "44px 20px 24px",
             textAlign: "center",
-            position: "relative",
-            overflow: "hidden",
+            borderBottom: "1px solid rgba(197,168,128,0.12)",
+            background: "linear-gradient(180deg, rgba(197,168,128,0.05) 0%, transparent 100%)",
           }}
         >
-          {/* decorative lines */}
-          <div style={{ position: "absolute", inset: 0, backgroundImage: "repeating-linear-gradient(90deg, rgba(197,168,128,0.03) 0px, transparent 1px, transparent 80px)", pointerEvents: "none" }} />
-
-          <p style={{ fontSize: "11px", letterSpacing: "4px", textTransform: "uppercase", color: "#c5a880", marginBottom: "12px", fontWeight: 600 }}>
-            Reserve Your Session
-          </p>
+          <span style={{ color: "#c5a880", fontFamily: "Alex Brush, cursive", fontSize: "2.2rem", display: "block", marginBottom: "4px" }}>
+            Instant Reservation
+          </span>
           <h1
             style={{
               fontFamily: "Cormorant, serif",
-              fontSize: "clamp(2rem, 5vw, 3.5rem)",
+              fontSize: "clamp(2rem, 5vw, 3.2rem)",
               fontWeight: 700,
               color: "#ffffff",
-              lineHeight: 1.15,
               margin: 0,
             }}
           >
             Book an <span style={{ color: "#c5a880", fontStyle: "italic" }}>Appointment</span>
           </h1>
-          <p style={{ color: "#9ca3af", fontSize: "15px", marginTop: "14px", maxWidth: "480px", margin: "14px auto 0" }}>
-            Fill the form below and we'll confirm via WhatsApp within minutes.
+          <p style={{ color: "#9ca3af", fontSize: "14px", marginTop: "8px", maxWidth: "560px", margin: "8px auto 0", lineHeight: 1.6 }}>
+            {submitted
+              ? "Your reservation pass is generated below with your verification QR code."
+              : "Complete the reservation form below to receive your QR verification pass to present on arrival."}
           </p>
         </div>
 
-        {/* Content area */}
-        <div
-          style={{
-            maxWidth: "1100px",
-            margin: "0 auto",
-            padding: "60px 24px 0",
-            display: "grid",
-            gridTemplateColumns: "1fr min(420px, 100%)",
-            gap: "48px",
-            alignItems: "start",
-          }}
-          className="booking-grid"
-        >
-          {/* ── LEFT: FORM ──────────────────────────────────────── */}
-          <div>
-            {!submitted ? (
-              <form onSubmit={handleSubmit} noValidate>
-                {/* Card */}
-                <div
+        {/* Form or Summary Container */}
+        <div style={{ maxWidth: "1120px", margin: "40px auto 0", padding: "0 20px" }}>
+          {!submitted ? (
+            /* ── BOOKING FORM ── */
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "1fr min(380px, 100%)",
+                gap: "40px",
+                alignItems: "start",
+              }}
+              className="booking-grid"
+            >
+              {/* Form Card */}
+              <div
+                style={{
+                  backgroundColor: "#161c22",
+                  borderRadius: "14px",
+                  padding: "36px",
+                  border: "1px solid rgba(197,168,128,0.22)",
+                  boxShadow: "0 16px 40px rgba(0,0,0,0.45)",
+                }}
+              >
+                <h2
                   style={{
-                    background: "rgba(255,255,255,0.03)",
-                    border: "1px solid rgba(197,168,128,0.15)",
-                    borderRadius: "12px",
-                    padding: "36px",
+                    fontFamily: "Cormorant, serif",
+                    fontSize: "1.6rem",
+                    color: "#ffffff",
+                    marginBottom: "24px",
+                    paddingBottom: "16px",
+                    borderBottom: "1px solid rgba(197,168,128,0.15)",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "10px",
                   }}
                 >
-                  <h2
-                    style={{
-                      fontFamily: "Cormorant, serif",
-                      fontSize: "1.5rem",
-                      color: "#ffffff",
-                      marginBottom: "28px",
-                      paddingBottom: "16px",
-                      borderBottom: "1px solid rgba(197,168,128,0.12)",
-                    }}
-                  >
-                    Your Details
-                  </h2>
+                  <i className="fas fa-calendar-check" style={{ color: "#c5a880", fontSize: "1.2rem" }}></i>
+                  Reservation Details
+                </h2>
 
+                <form onSubmit={handleSubmit}>
                   {/* Name + Phone */}
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "18px", marginBottom: "18px" }} className="form-row">
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", marginBottom: "18px" }} className="form-row">
                     <div>
                       <label style={labelStyle}>Full Name *</label>
                       <input
@@ -354,7 +459,7 @@ export default function BookingPage() {
                       />
                     </div>
                     <div>
-                      <label style={labelStyle}>Phone / WhatsApp *</label>
+                      <label style={labelStyle}>Phone Number *</label>
                       <input
                         style={inputStyle}
                         type="tel"
@@ -369,20 +474,20 @@ export default function BookingPage() {
 
                   {/* Email */}
                   <div style={{ marginBottom: "18px" }}>
-                    <label style={labelStyle}>Email Address</label>
+                    <label style={labelStyle}>Email Address (Optional)</label>
                     <input
                       style={inputStyle}
                       type="email"
                       name="email"
-                      placeholder="Optional — for confirmation email"
+                      placeholder="For your confirmation receipt"
                       value={form.email}
                       onChange={handleChange}
                     />
                   </div>
 
-                  {/* Service */}
+                  {/* Service Selection */}
                   <div style={{ marginBottom: "18px" }}>
-                    <label style={labelStyle}>Service / Package *</label>
+                    <label style={labelStyle}>Treatment / Package *</label>
                     <select
                       style={{ ...inputStyle, cursor: "pointer" }}
                       name="service"
@@ -390,36 +495,38 @@ export default function BookingPage() {
                       onChange={handleChange}
                       required
                     >
-                      <option value="">— Select a service —</option>
+                      <option value="">— Select a Treatment —</option>
                       {SERVICES.map((s) => (
                         <option key={s.name} value={s.name}>
                           {s.name} — {formatPrice(s.price)}
                         </option>
                       ))}
                     </select>
+
                     {selectedService && (
                       <div
                         style={{
                           marginTop: "8px",
-                          padding: "8px 12px",
-                          background: "rgba(197,168,128,0.1)",
-                          borderRadius: "5px",
+                          padding: "8px 14px",
+                          backgroundColor: "rgba(197,168,128,0.12)",
+                          borderRadius: "6px",
                           fontSize: "13px",
                           color: "#c5a880",
                           display: "flex",
                           justifyContent: "space-between",
+                          border: "1px solid rgba(197,168,128,0.25)",
                         }}
                       >
-                        <span>Session Price</span>
+                        <span>Selected Treatment Fee</span>
                         <strong>{formatPrice(selectedService.price)}</strong>
                       </div>
                     )}
                   </div>
 
                   {/* Date + Time */}
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "18px", marginBottom: "18px" }} className="form-row">
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", marginBottom: "18px" }} className="form-row">
                     <div>
-                      <label style={labelStyle}>Preferred Date *</label>
+                      <label style={labelStyle}>Appointment Date *</label>
                       <input
                         style={inputStyle}
                         type="date"
@@ -431,7 +538,7 @@ export default function BookingPage() {
                       />
                     </div>
                     <div>
-                      <label style={labelStyle}>Preferred Time *</label>
+                      <label style={labelStyle}>Appointment Time *</label>
                       <select
                         style={{ ...inputStyle, cursor: "pointer" }}
                         name="time"
@@ -439,7 +546,7 @@ export default function BookingPage() {
                         onChange={handleChange}
                         required
                       >
-                        <option value="">— Select time —</option>
+                        <option value="">— Select Time —</option>
                         {TIME_SLOTS.map((t) => (
                           <option key={t} value={t}>{t}</option>
                         ))}
@@ -448,298 +555,377 @@ export default function BookingPage() {
                   </div>
 
                   {/* Notes */}
-                  <div style={{ marginBottom: "28px" }}>
-                    <label style={labelStyle}>Special Requests / Notes</label>
+                  <div style={{ marginBottom: "26px" }}>
+                    <label style={labelStyle}>Special Requests / Allergies</label>
                     <textarea
-                      style={{ ...inputStyle, minHeight: "90px", resize: "vertical" }}
+                      style={{ ...inputStyle, minHeight: "85px", resize: "vertical" }}
                       name="notes"
-                      placeholder="Any preferences, allergies, or special requests..."
+                      placeholder="Preferences, focus areas (shoulders, lower back), or specific requests..."
                       value={form.notes}
                       onChange={handleChange}
                     />
                   </div>
 
-                  {/* Submit */}
+                  {/* Submit Button */}
                   <button
                     type="submit"
-                    disabled={loading}
+                    className="serenity-gold-btn"
                     style={{
                       width: "100%",
                       padding: "16px",
-                      background: loading
-                        ? "rgba(197,168,128,0.4)"
-                        : "linear-gradient(135deg, #25D366, #128C7E)",
-                      border: "none",
-                      borderRadius: "7px",
-                      color: "#ffffff",
+                      borderRadius: "8px",
                       fontSize: "14px",
                       fontWeight: 800,
                       letterSpacing: "1.5px",
                       textTransform: "uppercase",
-                      cursor: loading ? "not-allowed" : "pointer",
+                      cursor: "pointer",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
                       gap: "10px",
-                      transition: "all 0.25s",
                     }}
                   >
-                    {loading ? (
-                      <>
-                        <span
-                          style={{
-                            display: "inline-block",
-                            width: 16,
-                            height: 16,
-                            border: "2px solid rgba(255,255,255,0.3)",
-                            borderTopColor: "#fff",
-                            borderRadius: "50%",
-                            animation: "spin 0.7s linear infinite",
-                          }}
-                        />
-                        Preparing…
-                      </>
-                    ) : (
-                      <>
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-                          <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
-                        </svg>
-                        Confirm via WhatsApp
-                      </>
-                    )}
+                    <i className="fas fa-qrcode" style={{ fontSize: "16px" }}></i>
+                    Generate Booking &amp; QR Pass
                   </button>
 
-                  <p style={{ fontSize: "12px", color: "#6b7280", textAlign: "center", marginTop: "12px" }}>
-                    You'll be redirected to WhatsApp with your booking details pre-filled.
+                  <p style={{ fontSize: "12px", color: "#6b7280", textAlign: "center", marginTop: "12px", margin: "12px 0 0" }}>
+                    Instant reservation • Pay at venue (Cash / Mobile Money / Card) • No prepayment required
                   </p>
-                </div>
-              </form>
-            ) : (
-              /* ── SUCCESS STATE ──────────────────────────────── */
-              <div
-                style={{
-                  background: "rgba(255,255,255,0.03)",
-                  border: "1px solid rgba(37, 211, 102, 0.3)",
-                  borderRadius: "12px",
-                  padding: "48px 36px",
-                  textAlign: "center",
-                }}
-              >
+                </form>
+              </div>
+
+              {/* Sidebar Info */}
+              <div>
                 <div
                   style={{
-                    width: 72,
-                    height: 72,
-                    borderRadius: "50%",
-                    background: "rgba(37,211,102,0.15)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    margin: "0 auto 20px",
-                    fontSize: "32px",
+                    backgroundColor: "#161c22",
+                    borderRadius: "14px",
+                    padding: "26px",
+                    border: "1px solid rgba(197,168,128,0.2)",
+                    marginBottom: "20px",
                   }}
                 >
-                  ✓
+                  <h3 style={{ fontFamily: "Cormorant, serif", fontSize: "1.3rem", color: "#fff", marginBottom: "16px", paddingBottom: "10px", borderBottom: "1px solid rgba(197,168,128,0.12)" }}>
+                    How It Works
+                  </h3>
+                  {[
+                    { step: "1", title: "Fill Details", desc: "Choose your therapy, date and preferred time slot." },
+                    { step: "2", title: "Receive QR Pass", desc: "Get an instant verifiable booking pass with your unique ID." },
+                    { step: "3", title: "Present On Arrival", desc: "Show your pass to the reception concierge and enjoy." },
+                  ].map((s) => (
+                    <div key={s.step} style={{ display: "flex", gap: "14px", marginBottom: "16px" }}>
+                      <div
+                        style={{
+                          width: "32px",
+                          height: "32px",
+                          borderRadius: "50%",
+                          backgroundColor: "#c5a880",
+                          color: "#0e1317",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          fontWeight: 800,
+                          fontSize: "13px",
+                          flexShrink: 0,
+                        }}
+                      >
+                        {s.step}
+                      </div>
+                      <div>
+                        <div style={{ color: "#fff", fontWeight: 700, fontSize: "13px" }}>{s.title}</div>
+                        <div style={{ color: "#9ca3af", fontSize: "12px", lineHeight: 1.4 }}>{s.desc}</div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
-                <h2 style={{ fontFamily: "Cormorant, serif", fontSize: "1.8rem", color: "#ffffff", marginBottom: "12px" }}>
-                  Booking Request Sent!
-                </h2>
-                <p style={{ color: "#9ca3af", marginBottom: "24px", lineHeight: 1.6 }}>
-                  Your WhatsApp app has opened with your booking details pre-filled. Send the message to confirm your appointment with our team.
-                </p>
-                <div style={{ display: "flex", gap: "12px", justifyContent: "center", flexWrap: "wrap" }}>
+
+                <div
+                  style={{
+                    backgroundColor: "rgba(197,168,128,0.06)",
+                    borderRadius: "14px",
+                    padding: "24px",
+                    border: "1px solid rgba(197,168,128,0.22)",
+                  }}
+                >
+                  <h4 style={{ fontFamily: "Cormorant, serif", fontSize: "1.2rem", color: "#c5a880", margin: "0 0 10px 0" }}>
+                    Prefer WhatsApp Direct?
+                  </h4>
+                  <p style={{ color: "#c4cfde", fontSize: "12px", lineHeight: 1.5, margin: "0 0 14px 0" }}>
+                    Speak directly with our front-desk therapist right now for immediate confirmation or custom requests.
+                  </p>
                   <a
                     href={`https://wa.me/${WHATSAPP_NUMBER}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     style={{
-                      padding: "12px 24px",
-                      background: "#25D366",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: "8px",
+                      padding: "12px",
                       borderRadius: "6px",
+                      backgroundColor: "#25D366",
                       color: "#fff",
                       fontWeight: 700,
+                      fontSize: "13px",
                       textDecoration: "none",
-                      fontSize: "13px",
                     }}
                   >
-                    Open WhatsApp
+                    <i className="fab fa-whatsapp" style={{ fontSize: "16px" }}></i>
+                    Book via WhatsApp
                   </a>
-                  <button
-                    onClick={resetForm}
-                    style={{
-                      padding: "12px 24px",
-                      background: "transparent",
-                      border: "1px solid rgba(197,168,128,0.4)",
-                      borderRadius: "6px",
-                      color: "#c5a880",
-                      fontWeight: 700,
-                      cursor: "pointer",
-                      fontSize: "13px",
-                    }}
-                  >
-                    Book Another
-                  </button>
                 </div>
               </div>
-            )}
-          </div>
-
-          {/* ── RIGHT: INFO SIDEBAR ─────────────────────────────── */}
-          <aside>
-            {/* Why Book */}
-            <div
-              style={{
-                background: "rgba(255,255,255,0.03)",
-                border: "1px solid rgba(197,168,128,0.15)",
-                borderRadius: "12px",
-                padding: "28px",
-                marginBottom: "20px",
-              }}
-            >
-              <h3
+            </div>
+          ) : (
+            /* ── BOOKING CONFIRMATION SUMMARY + VERIFIABLE QR CODE ── */
+            bookingSummary && (
+              <div
                 style={{
-                  fontFamily: "Cormorant, serif",
-                  fontSize: "1.25rem",
-                  color: "#ffffff",
-                  marginBottom: "18px",
-                  paddingBottom: "12px",
-                  borderBottom: "1px solid rgba(197,168,128,0.12)",
+                  maxWidth: "760px",
+                  margin: "0 auto",
+                  backgroundColor: "#161c22",
+                  borderRadius: "16px",
+                  overflow: "hidden",
+                  border: "1px solid rgba(197,168,128,0.35)",
+                  boxShadow: "0 20px 60px rgba(0,0,0,0.6)",
+                  animation: "cardFloatIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) both",
                 }}
               >
-                Why Book With Us?
-              </h3>
-              {[
-                { icon: "⏱", label: "Quick Confirmation", desc: "We respond via WhatsApp within minutes" },
-                { icon: "🌿", label: "Expert Therapists", desc: "Professional & certified spa therapists" },
-                { icon: "🔒", label: "Private & Discreet", desc: "100% confidential, luxury environment" },
-                { icon: "💳", label: "Flexible Payment", desc: "Pay on arrival — cash or mobile money" },
-              ].map((item) => (
-                <div key={item.label} style={{ display: "flex", gap: "14px", marginBottom: "16px", alignItems: "flex-start" }}>
-                  <span style={{ fontSize: "20px", flexShrink: 0 }}>{item.icon}</span>
-                  <div>
-                    <div style={{ fontSize: "13px", fontWeight: 700, color: "#ffffff", marginBottom: "2px" }}>{item.label}</div>
-                    <div style={{ fontSize: "12px", color: "#9ca3af" }}>{item.desc}</div>
+                {/* Header Banner */}
+                <div
+                  style={{
+                    backgroundColor: "#11161b",
+                    padding: "28px",
+                    textAlign: "center",
+                    borderBottom: "1px solid rgba(197,168,128,0.18)",
+                    position: "relative",
+                  }}
+                >
+                  <div
+                    style={{
+                      width: "60px",
+                      height: "60px",
+                      borderRadius: "50%",
+                      backgroundColor: "rgba(37,211,102,0.15)",
+                      border: "2px solid #25D366",
+                      color: "#25D366",
+                      fontSize: "26px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      margin: "0 auto 12px",
+                    }}
+                  >
+                    ✓
+                  </div>
+                  <h2 style={{ fontFamily: "Cormorant, serif", fontSize: "2rem", color: "#ffffff", margin: "0 0 6px 0", fontWeight: 700 }}>
+                    Booking Confirmed!
+                  </h2>
+                  <p style={{ color: "#c5a880", fontSize: "13px", margin: 0, letterSpacing: "1px", textTransform: "uppercase", fontWeight: 700 }}>
+                    Pass #{bookingSummary.id}
+                  </p>
+                </div>
+
+                {/* Body: QR Code & Summary Details */}
+                <div style={{ padding: "36px 30px" }}>
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "auto 1fr",
+                      gap: "32px",
+                      alignItems: "center",
+                      marginBottom: "30px",
+                    }}
+                    className="summary-split"
+                  >
+                    {/* QR Code Canvas Card */}
+                    <div
+                      style={{
+                        backgroundColor: "#ffffff",
+                        padding: "16px",
+                        borderRadius: "12px",
+                        boxShadow: "0 8px 24px rgba(0,0,0,0.4)",
+                        textAlign: "center",
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "center",
+                      }}
+                    >
+                      <canvas ref={canvasRef} style={{ display: "block" }}></canvas>
+                      <span style={{ color: "#0e1317", fontSize: "11px", fontWeight: 700, letterSpacing: "0.5px", marginTop: "8px", textTransform: "uppercase" }}>
+                        Present at Reception
+                      </span>
+                    </div>
+
+                    {/* Summary Details */}
+                    <div
+                      style={{
+                        backgroundColor: "rgba(255,255,255,0.03)",
+                        border: "1px solid rgba(197,168,128,0.18)",
+                        borderRadius: "12px",
+                        padding: "22px 24px",
+                      }}
+                    >
+                      <div style={{ display: "grid", gap: "10px", fontSize: "13px" }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px solid rgba(255,255,255,0.06)", paddingBottom: "8px" }}>
+                          <span style={{ color: "#9ca3af" }}>Booking Pass ID:</span>
+                          <strong style={{ color: "#c5a880" }}>{bookingSummary.id}</strong>
+                        </div>
+                        <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px solid rgba(255,255,255,0.06)", paddingBottom: "8px" }}>
+                          <span style={{ color: "#9ca3af" }}>Client Name:</span>
+                          <strong style={{ color: "#ffffff" }}>{bookingSummary.name}</strong>
+                        </div>
+                        <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px solid rgba(255,255,255,0.06)", paddingBottom: "8px" }}>
+                          <span style={{ color: "#9ca3af" }}>Phone:</span>
+                          <strong style={{ color: "#ffffff" }}>{bookingSummary.phone}</strong>
+                        </div>
+                        <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px solid rgba(255,255,255,0.06)", paddingBottom: "8px" }}>
+                          <span style={{ color: "#9ca3af" }}>Therapy / Package:</span>
+                          <strong style={{ color: "#c5a880" }}>{bookingSummary.service}</strong>
+                        </div>
+                        <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px solid rgba(255,255,255,0.06)", paddingBottom: "8px" }}>
+                          <span style={{ color: "#9ca3af" }}>Total Amount:</span>
+                          <strong style={{ color: "#25D366", fontSize: "14px" }}>{formatPrice(bookingSummary.price)}</strong>
+                        </div>
+                        <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px solid rgba(255,255,255,0.06)", paddingBottom: "8px" }}>
+                          <span style={{ color: "#9ca3af" }}>Date &amp; Time:</span>
+                          <strong style={{ color: "#ffffff" }}>{bookingSummary.date} at {bookingSummary.time}</strong>
+                        </div>
+                        <div style={{ display: "flex", justifyContent: "space-between" }}>
+                          <span style={{ color: "#9ca3af" }}>Payment Status:</span>
+                          <span style={{ color: "#f59e0b", fontWeight: 700, backgroundColor: "rgba(245,158,11,0.12)", padding: "2px 8px", borderRadius: "4px", fontSize: "11px" }}>
+                            Pay at Venue (Cash / MoMo)
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Actions: Download QR Pass, Send to WhatsApp, or New Booking */}
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px", marginBottom: "16px" }} className="action-row">
+                    <button
+                      onClick={downloadQRCode}
+                      className="serenity-gold-btn"
+                      style={{
+                        padding: "14px",
+                        borderRadius: "8px",
+                        fontSize: "13px",
+                        fontWeight: 700,
+                        letterSpacing: "0.5px",
+                        cursor: "pointer",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: "8px",
+                      }}
+                    >
+                      <i className="fas fa-download"></i> Save / Download QR Pass
+                    </button>
+
+                    <button
+                      onClick={openWhatsAppWithSummary}
+                      style={{
+                        padding: "14px",
+                        borderRadius: "8px",
+                        fontSize: "13px",
+                        fontWeight: 700,
+                        letterSpacing: "0.5px",
+                        cursor: "pointer",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: "8px",
+                        backgroundColor: "#25D366",
+                        color: "#fff",
+                        border: "none",
+                      }}
+                    >
+                      <i className="fab fa-whatsapp" style={{ fontSize: "16px" }}></i>
+                      Send Copy to WhatsApp
+                    </button>
+                  </div>
+
+                  <div style={{ textAlign: "center", marginTop: "16px" }}>
+                    <button
+                      onClick={resetBooking}
+                      style={{
+                        background: "none",
+                        border: "none",
+                        color: "#9ca3af",
+                        fontSize: "13px",
+                        textDecoration: "underline",
+                        cursor: "pointer",
+                      }}
+                    >
+                      Make Another Booking
+                    </button>
+                  </div>
+
+                  <div
+                    style={{
+                      marginTop: "24px",
+                      padding: "14px",
+                      backgroundColor: "rgba(197,168,128,0.06)",
+                      borderRadius: "8px",
+                      fontSize: "12px",
+                      color: "#9ca3af",
+                      textAlign: "center",
+                      border: "1px solid rgba(197,168,128,0.15)",
+                    }}
+                  >
+                    📍 Please present this pass on your phone at reception (Sir Apollo Kaggwa Rd or Mengo). Please arrive 10 minutes before your scheduled appointment.
                   </div>
                 </div>
-              ))}
-            </div>
-
-            {/* Contact block */}
-            <div
-              style={{
-                background: "rgba(197,168,128,0.07)",
-                border: "1px solid rgba(197,168,128,0.2)",
-                borderRadius: "12px",
-                padding: "28px",
-                marginBottom: "20px",
-              }}
-            >
-              <h3 style={{ fontFamily: "Cormorant, serif", fontSize: "1.1rem", color: "#c5a880", marginBottom: "16px" }}>
-                Contact Us Directly
-              </h3>
-              <a
-                href={`https://wa.me/${WHATSAPP_NUMBER}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{ display: "flex", alignItems: "center", gap: "10px", color: "#25D366", textDecoration: "none", marginBottom: "12px", fontSize: "14px", fontWeight: 600 }}
-              >
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
-                </svg>
-                +256 781 945 510
-              </a>
-              <a
-                href={`mailto:${EMAIL}`}
-                style={{ display: "flex", alignItems: "center", gap: "10px", color: "#c5a880", textDecoration: "none", marginBottom: "12px", fontSize: "14px", fontWeight: 600 }}
-              >
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <rect x="2" y="4" width="20" height="16" rx="2" />
-                  <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
-                </svg>
-                theserenityspakla@gmail.com
-              </a>
-              <div style={{ display: "flex", alignItems: "flex-start", gap: "10px", color: "#9ca3af", fontSize: "13px" }}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#c5a880" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginTop: 2, flexShrink: 0 }}>
-                  <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
-                  <circle cx="12" cy="10" r="3" />
-                </svg>
-                Sir Apollo Kaggwa Rd & Mengo, Kampala, Uganda
               </div>
-            </div>
-
-            {/* Hours */}
-            <div
-              style={{
-                background: "rgba(255,255,255,0.03)",
-                border: "1px solid rgba(197,168,128,0.15)",
-                borderRadius: "12px",
-                padding: "24px 28px",
-                marginBottom: "20px",
-              }}
-            >
-              <h3 style={{ fontFamily: "Cormorant, serif", fontSize: "1.1rem", color: "#ffffff", marginBottom: "14px" }}>
-                Opening Hours
-              </h3>
-              {[
-                { day: "Monday – Sunday", hours: "9:00 AM – 11:00 PM" },
-                { day: "Public Holidays", hours: "Open (call ahead)" },
-              ].map((row) => (
-                <div
-                  key={row.day}
-                  style={{ display: "flex", justifyContent: "space-between", fontSize: "13px", marginBottom: "8px" }}
-                >
-                  <span style={{ color: "#9ca3af" }}>{row.day}</span>
-                  <span style={{ color: "#c5a880", fontWeight: 600 }}>{row.hours}</span>
-                </div>
-              ))}
-            </div>
-
-            {/* Map */}
-            <div style={{ borderRadius: "12px", overflow: "hidden", border: "1px solid rgba(197,168,128,0.15)" }}>
-              <iframe
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3989.7573!2d32.5559!3d0.3024!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x177dbb0f2dbb3b5b%3A0x4b7f8c9d2e6f1a0c!2sSir%20Apollo%20Kaggwa%20Rd%2C%20Kampala%2C%20Uganda!5e0!3m2!1sen!2sug!4v1700000000000!5m2!1sen!2sug"
-                width="100%"
-                height="200"
-                style={{ border: 0, display: "block" }}
-                allowFullScreen
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
-                title="Serenity Spa Location"
-              />
-            </div>
-          </aside>
+            )
+          )}
         </div>
       </main>
 
-      {/* ── FOOTER ───────────────────────────────────────────────── */}
+      {/* ── FOOTER ── */}
       <footer
         style={{
           background: "#080c10",
           borderTop: "1px solid rgba(197,168,128,0.12)",
-          padding: "32px 24px",
+          padding: "32px 20px",
           textAlign: "center",
         }}
       >
         <p style={{ color: "#6b7280", fontSize: "13px", margin: 0 }}>
-          © {new Date().getFullYear()} The Serenity Spa — Kampala, Uganda.{" "}
-          <a href={`https://wa.me/${WHATSAPP_NUMBER}`} target="_blank" rel="noopener noreferrer" style={{ color: "#c5a880", textDecoration: "none" }}>
-            Book Now on WhatsApp
-          </a>
+          © {new Date().getFullYear()} The Serenity Spa — Kampala, Uganda. All Rights Reserved.
         </p>
       </footer>
 
-      {/* ── STYLES ───────────────────────────────────────────────── */}
+      {/* ── STYLES ── */}
       <style>{`
-        @keyframes spin { to { transform: rotate(360deg); } }
-
-        input::placeholder, textarea::placeholder { color: #4b5563; }
-        input:focus, select:focus, textarea:focus {
-          border-color: rgba(197, 168, 128, 0.6) !important;
-          box-shadow: 0 0 0 3px rgba(197, 168, 128, 0.1);
+        @keyframes cardFloatIn {
+          from {
+            opacity: 0;
+            transform: translateY(24px) scale(0.98);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+          }
         }
-        select option { background: #12171c; color: #ffffff; }
+        input::placeholder, textarea::placeholder { color: #525f70; }
+        input:focus, select:focus, textarea:focus {
+          border-color: rgba(197, 168, 128, 0.65) !important;
+          box-shadow: 0 0 0 3px rgba(197, 168, 128, 0.12);
+        }
+        select option { background: #161c22; color: #ffffff; }
 
         @media (max-width: 900px) {
           .booking-grid {
+            grid-template-columns: 1fr !important;
+          }
+          .summary-split {
+            grid-template-columns: 1fr !important;
+            justify-items: center;
+          }
+          .action-row {
             grid-template-columns: 1fr !important;
           }
         }
@@ -750,5 +936,13 @@ export default function BookingPage() {
         }
       `}</style>
     </>
+  );
+}
+
+export default function BookingPage() {
+  return (
+    <Suspense fallback={<div style={{ minHeight: "100vh", backgroundColor: "#0e1317", color: "#c5a880", display: "flex", alignItems: "center", justifyContent: "center" }}>Loading Reservation...</div>}>
+      <BookingFormInner />
+    </Suspense>
   );
 }
