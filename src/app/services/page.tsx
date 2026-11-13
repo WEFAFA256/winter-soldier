@@ -317,25 +317,24 @@ function ServiceCard({
   onLearnMore: () => void;
 }) {
   const ref = React.useRef<HTMLDivElement>(null);
-  const [animated, setAnimated] = React.useState(false);
+  const [inView, setInView] = React.useState(false);
 
   React.useEffect(() => {
     const el = ref.current;
     if (!el) return;
 
     const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            setAnimated(true);
-          } else {
-            setAnimated(false);
-          }
-        });
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setInView(true);
+        } else if (entry.boundingClientRect.top > 0) {
+          // Only reset when scrolled back ABOVE viewport, preventing jarring resets
+          setInView(false);
+        }
       },
       {
-        threshold: 0.1,
-        rootMargin: '0px 0px -40px 0px',
+        threshold: 0.08,
+        rootMargin: '0px 0px -20px 0px',
       }
     );
 
@@ -343,14 +342,18 @@ function ServiceCard({
     return () => observer.disconnect();
   }, []);
 
-  const delayClass = (index % 3 === 0) ? 'delay-100' : (index % 3 === 1) ? 'delay-200' : 'delay-300';
+  // Delay calculation for column stagger: 0.08s per column
+  const staggerDelay = (index % 3) * 0.08;
 
   return (
     <div
       ref={ref}
-      className={'col-lg-4 col-md-6 col-12 ' + (animated ? 'animate-float-up ' + delayClass : 'opacity-0')}
+      className="col-lg-4 col-md-6 col-12"
       style={{
-        transition: 'transform 0.4s ease, box-shadow 0.4s ease',
+        opacity: inView ? 1 : 0,
+        transform: inView ? 'translate3d(0, 0, 0)' : 'translate3d(0, 32px, 0)',
+        transition: `opacity 0.75s cubic-bezier(0.25, 1, 0.5, 1) ${staggerDelay}s, transform 0.75s cubic-bezier(0.25, 1, 0.5, 1) ${staggerDelay}s`,
+        willChange: 'transform, opacity',
       }}
     >
       <div
@@ -364,7 +367,7 @@ function ServiceCard({
           borderRadius: '12px',
           overflow: 'hidden',
           border: '1px solid rgba(194, 167, 78, 0.4)',
-          boxShadow: '0 14px 35px rgba(0, 0, 0, 0.45)',
+          boxShadow: '0 12px 30px rgba(0, 0, 0, 0.45)',
           display: 'flex',
           flexDirection: 'column',
           height: '100%',
@@ -377,7 +380,7 @@ function ServiceCard({
         }}
         onMouseLeave={(e) => {
           e.currentTarget.style.transform = 'translateY(0)';
-          e.currentTarget.style.boxShadow = '0 14px 35px rgba(0, 0, 0, 0.45)';
+          e.currentTarget.style.boxShadow = '0 12px 30px rgba(0, 0, 0, 0.45)';
         }}
       >
         {/* Palm leaf line art overlay from the exact section */}
