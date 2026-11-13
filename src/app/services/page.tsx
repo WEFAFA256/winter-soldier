@@ -302,7 +302,7 @@ function getWhatsAppLink(title: string, price: number | string): string {
 }
 
 
-// ── Scroll-reveal service card (re-triggers on every scroll pass) ───────────
+// ── Exact Old Site Scroll Animation & Gold Theme ──
 function ServiceCard({
   service,
   index,
@@ -317,190 +317,234 @@ function ServiceCard({
   onLearnMore: () => void;
 }) {
   const ref = React.useRef<HTMLDivElement>(null);
-  const [visible, setVisible] = React.useState(false);
-  const timerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [animated, setAnimated] = React.useState(false);
 
   React.useEffect(() => {
     const el = ref.current;
     if (!el) return;
-    // Stagger: column offset + a tiny row nudge for natural cascade feel
-    const colDelay = (index % 3) * 100;
-    const obs = new IntersectionObserver(
-      ([entry]) => {
-        if (timerRef.current) clearTimeout(timerRef.current);
-        if (entry.isIntersecting) {
-          // Float IN with column-stagger when entering viewport
-          timerRef.current = setTimeout(() => setVisible(true), colDelay);
-        } else {
-          // Float OUT instantly when leaving — card resets for next scroll
-          setVisible(false);
-        }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setAnimated(true);
+          } else {
+            setAnimated(false);
+          }
+        });
       },
-      { threshold: 0.08, rootMargin: "0px 0px -40px 0px" }
+      {
+        threshold: 0.1,
+        rootMargin: '0px 0px -40px 0px',
+      }
     );
-    obs.observe(el);
-    return () => { obs.disconnect(); if (timerRef.current) clearTimeout(timerRef.current); };
-  }, [index]);
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  const delayClass = (index % 3 === 0) ? 'delay-100' : (index % 3 === 1) ? 'delay-200' : 'delay-300';
 
   return (
     <div
       ref={ref}
-      className="col-lg-4 col-md-6 col-12"
+      className={'col-lg-4 col-md-6 col-12 ' + (animated ? 'animate-float-up ' + delayClass : 'opacity-0')}
       style={{
-        opacity: visible ? 1 : 0,
-        transform: visible ? "translateY(0px) scale(1)" : "translateY(48px) scale(0.97)",
-        transition: visible
-          ? `opacity 0.65s cubic-bezier(0.16,1,0.3,1), transform 0.65s cubic-bezier(0.16,1,0.3,1)`
-          : `opacity 0.3s ease, transform 0.3s ease`,
-        willChange: "opacity, transform",
+        transition: 'transform 0.4s ease, box-shadow 0.4s ease',
       }}
     >
       <div
-        className="spa-card-inner"
+        className="service-theme-card"
         style={{
-          backgroundColor: "#161c22",
-          borderRadius: "12px",
-          overflow: "hidden",
-          border: "1px solid rgba(197,168,128,0.2)",
-          boxShadow: "0 8px 24px rgba(0,0,0,0.35)",
-          display: "flex",
-          flexDirection: "column",
-          height: "100%",
+          background: 'linear-gradient(145deg, #c5a880 0%, #b8966c 50%, #a68458 100%)',
+          borderRadius: '12px',
+          overflow: 'hidden',
+          border: '1px solid rgba(255, 255, 255, 0.25)',
+          boxShadow: '0 12px 30px rgba(0, 0, 0, 0.45)',
+          display: 'flex',
+          flexDirection: 'column',
+          height: '100%',
+          position: 'relative',
+          transition: 'transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s ease',
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.transform = 'translateY(-10px)';
+          e.currentTarget.style.boxShadow = '0 20px 45px rgba(197, 168, 128, 0.35)';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.transform = 'translateY(0)';
+          e.currentTarget.style.boxShadow = '0 12px 30px rgba(0, 0, 0, 0.45)';
         }}
       >
-        {/* IMAGE — click to open flyer modal */}
+        {/* Card Image */}
         <div
           onClick={onLearnMore}
-          style={{ height: "220px", overflow: "hidden", position: "relative", cursor: "pointer", backgroundColor: "#0e1317" }}
+          style={{ height: '220px', overflow: 'hidden', position: 'relative', cursor: 'pointer', backgroundColor: '#0e1317' }}
         >
           <img
             src={imgSrc}
             alt={service.title}
             loading="lazy"
-            className="spa-card-img"
-            style={{ width: "100%", height: "100%", objectFit: service.needsCrop ? "cover" : "contain" }}
-            onError={(e) => { (e.target as HTMLImageElement).src = fallbackImg; }}
+            style={{
+              width: '100%',
+              height: '100%',
+              objectFit: service.needsCrop ? 'cover' : 'contain',
+              transition: 'transform 0.6s cubic-bezier(0.16, 1, 0.3, 1)',
+            }}
+            onMouseEnter={(e) => {
+              (e.target as HTMLElement).style.transform = 'scale(1.08)';
+            }}
+            onMouseLeave={(e) => {
+              (e.target as HTMLElement).style.transform = 'scale(1)';
+            }}
+            onError={(e) => {
+              (e.target as HTMLImageElement).src = fallbackImg;
+            }}
           />
-          {/* View Flyer badge only — no price on the image */}
+          {/* Subtle View Flyer button */}
           <div
             style={{
-              position: "absolute",
-              bottom: "12px",
-              left: "14px",
-              backgroundColor: "rgba(14,19,23,0.75)",
-              backdropFilter: "blur(4px)",
-              color: "#c5a880",
-              padding: "3px 10px",
-              borderRadius: "4px",
-              fontSize: "11px",
-              fontWeight: 600,
-              display: "flex",
-              alignItems: "center",
-              gap: "5px",
-              border: "1px solid rgba(197,168,128,0.3)",
+              position: 'absolute',
+              bottom: '12px',
+              left: '14px',
+              backgroundColor: 'rgba(14, 19, 23, 0.85)',
+              backdropFilter: 'blur(4px)',
+              color: '#c5a880',
+              padding: '4px 12px',
+              borderRadius: '4px',
+              fontSize: '11px',
+              fontWeight: 700,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              border: '1px solid rgba(197, 168, 128, 0.4)',
+              letterSpacing: '0.5px',
             }}
           >
             <i className="fas fa-search-plus"></i> View Flyer
           </div>
         </div>
 
-        {/* BODY */}
-        <div style={{ padding: "20px 22px", display: "flex", flexDirection: "column", flex: 1 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "10px" }}>
+        {/* Card Content with Contrast Theme */}
+        <div style={{ padding: '24px 22px', display: 'flex', flexDirection: 'column', flex: 1, backgroundColor: '#c5a880', color: '#0e1317' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '10px', gap: '8px' }}>
             <h3
               style={{
-                fontFamily: "Cormorant, serif",
-                fontSize: "1.3rem",
-                fontWeight: 700,
-                color: "#ffffff",
+                fontFamily: 'Cormorant, serif',
+                fontSize: '1.45rem',
+                fontWeight: 800,
+                color: '#0e1317',
                 margin: 0,
                 lineHeight: 1.2,
-                flex: 1,
-                paddingRight: "10px",
+                letterSpacing: '0.3px',
               }}
             >
               {service.title}
             </h3>
-            {/* Price shown in card body, not on image */}
             <span
               style={{
-                color: "#c5a880",
+                backgroundColor: '#0e1317',
+                color: '#c5a880',
+                padding: '4px 10px',
+                borderRadius: '16px',
                 fontWeight: 800,
-                fontSize: "0.82rem",
-                whiteSpace: "nowrap",
-                letterSpacing: "0.3px",
+                fontSize: '0.85rem',
+                whiteSpace: 'nowrap',
+                boxShadow: '0 4px 10px rgba(0,0,0,0.25)',
               }}
             >
               {formatPrice(service.price)}
             </span>
           </div>
+
           <p
             style={{
-              color: "#9ca3af",
-              fontSize: "0.88rem",
-              lineHeight: 1.55,
-              marginBottom: "18px",
+              color: '#1a1f24',
+              fontSize: '0.92rem',
+              lineHeight: 1.6,
+              marginBottom: '20px',
               flex: 1,
-              display: "-webkit-box",
+              fontWeight: 500,
+              display: '-webkit-box',
               WebkitLineClamp: 3,
-              WebkitBoxOrient: "vertical",
-              overflow: "hidden",
-              minHeight: "4em",
+              WebkitBoxOrient: 'vertical',
+              overflow: 'hidden',
+              minHeight: '4.2em',
             }}
           >
-            {service.description || "A soothing treatment designed to revitalize mind, body, and senses."}
+            {service.description || 'A soothing treatment designed to revitalize mind, body, and senses.'}
           </p>
 
-          {/* ACTIONS */}
+          {/* Action Buttons using Old Site & Solox Theme Button Design */}
           <div
             style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "10px",
-              marginTop: "auto",
-              paddingTop: "14px",
-              borderTop: "1px solid rgba(255,255,255,0.06)",
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
+              marginTop: 'auto',
+              paddingTop: '16px',
+              borderTop: '1px solid rgba(14, 19, 23, 0.15)',
             }}
           >
             <button
               onClick={onLearnMore}
               style={{
                 flex: 1,
-                padding: "9px 12px",
-                backgroundColor: "transparent",
-                border: "1px solid rgba(197,168,128,0.4)",
-                color: "#c5a880",
-                borderRadius: "4px",
-                fontSize: "12px",
-                fontWeight: 600,
-                cursor: "pointer",
-                transition: "background-color 0.2s ease",
+                padding: '10px 14px',
+                backgroundColor: 'transparent',
+                border: '2px solid #0e1317',
+                color: '#0e1317',
+                borderRadius: '4px',
+                fontSize: '12px',
+                fontWeight: 700,
+                letterSpacing: '0.8px',
+                textTransform: 'uppercase',
+                cursor: 'pointer',
+                transition: 'all 0.25s ease',
               }}
-              onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "rgba(197,168,128,0.1)"; }}
-              onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent"; }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = '#0e1317';
+                e.currentTarget.style.color = '#c5a880';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'transparent';
+                e.currentTarget.style.color = '#0e1317';
+              }}
             >
               Learn More
             </button>
+
             <Link
-              href={`/booking?service=${encodeURIComponent(service.title)}&price=${encodeURIComponent(String(service.price))}`}
+              href={'/booking?service=' + encodeURIComponent(service.title) + '&price=' + encodeURIComponent(String(service.price))}
               style={{
                 flex: 1.3,
-                padding: "9px 12px",
-                backgroundColor: "#c5a880",
-                border: "1px solid #c5a880",
-                color: "#0e1317",
-                borderRadius: "4px",
-                fontSize: "12px",
+                padding: '10px 14px',
+                backgroundColor: '#0e1317',
+                border: '2px solid #0e1317',
+                color: '#ffffff',
+                borderRadius: '4px',
+                fontSize: '12px',
                 fontWeight: 700,
-                textDecoration: "none",
-                display: "inline-flex",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: "6px",
-                transition: "background-color 0.2s ease",
+                letterSpacing: '0.8px',
+                textTransform: 'uppercase',
+                textDecoration: 'none',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
+                transition: 'all 0.25s ease',
               }}
-              onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "#d6bd96"; }}
-              onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "#c5a880"; }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = '#ffffff';
+                e.currentTarget.style.color = '#0e1317';
+                e.currentTarget.style.borderColor = '#ffffff';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = '#0e1317';
+                e.currentTarget.style.color = '#ffffff';
+                e.currentTarget.style.borderColor = '#0e1317';
+              }}
             >
               <i className="fas fa-calendar-check"></i> Book Now
             </Link>
@@ -511,7 +555,6 @@ function ServiceCard({
   );
 }
 
-// --- Intersection Observer hook for scroll-triggered reveal ---
 function useScrollReveal() {
   const ref = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(false);
@@ -1219,40 +1262,41 @@ export default function ServicesPage() {
         )}
       </div>
     
-      {/* ── LUXURY SMOOTH STYLES ── */}
+      {/* ── EXACT OLD SITE FLOAT-IN TRANSITION & THEME STYLES ── */}
       <style>{`
-        * { -webkit-font-smoothing: antialiased; }
-
-        /* Smooth hover on service cards */
-        .spa-card-inner {
-          transition: transform 0.4s cubic-bezier(0.16,1,0.3,1), border-color 0.3s ease, box-shadow 0.35s ease;
-        }
-        .spa-card-inner:hover {
-          transform: translateY(-10px) !important;
-          border-color: rgba(197,168,128,0.55) !important;
-          box-shadow: 0 22px 44px rgba(197,168,128,0.15) !important;
-        }
-        .spa-card-img {
-          transition: transform 0.65s cubic-bezier(0.16,1,0.3,1);
-          will-change: transform;
-        }
-        .spa-card-inner:hover .spa-card-img {
-          transform: scale(1.08);
+        @keyframes floatInUp {
+          from {
+            opacity: 0;
+            transform: translateY(30px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
         }
 
-        /* Smooth gold filter pill hover */
-        .filter-pill {
-          transition: background-color 0.22s ease, color 0.22s ease, border-color 0.22s ease, transform 0.2s ease;
-        }
-        .filter-pill:hover {
-          transform: translateY(-2px);
+        .animate-float-up {
+          animation: floatInUp 1s ease-out forwards;
         }
 
-        /* Smooth scroll site-wide */
-        html { scroll-behavior: smooth; }
+        .opacity-0 {
+          opacity: 0;
+          transform: translateY(30px);
+        }
 
-        /* Smooth image loading fade */
-        img { transition: opacity 0.4s ease; }
+        .delay-100 {
+          animation-delay: 0.1s;
+        }
+        .delay-200 {
+          animation-delay: 0.2s;
+        }
+        .delay-300 {
+          animation-delay: 0.3s;
+        }
+
+        html {
+          scroll-behavior: smooth;
+        }
       `}</style>
   
     </>
