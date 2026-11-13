@@ -721,30 +721,6 @@ export default function ServicesPage() {
               </nav>
 
               <div className="main-header__right" style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                <a
-                  href={`https://wa.me/${whatsappNumber}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="serenity-gold-btn"
-                  style={{
-                    backgroundColor: "#c2a74e",
-                    color: "#0e1317",
-                    padding: "8px 16px",
-                    borderRadius: "4px",
-                    fontWeight: 700,
-                    fontSize: "12px",
-                    letterSpacing: "0.8px",
-                    textTransform: "uppercase",
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: "6px",
-                    textDecoration: "none"
-                  }}
-                >
-                  <i className="fab fa-whatsapp" style={{ fontSize: "15px" }}></i>
-                  <span className="d-none d-sm-inline">WhatsApp</span>
-                </a>
-
                 <div
                   className="mobile-nav__btn mobile-nav__toggler d-xl-none"
                   onClick={() => setMobileMenuOpen(true)}
