@@ -3,810 +3,433 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 
+/* ─── Types ─────────────────────────────────────────────────── */
 interface ServiceItem {
-  title: string;
-  price: number | string;
-  image: string;
-  fullImage?: string;
-  description: string;
-  delay?: string;
-  needsCrop?: boolean;
-  imageOnly?: boolean;
+  title: string; price: number | string; image: string;
+  fullImage?: string; description: string; delay?: string;
+  needsCrop?: boolean; imageOnly?: boolean;
 }
+interface GalleryItem { id: string; src: string; alt: string; delay?: string; }
+interface BlogPost { id: string; title: string; excerpt: string; content: string; image: string; date: string; author: string; }
 
-interface GalleryItem {
-  id: string;
-  src: string;
-  alt: string;
-  delay?: string;
-}
+/* ─── Inline style constants ─────────────────────────────────── */
+const C = {
+  bg: "#0d1117", surface: "#161b22", border: "#30363d",
+  gold: "#c2a74e", goldDim: "rgba(194,167,78,0.15)",
+  text: "#e6edf3", muted: "#8b949e", danger: "#f85149",
+  success: "#3fb950", white: "#ffffff",
+};
 
-interface BlogPost {
-  id: string;
-  title: string;
-  excerpt: string;
-  content: string;
-  image: string;
-  date: string;
-  author: string;
-}
+const css = `
+  .adm * { cursor: auto !important; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; }
+  .adm input, .adm textarea, .adm select { cursor: text !important; }
+  .adm button, .adm label[for], .adm a { cursor: pointer !important; }
+  .adm input::placeholder, .adm textarea::placeholder { color: #484f58; }
+  .adm input:focus, .adm textarea:focus { outline: none; border-color: ${C.gold} !important; }
+  .adm ::-webkit-scrollbar { width: 6px; height: 6px; }
+  .adm ::-webkit-scrollbar-track { background: ${C.bg}; }
+  .adm ::-webkit-scrollbar-thumb { background: #30363d; border-radius: 3px; }
+  .adm .tab-btn { transition: all 0.15s; }
+  .adm .tab-btn:hover { background: rgba(194,167,78,0.08) !important; }
+  .adm .btn-gold { transition: filter 0.15s; }
+  .adm .btn-gold:hover { filter: brightness(1.12); }
+  .adm .btn-danger:hover { background: #da3633 !important; }
+  .adm .card { transition: border-color 0.15s; }
+  .adm .card:hover { border-color: rgba(194,167,78,0.3); }
+  .adm .img-thumb { transition: transform 0.2s; }
+  .adm .img-thumb:hover { transform: scale(1.03); }
+  .adm .spin { animation: spin 1s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .adm .fade { animation: fadeIn 0.2s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+  .adm .line-clamp2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+`;
 
+/* ─── Reusable UI helpers ────────────────────────────────────── */
+const Input = ({ label, ...p }: any) => (
+  <div style={{ marginBottom: 12 }}>
+    {label && <label style={{ display: "block", fontSize: 11, fontWeight: 600, color: C.muted, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 5 }}>{label}</label>}
+    <input {...p} style={{ width: "100%", background: C.bg, border: `1px solid ${C.border}`, borderRadius: 6, padding: "8px 12px", color: C.text, fontSize: 13, ...p.style }} />
+  </div>
+);
+
+const Textarea = ({ label, ...p }: any) => (
+  <div style={{ marginBottom: 12 }}>
+    {label && <label style={{ display: "block", fontSize: 11, fontWeight: 600, color: C.muted, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 5 }}>{label}</label>}
+    <textarea {...p} style={{ width: "100%", background: C.bg, border: `1px solid ${C.border}`, borderRadius: 6, padding: "8px 12px", color: C.text, fontSize: 13, resize: "vertical", ...p.style }} />
+  </div>
+);
+
+const BtnGold = ({ children, style, ...p }: any) => (
+  <button className="btn-gold" {...p} style={{ background: C.gold, color: "#0d1117", border: "none", borderRadius: 6, padding: "9px 18px", fontSize: 12, fontWeight: 700, letterSpacing: "0.05em", textTransform: "uppercase", cursor: "pointer", ...style }}>
+    {children}
+  </button>
+);
+
+const BtnOutline = ({ children, style, ...p }: any) => (
+  <button {...p} style={{ background: "transparent", color: C.muted, border: `1px solid ${C.border}`, borderRadius: 6, padding: "7px 14px", fontSize: 12, fontWeight: 500, cursor: "pointer", ...style }}>
+    {children}
+  </button>
+);
+
+const Badge = ({ children, color = C.gold }: any) => (
+  <span style={{ background: `${color}22`, color, border: `1px solid ${color}44`, borderRadius: 20, padding: "2px 10px", fontSize: 11, fontWeight: 700 }}>{children}</span>
+);
+
+const SectionHead = ({ title, sub }: any) => (
+  <div style={{ marginBottom: 20 }}>
+    <h2 style={{ margin: 0, color: C.text, fontSize: 16, fontWeight: 700 }}>{title}</h2>
+    {sub && <p style={{ margin: "4px 0 0", color: C.muted, fontSize: 12 }}>{sub}</p>}
+  </div>
+);
+
+/* ─── Main Component ─────────────────────────────────────────── */
 export default function AdminGalleryPage() {
-  const [activeTab, setActiveTab] = useState<"gallery" | "services" | "blog" | "info">("gallery");
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(true);
+  const [tab, setTab] = useState<"gallery"|"services"|"blog"|"info">("gallery");
+  const [auth, setAuth] = useState(false);
+  const [pw, setPw] = useState("");
+  const [pwErr, setPwErr] = useState("");
+
+  /* Gallery */
+  const [gallery, setGallery] = useState<GalleryItem[]>([]);
+  const [galFile, setGalFile] = useState<File|null>(null);
+  const [galPreview, setGalPreview] = useState<string|null>(null);
+  const [galAlt, setGalAlt] = useState("");
+  const [galUploading, setGalUploading] = useState(false);
+
+  /* Services */
+  const [services, setServices] = useState<ServiceItem[]>([]);
+  const [siteContent, setSiteContent] = useState<any>(null);
+  const [svcSearch, setSvcSearch] = useState("");
+  const [showAddSvc, setShowAddSvc] = useState(false);
+  const [newSvc, setNewSvc] = useState<Partial<ServiceItem>>({ title:"", price:150000, description:"", image:"/assets/service1.jpg" });
   const [saving, setSaving] = useState(false);
 
-  // Gallery State
-  const [galleryImages, setGalleryImages] = useState<GalleryItem[]>([]);
-  const [newImageFile, setNewImageFile] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [imageAlt, setImageAlt] = useState("");
-  const [uploadingGallery, setUploadingGallery] = useState(false);
-
-  // Blog State
-  const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
+  /* Blog */
+  const [blogs, setBlogs] = useState<BlogPost[]>([]);
   const [showAddBlog, setShowAddBlog] = useState(false);
-  const [blogImageFile, setBlogImageFile] = useState<File | null>(null);
-  const [blogImagePreview, setBlogImagePreview] = useState<string | null>(null);
-  const [uploadingBlog, setUploadingBlog] = useState(false);
-  const [newBlog, setNewBlog] = useState<Partial<BlogPost>>({
-    title: "",
-    excerpt: "",
-    content: "",
-    image: "",
-    date: new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "long", year: "numeric" }),
-    author: "Admin",
-  });
+  const [blogFile, setBlogFile] = useState<File|null>(null);
+  const [blogPreview, setBlogPreview] = useState<string|null>(null);
+  const [blogUploading, setBlogUploading] = useState(false);
+  const [newBlog, setNewBlog] = useState<Partial<BlogPost>>({ title:"", excerpt:"", content:"", image:"", date: new Date().toLocaleDateString("en-GB",{day:"2-digit",month:"long",year:"numeric"}), author:"Admin" });
 
-  // Site Content State
-  const [siteContent, setSiteContent] = useState<any>(null);
-  const [services, setServices] = useState<ServiceItem[]>([]);
-  const [searchService, setSearchService] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  // New Service Form
-  const [newService, setNewService] = useState<Partial<ServiceItem>>({
-    title: "",
-    price: 150000,
-    description: "",
-    image: "/assets/service1.jpg",
-  });
-  const [showAddService, setShowAddService] = useState(false);
+  useEffect(() => { if (auth) loadData(); }, [auth]);
 
-  useEffect(() => {
-    if (isAuthenticated) {
-      loadData();
-    }
-  }, [isAuthenticated]);
-
-  const handleLogin = (e: React.FormEvent) => {
+  const login = (e: React.FormEvent) => {
     e.preventDefault();
-    if (password.trim() === "Serenityspa256.") {
-      setIsAuthenticated(true);
-      setError("");
-    } else {
-      setError("Invalid password. Please check your credentials.");
-    }
+    if (pw.trim() === "Serenityspa256.") { setAuth(true); setPwErr(""); }
+    else setPwErr("Incorrect passkey. Please try again.");
   };
 
   const loadData = async () => {
     setLoading(true);
     try {
-      // 1. Load Gallery
-      const galRes = await fetch("/api/gallery");
-      if (galRes.ok) {
-        const galData = await galRes.json();
-        setGalleryImages(galData);
-      }
-
-      // 2. Load Blog Posts
-      try {
-        const blogRes = await fetch("/api/blog");
-        if (blogRes.ok) {
-          const blogData = await blogRes.json();
-          setBlogPosts(blogData);
-        }
-      } catch {}
-
-      // 3. Load Content
-      const contentRes = await fetch("/api/content");
-      if (contentRes.ok) {
-        const cData = await contentRes.json();
-        setSiteContent(cData);
-        if (cData.services) {
-          setServices(cData.services);
-        }
-      }
-    } catch (err) {
-      console.error("Error loading admin data:", err);
-    } finally {
-      setLoading(false);
-    }
+      const [gRes, cRes, bRes] = await Promise.all([
+        fetch("/api/gallery"), fetch("/api/content"), fetch("/api/blog")
+      ]);
+      if (gRes.ok) setGallery(await gRes.json());
+      if (cRes.ok) { const c = await cRes.json(); setSiteContent(c); if (c.services) setServices(c.services); }
+      if (bRes.ok) setBlogs(await bRes.json());
+    } catch {}
+    setLoading(false);
   };
 
-  // Upload file helper
-  const uploadImageFile = async (file: File): Promise<string | null> => {
-    const formData = new FormData();
-    formData.append("file", file);
-
-    try {
-      const res = await fetch("/api/upload", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${password.trim()}`,
-        },
-        body: formData,
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        return data.secure_url;
-      } else {
-        const err = await res.json();
-        alert(err.error || "Upload failed");
-        return null;
-      }
-    } catch (e: any) {
-      alert("Error uploading image: " + e.message);
-      return null;
-    }
+  const uploadFile = async (file: File): Promise<string|null> => {
+    const fd = new FormData(); fd.append("file", file);
+    const res = await fetch("/api/upload", { method:"POST", headers:{ Authorization:`Bearer ${pw.trim()}` }, body:fd });
+    if (res.ok) return (await res.json()).secure_url;
+    return null;
   };
 
-  // Add Gallery Image
-  const handleAddGalleryImage = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newImageFile) return;
-
-    setUploadingGallery(true);
-    const formData = new FormData();
-    formData.append("file", newImageFile);
-    formData.append("alt", imageAlt || "The Serenity Spa");
-
-    try {
-      const res = await fetch("/api/gallery", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${password.trim()}`,
-        },
-        body: formData,
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        setGalleryImages([data.image, ...galleryImages]);
-        setNewImageFile(null);
-        setImagePreview(null);
-        setImageAlt("");
-        alert("Image uploaded successfully to Cloudinary!");
-      } else {
-        const err = await res.json();
-        alert(err.error || "Failed to upload to gallery");
-      }
-    } catch (err: any) {
-      alert("Error: " + err.message);
-    } finally {
-      setUploadingGallery(false);
-    }
+  /* Gallery handlers */
+  const addGalleryImage = async (e: React.FormEvent) => {
+    e.preventDefault(); if (!galFile) return;
+    setGalUploading(true);
+    const fd = new FormData(); fd.append("file", galFile); fd.append("alt", galAlt||"The Serenity Spa");
+    const res = await fetch("/api/gallery", { method:"POST", headers:{ Authorization:`Bearer ${pw.trim()}` }, body:fd });
+    if (res.ok) { const d = await res.json(); setGallery([d.image, ...gallery]); setGalFile(null); setGalPreview(null); setGalAlt(""); }
+    else alert((await res.json()).error || "Upload failed");
+    setGalUploading(false);
   };
 
-  // Delete Gallery Image
-  const handleDeleteGalleryImage = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this image from Cloudinary?")) return;
-
-    try {
-      const res = await fetch(`/api/gallery?id=${encodeURIComponent(id)}`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${password.trim()}`,
-        },
-      });
-
-      if (res.ok) {
-        setGalleryImages(galleryImages.filter((img) => img.id !== id));
-      } else {
-        alert("Failed to delete image.");
-      }
-    } catch (e: any) {
-      alert("Error deleting image: " + e.message);
-    }
+  const deleteGalleryImage = async (id: string) => {
+    if (!confirm("Delete this photo?")) return;
+    const res = await fetch(`/api/gallery?id=${encodeURIComponent(id)}`, { method:"DELETE", headers:{ Authorization:`Bearer ${pw.trim()}` } });
+    if (res.ok) setGallery(gallery.filter(i => i.id !== id));
   };
 
-  // Add Blog Post
-  const handleAddBlogPost = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newBlog.title || !newBlog.content) {
-      alert("Please enter at least a title and content.");
-      return;
-    }
-    setUploadingBlog(true);
-    let imageUrl = newBlog.image || "";
-
-    // Upload image if selected
-    if (blogImageFile) {
-      const uploadedUrl = await uploadImageFile(blogImageFile);
-      if (uploadedUrl) imageUrl = uploadedUrl;
-    }
-
-    const post: BlogPost = {
-      id: Date.now().toString(),
-      title: newBlog.title || "",
-      excerpt: newBlog.excerpt || "",
-      content: newBlog.content || "",
-      image: imageUrl,
-      date: newBlog.date || new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "long", year: "numeric" }),
-      author: newBlog.author || "Admin",
-    };
-
-    try {
-      const res = await fetch("/api/blog", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${password.trim()}`,
-        },
-        body: JSON.stringify(post),
-      });
-
-      if (res.ok) {
-        setBlogPosts([post, ...blogPosts]);
-        setNewBlog({ title: "", excerpt: "", content: "", image: "", date: new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "long", year: "numeric" }), author: "Admin" });
-        setBlogImageFile(null);
-        setBlogImagePreview(null);
-        setShowAddBlog(false);
-        alert("Blog post published!");
-      } else {
-        const err = await res.json();
-        alert(err.error || "Failed to publish blog post");
-      }
-    } catch (err: any) {
-      alert("Error: " + err.message);
-    } finally {
-      setUploadingBlog(false);
-    }
+  /* Service handlers */
+  const updateSvc = (i: number, k: keyof ServiceItem, v: any) => {
+    const u = [...services]; u[i] = { ...u[i], [k]: v }; setServices(u);
   };
+  const deleteSvc = (i: number) => { if (!confirm(`Delete "${services[i].title}"?`)) return; setServices(services.filter((_,j)=>j!==i)); };
+  const addSvc = () => { if (!newSvc.title) return alert("Enter a service title"); setServices([newSvc as ServiceItem, ...services]); setNewSvc({ title:"", price:150000, description:"", image:"/assets/service1.jpg" }); setShowAddSvc(false); };
 
-  // Delete Blog Post
-  const handleDeleteBlogPost = async (id: string) => {
-    if (!confirm("Delete this blog post permanently?")) return;
-    try {
-      const res = await fetch(`/api/blog?id=${encodeURIComponent(id)}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${password.trim()}` },
-      });
-      if (res.ok) {
-        setBlogPosts(blogPosts.filter((p) => p.id !== id));
-      } else {
-        alert("Failed to delete post.");
-      }
-    } catch (e: any) {
-      alert("Error: " + e.message);
-    }
-  };
-
-  // Service Management
-  const handleUpdateService = (index: number, field: keyof ServiceItem, value: any) => {
-    const updated = [...services];
-    updated[index] = { ...updated[index], [field]: value };
-    setServices(updated);
-  };
-
-  const handleDeleteService = (index: number) => {
-    if (!confirm(`Delete service "${services[index].title}"?`)) return;
-    const updated = services.filter((_, i) => i !== index);
-    setServices(updated);
-  };
-
-  const handleAddService = () => {
-    if (!newService.title) {
-      alert("Please enter a service title");
-      return;
-    }
-    const updated = [newService as ServiceItem, ...services];
-    setServices(updated);
-    setNewService({
-      title: "",
-      price: 150000,
-      description: "",
-      image: "/assets/service1.jpg",
-    });
-    setShowAddService(false);
-  };
-
-  // Save All Changes to Cloudinary
-  const handleSaveAll = async () => {
+  const saveAll = async () => {
     setSaving(true);
-    try {
-      const updatedContent = {
-        ...siteContent,
-        services,
-      };
-
-      const res = await fetch("/api/content", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${password.trim()}`,
-        },
-        body: JSON.stringify(updatedContent),
-      });
-
-      if (res.ok) {
-        alert("All changes successfully saved and synced with Cloudinary!");
-        setSiteContent(updatedContent);
-      } else {
-        const err = await res.json();
-        alert("Error saving: " + (err.error || "Unknown error"));
-      }
-    } catch (err: any) {
-      alert("Save failed: " + err.message);
-    } finally {
-      setSaving(false);
-    }
+    const body = { ...siteContent, services };
+    const res = await fetch("/api/content", { method:"POST", headers:{ "Content-Type":"application/json", Authorization:`Bearer ${pw.trim()}` }, body: JSON.stringify(body) });
+    if (res.ok) { setSiteContent(body); alert("Saved to Cloudinary ✓"); }
+    else alert("Save failed");
+    setSaving(false);
   };
 
-  if (!isAuthenticated) {
-    return (
-      <div className="min-h-screen bg-[#0e1317] flex items-center justify-center p-4">
-        <div
-          className="w-full max-w-md p-8 rounded-2xl border shadow-2xl"
-          style={{
-            backgroundColor: "#161c22",
-            borderColor: "rgba(194, 167, 78, 0.25)",
-          }}
-        >
-          <div className="text-center mb-8">
-            <h1
-              style={{
-                fontFamily: "Cormorant, serif",
-                fontSize: "2rem",
-                color: "#ffffff",
-                fontWeight: 700,
-              }}
-            >
-              The Serenity Spa
-            </h1>
-            <p className="text-sm tracking-widest text-[#c2a74e] uppercase mt-1 font-semibold">
-              Admin Portal
-            </p>
+  /* Blog handlers */
+  const addBlog = async (e: React.FormEvent) => {
+    e.preventDefault(); if (!newBlog.title || !newBlog.content) return alert("Title and content are required");
+    setBlogUploading(true);
+    let img = newBlog.image||"";
+    if (blogFile) { const u = await uploadFile(blogFile); if (u) img = u; }
+    const post: BlogPost = { id: Date.now().toString(), title:newBlog.title||"", excerpt:newBlog.excerpt||"", content:newBlog.content||"", image:img, date:newBlog.date||"", author:newBlog.author||"Admin" };
+    const res = await fetch("/api/blog", { method:"POST", headers:{ "Content-Type":"application/json", Authorization:`Bearer ${pw.trim()}` }, body: JSON.stringify(post) });
+    if (res.ok) { setBlogs([post, ...blogs]); setNewBlog({ title:"", excerpt:"", content:"", image:"", date:new Date().toLocaleDateString("en-GB",{day:"2-digit",month:"long",year:"numeric"}), author:"Admin" }); setBlogFile(null); setBlogPreview(null); setShowAddBlog(false); }
+    else alert((await res.json()).error || "Failed to publish");
+    setBlogUploading(false);
+  };
+
+  const deleteBlog = async (id: string) => {
+    if (!confirm("Delete this blog post?")) return;
+    const res = await fetch(`/api/blog?id=${encodeURIComponent(id)}`, { method:"DELETE", headers:{ Authorization:`Bearer ${pw.trim()}` } });
+    if (res.ok) setBlogs(blogs.filter(p=>p.id!==id));
+  };
+
+  /* ── LOGIN SCREEN ────────────────────────────────────────────── */
+  if (!auth) return (
+    <div className="adm" style={{ minHeight:"100vh", background:C.bg, display:"flex", alignItems:"center", justifyContent:"center", padding:16 }}>
+      <style>{css}</style>
+      <div style={{ width:"100%", maxWidth:380, background:C.surface, border:`1px solid ${C.border}`, borderRadius:12, padding:36, boxShadow:"0 24px 64px rgba(0,0,0,0.6)" }}>
+        {/* Logo area */}
+        <div style={{ textAlign:"center", marginBottom:28 }}>
+          <div style={{ display:"inline-flex", alignItems:"center", justifyContent:"center", width:48, height:48, borderRadius:"50%", background:C.goldDim, border:`1px solid ${C.gold}44`, marginBottom:12 }}>
+            <span style={{ fontSize:22 }}>🌿</span>
           </div>
+          <h1 style={{ margin:0, color:C.text, fontSize:20, fontWeight:700, letterSpacing:"0.02em" }}>The Serenity Spa</h1>
+          <p style={{ margin:"4px 0 0", color:C.gold, fontSize:11, fontWeight:600, letterSpacing:"0.12em", textTransform:"uppercase" }}>Admin Portal</p>
+        </div>
 
-          {error && (
-            <div className="mb-6 p-3 rounded-lg bg-red-950/50 border border-red-500/30 text-red-300 text-xs text-center">
-              {error}
-            </div>
-          )}
+        {pwErr && <div style={{ background:"#f8514922", border:"1px solid #f8514944", borderRadius:6, padding:"10px 14px", color:C.danger, fontSize:12, marginBottom:16, textAlign:"center" }}>{pwErr}</div>}
 
-          <form onSubmit={handleLogin} className="space-y-5">
-            <div>
-              <label className="block text-xs uppercase font-semibold text-gray-300 mb-2 tracking-wider">
-                Admin Passkey
-              </label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Enter password..."
-                className="w-full px-4 py-3 rounded-xl bg-[#0e1317] border border-gray-700 text-white text-sm outline-none focus:border-[#c2a74e] transition-colors"
-                required
-              />
-            </div>
+        <form onSubmit={login}>
+          <label style={{ display:"block", fontSize:11, fontWeight:600, color:C.muted, textTransform:"uppercase", letterSpacing:"0.06em", marginBottom:6 }}>Admin Passkey</label>
+          <input type="password" value={pw} onChange={e=>setPw(e.target.value)} placeholder="Enter your passkey…" required
+            style={{ width:"100%", background:C.bg, border:`1px solid ${C.border}`, borderRadius:8, padding:"11px 14px", color:C.text, fontSize:14, marginBottom:16 }} />
+          <button type="submit" className="btn-gold" style={{ width:"100%", background:C.gold, color:"#0d1117", border:"none", borderRadius:8, padding:12, fontSize:13, fontWeight:700, letterSpacing:"0.06em", textTransform:"uppercase", cursor:"pointer" }}>
+            Unlock Dashboard
+          </button>
+        </form>
 
-            <button
-              type="submit"
-              className="w-full py-3.5 rounded-xl font-bold text-sm tracking-wider uppercase transition-transform active:scale-95 shadow-lg"
-              style={{
-                backgroundColor: "#c2a74e",
-                color: "#0e1317",
-              }}
-            >
-              Authenticate & Unlock
-            </button>
-          </form>
-
-          <div className="mt-8 text-center">
-            <Link href="/" className="text-xs text-gray-400 hover:text-[#c2a74e] transition-colors">
-              ← Return to Public Website
-            </Link>
-          </div>
+        <div style={{ marginTop:20, textAlign:"center" }}>
+          <Link href="/" style={{ color:C.muted, fontSize:12, textDecoration:"none" }}>← Back to website</Link>
         </div>
       </div>
-    );
-  }
+    </div>
+  );
+
+  /* ── MAIN DASHBOARD ──────────────────────────────────────────── */
+  const tabs = [
+    { id:"gallery", label:"Gallery", icon:"📸", count:gallery.length },
+    { id:"services", label:"Services", icon:"💅", count:services.length },
+    { id:"blog", label:"Blog", icon:"📝", count:blogs.length },
+    { id:"info", label:"Settings", icon:"⚙️" },
+  ];
 
   return (
-    <div className="min-h-screen bg-[#0e1317] text-gray-200">
-      {/* Top Navbar */}
-      <header
-        className="sticky top-0 z-40 px-6 py-4 border-b flex justify-between items-center"
-        style={{
-          backgroundColor: "#161c22",
-          borderColor: "rgba(194, 167, 78, 0.2)",
-        }}
-      >
-        <div className="flex items-center gap-4">
-          <Link href="/" className="font-bold text-white text-lg tracking-wider" style={{ fontFamily: "Cormorant, serif" }}>
-            THE SERENITY SPA
-          </Link>
-          <span className="text-xs px-2.5 py-1 rounded-full font-bold uppercase" style={{ backgroundColor: "#c2a74e", color: "#0e1317" }}>
-            Admin CMS
-          </span>
-        </div>
+    <div className="adm" style={{ minHeight:"100vh", background:C.bg, color:C.text }}>
+      <style>{css}</style>
 
-        <div className="flex items-center gap-4">
-          <button
-            onClick={handleSaveAll}
-            disabled={saving}
-            className="px-6 py-2 rounded-lg font-bold text-xs uppercase tracking-wider flex items-center gap-2 shadow-lg hover:brightness-110 transition-all"
-            style={{ backgroundColor: "#25D366", color: "#ffffff" }}
-          >
-            {saving ? "💾 Saving to Cloudinary..." : "💾 Save All Changes"}
-          </button>
-          <button
-            onClick={() => setIsAuthenticated(false)}
-            className="text-xs text-gray-400 hover:text-white px-3 py-1.5 border border-gray-700 rounded-lg hover:bg-white/5"
-          >
-            Log Out
-          </button>
+      {/* ── TOP BAR ── */}
+      <header style={{ position:"sticky", top:0, zIndex:50, background:C.surface, borderBottom:`1px solid ${C.border}`, padding:"0 20px", height:52, display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+        <div style={{ display:"flex", alignItems:"center", gap:12 }}>
+          <span style={{ fontSize:14, fontWeight:700, color:C.text, letterSpacing:"0.04em" }}>THE SERENITY SPA</span>
+          <Badge>Admin CMS</Badge>
+        </div>
+        <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+          <BtnGold onClick={saveAll} disabled={saving} style={{ padding:"6px 14px", fontSize:11 }}>
+            {saving ? "Saving…" : "💾 Save Changes"}
+          </BtnGold>
+          <BtnOutline onClick={()=>setAuth(false)} style={{ padding:"5px 12px", fontSize:11 }}>Log out</BtnOutline>
         </div>
       </header>
 
-      {/* Tabs Subheader */}
-      <div className="px-6 py-3 border-b border-gray-800 bg-[#11171d] flex gap-3">
-        {[
-          { id: "gallery", label: "📸 Spa Gallery", count: galleryImages.length },
-          { id: "services", label: "💅 Treatments & Pricing", count: services.length },
-          { id: "blog", label: "📝 Blog Posts", count: blogPosts.length },
-          { id: "info", label: "💆 Contacts & Info" },
-        ].map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id as any)}
-            className="px-5 py-2 rounded-lg text-xs font-semibold tracking-wider transition-colors flex items-center gap-2"
-            style={{
-              backgroundColor: activeTab === tab.id ? "#c2a74e" : "transparent",
-              color: activeTab === tab.id ? "#0e1317" : "#9ca3af",
-              border: activeTab === tab.id ? "1px solid #c2a74e" : "1px solid transparent",
-            }}
-          >
-            {tab.label}
-            {tab.count !== undefined && (
-              <span
-                className="px-2 py-0.5 rounded-full text-[10px] font-bold"
-                style={{
-                  backgroundColor: activeTab === tab.id ? "#0e1317" : "rgba(255,255,255,0.1)",
-                  color: activeTab === tab.id ? "#c2a74e" : "#ffffff",
-                }}
-              >
-                {tab.count}
-              </span>
-            )}
+      {/* ── TAB BAR ── */}
+      <div style={{ background:C.surface, borderBottom:`1px solid ${C.border}`, padding:"0 20px", display:"flex", gap:4 }}>
+        {tabs.map(t => (
+          <button key={t.id} onClick={()=>setTab(t.id as any)} className="tab-btn"
+            style={{ background:"transparent", border:"none", borderBottom: tab===t.id ? `2px solid ${C.gold}` : "2px solid transparent", color: tab===t.id ? C.gold : C.muted, padding:"10px 14px", fontSize:12, fontWeight:600, cursor:"pointer", display:"flex", alignItems:"center", gap:6, marginBottom:-1 }}>
+            <span>{t.icon}</span> {t.label}
+            {t.count !== undefined && <span style={{ background: tab===t.id ? C.goldDim : "#21262d", color: tab===t.id ? C.gold : C.muted, borderRadius:20, padding:"1px 8px", fontSize:10, fontWeight:700 }}>{t.count}</span>}
           </button>
         ))}
       </div>
 
-      {/* Main Container */}
-      <main className="max-w-7xl mx-auto p-6 md:p-8">
+      {/* ── MAIN CONTENT ── */}
+      <main style={{ maxWidth:1100, margin:"0 auto", padding:"24px 20px" }}>
         {loading ? (
-          <div className="text-center py-24">
-            <div className="inline-block animate-spin rounded-full h-10 w-10 border-t-2 border-b-2" style={{ borderColor: "#c2a74e" }}></div>
-            <p className="mt-4 text-xs text-gray-400 uppercase tracking-widest font-semibold">Connecting to Cloudinary...</p>
+          <div style={{ textAlign:"center", paddingTop:80 }}>
+            <div className="spin" style={{ width:32, height:32, border:`3px solid ${C.border}`, borderTopColor:C.gold, borderRadius:"50%", display:"inline-block" }} />
+            <p style={{ color:C.muted, fontSize:12, marginTop:12 }}>Loading data…</p>
           </div>
         ) : (
           <>
-            {/* TAB 1: GALLERY MANAGER */}
-            {activeTab === "gallery" && (
-              <div className="space-y-8">
-                {/* Upload Card */}
-                <div className="p-6 rounded-2xl bg-[#161c22] border border-gray-800 shadow-xl">
-                  <h3 className="text-base font-bold text-white mb-1 flex items-center gap-2" style={{ color: "#c2a74e" }}>
-                    + Upload New Photo to Gallery
-                  </h3>
-                  <p className="text-xs text-gray-400 mb-6">
-                    Photos are instantly hosted on Cloudinary in the <code className="text-[#c2a74e]">serenity_gallery</code> folder.
-                  </p>
+            {/* ══ GALLERY TAB ══ */}
+            {tab === "gallery" && (
+              <div className="fade">
+                <SectionHead title="Spa Gallery" sub="Upload photos directly to Cloudinary — they appear on the gallery page instantly." />
 
-                  <form onSubmit={handleAddGalleryImage} className="grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
+                {/* Upload form */}
+                <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:10, padding:20, marginBottom:24 }}>
+                  <p style={{ margin:"0 0 14px", fontSize:12, fontWeight:700, color:C.gold, textTransform:"uppercase", letterSpacing:"0.06em" }}>+ Upload New Photo</p>
+                  <form onSubmit={addGalleryImage} style={{ display:"grid", gridTemplateColumns:"1fr 1fr auto", gap:12, alignItems:"end" }}>
                     <div>
-                      <label className="block text-xs font-semibold text-gray-300 mb-2">Select Image File</label>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0];
-                          if (file) {
-                            setNewImageFile(file);
-                            setImagePreview(URL.createObjectURL(file));
-                          }
-                        }}
-                        className="w-full text-xs text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-[#c2a74e] file:text-[#0e1317] hover:file:opacity-90 cursor-pointer"
-                        required
-                      />
+                      <label style={{ display:"block", fontSize:11, fontWeight:600, color:C.muted, textTransform:"uppercase", letterSpacing:"0.06em", marginBottom:6 }}>Image File</label>
+                      <input type="file" accept="image/*" required onChange={e=>{ const f=e.target.files?.[0]; if(f){setGalFile(f);setGalPreview(URL.createObjectURL(f));} }}
+                        style={{ width:"100%", fontSize:12, color:C.muted, background:C.bg, border:`1px solid ${C.border}`, borderRadius:6, padding:"7px 10px" }} />
                     </div>
-
-                    <div>
-                      <label className="block text-xs font-semibold text-gray-300 mb-2">Description / Alt Tag</label>
-                      <input
-                        type="text"
-                        placeholder="e.g. Luxury Couple Treatment Suite"
-                        value={imageAlt}
-                        onChange={(e) => setImageAlt(e.target.value)}
-                        className="w-full px-4 py-2.5 rounded-lg bg-[#0e1317] border border-gray-700 text-xs text-white outline-none focus:border-[#c2a74e]"
-                      />
-                    </div>
-
-                    <div>
-                      <button
-                        type="submit"
-                        disabled={uploadingGallery || !newImageFile}
-                        className="w-full py-2.5 rounded-lg font-bold text-xs uppercase tracking-wider disabled:opacity-50 transition-all shadow-md"
-                        style={{ backgroundColor: "#c2a74e", color: "#0e1317" }}
-                      >
-                        {uploadingGallery ? "Uploading..." : "Upload to Cloudinary"}
-                      </button>
-                    </div>
+                    <Input label="Alt / Description" placeholder="e.g. Hot stone massage session" value={galAlt} onChange={(e:any)=>setGalAlt(e.target.value)} style={{ marginBottom:0 }} />
+                    <BtnGold type="submit" disabled={galUploading||!galFile} style={{ height:36, whiteSpace:"nowrap", padding:"0 16px" }}>
+                      {galUploading ? "Uploading…" : "Upload"}
+                    </BtnGold>
                   </form>
-
-                  {imagePreview && (
-                    <div className="mt-4 p-3 bg-black/40 rounded-xl inline-flex items-center gap-4 border border-gray-800">
-                      <img src={imagePreview} alt="Preview" className="w-16 h-16 object-cover rounded-lg" />
-                      <span className="text-xs text-gray-400">{newImageFile?.name}</span>
+                  {galPreview && (
+                    <div style={{ marginTop:12, display:"flex", alignItems:"center", gap:10 }}>
+                      <img src={galPreview} style={{ width:56, height:56, objectFit:"cover", borderRadius:6, border:`1px solid ${C.border}` }} alt="preview" />
+                      <span style={{ fontSize:11, color:C.muted }}>{galFile?.name}</span>
+                      <button onClick={()=>{setGalFile(null);setGalPreview(null);}} style={{ fontSize:10, color:C.danger, background:"none", border:"none", cursor:"pointer" }}>✕ Remove</button>
                     </div>
                   )}
                 </div>
 
-                {/* Existing Gallery Images */}
-                <div>
-                  <h4 className="text-sm font-bold uppercase tracking-wider text-gray-300 mb-4">
-                    Current Gallery Photos ({galleryImages.length})
-                  </h4>
-
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                    {galleryImages.map((img) => (
-                      <div
-                        key={img.id || img.src}
-                        className="group relative rounded-xl overflow-hidden bg-[#161c22] border border-gray-800 shadow-md aspect-square flex flex-col justify-end p-3"
-                      >
-                        <img
-                          src={img.src}
-                          alt={img.alt}
-                          className="absolute inset-0 w-full h-full object-cover transition-transform group-hover:scale-105"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/20" />
-
-                        <div className="relative z-10">
-                          <p className="text-[11px] font-semibold text-white truncate mb-2">{img.alt}</p>
-                          <button
-                            type="button"
-                            onClick={() => handleDeleteGalleryImage(img.id)}
-                            className="w-full py-1.5 rounded text-[10px] font-bold bg-red-600/90 hover:bg-red-600 text-white uppercase tracking-wider transition-colors shadow"
-                          >
-                            🗑️ Delete
+                {/* Gallery grid */}
+                <p style={{ fontSize:11, color:C.muted, marginBottom:12, fontWeight:600, textTransform:"uppercase", letterSpacing:"0.06em" }}>All Photos ({gallery.length})</p>
+                <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(140px,1fr))", gap:10 }}>
+                  {gallery.map(img => (
+                    <div key={img.id||img.src} className="card img-thumb" style={{ position:"relative", borderRadius:8, overflow:"hidden", aspectRatio:"1", background:C.surface, border:`1px solid ${C.border}` }}>
+                      <img src={img.src} alt={img.alt} style={{ width:"100%", height:"100%", objectFit:"cover", display:"block" }} />
+                      <div style={{ position:"absolute", inset:0, background:"linear-gradient(to top, rgba(0,0,0,0.75) 0%, transparent 50%)", opacity:0, transition:"opacity 0.2s" }}
+                        onMouseEnter={e=>(e.currentTarget.style.opacity="1")} onMouseLeave={e=>(e.currentTarget.style.opacity="0")}>
+                        <div style={{ position:"absolute", bottom:0, left:0, right:0, padding:8 }}>
+                          <p style={{ margin:"0 0 6px", fontSize:10, color:"#fff", fontWeight:600, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{img.alt}</p>
+                          <button onClick={()=>deleteGalleryImage(img.id)} className="btn-danger"
+                            style={{ width:"100%", background:"#da363388", border:"none", borderRadius:4, color:"#fff", fontSize:10, fontWeight:700, padding:"4px 0", cursor:"pointer" }}>
+                            🗑 Delete
                           </button>
                         </div>
                       </div>
-                    ))}
-                  </div>
+                    </div>
+                  ))}
                 </div>
               </div>
             )}
 
-            {/* TAB 2: SERVICES & PRICING */}
-            {activeTab === "services" && (
-              <div className="space-y-6">
-                <div className="flex flex-col md:flex-row justify-between items-center gap-4 bg-[#161c22] p-4 rounded-xl border border-gray-800">
-                  <div className="flex items-center gap-3">
-                    <button
-                      onClick={() => setShowAddService(!showAddService)}
-                      className="px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider"
-                      style={{ backgroundColor: "#c2a74e", color: "#0e1317" }}
-                    >
-                      {showAddService ? "Cancel" : "+ Add New Treatment"}
-                    </button>
-                    <span className="text-xs text-gray-400">Manage all 30 treatments and pricing.</span>
-                  </div>
+            {/* ══ SERVICES TAB ══ */}
+            {tab === "services" && (
+              <div className="fade">
+                <SectionHead title="Treatments & Pricing" sub="Edit service titles, descriptions, and prices. Click Save Changes when done." />
 
-                  <input
-                    type="text"
-                    placeholder="Search services..."
-                    value={searchService}
-                    onChange={(e) => setSearchService(e.target.value)}
-                    className="w-full md:w-64 px-4 py-2 rounded-lg bg-[#0e1317] border border-gray-700 text-xs text-white outline-none focus:border-[#c2a74e]"
-                  />
+                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:16, gap:12 }}>
+                  <BtnGold onClick={()=>setShowAddSvc(!showAddSvc)}>{showAddSvc ? "✕ Cancel" : "+ Add Treatment"}</BtnGold>
+                  <input placeholder="🔍  Search treatments…" value={svcSearch} onChange={e=>setSvcSearch(e.target.value)}
+                    style={{ flex:1, maxWidth:260, background:C.surface, border:`1px solid ${C.border}`, borderRadius:6, padding:"7px 12px", color:C.text, fontSize:12 }} />
                 </div>
 
-                {/* Add Service Card */}
-                {showAddService && (
-                  <div className="p-6 rounded-2xl bg-[#161c22] border border-[#c2a74e]/40 shadow-xl space-y-4">
-                    <h4 className="text-sm font-bold text-[#c2a74e] uppercase tracking-wider">New Treatment Details</h4>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div>
-                        <label className="block text-xs text-gray-300 mb-1">Service Title</label>
-                        <input
-                          type="text"
-                          placeholder="e.g. Deluxe Herbal Bath"
-                          value={newService.title || ""}
-                          onChange={(e) => setNewService({ ...newService, title: e.target.value })}
-                          className="w-full px-3 py-2 rounded bg-[#0e1317] border border-gray-700 text-xs text-white"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs text-gray-300 mb-1">Price (UGX)</label>
-                        <input
-                          type="number"
-                          placeholder="e.g. 250000"
-                          value={newService.price || 0}
-                          onChange={(e) => setNewService({ ...newService, price: Number(e.target.value) })}
-                          className="w-full px-3 py-2 rounded bg-[#0e1317] border border-gray-700 text-xs text-white"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs text-gray-300 mb-1">Image Asset URL / Path</label>
-                        <input
-                          type="text"
-                          placeholder="/assets/service1.jpg"
-                          value={newService.image || ""}
-                          onChange={(e) => setNewService({ ...newService, image: e.target.value })}
-                          className="w-full px-3 py-2 rounded bg-[#0e1317] border border-gray-700 text-xs text-white"
-                        />
-                      </div>
+                {/* Add service form */}
+                {showAddSvc && (
+                  <div className="fade" style={{ background:C.surface, border:`1px solid ${C.gold}44`, borderRadius:10, padding:20, marginBottom:16 }}>
+                    <p style={{ margin:"0 0 14px", fontSize:12, fontWeight:700, color:C.gold, textTransform:"uppercase" }}>New Treatment</p>
+                    <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:12, marginBottom:12 }}>
+                      <Input label="Title" placeholder="e.g. Hot Stone Massage" value={newSvc.title||""} onChange={(e:any)=>setNewSvc({...newSvc,title:e.target.value})} />
+                      <Input label="Price (UGX)" type="number" value={newSvc.price||""} onChange={(e:any)=>setNewSvc({...newSvc,price:+e.target.value})} />
+                      <Input label="Image Path" placeholder="/assets/service1.jpg" value={newSvc.image||""} onChange={(e:any)=>setNewSvc({...newSvc,image:e.target.value})} />
                     </div>
-                    <div>
-                      <label className="block text-xs text-gray-300 mb-1">Description</label>
-                      <textarea
-                        rows={3}
-                        placeholder="Detailed description of the treatment session..."
-                        value={newService.description || ""}
-                        onChange={(e) => setNewService({ ...newService, description: e.target.value })}
-                        className="w-full px-3 py-2 rounded bg-[#0e1317] border border-gray-700 text-xs text-white"
-                      ></textarea>
-                    </div>
-                    <button
-                      onClick={handleAddService}
-                      className="px-6 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider text-black bg-[#c2a74e]"
-                    >
-                      Save Treatment to List
-                    </button>
+                    <Textarea label="Description" rows={2} placeholder="Describe this treatment…" value={newSvc.description||""} onChange={(e:any)=>setNewSvc({...newSvc,description:e.target.value})} />
+                    <BtnGold onClick={addSvc}>Save Treatment</BtnGold>
                   </div>
                 )}
 
-                {/* Services List Table */}
-                <div className="space-y-4">
-                  {services
-                    .filter((s) => s.title.toLowerCase().includes(searchService.toLowerCase()))
-                    .map((service, idx) => (
-                      <div
-                        key={idx}
-                        className="p-5 rounded-xl bg-[#161c22] border border-gray-800 shadow-md flex flex-col md:flex-row gap-5 items-start md:items-center justify-between"
-                      >
-                        <div className="flex items-center gap-4 flex-1">
-                          <img
-                            src={service.image}
-                            alt={service.title}
-                            className="w-16 h-16 object-cover rounded-lg bg-black border border-gray-700 flex-shrink-0"
-                            onError={(e) => {
-                              (e.target as HTMLImageElement).src = "/assets/service1.jpg";
-                            }}
-                          />
-                          <div className="flex-1 space-y-1">
-                            <input
-                              type="text"
-                              value={service.title}
-                              onChange={(e) => handleUpdateService(idx, "title", e.target.value)}
-                              className="font-bold text-white text-sm bg-transparent border-b border-transparent hover:border-gray-600 focus:border-[#c2a74e] outline-none w-full"
-                            />
-                            <textarea
-                              rows={2}
-                              value={service.description}
-                              onChange={(e) => handleUpdateService(idx, "description", e.target.value)}
-                              className="text-xs text-gray-400 bg-transparent border border-transparent hover:border-gray-700 focus:border-gray-600 outline-none w-full p-1 rounded"
-                            />
-                          </div>
-                        </div>
-
-                        <div className="flex items-center gap-4 flex-shrink-0">
-                          <div>
-                            <label className="block text-[10px] text-gray-400 uppercase font-semibold">Price (UGX)</label>
-                            <input
-                              type="number"
-                              value={typeof service.price === "number" ? service.price : parseInt(String(service.price)) || 0}
-                              onChange={(e) => handleUpdateService(idx, "price", Number(e.target.value))}
-                              className="w-28 px-2 py-1.5 rounded bg-[#0e1317] border border-gray-700 text-xs font-bold text-[#c2a74e] outline-none"
-                            />
-                          </div>
-
-                          <button
-                            type="button"
-                            onClick={() => handleDeleteService(idx)}
-                            className="p-2 text-red-400 hover:text-red-300 hover:bg-red-950/40 rounded transition-colors text-xs"
-                            title="Delete service"
-                          >
-                            🗑️
-                          </button>
-                        </div>
+                {/* Services list */}
+                <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
+                  {services.filter(s=>s.title.toLowerCase().includes(svcSearch.toLowerCase())).map((svc,i)=>(
+                    <div key={i} className="card" style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:8, padding:"12px 16px", display:"flex", gap:12, alignItems:"center" }}>
+                      <img src={svc.image} alt={svc.title} style={{ width:48, height:48, objectFit:"cover", borderRadius:6, border:`1px solid ${C.border}`, flexShrink:0 }}
+                        onError={(e:any)=>{ e.target.src="/assets/service1.jpg"; }} />
+                      <div style={{ flex:1, minWidth:0 }}>
+                        <input value={svc.title} onChange={e=>updateSvc(i,"title",e.target.value)}
+                          style={{ width:"100%", background:"transparent", border:"none", borderBottom:`1px solid transparent`, color:C.text, fontSize:13, fontWeight:600, padding:"2px 0" }}
+                          onFocus={e=>(e.target.style.borderBottomColor=C.gold)} onBlur={e=>(e.target.style.borderBottomColor="transparent")} />
+                        <input value={svc.description} onChange={e=>updateSvc(i,"description",e.target.value)}
+                          style={{ width:"100%", background:"transparent", border:"none", color:C.muted, fontSize:11, padding:"2px 0", marginTop:3 }}
+                          placeholder="Description…" />
                       </div>
-                    ))}
+                      <div style={{ display:"flex", alignItems:"center", gap:8, flexShrink:0 }}>
+                        <div>
+                          <p style={{ margin:"0 0 2px", fontSize:9, color:C.muted, fontWeight:600, textTransform:"uppercase" }}>Price (UGX)</p>
+                          <input type="number" value={typeof svc.price==="number"?svc.price:parseInt(String(svc.price))||0} onChange={e=>updateSvc(i,"price",+e.target.value)}
+                            style={{ width:110, background:C.bg, border:`1px solid ${C.border}`, borderRadius:6, padding:"5px 8px", color:C.gold, fontSize:12, fontWeight:700, textAlign:"right" }} />
+                        </div>
+                        <button onClick={()=>deleteSvc(i)} className="btn-danger" style={{ background:"none", border:`1px solid ${C.border}`, borderRadius:6, color:C.danger, padding:"6px 10px", fontSize:12, cursor:"pointer" }}>🗑</button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div style={{ marginTop:20 }}>
+                  <BtnGold onClick={saveAll} disabled={saving}>{saving ? "Saving…" : "💾 Save All Changes"}</BtnGold>
                 </div>
               </div>
             )}
 
-            {/* TAB 3: BLOG MANAGER */}
-            {activeTab === "blog" && (
-              <div className="space-y-8">
-                {/* Add Blog Button */}
-                <div className="flex justify-between items-center">
-                  <div>
-                    <h3 className="text-base font-bold text-white">Blog Posts</h3>
-                    <p className="text-xs text-gray-400 mt-1">Create and manage blog articles displayed on the blog page.</p>
-                  </div>
-                  <button
-                    onClick={() => setShowAddBlog(!showAddBlog)}
-                    className="px-5 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider"
-                    style={{ backgroundColor: "#c2a74e", color: "#0e1317" }}
-                  >
-                    {showAddBlog ? "✕ Cancel" : "+ New Blog Post"}
-                  </button>
+            {/* ══ BLOG TAB ══ */}
+            {tab === "blog" && (
+              <div className="fade">
+                <SectionHead title="Blog Posts" sub="Publish and manage articles shown on the blog page." />
+
+                <div style={{ marginBottom:16 }}>
+                  <BtnGold onClick={()=>setShowAddBlog(!showAddBlog)}>{showAddBlog ? "✕ Cancel" : "+ New Post"}</BtnGold>
                 </div>
 
-                {/* Add Blog Form */}
                 {showAddBlog && (
-                  <form onSubmit={handleAddBlogPost} className="p-6 rounded-2xl bg-[#161c22] border border-[#c2a74e]/40 space-y-5 shadow-xl">
-                    <h4 className="text-sm font-bold text-[#c2a74e] uppercase tracking-wider">New Blog Post</h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-xs font-semibold text-gray-300 mb-1">Post Title *</label>
-                        <input type="text" required placeholder="e.g. 5 Benefits of Hot Stone Massage" value={newBlog.title || ""} onChange={(e) => setNewBlog({ ...newBlog, title: e.target.value })} className="w-full px-4 py-2.5 rounded-lg bg-[#0e1317] border border-gray-700 text-xs text-white outline-none focus:border-[#c2a74e]" />
+                  <div className="fade" style={{ background:C.surface, border:`1px solid ${C.gold}44`, borderRadius:10, padding:20, marginBottom:20 }}>
+                    <p style={{ margin:"0 0 16px", fontSize:12, fontWeight:700, color:C.gold, textTransform:"uppercase" }}>New Blog Post</p>
+                    <form onSubmit={addBlog}>
+                      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12 }}>
+                        <Input label="Title *" required placeholder="e.g. Benefits of Aromatherapy" value={newBlog.title||""} onChange={(e:any)=>setNewBlog({...newBlog,title:e.target.value})} />
+                        <Input label="Author" placeholder="Admin" value={newBlog.author||""} onChange={(e:any)=>setNewBlog({...newBlog,author:e.target.value})} />
                       </div>
-                      <div>
-                        <label className="block text-xs font-semibold text-gray-300 mb-1">Author</label>
-                        <input type="text" placeholder="Admin" value={newBlog.author || ""} onChange={(e) => setNewBlog({ ...newBlog, author: e.target.value })} className="w-full px-4 py-2.5 rounded-lg bg-[#0e1317] border border-gray-700 text-xs text-white outline-none focus:border-[#c2a74e]" />
+                      <Input label="Short Excerpt" placeholder="A brief teaser shown on the blog card…" value={newBlog.excerpt||""} onChange={(e:any)=>setNewBlog({...newBlog,excerpt:e.target.value})} />
+                      <Textarea label="Full Content *" required rows={5} placeholder="Write the full article here…" value={newBlog.content||""} onChange={(e:any)=>setNewBlog({...newBlog,content:e.target.value})} />
+                      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12 }}>
+                        <div>
+                          <label style={{ display:"block", fontSize:11, fontWeight:600, color:C.muted, textTransform:"uppercase", letterSpacing:"0.06em", marginBottom:6 }}>Cover Image</label>
+                          <input type="file" accept="image/*" onChange={e=>{ const f=e.target.files?.[0]; if(f){setBlogFile(f);setBlogPreview(URL.createObjectURL(f));} }}
+                            style={{ width:"100%", fontSize:12, color:C.muted, background:C.bg, border:`1px solid ${C.border}`, borderRadius:6, padding:"7px 10px" }} />
+                          {blogPreview && <img src={blogPreview} style={{ marginTop:8, width:72, height:48, objectFit:"cover", borderRadius:6, border:`1px solid ${C.border}` }} alt="preview" />}
+                        </div>
+                        <Input label="Date" value={newBlog.date||""} onChange={(e:any)=>setNewBlog({...newBlog,date:e.target.value})} />
                       </div>
-                    </div>
-                    <div>
-                      <label className="block text-xs font-semibold text-gray-300 mb-1">Short Excerpt (shown on blog card)</label>
-                      <input type="text" placeholder="A brief teaser for the article..." value={newBlog.excerpt || ""} onChange={(e) => setNewBlog({ ...newBlog, excerpt: e.target.value })} className="w-full px-4 py-2.5 rounded-lg bg-[#0e1317] border border-gray-700 text-xs text-white outline-none focus:border-[#c2a74e]" />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-semibold text-gray-300 mb-1">Full Content *</label>
-                      <textarea required rows={6} placeholder="Write your full blog article here..." value={newBlog.content || ""} onChange={(e) => setNewBlog({ ...newBlog, content: e.target.value })} className="w-full px-4 py-2.5 rounded-lg bg-[#0e1317] border border-gray-700 text-xs text-white outline-none focus:border-[#c2a74e] resize-y" />
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-xs font-semibold text-gray-300 mb-1">Cover Image</label>
-                        <input type="file" accept="image/*" onChange={(e) => { const f = e.target.files?.[0]; if (f) { setBlogImageFile(f); setBlogImagePreview(URL.createObjectURL(f)); } }} className="w-full text-xs text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-[#c2a74e] file:text-[#0e1317] hover:file:opacity-90 cursor-pointer" />
-                        {blogImagePreview && <img src={blogImagePreview} alt="Preview" className="mt-3 w-24 h-16 object-cover rounded-lg border border-gray-700" />}
+                      <div style={{ marginTop:4 }}>
+                        <BtnGold type="submit" disabled={blogUploading}>{blogUploading ? "Publishing…" : "✓ Publish Post"}</BtnGold>
                       </div>
-                      <div>
-                        <label className="block text-xs font-semibold text-gray-300 mb-1">Date</label>
-                        <input type="text" value={newBlog.date || ""} onChange={(e) => setNewBlog({ ...newBlog, date: e.target.value })} className="w-full px-4 py-2.5 rounded-lg bg-[#0e1317] border border-gray-700 text-xs text-white outline-none focus:border-[#c2a74e]" />
-                      </div>
-                    </div>
-                    <button type="submit" disabled={uploadingBlog} className="px-8 py-3 rounded-lg font-bold text-xs uppercase tracking-wider disabled:opacity-50" style={{ backgroundColor: "#c2a74e", color: "#0e1317" }}>
-                      {uploadingBlog ? "Publishing..." : "✓ Publish Blog Post"}
-                    </button>
-                  </form>
+                    </form>
+                  </div>
                 )}
 
-                {/* Blog Posts List */}
-                {blogPosts.length === 0 ? (
-                  <div className="text-center py-16 text-gray-500">
-                    <p className="text-4xl mb-3">📝</p>
-                    <p className="text-sm">No blog posts yet. Create your first one above.</p>
+                {blogs.length === 0 ? (
+                  <div style={{ textAlign:"center", padding:"60px 20px", color:C.muted }}>
+                    <p style={{ fontSize:32, margin:"0 0 8px" }}>📝</p>
+                    <p style={{ fontSize:13 }}>No blog posts yet. Click "+ New Post" to get started.</p>
                   </div>
                 ) : (
-                  <div className="space-y-4">
-                    {blogPosts.map((post) => (
-                      <div key={post.id} className="p-5 rounded-xl bg-[#161c22] border border-gray-800 shadow-md flex gap-5 items-start">
-                        {post.image && (
-                          <img src={post.image} alt={post.title} className="w-24 h-20 object-cover rounded-lg flex-shrink-0 border border-gray-700" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
-                        )}
-                        <div className="flex-1 min-w-0">
-                          <h4 className="font-bold text-white text-sm truncate">{post.title}</h4>
-                          <p className="text-xs text-[#c2a74e] mt-0.5">{post.date} · by {post.author}</p>
-                          <p className="text-xs text-gray-400 mt-1 line-clamp-2">{post.excerpt || post.content?.substring(0, 120)}</p>
+                  <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
+                    {blogs.map(post=>(
+                      <div key={post.id} className="card" style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:8, padding:"12px 16px", display:"flex", gap:14, alignItems:"center" }}>
+                        {post.image && <img src={post.image} alt={post.title} style={{ width:64, height:48, objectFit:"cover", borderRadius:6, border:`1px solid ${C.border}`, flexShrink:0 }} onError={(e:any)=>{e.target.style.display="none";}} />}
+                        <div style={{ flex:1, minWidth:0 }}>
+                          <p style={{ margin:0, fontWeight:700, fontSize:13, color:C.text, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{post.title}</p>
+                          <p style={{ margin:"3px 0 0", fontSize:11, color:C.gold }}>{post.date} · by {post.author}</p>
+                          <p className="line-clamp2" style={{ margin:"4px 0 0", fontSize:11, color:C.muted }}>{post.excerpt||post.content?.substring(0,100)}</p>
                         </div>
-                        <button onClick={() => handleDeleteBlogPost(post.id)} className="p-2 text-red-400 hover:text-red-300 hover:bg-red-950/40 rounded transition-colors text-xs flex-shrink-0" title="Delete">🗑️</button>
+                        <button onClick={()=>deleteBlog(post.id)} className="btn-danger" style={{ background:"none", border:`1px solid ${C.border}`, borderRadius:6, color:C.danger, padding:"6px 10px", fontSize:12, cursor:"pointer", flexShrink:0 }}>🗑</button>
                       </div>
                     ))}
                   </div>
@@ -814,90 +437,24 @@ export default function AdminGalleryPage() {
               </div>
             )}
 
-            {/* TAB 4: CONTACTS & SPA INFO */}
-            {activeTab === "info" && siteContent && (
-              <div className="p-8 rounded-2xl bg-[#161c22] border border-gray-800 space-y-6 max-w-3xl">
-                <h3 className="text-base font-bold text-white mb-2" style={{ color: "#c2a74e" }}>
-                  Spa Contact & Location Information
-                </h3>
-                <p className="text-xs text-gray-400 mb-6">
-                  Updating these details changes the phone, WhatsApp links, and locations across the entire website.
-                </p>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                  <div>
-                    <label className="block text-xs font-semibold text-gray-300 mb-1">Spa WhatsApp (e.g. +256781945510)</label>
-                    <input
-                      type="text"
-                      value={siteContent.contact?.spa?.whatsapp || "+256781945510"}
-                      onChange={(e) => {
-                        const copy = { ...siteContent };
-                        if (!copy.contact) copy.contact = {};
-                        if (!copy.contact.spa) copy.contact.spa = {};
-                        copy.contact.spa.whatsapp = e.target.value;
-                        setSiteContent(copy);
-                      }}
-                      className="w-full px-4 py-2.5 rounded-lg bg-[#0e1317] border border-gray-700 text-xs text-white"
-                    />
+            {/* ══ SETTINGS TAB ══ */}
+            {tab === "info" && siteContent && (
+              <div className="fade">
+                <SectionHead title="Spa Settings" sub="Update contact details, phone numbers and location across the entire website." />
+                <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:10, padding:24, maxWidth:600 }}>
+                  <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16, marginBottom:4 }}>
+                    <Input label="WhatsApp Number" placeholder="+256781945510" value={siteContent.contact?.spa?.whatsapp||""}
+                      onChange={(e:any)=>{ const c={...siteContent}; if(!c.contact)c.contact={}; if(!c.contact.spa)c.contact.spa={}; c.contact.spa.whatsapp=e.target.value; setSiteContent(c); }} />
+                    <Input label="Phone Line" placeholder="+256764001922" value={siteContent.contact?.spa?.phone||""}
+                      onChange={(e:any)=>{ const c={...siteContent}; if(!c.contact)c.contact={}; if(!c.contact.spa)c.contact.spa={}; c.contact.spa.phone=e.target.value; setSiteContent(c); }} />
                   </div>
-
-                  <div>
-                    <label className="block text-xs font-semibold text-gray-300 mb-1">Spa Phone Line</label>
-                    <input
-                      type="text"
-                      value={siteContent.contact?.spa?.phone || "+256764001922"}
-                      onChange={(e) => {
-                        const copy = { ...siteContent };
-                        if (!copy.contact) copy.contact = {};
-                        if (!copy.contact.spa) copy.contact.spa = {};
-                        copy.contact.spa.phone = e.target.value;
-                        setSiteContent(copy);
-                      }}
-                      className="w-full px-4 py-2.5 rounded-lg bg-[#0e1317] border border-gray-700 text-xs text-white"
-                    />
+                  <Input label="Location / Address" placeholder="Sir Apollo Kaggwa Rd & Mengo, Kampala" value={siteContent.homepage?.spaContent?.location||""}
+                    onChange={(e:any)=>{ const c={...siteContent}; if(!c.homepage)c.homepage={}; if(!c.homepage.spaContent)c.homepage.spaContent={}; c.homepage.spaContent.location=e.target.value; setSiteContent(c); }} />
+                  <Input label="Spa Tagline" placeholder="Oasis of Relaxation in Kampala" value={siteContent.homepage?.spaContent?.tagline||""}
+                    onChange={(e:any)=>{ const c={...siteContent}; if(!c.homepage)c.homepage={}; if(!c.homepage.spaContent)c.homepage.spaContent={}; c.homepage.spaContent.tagline=e.target.value; setSiteContent(c); }} />
+                  <div style={{ marginTop:8, paddingTop:16, borderTop:`1px solid ${C.border}` }}>
+                    <BtnGold onClick={saveAll} disabled={saving}>{saving ? "Saving…" : "Save Settings"}</BtnGold>
                   </div>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-gray-300 mb-1">Physical Locations</label>
-                  <input
-                    type="text"
-                    value={siteContent.homepage?.spaContent?.location || "Sir Apollo Kaggwa road & Mengo"}
-                    onChange={(e) => {
-                      const copy = { ...siteContent };
-                      if (!copy.homepage) copy.homepage = {};
-                      if (!copy.homepage.spaContent) copy.homepage.spaContent = {};
-                      copy.homepage.spaContent.location = e.target.value;
-                      setSiteContent(copy);
-                    }}
-                    className="w-full px-4 py-2.5 rounded-lg bg-[#0e1317] border border-gray-700 text-xs text-white"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-gray-300 mb-1">Spa Tagline</label>
-                  <input
-                    type="text"
-                    value={siteContent.homepage?.spaContent?.tagline || "Oasis of Relaxation in Kampala"}
-                    onChange={(e) => {
-                      const copy = { ...siteContent };
-                      if (!copy.homepage) copy.homepage = {};
-                      if (!copy.homepage.spaContent) copy.homepage.spaContent = {};
-                      copy.homepage.spaContent.tagline = e.target.value;
-                      setSiteContent(copy);
-                    }}
-                    className="w-full px-4 py-2.5 rounded-lg bg-[#0e1317] border border-gray-700 text-xs text-white"
-                  />
-                </div>
-
-                <div className="pt-4 border-t border-gray-800">
-                  <button
-                    onClick={handleSaveAll}
-                    disabled={saving}
-                    className="px-8 py-3 rounded-lg font-bold text-xs uppercase tracking-wider text-black bg-[#c2a74e]"
-                  >
-                    {saving ? "Saving to Cloudinary..." : "Save Contact Info"}
-                  </button>
                 </div>
               </div>
             )}
