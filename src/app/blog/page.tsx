@@ -67,7 +67,7 @@ export default function BlogPage() {
             </div><!-- /.container-fluid -->
         </header><!-- /.main-header -->
         <section class="page-header">
-            <div class="page-header__bg"></div>
+            <div class="page-header__bg" style="background-image: url(/assets/images/backgrounds/blog-header-bg.jpg);"></div>
             <!-- /.page-header__bg -->
             <div class="container">
                 <img src="/assets/images/shapes/page-header-s-1.png" alt="our news" class="page-header__shape">
