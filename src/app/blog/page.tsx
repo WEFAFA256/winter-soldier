@@ -151,76 +151,7 @@ export default function BlogPage() {
                             </div><!-- /.blog-card__content -->
                         </div><!-- /.blog-card -->
                     </div><!-- /.col-md-6 col-lg-4 -->
-                    <div class="col-md-6 col-lg-4">
-                        <div class="blog-card wow fadeInUp" data-wow-duration='1500ms' data-wow-delay='300ms'>
-                            <div class="blog-card__image">
-                                <img src="/assets/images/resources/about-2-1.jpg" alt="My supervisor didn't like the latest">
-                                <img src="/assets/images/resources/about-2-1.jpg" alt="My supervisor didn't like the latest">
-                                <a href="blog-details-right.html" class="blog-card__image__link"><span class="sr-only">My supervisor didn't like the latest</span>
-                                    <!-- /.sr-only --></a>
-                                <div class="blog-card__date"><span>28</span>
-                                    July</div><!-- /.blog-card__date -->
-                            </div><!-- /.blog-card__image -->
-                            <div class="blog-card__content">
-                                <ul class="list-unstyled blog-card__meta">
-                                    <li><a href="blog-list-right.html"><img src="/assets/images/blog/blog-author-1-1.jpg" alt="The Serenity Spa">by Admin</a></li>
-                                    <li><a href="blog-details-right.html"><i class="fa fa-comments"></i>2 Comments</a></li>
-                                </ul><!-- /.list-unstyled blog-card__meta -->
-                                <h3 class="blog-card__title"><a href="blog-details-right.html">My supervisor didn't like the latest</a></h3><!-- /.blog-card__title -->
-                                <a href="blog-details-right.html" class="blog-card__link">
-                                    Read more
-                                    <i class="icon-right-arrow"></i>
-                                </a><!-- /.blog-card__link -->
-                            </div><!-- /.blog-card__content -->
-                        </div><!-- /.blog-card -->
-                    </div><!-- /.col-md-6 col-lg-4 -->
-                    <div class="col-md-6 col-lg-4">
-                        <div class="blog-card wow fadeInUp" data-wow-duration='1500ms' data-wow-delay='400ms'>
-                            <div class="blog-card__image">
-                                <img src="/assets/images/instagram/instagram-2-4.jpg" alt="We need to build it so that it scales">
-                                <img src="/assets/images/instagram/instagram-2-4.jpg" alt="We need to build it so that it scales">
-                                <a href="blog-details-right.html" class="blog-card__image__link"><span class="sr-only">We need to build it so that it scales</span>
-                                    <!-- /.sr-only --></a>
-                                <div class="blog-card__date"><span>28</span>
-                                    July</div><!-- /.blog-card__date -->
-                            </div><!-- /.blog-card__image -->
-                            <div class="blog-card__content">
-                                <ul class="list-unstyled blog-card__meta">
-                                    <li><a href="blog-list-right.html"><img src="/assets/images/blog/blog-author-1-1.jpg" alt="The Serenity Spa">by Admin</a></li>
-                                    <li><a href="blog-details-right.html"><i class="fa fa-comments"></i>2 Comments</a></li>
-                                </ul><!-- /.list-unstyled blog-card__meta -->
-                                <h3 class="blog-card__title"><a href="blog-details-right.html">We need to build it so that it scales</a></h3><!-- /.blog-card__title -->
-                                <a href="blog-details-right.html" class="blog-card__link">
-                                    Read more
-                                    <i class="icon-right-arrow"></i>
-                                </a><!-- /.blog-card__link -->
-                            </div><!-- /.blog-card__content -->
-                        </div><!-- /.blog-card -->
-                    </div><!-- /.col-md-6 col-lg-4 -->
-                    <div class="col-md-6 col-lg-4">
-                        <div class="blog-card wow fadeInUp" data-wow-duration='1500ms' data-wow-delay='500ms'>
-                            <div class="blog-card__image">
-                                <img src="/assets/images/instagram/instagram-2-1.jpg" alt="Big picture organic growth, or fast">
-                                <img src="/assets/images/instagram/instagram-2-1.jpg" alt="Big picture organic growth, or fast">
-                                <a href="blog-details-right.html" class="blog-card__image__link"><span class="sr-only">Big picture organic growth, or fast</span>
-                                    <!-- /.sr-only --></a>
-                                <div class="blog-card__date"><span>28</span>
-                                    July</div><!-- /.blog-card__date -->
-                            </div><!-- /.blog-card__image -->
-                            <div class="blog-card__content">
-                                <ul class="list-unstyled blog-card__meta">
-                                    <li><a href="blog-list-right.html"><img src="/assets/images/blog/blog-author-1-1.jpg" alt="The Serenity Spa">by Admin</a></li>
-                                    <li><a href="blog-details-right.html"><i class="fa fa-comments"></i>2 Comments</a></li>
-                                </ul><!-- /.list-unstyled blog-card__meta -->
-                                <h3 class="blog-card__title"><a href="blog-details-right.html">Big picture organic growth, or fast</a></h3><!-- /.blog-card__title -->
-                                <a href="blog-details-right.html" class="blog-card__link">
-                                    Read more
-                                    <i class="icon-right-arrow"></i>
-                                </a><!-- /.blog-card__link -->
-                            </div><!-- /.blog-card__content -->
-                        </div><!-- /.blog-card -->
-                    </div><!-- /.col-md-6 col-lg-4 -->
-                </div><!-- /.row -->
+                    </div><!-- /.row -->
             </div><!-- /.container -->
         </section><!-- /.blog-one blog-one--page -->
 
