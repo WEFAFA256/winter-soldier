@@ -7,6 +7,10 @@ export default function FloatingContactButtons() {
   const pathname = usePathname();
   const [contactData, setContactData] = useState<any>(null);
 
+  if (pathname?.startsWith('/admin')) {
+    return null;
+  }
+
   useEffect(() => {
     const fetchContactData = async () => {
       try {

@@ -40,8 +40,8 @@ const css = `
   .adm .img-thumb:hover { transform: scale(1.03); }
   .adm .spin { animation: spin 1s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
-  .adm .fade { animation: fadeIn 0.2s ease; }
-  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+  
+   to { opacity: 1; transform: none; } }
   .adm .line-clamp2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 `;
 
@@ -275,7 +275,7 @@ export default function AdminGalleryPage() {
           <>
             {/* ══ GALLERY TAB ══ */}
             {tab === "gallery" && (
-              <div className="fade">
+              <div className="admin-pane">
                 <SectionHead title="Spa Gallery" sub="Upload photos directly to Cloudinary — they appear on the gallery page instantly." />
 
                 {/* Upload form */}
@@ -325,7 +325,7 @@ export default function AdminGalleryPage() {
 
             {/* ══ SERVICES TAB ══ */}
             {tab === "services" && (
-              <div className="fade">
+              <div className="admin-pane">
                 <SectionHead title="Treatments & Pricing" sub="Edit service titles, descriptions, and prices. Click Save Changes when done." />
 
                 <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:16, gap:12 }}>
@@ -336,7 +336,7 @@ export default function AdminGalleryPage() {
 
                 {/* Add service form */}
                 {showAddSvc && (
-                  <div className="fade" style={{ background:C.surface, border:`1px solid ${C.gold}44`, borderRadius:10, padding:20, marginBottom:16 }}>
+                  <div className="admin-pane" style={{ background:C.surface, border:`1px solid ${C.gold}44`, borderRadius:10, padding:20, marginBottom:16 }}>
                     <p style={{ margin:"0 0 14px", fontSize:12, fontWeight:700, color:C.gold, textTransform:"uppercase" }}>New Treatment</p>
                     <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:12, marginBottom:12 }}>
                       <Input label="Title" placeholder="e.g. Hot Stone Massage" value={newSvc.title||""} onChange={(e:any)=>setNewSvc({...newSvc,title:e.target.value})} />
@@ -381,7 +381,7 @@ export default function AdminGalleryPage() {
 
             {/* ══ BLOG TAB ══ */}
             {tab === "blog" && (
-              <div className="fade">
+              <div className="admin-pane">
                 <SectionHead title="Blog Posts" sub="Publish and manage articles shown on the blog page." />
 
                 <div style={{ marginBottom:16 }}>
@@ -389,7 +389,7 @@ export default function AdminGalleryPage() {
                 </div>
 
                 {showAddBlog && (
-                  <div className="fade" style={{ background:C.surface, border:`1px solid ${C.gold}44`, borderRadius:10, padding:20, marginBottom:20 }}>
+                  <div className="admin-pane" style={{ background:C.surface, border:`1px solid ${C.gold}44`, borderRadius:10, padding:20, marginBottom:20 }}>
                     <p style={{ margin:"0 0 16px", fontSize:12, fontWeight:700, color:C.gold, textTransform:"uppercase" }}>New Blog Post</p>
                     <form onSubmit={addBlog}>
                       <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12 }}>
@@ -439,7 +439,7 @@ export default function AdminGalleryPage() {
 
             {/* ══ SETTINGS TAB ══ */}
             {tab === "info" && siteContent && (
-              <div className="fade">
+              <div className="admin-pane">
                 <SectionHead title="Spa Settings" sub="Update contact details, phone numbers and location across the entire website." />
                 <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:10, padding:24, maxWidth:600 }}>
                   <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16, marginBottom:4 }}>
