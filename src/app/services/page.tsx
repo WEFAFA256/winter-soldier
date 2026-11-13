@@ -690,7 +690,7 @@ export default function ServicesPage() {
 
       <div className="page-wrapper" style={{ backgroundColor: "#0e1317", color: "#c4cfde", minHeight: "100vh" }}>
         {/* --- NATIVE SOLOX LUXURY HEADER --- */}
-        <header className="main-header main-header--two sticky-header sticky-header--normal" style={{ position: "relative", backgroundColor: "#0e1317", borderBottom: "1px solid rgba(197,168,128,0.15)" }}>
+        <header className="main-header main-header--two sticky-header sticky-header--normal" style={{ position: "relative", backgroundColor: "#0e1317", borderBottom: "1px solid rgba(194, 167, 78,0.15)" }}>
           <div className="container" style={{ padding: "0 15px" }}>
             <div className="main-header__inner" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", minHeight: "82px" }}>
               <div className="main-header__logo">
@@ -703,7 +703,7 @@ export default function ServicesPage() {
                       width: "50px",
                       borderRadius: "50%",
                       objectFit: "cover",
-                      border: "2px solid rgba(197,168,128,0.5)",
+                      border: "2px solid rgba(194, 167, 78,0.5)",
                       display: "block",
                     }}
                   />
@@ -713,7 +713,7 @@ export default function ServicesPage() {
               <nav className="main-header__nav main-menu" style={{ display: "flex", alignItems: "center" }}>
                 <ul style={{ listStyle: "none", gap: "24px", margin: 0, padding: 0, display: "flex", alignItems: "center" }} className="d-none d-xl-flex">
                   <li><Link href="/" style={{ color: "#ffffff", textDecoration: "none", fontSize: "13px", fontWeight: 600, letterSpacing: "1px", textTransform: "uppercase" }}>Home</Link></li>
-                  <li className="current"><Link href="/services" style={{ color: "#c5a880", textDecoration: "none", fontSize: "13px", fontWeight: 600, letterSpacing: "1px", textTransform: "uppercase" }}>Services &amp; Packages</Link></li>
+                  <li className="current"><Link href="/services" style={{ color: "#c2a74e", textDecoration: "none", fontSize: "13px", fontWeight: 600, letterSpacing: "1px", textTransform: "uppercase" }}>Services &amp; Packages</Link></li>
                   <li><Link href="/gallery" style={{ color: "#ffffff", textDecoration: "none", fontSize: "13px", fontWeight: 600, letterSpacing: "1px", textTransform: "uppercase" }}>Gallery</Link></li>
                   <li><Link href="/booking" style={{ color: "#ffffff", textDecoration: "none", fontSize: "13px", fontWeight: 600, letterSpacing: "1px", textTransform: "uppercase" }}>Book Appointment</Link></li>
                   <li><Link href="/blog" style={{ color: "#ffffff", textDecoration: "none", fontSize: "13px", fontWeight: 600, letterSpacing: "1px", textTransform: "uppercase" }}>Blog</Link></li>
@@ -727,7 +727,7 @@ export default function ServicesPage() {
                   rel="noopener noreferrer"
                   className="serenity-gold-btn"
                   style={{
-                    backgroundColor: "#c5a880",
+                    backgroundColor: "#c2a74e",
                     color: "#0e1317",
                     padding: "8px 16px",
                     borderRadius: "4px",
@@ -755,15 +755,15 @@ export default function ServicesPage() {
                     justifyContent: "center",
                     gap: "5px",
                     padding: "8px 10px",
-                    background: "rgba(197, 168, 128, 0.1)",
-                    border: "1px solid rgba(197, 168, 128, 0.35)",
+                    background: "rgba(194, 167, 78, 0.1)",
+                    border: "1px solid rgba(194, 167, 78, 0.35)",
                     borderRadius: "6px"
                   }}
                   aria-label="Toggle navigation menu"
                 >
-                  <span style={{ width: "22px", height: "2px", backgroundColor: "#c5a880", display: "block" }}></span>
-                  <span style={{ width: "22px", height: "2px", backgroundColor: "#c5a880", display: "block" }}></span>
-                  <span style={{ width: "22px", height: "2px", backgroundColor: "#c5a880", display: "block" }}></span>
+                  <span style={{ width: "22px", height: "2px", backgroundColor: "#c2a74e", display: "block" }}></span>
+                  <span style={{ width: "22px", height: "2px", backgroundColor: "#c2a74e", display: "block" }}></span>
+                  <span style={{ width: "22px", height: "2px", backgroundColor: "#c2a74e", display: "block" }}></span>
                 </div>
               </div>
             </div>
@@ -803,7 +803,7 @@ export default function ServicesPage() {
             style={{
               position: "absolute",
               inset: 0,
-              background: "linear-gradient(135deg, rgba(197,168,128,0.08) 0%, rgba(14,19,23,0.75) 100%)",
+              background: "linear-gradient(135deg, rgba(194, 167, 78,0.08) 0%, rgba(14,19,23,0.75) 100%)",
             }}
           />
           {/* Text content */}
@@ -818,7 +818,7 @@ export default function ServicesPage() {
               transition: "opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.2s, transform 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.2s",
             }}
           >
-            <span style={{ color: "#c5a880", fontFamily: "'Great Vibes', cursive, Cormorant, serif", fontSize: "1.5rem", display: "block", marginBottom: "10px", letterSpacing: "2px" }}>
+            <span style={{ color: "#c2a74e", fontFamily: "'Great Vibes', cursive, Cormorant, serif", fontSize: "1.5rem", display: "block", marginBottom: "10px", letterSpacing: "2px" }}>
               Indulge &amp; Rejuvenate
             </span>
             <h1 style={{ fontFamily: "Cormorant, serif", fontSize: "clamp(2rem, 5vw, 3.2rem)", fontWeight: 700, color: "#ffffff", margin: "0 0 12px 0", lineHeight: 1.15 }}>
@@ -829,8 +829,8 @@ export default function ServicesPage() {
             </p>
             <nav style={{ fontSize: "12px", color: "rgba(255,255,255,0.5)", letterSpacing: "1.5px", textTransform: "uppercase" }}>
               <Link href="/" style={{ color: "rgba(255,255,255,0.5)", textDecoration: "none" }}>Home</Link>
-              <span style={{ margin: "0 8px", color: "#c5a880" }}>/</span>
-              <span style={{ color: "#c5a880" }}>Services</span>
+              <span style={{ margin: "0 8px", color: "#c2a74e" }}>/</span>
+              <span style={{ color: "#c2a74e" }}>Services</span>
             </nav>
           </div>
         </div>
@@ -858,8 +858,8 @@ export default function ServicesPage() {
                         fontSize: "13px",
                         fontWeight: 600,
                         letterSpacing: "0.5px",
-                        border: activeCategory === cat.id ? "1px solid #c5a880" : "1px solid rgba(255,255,255,0.1)",
-                        backgroundColor: activeCategory === cat.id ? "#c5a880" : "rgba(22,28,34,0.8)",
+                        border: activeCategory === cat.id ? "1px solid #c2a74e" : "1px solid rgba(255,255,255,0.1)",
+                        backgroundColor: activeCategory === cat.id ? "#c2a74e" : "rgba(22,28,34,0.8)",
                         color: activeCategory === cat.id ? "#0e1317" : "#ffffff",
                         cursor: "pointer",
                         transition: "all 0.2s ease",
@@ -883,7 +883,7 @@ export default function ServicesPage() {
                       width: "100%",
                       padding: "10px 16px 10px 40px",
                       backgroundColor: "#161c22",
-                      border: "1px solid rgba(197,168,128,0.25)",
+                      border: "1px solid rgba(194, 167, 78,0.25)",
                       borderRadius: "24px",
                       color: "#fff",
                       fontSize: "13px",
@@ -892,7 +892,7 @@ export default function ServicesPage() {
                   />
                   <i
                     className="fas fa-search"
-                    style={{ position: "absolute", left: "14px", top: "50%", transform: "translateY(-50%)", color: "#c5a880", fontSize: "14px" }}
+                    style={{ position: "absolute", left: "14px", top: "50%", transform: "translateY(-50%)", color: "#c2a74e", fontSize: "14px" }}
                   ></i>
                   {searchQuery && (
                     <button
@@ -919,13 +919,13 @@ export default function ServicesPage() {
                 <p style={{ marginTop: "16px", color: "#9ca3af" }}>Loading authentic treatments...</p>
               </div>
             ) : filteredServices.length === 0 ? (
-              <div style={{ textAlign: "center", padding: "60px 0", backgroundColor: "#161c22", borderRadius: "12px", border: "1px dashed rgba(197,168,128,0.3)" }}>
-                <i className="fas fa-spa" style={{ fontSize: "3rem", color: "#c5a880", marginBottom: "16px" }}></i>
+              <div style={{ textAlign: "center", padding: "60px 0", backgroundColor: "#161c22", borderRadius: "12px", border: "1px dashed rgba(194, 167, 78,0.3)" }}>
+                <i className="fas fa-spa" style={{ fontSize: "3rem", color: "#c2a74e", marginBottom: "16px" }}></i>
                 <h3 style={{ color: "#fff", fontFamily: "Cormorant, serif", fontSize: "1.8rem" }}>No treatments found</h3>
                 <p style={{ color: "#9ca3af", marginBottom: "20px" }}>Try adjusting your search terms or category filter.</p>
                 <button
                   onClick={() => { setActiveCategory("all"); setSearchQuery(""); }}
-                  style={{ padding: "8px 20px", backgroundColor: "#c5a880", color: "#0e1317", border: "none", borderRadius: "4px", fontWeight: 700, cursor: "pointer" }}
+                  style={{ padding: "8px 20px", backgroundColor: "#c2a74e", color: "#0e1317", border: "none", borderRadius: "4px", fontWeight: 700, cursor: "pointer" }}
                 >
                   Show All Treatments
                 </button>
@@ -956,14 +956,14 @@ export default function ServicesPage() {
           style={{
             padding: "60px 0",
             backgroundColor: "#131920",
-            borderTop: "1px solid rgba(197,168,128,0.15)",
-            borderBottom: "1px solid rgba(197,168,128,0.15)",
+            borderTop: "1px solid rgba(194, 167, 78,0.15)",
+            borderBottom: "1px solid rgba(194, 167, 78,0.15)",
           }}
         >
           <div className="container">
             <div className="row align-items-center g-4">
               <div className="col-lg-8">
-                <span style={{ color: "#c5a880", textTransform: "uppercase", letterSpacing: "2px", fontSize: "12px", fontWeight: 700 }}>
+                <span style={{ color: "#c2a74e", textTransform: "uppercase", letterSpacing: "2px", fontSize: "12px", fontWeight: 700 }}>
                   Private Suites &amp; Bespoke Packages
                 </span>
                 <h2 style={{ fontFamily: "Cormorant, serif", fontSize: "2.3rem", fontWeight: 700, color: "#fff", margin: "8px 0 12px 0" }}>
@@ -980,7 +980,7 @@ export default function ServicesPage() {
                   rel="noopener noreferrer"
                   className="serenity-gold-btn"
                   style={{
-                    backgroundColor: "#c5a880",
+                    backgroundColor: "#c2a74e",
                     color: "#0e1317",
                     padding: "14px 30px",
                     borderRadius: "4px",
@@ -1005,7 +1005,7 @@ export default function ServicesPage() {
         <section style={{ padding: "80px 0", backgroundColor: "#0e1317" }}>
           <div className="container">
             <div style={{ textAlign: "center", marginBottom: "40px" }}>
-              <span style={{ color: "#c5a880", fontFamily: "Alex Brush, cursive", fontSize: "1.8rem" }}>Visit Sanctuary</span>
+              <span style={{ color: "#c2a74e", fontFamily: "Alex Brush, cursive", fontSize: "1.8rem" }}>Visit Sanctuary</span>
               <h2 style={{ fontFamily: "Cormorant, serif", fontSize: "2.6rem", fontWeight: 700, color: "#fff" }}>
                 Our Locations &amp; Concierge
               </h2>
@@ -1013,14 +1013,14 @@ export default function ServicesPage() {
 
             <div className="row g-4">
               <div className="col-lg-4">
-                <div style={{ backgroundColor: "#161c22", padding: "30px", borderRadius: "10px", border: "1px solid rgba(197,168,128,0.2)", height: "100%" }}>
+                <div style={{ backgroundColor: "#161c22", padding: "30px", borderRadius: "10px", border: "1px solid rgba(194, 167, 78,0.2)", height: "100%" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: "14px", marginBottom: "16px" }}>
-                    <div style={{ width: "46px", height: "46px", borderRadius: "50%", backgroundColor: "rgba(197,168,128,0.15)", display: "flex", alignItems: "center", justifyContent: "center", color: "#c5a880", fontSize: "20px" }}>
+                    <div style={{ width: "46px", height: "46px", borderRadius: "50%", backgroundColor: "rgba(194, 167, 78,0.15)", display: "flex", alignItems: "center", justifyContent: "center", color: "#c2a74e", fontSize: "20px" }}>
                       <i className="fas fa-map-marker-alt"></i>
                     </div>
                     <div>
                       <h4 style={{ color: "#fff", margin: 0, fontSize: "1.1rem" }}>Spa Locations</h4>
-                      <p style={{ color: "#c5a880", margin: 0, fontSize: "12px" }}>Kampala, Uganda</p>
+                      <p style={{ color: "#c2a74e", margin: 0, fontSize: "12px" }}>Kampala, Uganda</p>
                     </div>
                   </div>
                   <p style={{ color: "#c4cfde", fontSize: "14px", lineHeight: 1.6 }}>
@@ -1031,14 +1031,14 @@ export default function ServicesPage() {
               </div>
 
               <div className="col-lg-4">
-                <div style={{ backgroundColor: "#161c22", padding: "30px", borderRadius: "10px", border: "1px solid rgba(197,168,128,0.2)", height: "100%" }}>
+                <div style={{ backgroundColor: "#161c22", padding: "30px", borderRadius: "10px", border: "1px solid rgba(194, 167, 78,0.2)", height: "100%" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: "14px", marginBottom: "16px" }}>
-                    <div style={{ width: "46px", height: "46px", borderRadius: "50%", backgroundColor: "rgba(197,168,128,0.15)", display: "flex", alignItems: "center", justifyContent: "center", color: "#c5a880", fontSize: "20px" }}>
+                    <div style={{ width: "46px", height: "46px", borderRadius: "50%", backgroundColor: "rgba(194, 167, 78,0.15)", display: "flex", alignItems: "center", justifyContent: "center", color: "#c2a74e", fontSize: "20px" }}>
                       <i className="fas fa-clock"></i>
                     </div>
                     <div>
                       <h4 style={{ color: "#fff", margin: 0, fontSize: "1.1rem" }}>Operating Hours</h4>
-                      <p style={{ color: "#c5a880", margin: 0, fontSize: "12px" }}>Open 7 Days A Week</p>
+                      <p style={{ color: "#c2a74e", margin: 0, fontSize: "12px" }}>Open 7 Days A Week</p>
                     </div>
                   </div>
                   <p style={{ color: "#c4cfde", fontSize: "14px", lineHeight: 1.6 }}>
@@ -1049,14 +1049,14 @@ export default function ServicesPage() {
               </div>
 
               <div className="col-lg-4">
-                <div style={{ backgroundColor: "#161c22", padding: "30px", borderRadius: "10px", border: "1px solid rgba(197,168,128,0.2)", height: "100%" }}>
+                <div style={{ backgroundColor: "#161c22", padding: "30px", borderRadius: "10px", border: "1px solid rgba(194, 167, 78,0.2)", height: "100%" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: "14px", marginBottom: "16px" }}>
-                    <div style={{ width: "46px", height: "46px", borderRadius: "50%", backgroundColor: "rgba(197,168,128,0.15)", display: "flex", alignItems: "center", justifyContent: "center", color: "#c5a880", fontSize: "20px" }}>
+                    <div style={{ width: "46px", height: "46px", borderRadius: "50%", backgroundColor: "rgba(194, 167, 78,0.15)", display: "flex", alignItems: "center", justifyContent: "center", color: "#c2a74e", fontSize: "20px" }}>
                       <i className="fas fa-phone-alt"></i>
                     </div>
                     <div>
                       <h4 style={{ color: "#fff", margin: 0, fontSize: "1.1rem" }}>Direct Lines</h4>
-                      <p style={{ color: "#c5a880", margin: 0, fontSize: "12px" }}>Instant Confirmation</p>
+                      <p style={{ color: "#c2a74e", margin: 0, fontSize: "12px" }}>Instant Confirmation</p>
                     </div>
                   </div>
                   <p style={{ color: "#c4cfde", fontSize: "14px", lineHeight: 1.6 }}>
@@ -1068,7 +1068,7 @@ export default function ServicesPage() {
             </div>
 
             {/* Embedded Google Map */}
-            <div style={{ marginTop: "40px", borderRadius: "12px", overflow: "hidden", border: "1px solid rgba(197,168,128,0.2)", height: "320px" }}>
+            <div style={{ marginTop: "40px", borderRadius: "12px", overflow: "hidden", border: "1px solid rgba(194, 167, 78,0.2)", height: "320px" }}>
               <iframe
                 title="The Serenity Spa Kampala"
                 src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d15959.043537096646!2d32.55836855!3d0.33748235!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x177dbb0e8fa7f763%3A0x6b30f295bc1cc14c!2sSir%20Apollo%20Kaggwa%20Rd%2C%20Kampala!5e0!3m2!1sen!2sug!4v1700000000000!5m2!1sen!2sug"
@@ -1089,7 +1089,7 @@ export default function ServicesPage() {
             <div className="row g-4">
               <div className="col-lg-4 col-md-6">
                 <Link href="/" style={{ display: "flex", alignItems: "center", gap: "10px", textDecoration: "none", marginBottom: "18px" }}>
-                  <img src="/assets/logo.jpg" alt="The Serenity Spa" style={{ height: "46px", width: "46px", borderRadius: "50%", objectFit: "cover", border: "2px solid rgba(197,168,128,0.5)" }} />
+                  <img src="/assets/logo.jpg" alt="The Serenity Spa" style={{ height: "46px", width: "46px", borderRadius: "50%", objectFit: "cover", border: "2px solid rgba(194, 167, 78,0.5)" }} />
                   <span style={{ fontFamily: "Cormorant, serif", fontSize: "1.4rem", fontWeight: 700, color: "#ffffff" }}>
                     THE SERENITY SPA
                   </span>
@@ -1098,9 +1098,9 @@ export default function ServicesPage() {
                   Kampala’s sanctuary for holistic rejuvenation, luxury hydrotherapy, and authentic massage rituals.
                 </p>
                 <div style={{ display: "flex", gap: "14px", marginTop: "16px" }}>
-                  <a href={`https://wa.me/${whatsappNumber}`} target="_blank" rel="noopener noreferrer" style={{ color: "#c5a880", fontSize: "18px" }}><i className="fab fa-whatsapp"></i></a>
-                  <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" style={{ color: "#c5a880", fontSize: "18px" }}><i className="fab fa-instagram"></i></a>
-                  <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" style={{ color: "#c5a880", fontSize: "18px" }}><i className="fab fa-facebook"></i></a>
+                  <a href={`https://wa.me/${whatsappNumber}`} target="_blank" rel="noopener noreferrer" style={{ color: "#c2a74e", fontSize: "18px" }}><i className="fab fa-whatsapp"></i></a>
+                  <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" style={{ color: "#c2a74e", fontSize: "18px" }}><i className="fab fa-instagram"></i></a>
+                  <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" style={{ color: "#c2a74e", fontSize: "18px" }}><i className="fab fa-facebook"></i></a>
                 </div>
               </div>
 
@@ -1108,7 +1108,7 @@ export default function ServicesPage() {
                 <h4 style={{ color: "#ffffff", fontFamily: "Cormorant, serif", fontSize: "1.2rem", marginBottom: "16px" }}>Navigation</h4>
                 <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: "8px", fontSize: "13px" }}>
                   <li><Link href="/" style={{ color: "#9ca3af", textDecoration: "none" }}>Home</Link></li>
-                  <li><Link href="/services" style={{ color: "#c5a880", textDecoration: "none" }}>Services &amp; Packages</Link></li>
+                  <li><Link href="/services" style={{ color: "#c2a74e", textDecoration: "none" }}>Services &amp; Packages</Link></li>
                   <li><Link href="/gallery" style={{ color: "#9ca3af", textDecoration: "none" }}>Gallery</Link></li>
                   <li><Link href="/blog" style={{ color: "#9ca3af", textDecoration: "none" }}>Blog</Link></li>
                 </ul>
@@ -1118,8 +1118,8 @@ export default function ServicesPage() {
                 <h4 style={{ color: "#ffffff", fontFamily: "Cormorant, serif", fontSize: "1.2rem", marginBottom: "16px" }}>Contacts</h4>
                 <p style={{ color: "#9ca3af", fontSize: "13px", lineHeight: 1.7, margin: 0 }}>
                   Sir Apollo Kaggwa Rd &amp; Mengo, Kampala<br />
-                  Phone: <a href="tel:+256781945510" style={{ color: "#c5a880", textDecoration: "none" }}>+256 781 945 510</a><br />
-                  Email: <a href="mailto:theserenityspakla@gmail.com" style={{ color: "#c5a880", textDecoration: "none" }}>theserenityspakla@gmail.com</a>
+                  Phone: <a href="tel:+256781945510" style={{ color: "#c2a74e", textDecoration: "none" }}>+256 781 945 510</a><br />
+                  Email: <a href="mailto:theserenityspakla@gmail.com" style={{ color: "#c2a74e", textDecoration: "none" }}>theserenityspakla@gmail.com</a>
                 </p>
               </div>
 
@@ -1163,7 +1163,7 @@ export default function ServicesPage() {
                 backgroundColor: "#161c22",
                 borderRadius: "12px",
                 overflow: "hidden",
-                border: "1px solid rgba(197,168,128,0.35)",
+                border: "1px solid rgba(194, 167, 78,0.35)",
                 boxShadow: "0 20px 60px rgba(0,0,0,0.8)",
                 display: "flex",
                 flexDirection: "column",
@@ -1186,7 +1186,7 @@ export default function ServicesPage() {
                   <h3 style={{ color: "#fff", fontFamily: "Cormorant, serif", fontSize: "1.5rem", fontWeight: 700, margin: 0 }}>
                     {modalService.title}
                   </h3>
-                  <span style={{ color: "#c5a880", fontWeight: 700, fontSize: "13px" }}>
+                  <span style={{ color: "#c2a74e", fontWeight: 700, fontSize: "13px" }}>
                     {formatPrice(modalService.price)}
                   </span>
                 </div>
@@ -1248,7 +1248,7 @@ export default function ServicesPage() {
                     onClick={() => setModalService(null)}
                     style={{
                       padding: "10px 24px",
-                      backgroundColor: "#c5a880",
+                      backgroundColor: "#c2a74e",
                       color: "#0e1317",
                       borderRadius: "4px",
                       fontWeight: 700,

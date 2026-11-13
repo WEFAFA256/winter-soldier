@@ -63,7 +63,7 @@ function generateBookingId() {
 const inputStyle: React.CSSProperties = {
   width: "100%",
   background: "rgba(255,255,255,0.04)",
-  border: "1px solid rgba(197, 168, 128, 0.25)",
+  border: "1px solid rgba(194, 167, 78, 0.25)",
   borderRadius: "8px",
   padding: "13px 16px",
   color: "#ffffff",
@@ -79,7 +79,7 @@ const labelStyle: React.CSSProperties = {
   fontWeight: 700,
   letterSpacing: "1.5px",
   textTransform: "uppercase",
-  color: "#c5a880",
+  color: "#c2a74e",
   marginBottom: "8px",
 };
 
@@ -243,7 +243,7 @@ function BookingFormInner() {
           right: 0,
           zIndex: 9000,
           background: "rgba(14, 19, 23, 0.98)",
-          borderBottom: "1px solid rgba(197, 168, 128, 0.18)",
+          borderBottom: "1px solid rgba(194, 167, 78, 0.18)",
           backdropFilter: "blur(12px)",
         }}
       >
@@ -268,7 +268,7 @@ function BookingFormInner() {
                 height: 48,
                 borderRadius: "50%",
                 objectFit: "cover",
-                border: "2px solid rgba(197,168,128,0.6)",
+                border: "2px solid rgba(194, 167, 78,0.6)",
                 display: "block",
               }}
             />
@@ -285,7 +285,7 @@ function BookingFormInner() {
               }}
             >
               <span>THE SERENITY</span>
-              <span style={{ color: "#c5a880", fontSize: "0.72rem", letterSpacing: "3px", fontWeight: 400 }}>SPA KAMPALA</span>
+              <span style={{ color: "#c2a74e", fontSize: "0.72rem", letterSpacing: "3px", fontWeight: 400 }}>SPA KAMPALA</span>
             </span>
           </Link>
 
@@ -302,7 +302,7 @@ function BookingFormInner() {
                 key={l.href}
                 href={l.href}
                 style={{
-                  color: l.href === "/booking" ? "#c5a880" : "#d4d4d4",
+                  color: l.href === "/booking" ? "#c2a74e" : "#d4d4d4",
                   fontSize: "13px",
                   fontWeight: 600,
                   letterSpacing: "1.2px",
@@ -350,15 +350,15 @@ function BookingFormInner() {
                 justifyContent: "center",
                 gap: "5px",
                 padding: "8px 10px",
-                background: "rgba(197, 168, 128, 0.1)",
-                border: "1px solid rgba(197, 168, 128, 0.35)",
+                background: "rgba(194, 167, 78, 0.1)",
+                border: "1px solid rgba(194, 167, 78, 0.35)",
                 borderRadius: "6px",
               }}
               aria-label="Toggle navigation menu"
             >
-              <span style={{ width: "22px", height: "2px", backgroundColor: "#c5a880", display: "block" }}></span>
-              <span style={{ width: "22px", height: "2px", backgroundColor: "#c5a880", display: "block" }}></span>
-              <span style={{ width: "22px", height: "2px", backgroundColor: "#c5a880", display: "block" }}></span>
+              <span style={{ width: "22px", height: "2px", backgroundColor: "#c2a74e", display: "block" }}></span>
+              <span style={{ width: "22px", height: "2px", backgroundColor: "#c2a74e", display: "block" }}></span>
+              <span style={{ width: "22px", height: "2px", backgroundColor: "#c2a74e", display: "block" }}></span>
             </div>
           </div>
         </div>
@@ -378,11 +378,11 @@ function BookingFormInner() {
           style={{
             padding: "44px 20px 24px",
             textAlign: "center",
-            borderBottom: "1px solid rgba(197,168,128,0.12)",
-            background: "linear-gradient(180deg, rgba(197,168,128,0.05) 0%, transparent 100%)",
+            borderBottom: "1px solid rgba(194, 167, 78,0.12)",
+            background: "linear-gradient(180deg, rgba(194, 167, 78,0.05) 0%, transparent 100%)",
           }}
         >
-          <span style={{ color: "#c5a880", fontFamily: "Alex Brush, cursive", fontSize: "2.2rem", display: "block", marginBottom: "4px" }}>
+          <span style={{ color: "#c2a74e", fontFamily: "Alex Brush, cursive", fontSize: "2.2rem", display: "block", marginBottom: "4px" }}>
             Instant Reservation
           </span>
           <h1
@@ -394,7 +394,7 @@ function BookingFormInner() {
               margin: 0,
             }}
           >
-            Book an <span style={{ color: "#c5a880", fontStyle: "italic" }}>Appointment</span>
+            Book an <span style={{ color: "#c2a74e", fontStyle: "italic" }}>Appointment</span>
           </h1>
           <p style={{ color: "#9ca3af", fontSize: "14px", marginTop: "8px", maxWidth: "560px", margin: "8px auto 0", lineHeight: 1.6 }}>
             {submitted
@@ -422,7 +422,7 @@ function BookingFormInner() {
                   backgroundColor: "#161c22",
                   borderRadius: "14px",
                   padding: "36px",
-                  border: "1px solid rgba(197,168,128,0.22)",
+                  border: "1px solid rgba(194, 167, 78,0.22)",
                   boxShadow: "0 16px 40px rgba(0,0,0,0.45)",
                 }}
               >
@@ -433,13 +433,13 @@ function BookingFormInner() {
                     color: "#ffffff",
                     marginBottom: "24px",
                     paddingBottom: "16px",
-                    borderBottom: "1px solid rgba(197,168,128,0.15)",
+                    borderBottom: "1px solid rgba(194, 167, 78,0.15)",
                     display: "flex",
                     alignItems: "center",
                     gap: "10px",
                   }}
                 >
-                  <i className="fas fa-calendar-check" style={{ color: "#c5a880", fontSize: "1.2rem" }}></i>
+                  <i className="fas fa-calendar-check" style={{ color: "#c2a74e", fontSize: "1.2rem" }}></i>
                   Reservation Details
                 </h2>
 
@@ -508,13 +508,13 @@ function BookingFormInner() {
                         style={{
                           marginTop: "8px",
                           padding: "8px 14px",
-                          backgroundColor: "rgba(197,168,128,0.12)",
+                          backgroundColor: "rgba(194, 167, 78,0.12)",
                           borderRadius: "6px",
                           fontSize: "13px",
-                          color: "#c5a880",
+                          color: "#c2a74e",
                           display: "flex",
                           justifyContent: "space-between",
-                          border: "1px solid rgba(197,168,128,0.25)",
+                          border: "1px solid rgba(194, 167, 78,0.25)",
                         }}
                       >
                         <span>Selected Treatment Fee</span>
@@ -602,11 +602,11 @@ function BookingFormInner() {
                     backgroundColor: "#161c22",
                     borderRadius: "14px",
                     padding: "26px",
-                    border: "1px solid rgba(197,168,128,0.2)",
+                    border: "1px solid rgba(194, 167, 78,0.2)",
                     marginBottom: "20px",
                   }}
                 >
-                  <h3 style={{ fontFamily: "Cormorant, serif", fontSize: "1.3rem", color: "#fff", marginBottom: "16px", paddingBottom: "10px", borderBottom: "1px solid rgba(197,168,128,0.12)" }}>
+                  <h3 style={{ fontFamily: "Cormorant, serif", fontSize: "1.3rem", color: "#fff", marginBottom: "16px", paddingBottom: "10px", borderBottom: "1px solid rgba(194, 167, 78,0.12)" }}>
                     How It Works
                   </h3>
                   {[
@@ -620,7 +620,7 @@ function BookingFormInner() {
                           width: "32px",
                           height: "32px",
                           borderRadius: "50%",
-                          backgroundColor: "#c5a880",
+                          backgroundColor: "#c2a74e",
                           color: "#0e1317",
                           display: "flex",
                           alignItems: "center",
@@ -642,13 +642,13 @@ function BookingFormInner() {
 
                 <div
                   style={{
-                    backgroundColor: "rgba(197,168,128,0.06)",
+                    backgroundColor: "rgba(194, 167, 78,0.06)",
                     borderRadius: "14px",
                     padding: "24px",
-                    border: "1px solid rgba(197,168,128,0.22)",
+                    border: "1px solid rgba(194, 167, 78,0.22)",
                   }}
                 >
-                  <h4 style={{ fontFamily: "Cormorant, serif", fontSize: "1.2rem", color: "#c5a880", margin: "0 0 10px 0" }}>
+                  <h4 style={{ fontFamily: "Cormorant, serif", fontSize: "1.2rem", color: "#c2a74e", margin: "0 0 10px 0" }}>
                     Prefer WhatsApp Direct?
                   </h4>
                   <p style={{ color: "#c4cfde", fontSize: "12px", lineHeight: 1.5, margin: "0 0 14px 0" }}>
@@ -688,7 +688,7 @@ function BookingFormInner() {
                   backgroundColor: "#161c22",
                   borderRadius: "16px",
                   overflow: "hidden",
-                  border: "1px solid rgba(197,168,128,0.35)",
+                  border: "1px solid rgba(194, 167, 78,0.35)",
                   boxShadow: "0 20px 60px rgba(0,0,0,0.6)",
                   animation: "cardFloatIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) both",
                 }}
@@ -699,7 +699,7 @@ function BookingFormInner() {
                     backgroundColor: "#11161b",
                     padding: "28px",
                     textAlign: "center",
-                    borderBottom: "1px solid rgba(197,168,128,0.18)",
+                    borderBottom: "1px solid rgba(194, 167, 78,0.18)",
                     position: "relative",
                   }}
                 >
@@ -723,7 +723,7 @@ function BookingFormInner() {
                   <h2 style={{ fontFamily: "Cormorant, serif", fontSize: "2rem", color: "#ffffff", margin: "0 0 6px 0", fontWeight: 700 }}>
                     Booking Confirmed!
                   </h2>
-                  <p style={{ color: "#c5a880", fontSize: "13px", margin: 0, letterSpacing: "1px", textTransform: "uppercase", fontWeight: 700 }}>
+                  <p style={{ color: "#c2a74e", fontSize: "13px", margin: 0, letterSpacing: "1px", textTransform: "uppercase", fontWeight: 700 }}>
                     Pass #{bookingSummary.id}
                   </p>
                 </div>
@@ -763,7 +763,7 @@ function BookingFormInner() {
                     <div
                       style={{
                         backgroundColor: "rgba(255,255,255,0.03)",
-                        border: "1px solid rgba(197,168,128,0.18)",
+                        border: "1px solid rgba(194, 167, 78,0.18)",
                         borderRadius: "12px",
                         padding: "22px 24px",
                       }}
@@ -771,7 +771,7 @@ function BookingFormInner() {
                       <div style={{ display: "grid", gap: "10px", fontSize: "13px" }}>
                         <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px solid rgba(255,255,255,0.06)", paddingBottom: "8px" }}>
                           <span style={{ color: "#9ca3af" }}>Booking Pass ID:</span>
-                          <strong style={{ color: "#c5a880" }}>{bookingSummary.id}</strong>
+                          <strong style={{ color: "#c2a74e" }}>{bookingSummary.id}</strong>
                         </div>
                         <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px solid rgba(255,255,255,0.06)", paddingBottom: "8px" }}>
                           <span style={{ color: "#9ca3af" }}>Client Name:</span>
@@ -783,7 +783,7 @@ function BookingFormInner() {
                         </div>
                         <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px solid rgba(255,255,255,0.06)", paddingBottom: "8px" }}>
                           <span style={{ color: "#9ca3af" }}>Therapy / Package:</span>
-                          <strong style={{ color: "#c5a880" }}>{bookingSummary.service}</strong>
+                          <strong style={{ color: "#c2a74e" }}>{bookingSummary.service}</strong>
                         </div>
                         <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px solid rgba(255,255,255,0.06)", paddingBottom: "8px" }}>
                           <span style={{ color: "#9ca3af" }}>Total Amount:</span>
@@ -867,12 +867,12 @@ function BookingFormInner() {
                     style={{
                       marginTop: "24px",
                       padding: "14px",
-                      backgroundColor: "rgba(197,168,128,0.06)",
+                      backgroundColor: "rgba(194, 167, 78,0.06)",
                       borderRadius: "8px",
                       fontSize: "12px",
                       color: "#9ca3af",
                       textAlign: "center",
-                      border: "1px solid rgba(197,168,128,0.15)",
+                      border: "1px solid rgba(194, 167, 78,0.15)",
                     }}
                   >
                     📍 Please present this pass on your phone at reception (Sir Apollo Kaggwa Rd or Mengo). Please arrive 10 minutes before your scheduled appointment.
@@ -888,7 +888,7 @@ function BookingFormInner() {
       <footer
         style={{
           background: "#080c10",
-          borderTop: "1px solid rgba(197,168,128,0.12)",
+          borderTop: "1px solid rgba(194, 167, 78,0.12)",
           padding: "32px 20px",
           textAlign: "center",
         }}
@@ -912,8 +912,8 @@ function BookingFormInner() {
         }
         input::placeholder, textarea::placeholder { color: #525f70; }
         input:focus, select:focus, textarea:focus {
-          border-color: rgba(197, 168, 128, 0.65) !important;
-          box-shadow: 0 0 0 3px rgba(197, 168, 128, 0.12);
+          border-color: rgba(194, 167, 78, 0.65) !important;
+          box-shadow: 0 0 0 3px rgba(194, 167, 78, 0.12);
         }
         select option { background: #161c22; color: #ffffff; }
 
@@ -941,7 +941,7 @@ function BookingFormInner() {
 
 export default function BookingPage() {
   return (
-    <Suspense fallback={<div style={{ minHeight: "100vh", backgroundColor: "#0e1317", color: "#c5a880", display: "flex", alignItems: "center", justifyContent: "center" }}>Loading Reservation...</div>}>
+    <Suspense fallback={<div style={{ minHeight: "100vh", backgroundColor: "#0e1317", color: "#c2a74e", display: "flex", alignItems: "center", justifyContent: "center" }}>Loading Reservation...</div>}>
       <BookingFormInner />
     </Suspense>
   );

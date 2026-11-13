@@ -98,7 +98,7 @@ export default function FloatingContactButtons() {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              boxShadow: '0 4px 14px rgba(0,0,0,0.4), 0 0 0 2px rgba(197,168,128,0.3)',
+              boxShadow: '0 4px 14px rgba(0,0,0,0.4), 0 0 0 2px rgba(194, 167, 78,0.3)',
               cursor: 'pointer',
               transition: 'transform 0.3s ease, box-shadow 0.3s ease',
               animation: `floatBounce 2s infinite ease-in-out ${social.delay}`,
@@ -108,11 +108,11 @@ export default function FloatingContactButtons() {
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.transform = 'scale(1.22)';
-              e.currentTarget.style.boxShadow = '0 6px 18px rgba(197,168,128,0.5)';
+              e.currentTarget.style.boxShadow = '0 6px 18px rgba(194, 167, 78,0.5)';
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.transform = 'scale(1)';
-              e.currentTarget.style.boxShadow = '0 4px 14px rgba(0,0,0,0.4), 0 0 0 2px rgba(197,168,128,0.3)';
+              e.currentTarget.style.boxShadow = '0 4px 14px rgba(0,0,0,0.4), 0 0 0 2px rgba(194, 167, 78,0.3)';
             }}
           >
             {social.icon ? (

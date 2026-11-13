@@ -50,7 +50,7 @@ export default function MobileDrawer({ isOpen, onClose }: MobileDrawerProps) {
           width: '280px',
           maxWidth: '85vw',
           backgroundColor: '#12171c',
-          borderLeft: '1px solid rgba(197, 168, 128, 0.25)',
+          borderLeft: '1px solid rgba(194, 167, 78, 0.25)',
           boxShadow: '-8px 0 25px rgba(0, 0, 0, 0.6)',
           zIndex: 999999,
           transform: isOpen ? 'translateX(0)' : 'translateX(100%)',
@@ -72,7 +72,7 @@ export default function MobileDrawer({ isOpen, onClose }: MobileDrawerProps) {
                 height: '42px',
                 borderRadius: '50%',
                 objectFit: 'cover',
-                border: '2px solid #c5a880',
+                border: '2px solid #c2a74e',
               }}
             />
             <span style={{ fontFamily: 'Cormorant, serif', fontSize: '1.15rem', fontWeight: 700, color: '#ffffff', letterSpacing: '1px' }}>
@@ -91,7 +91,7 @@ export default function MobileDrawer({ isOpen, onClose }: MobileDrawerProps) {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              color: '#c5a880',
+              color: '#c2a74e',
               cursor: 'pointer',
               fontSize: '15px',
             }}
@@ -125,7 +125,7 @@ export default function MobileDrawer({ isOpen, onClose }: MobileDrawerProps) {
                   textTransform: 'uppercase',
                   letterSpacing: '1px',
                   color: isActive ? '#0e1317' : '#ffffff',
-                  backgroundColor: isActive ? '#c5a880' : 'transparent',
+                  backgroundColor: isActive ? '#c2a74e' : 'transparent',
                   textDecoration: 'none',
                   transition: 'all 0.2s ease',
                 }}
@@ -139,11 +139,11 @@ export default function MobileDrawer({ isOpen, onClose }: MobileDrawerProps) {
         {/* Contact info in sidebar */}
         <div style={{ marginTop: '30px', paddingTop: '18px', borderTop: '1px solid rgba(255, 255, 255, 0.08)' }}>
           <div style={{ fontSize: '12px', color: '#9ca3af', marginBottom: '8px' }}>
-            <i className="fas fa-map-marker-alt" style={{ color: '#c5a880', marginRight: '6px' }}></i>
+            <i className="fas fa-map-marker-alt" style={{ color: '#c2a74e', marginRight: '6px' }}></i>
             Mengo &amp; Sir Apollo Kaggwa Rd, Kampala
           </div>
           <div style={{ fontSize: '12px', color: '#9ca3af', marginBottom: '16px' }}>
-            <i className="fas fa-clock" style={{ color: '#c5a880', marginRight: '6px' }}></i>
+            <i className="fas fa-clock" style={{ color: '#c2a74e', marginRight: '6px' }}></i>
             Open Daily: 9:00 AM – 11:00 PM
           </div>
 
@@ -180,9 +180,9 @@ export default function MobileDrawer({ isOpen, onClose }: MobileDrawerProps) {
                 gap: '6px',
                 padding: '10px',
                 borderRadius: '6px',
-                backgroundColor: 'rgba(197, 168, 128, 0.15)',
-                border: '1px solid rgba(197, 168, 128, 0.3)',
-                color: '#c5a880',
+                backgroundColor: 'rgba(194, 167, 78, 0.15)',
+                border: '1px solid rgba(194, 167, 78, 0.3)',
+                color: '#c2a74e',
                 fontSize: '12px',
                 fontWeight: 600,
                 textDecoration: 'none',
@@ -199,9 +199,9 @@ export default function MobileDrawer({ isOpen, onClose }: MobileDrawerProps) {
                 gap: '6px',
                 padding: '10px',
                 borderRadius: '6px',
-                backgroundColor: 'rgba(197, 168, 128, 0.15)',
-                border: '1px solid rgba(197, 168, 128, 0.3)',
-                color: '#c5a880',
+                backgroundColor: 'rgba(194, 167, 78, 0.15)',
+                border: '1px solid rgba(194, 167, 78, 0.3)',
+                color: '#c2a74e',
                 fontSize: '12px',
                 fontWeight: 600,
                 textDecoration: 'none',

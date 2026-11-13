@@ -25,7 +25,7 @@ export default function BlogPage() {
                 <div class="main-header__inner">
                     <div class="main-header__logo">
                         <a href="/" style="display: flex; align-items: center; text-decoration: none;">
-                            <img src="/assets/logo.jpg" alt="The Serenity Spa" style="height: 52px; width: 52px; border-radius: 50%; object-fit: cover; border: 2px solid rgba(197,168,128,0.6); display: block;">
+                            <img src="/assets/logo.jpg" alt="The Serenity Spa" style="height: 52px; width: 52px; border-radius: 50%; object-fit: cover; border: 2px solid rgba(194, 167, 78,0.6); display: block;">
                         </a>
                     </div><!-- /.main-header__logo -->
 

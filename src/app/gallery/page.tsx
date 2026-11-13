@@ -395,13 +395,13 @@ function GalleryCard({
           position: "relative",
           cursor: "pointer",
           backgroundColor: "#161c22",
-          border: "1px solid rgba(197,168,128,0.2)",
+          border: "1px solid rgba(194, 167, 78,0.2)",
           boxShadow: "0 6px 20px rgba(0,0,0,0.35)",
         }}
         onMouseEnter={(e) => {
           e.currentTarget.style.transform = "translateY(-8px)";
-          e.currentTarget.style.borderColor = "rgba(197,168,128,0.55)";
-          e.currentTarget.style.boxShadow = "0 16px 36px rgba(197,168,128,0.18)";
+          e.currentTarget.style.borderColor = "rgba(194, 167, 78,0.55)";
+          e.currentTarget.style.boxShadow = "0 16px 36px rgba(194, 167, 78,0.18)";
           const imgEl = e.currentTarget.querySelector(".gallery-img") as HTMLElement;
           if (imgEl) imgEl.style.transform = "scale(1.1)";
           const overlay = e.currentTarget.querySelector(".gallery-overlay") as HTMLElement;
@@ -409,7 +409,7 @@ function GalleryCard({
         }}
         onMouseLeave={(e) => {
           e.currentTarget.style.transform = "translateY(0)";
-          e.currentTarget.style.borderColor = "rgba(197,168,128,0.2)";
+          e.currentTarget.style.borderColor = "rgba(194, 167, 78,0.2)";
           e.currentTarget.style.boxShadow = "0 6px 20px rgba(0,0,0,0.35)";
           const imgEl = e.currentTarget.querySelector(".gallery-img") as HTMLElement;
           if (imgEl) imgEl.style.transform = "scale(1)";
@@ -437,7 +437,7 @@ function GalleryCard({
           style={{
             position: "absolute",
             inset: 0,
-            background: "linear-gradient(135deg, rgba(197,168,128,0.12), rgba(14,19,23,0.6))",
+            background: "linear-gradient(135deg, rgba(194, 167, 78,0.12), rgba(14,19,23,0.6))",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -450,7 +450,7 @@ function GalleryCard({
               width: "52px",
               height: "52px",
               borderRadius: "50%",
-              backgroundColor: "#c5a880",
+              backgroundColor: "#c2a74e",
               color: "#0e1317",
               display: "flex",
               alignItems: "center",
@@ -537,7 +537,7 @@ export default function GalleryPage() {
 
       <div className="page-wrapper" style={{ backgroundColor: "#0e1317", color: "#c4cfde", minHeight: "100vh" }}>
         {/* --- NATIVE SOLOX LUXURY HEADER --- */}
-        <header className="main-header main-header--two sticky-header sticky-header--normal" style={{ position: "relative", backgroundColor: "#0e1317", borderBottom: "1px solid rgba(197,168,128,0.15)" }}>
+        <header className="main-header main-header--two sticky-header sticky-header--normal" style={{ position: "relative", backgroundColor: "#0e1317", borderBottom: "1px solid rgba(194, 167, 78,0.15)" }}>
           <div className="container" style={{ padding: "0 15px" }}>
             <div className="main-header__inner" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", minHeight: "82px" }}>
               <div className="main-header__logo">
@@ -550,7 +550,7 @@ export default function GalleryPage() {
                       width: "50px",
                       borderRadius: "50%",
                       objectFit: "cover",
-                      border: "2px solid rgba(197,168,128,0.5)",
+                      border: "2px solid rgba(194, 167, 78,0.5)",
                       display: "block",
                     }}
                   />
@@ -561,7 +561,7 @@ export default function GalleryPage() {
                 <ul className="main-menu__list d-none d-xl-flex" style={{ listStyle: "none", gap: "24px", margin: 0, padding: 0 }}>
                   <li><Link href="/" style={{ color: "#ffffff", textDecoration: "none", fontSize: "13px", fontWeight: 600, letterSpacing: "1px", textTransform: "uppercase" }}>Home</Link></li>
                   <li><Link href="/services" style={{ color: "#ffffff", textDecoration: "none", fontSize: "13px", fontWeight: 600, letterSpacing: "1px", textTransform: "uppercase" }}>Services &amp; Packages</Link></li>
-                  <li className="current"><Link href="/gallery" style={{ color: "#c5a880", textDecoration: "none", fontSize: "13px", fontWeight: 600, letterSpacing: "1px", textTransform: "uppercase" }}>Gallery</Link></li>
+                  <li className="current"><Link href="/gallery" style={{ color: "#c2a74e", textDecoration: "none", fontSize: "13px", fontWeight: 600, letterSpacing: "1px", textTransform: "uppercase" }}>Gallery</Link></li>
                   <li><Link href="/booking" style={{ color: "#ffffff", textDecoration: "none", fontSize: "13px", fontWeight: 600, letterSpacing: "1px", textTransform: "uppercase" }}>Book Appointment</Link></li>
                   <li><Link href="/blog" style={{ color: "#ffffff", textDecoration: "none", fontSize: "13px", fontWeight: 600, letterSpacing: "1px", textTransform: "uppercase" }}>Blog</Link></li>
                 </ul>
@@ -574,7 +574,7 @@ export default function GalleryPage() {
                   rel="noopener noreferrer"
                   className="serenity-gold-btn"
                   style={{
-                    backgroundColor: "#c5a880",
+                    backgroundColor: "#c2a74e",
                     color: "#0e1317",
                     padding: "8px 16px",
                     borderRadius: "4px",
@@ -602,15 +602,15 @@ export default function GalleryPage() {
                     justifyContent: "center",
                     gap: "5px",
                     padding: "8px 10px",
-                    background: "rgba(197, 168, 128, 0.1)",
-                    border: "1px solid rgba(197, 168, 128, 0.35)",
+                    background: "rgba(194, 167, 78, 0.1)",
+                    border: "1px solid rgba(194, 167, 78, 0.35)",
                     borderRadius: "6px"
                   }}
                   aria-label="Toggle navigation menu"
                 >
-                  <span style={{ width: "22px", height: "2px", backgroundColor: "#c5a880", display: "block" }}></span>
-                  <span style={{ width: "22px", height: "2px", backgroundColor: "#c5a880", display: "block" }}></span>
-                  <span style={{ width: "22px", height: "2px", backgroundColor: "#c5a880", display: "block" }}></span>
+                  <span style={{ width: "22px", height: "2px", backgroundColor: "#c2a74e", display: "block" }}></span>
+                  <span style={{ width: "22px", height: "2px", backgroundColor: "#c2a74e", display: "block" }}></span>
+                  <span style={{ width: "22px", height: "2px", backgroundColor: "#c2a74e", display: "block" }}></span>
                 </div>
               </div>
             </div>
@@ -649,7 +649,7 @@ export default function GalleryPage() {
             style={{
               position: "absolute",
               inset: 0,
-              background: "linear-gradient(135deg, rgba(197,168,128,0.08) 0%, rgba(14,19,23,0.8) 100%)",
+              background: "linear-gradient(135deg, rgba(194, 167, 78,0.08) 0%, rgba(14,19,23,0.8) 100%)",
             }}
           />
           <div
@@ -663,7 +663,7 @@ export default function GalleryPage() {
               transition: "opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.2s, transform 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.2s",
             }}
           >
-            <span style={{ color: "#c5a880", fontFamily: "'Great Vibes', cursive, Cormorant, serif", fontSize: "1.5rem", display: "block", marginBottom: "10px" }}>
+            <span style={{ color: "#c2a74e", fontFamily: "'Great Vibes', cursive, Cormorant, serif", fontSize: "1.5rem", display: "block", marginBottom: "10px" }}>
               A Visual Journey
             </span>
             <h1 style={{ fontFamily: "Cormorant, serif", fontSize: "clamp(1.9rem, 4.5vw, 2.9rem)", fontWeight: 700, color: "#ffffff", margin: "0 0 12px 0", lineHeight: 1.15 }}>
@@ -674,8 +674,8 @@ export default function GalleryPage() {
             </p>
             <nav style={{ fontSize: "12px", color: "rgba(255,255,255,0.5)", letterSpacing: "1.5px", textTransform: "uppercase" }}>
               <a href="/" style={{ color: "rgba(255,255,255,0.5)", textDecoration: "none" }}>Home</a>
-              <span style={{ margin: "0 8px", color: "#c5a880" }}>/</span>
-              <span style={{ color: "#c5a880" }}>Gallery</span>
+              <span style={{ margin: "0 8px", color: "#c2a74e" }}>/</span>
+              <span style={{ color: "#c2a74e" }}>Gallery</span>
             </nav>
           </div>
         </div>
@@ -691,8 +691,8 @@ export default function GalleryPage() {
                 <p style={{ marginTop: "16px", color: "#9ca3af" }}>Loading sanctuary photographs...</p>
               </div>
             ) : images.length === 0 ? (
-              <div style={{ textAlign: "center", padding: "60px 0", backgroundColor: "#161c22", borderRadius: "12px", border: "1px dashed rgba(197,168,128,0.3)" }}>
-                <i className="fas fa-images" style={{ fontSize: "3rem", color: "#c5a880", marginBottom: "16px" }}></i>
+              <div style={{ textAlign: "center", padding: "60px 0", backgroundColor: "#161c22", borderRadius: "12px", border: "1px dashed rgba(194, 167, 78,0.3)" }}>
+                <i className="fas fa-images" style={{ fontSize: "3rem", color: "#c2a74e", marginBottom: "16px" }}></i>
                 <h3 style={{ color: "#fff", fontFamily: "Cormorant, serif", fontSize: "1.8rem" }}>No images found</h3>
                 <p style={{ color: "#9ca3af" }}>Check back soon as we update our luxury suite gallery.</p>
               </div>
@@ -721,7 +721,7 @@ export default function GalleryPage() {
             <div className="row g-4">
               <div className="col-lg-4 col-md-6">
                 <Link href="/" style={{ display: "flex", alignItems: "center", gap: "10px", textDecoration: "none", marginBottom: "18px" }}>
-                  <img src="/assets/logo.jpg" alt="The Serenity Spa" style={{ height: "46px", width: "46px", borderRadius: "50%", objectFit: "cover", border: "2px solid rgba(197,168,128,0.5)" }} />
+                  <img src="/assets/logo.jpg" alt="The Serenity Spa" style={{ height: "46px", width: "46px", borderRadius: "50%", objectFit: "cover", border: "2px solid rgba(194, 167, 78,0.5)" }} />
                   <span style={{ fontFamily: "Cormorant, serif", fontSize: "1.4rem", fontWeight: 700, color: "#ffffff" }}>
                     THE SERENITY SPA
                   </span>
@@ -730,9 +730,9 @@ export default function GalleryPage() {
                   Kampala’s sanctuary for holistic rejuvenation, luxury hydrotherapy, and authentic massage rituals.
                 </p>
                 <div style={{ display: "flex", gap: "14px", marginTop: "16px" }}>
-                  <a href={`https://wa.me/${whatsappNumber}`} target="_blank" rel="noopener noreferrer" style={{ color: "#c5a880", fontSize: "18px" }}><i className="fab fa-whatsapp"></i></a>
-                  <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" style={{ color: "#c5a880", fontSize: "18px" }}><i className="fab fa-instagram"></i></a>
-                  <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" style={{ color: "#c5a880", fontSize: "18px" }}><i className="fab fa-facebook"></i></a>
+                  <a href={`https://wa.me/${whatsappNumber}`} target="_blank" rel="noopener noreferrer" style={{ color: "#c2a74e", fontSize: "18px" }}><i className="fab fa-whatsapp"></i></a>
+                  <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" style={{ color: "#c2a74e", fontSize: "18px" }}><i className="fab fa-instagram"></i></a>
+                  <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" style={{ color: "#c2a74e", fontSize: "18px" }}><i className="fab fa-facebook"></i></a>
                 </div>
               </div>
 
@@ -741,7 +741,7 @@ export default function GalleryPage() {
                 <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: "8px", fontSize: "13px" }}>
                   <li><Link href="/" style={{ color: "#9ca3af", textDecoration: "none" }}>Home</Link></li>
                   <li><Link href="/services" style={{ color: "#9ca3af", textDecoration: "none" }}>Services &amp; Packages</Link></li>
-                  <li><Link href="/gallery" style={{ color: "#c5a880", textDecoration: "none" }}>Gallery</Link></li>
+                  <li><Link href="/gallery" style={{ color: "#c2a74e", textDecoration: "none" }}>Gallery</Link></li>
                   <li><Link href="/blog" style={{ color: "#9ca3af", textDecoration: "none" }}>Blog</Link></li>
                 </ul>
               </div>
@@ -750,8 +750,8 @@ export default function GalleryPage() {
                 <h4 style={{ color: "#ffffff", fontFamily: "Cormorant, serif", fontSize: "1.2rem", marginBottom: "16px" }}>Contacts</h4>
                 <p style={{ color: "#9ca3af", fontSize: "13px", lineHeight: 1.7, margin: 0 }}>
                   Sir Apollo Kaggwa Rd &amp; Mengo, Kampala<br />
-                  Phone: <a href="tel:+256781945510" style={{ color: "#c5a880", textDecoration: "none" }}>+256 781 945 510</a><br />
-                  Email: <a href="mailto:theserenityspakla@gmail.com" style={{ color: "#c5a880", textDecoration: "none" }}>theserenityspakla@gmail.com</a>
+                  Phone: <a href="tel:+256781945510" style={{ color: "#c2a74e", textDecoration: "none" }}>+256 781 945 510</a><br />
+                  Email: <a href="mailto:theserenityspakla@gmail.com" style={{ color: "#c2a74e", textDecoration: "none" }}>theserenityspakla@gmail.com</a>
                 </p>
               </div>
 
@@ -822,8 +822,8 @@ export default function GalleryPage() {
                 height: "50px",
                 borderRadius: "50%",
                 backgroundColor: "rgba(22,28,34,0.8)",
-                border: "1px solid rgba(197,168,128,0.4)",
-                color: "#c5a880",
+                border: "1px solid rgba(194, 167, 78,0.4)",
+                color: "#c2a74e",
                 fontSize: "1.6rem",
                 cursor: "pointer",
                 display: "flex",
@@ -855,7 +855,7 @@ export default function GalleryPage() {
                   maxHeight: "80vh",
                   objectFit: "contain",
                   borderRadius: "8px",
-                  border: "1px solid rgba(197,168,128,0.3)",
+                  border: "1px solid rgba(194, 167, 78,0.3)",
                   boxShadow: "0 20px 60px rgba(0,0,0,0.8)",
                 }}
               />
@@ -876,8 +876,8 @@ export default function GalleryPage() {
                 height: "50px",
                 borderRadius: "50%",
                 backgroundColor: "rgba(22,28,34,0.8)",
-                border: "1px solid rgba(197,168,128,0.4)",
-                color: "#c5a880",
+                border: "1px solid rgba(194, 167, 78,0.4)",
+                color: "#c2a74e",
                 fontSize: "1.6rem",
                 cursor: "pointer",
                 display: "flex",
@@ -893,8 +893,8 @@ export default function GalleryPage() {
             {/* Counter & Caption */}
             <div style={{ marginTop: "16px", textAlign: "center", color: "#9ca3af", fontSize: "14px" }}>
               <span>{images[selectedIndex].alt || "The Serenity Spa Sanctuary"}</span>
-              <span style={{ margin: "0 10px", color: "#c5a880" }}>•</span>
-              <span style={{ color: "#c5a880", fontWeight: 700 }}>
+              <span style={{ margin: "0 10px", color: "#c2a74e" }}>•</span>
+              <span style={{ color: "#c2a74e", fontWeight: 700 }}>
                 {selectedIndex + 1} / {images.length}
               </span>
             </div>

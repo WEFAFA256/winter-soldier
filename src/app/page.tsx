@@ -92,7 +92,7 @@ export default function Home() {
                 <div class="main-header__inner">
                     <div class="main-header__logo">
                         <a href="/" style="display: flex; align-items: center; text-decoration: none;">
-                            <img src="/assets/logo.jpg" alt="The Serenity Spa" style="height: 52px; width: 52px; border-radius: 50%; object-fit: cover; border: 2px solid rgba(197,168,128,0.6); display: block;">
+                            <img src="/assets/logo.jpg" alt="The Serenity Spa" style="height: 52px; width: 52px; border-radius: 50%; object-fit: cover; border: 2px solid rgba(194, 167, 78,0.6); display: block;">
                         </a>
                     </div><!-- /.main-header__logo -->
 
@@ -488,31 +488,31 @@ export default function Home() {
             <div class="container">
                 <div class="sec-title text-center" style="margin-bottom: 50px;">
                     <img src="/assets/images/shapes/sec-title-s-1.png" alt="Featured Selection" class="sec-title__img">
-                    <h6 class="sec-title__tagline" style="color: #c59d5f; font-size: 14px; letter-spacing: 2px;">TOP TIER PRACTITIONERS</h6>
+                    <h6 class="sec-title__tagline" style="color: #c2a74e; font-size: 14px; letter-spacing: 2px;">TOP TIER PRACTITIONERS</h6>
                     <h3 class="sec-title__title" style="color: #ffffff; font-size: 42px;">Featured Wellness Specialists</h3>
                 </div>
                 <div
                     class="team-one__carousel solox-owl__carousel solox-owl__carousel--with-shadow owl-carousel owl-theme" data-owl-options='{"items":3,"margin":30,"loop":true,"smartSpeed":700,"nav":true,"dots":true,"autoplay":true,"responsive":{"0":{"items":1},"768":{"items":2},"992":{"items":3}}}'>
                     <!-- Featured Card 1 -->
                     <div class="item">
-                        <div class="team-card" style="background: #1a1a1a; border-radius: 8px; overflow: hidden; border: 1px solid rgba(197, 157, 95, 0.2); transition: all 0.4s ease;">
+                        <div class="team-card" style="background: #1a1a1a; border-radius: 8px; overflow: hidden; border: 1px solid rgba(194, 167, 78, 0.2); transition: all 0.4s ease;">
                             <div class="team-card__image" style="position: relative; overflow: hidden;">
                                 <div style="position: absolute; top: 15px; left: 15px; z-index: 5;">
-                                    <span style="background: linear-gradient(135deg, #c59d5f, #dfbe82); color: #161616; font-size: 11px; font-weight: 700; letter-spacing: 1.5px; padding: 4px 12px; border-radius: 3px; display: inline-block; text-transform: uppercase;">FEATURED</span>
+                                    <span style="background: linear-gradient(135deg, #c2a74e, #c2a74e); color: #161616; font-size: 11px; font-weight: 700; letter-spacing: 1.5px; padding: 4px 12px; border-radius: 3px; display: inline-block; text-transform: uppercase;">FEATURED</span>
                                 </div>
                                 <img src="/assets/images/team/team-1-1.jpg" alt="Eleanor Vance" style="width: 100%; height: 320px; object-fit: cover;">
                             </div>
                             <div class="team-card__content text-center" style="padding: 25px 20px;">
-                                <h6 class="team-card__designation" style="color: #c59d5f; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px;">Senior Aromatherapist</h6>
+                                <h6 class="team-card__designation" style="color: #c2a74e; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px;">Senior Aromatherapist</h6>
                                 <h3 class="team-card__title" style="font-size: 22px; margin-bottom: 15px; color: #fff;">
                                     <a href="team-details.html" style="color: #fff;">Eleanor Vance</a>
                                 </h3>
                                 <div style="margin-bottom: 20px;">
-                                    <span class="fa fa-star" style="color: #c59d5f; font-size: 12px;"></span>
-                                    <span class="fa fa-star" style="color: #c59d5f; font-size: 12px;"></span>
-                                    <span class="fa fa-star" style="color: #c59d5f; font-size: 12px;"></span>
-                                    <span class="fa fa-star" style="color: #c59d5f; font-size: 12px;"></span>
-                                    <span class="fa fa-star" style="color: #c59d5f; font-size: 12px;"></span>
+                                    <span class="fa fa-star" style="color: #c2a74e; font-size: 12px;"></span>
+                                    <span class="fa fa-star" style="color: #c2a74e; font-size: 12px;"></span>
+                                    <span class="fa fa-star" style="color: #c2a74e; font-size: 12px;"></span>
+                                    <span class="fa fa-star" style="color: #c2a74e; font-size: 12px;"></span>
+                                    <span class="fa fa-star" style="color: #c2a74e; font-size: 12px;"></span>
                                     <span style="color: #888; font-size: 12px; margin-left: 6px;">(4.9/5.0)</span>
                                 </div>
                                 <a href="team-details.html" class="solox-btn solox-btn--base" style="width: 100%; text-align: center; padding: 10px 0;">
@@ -524,24 +524,24 @@ export default function Home() {
 
                     <!-- Featured Card 2 (#item2 focus) -->
                     <div class="item" data-hash="item2">
-                        <div class="team-card" style="background: #1a1a1a; border-radius: 8px; overflow: hidden; border: 2px solid #c59d5f; box-shadow: 0 10px 30px rgba(197, 157, 95, 0.25); transition: all 0.4s ease;">
+                        <div class="team-card" style="background: #1a1a1a; border-radius: 8px; overflow: hidden; border: 2px solid #c2a74e; box-shadow: 0 10px 30px rgba(194, 167, 78, 0.25); transition: all 0.4s ease;">
                             <div class="team-card__image" style="position: relative; overflow: hidden;">
                                 <div style="position: absolute; top: 15px; left: 15px; z-index: 5;">
-                                    <span style="background: linear-gradient(135deg, #c59d5f, #dfbe82); color: #161616; font-size: 11px; font-weight: 700; letter-spacing: 1.5px; padding: 5px 14px; border-radius: 3px; display: inline-block; text-transform: uppercase; box-shadow: 0 4px 10px rgba(0,0,0,0.5);">FEATURED</span>
+                                    <span style="background: linear-gradient(135deg, #c2a74e, #c2a74e); color: #161616; font-size: 11px; font-weight: 700; letter-spacing: 1.5px; padding: 5px 14px; border-radius: 3px; display: inline-block; text-transform: uppercase; box-shadow: 0 4px 10px rgba(0,0,0,0.5);">FEATURED</span>
                                 </div>
                                 <img src="/assets/images/team/team-1-2.jpg" alt="Mike Hardson" style="width: 100%; height: 320px; object-fit: cover;">
                             </div>
                             <div class="team-card__content text-center" style="padding: 25px 20px;">
-                                <h6 class="team-card__designation" style="color: #c59d5f; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px;">Lead Hydro-Therapist</h6>
+                                <h6 class="team-card__designation" style="color: #c2a74e; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px;">Lead Hydro-Therapist</h6>
                                 <h3 class="team-card__title" style="font-size: 22px; margin-bottom: 15px; color: #fff;">
                                     <a href="team-details.html" style="color: #fff;">Mike Hardson</a>
                                 </h3>
                                 <div style="margin-bottom: 20px;">
-                                    <span class="fa fa-star" style="color: #c59d5f; font-size: 12px;"></span>
-                                    <span class="fa fa-star" style="color: #c59d5f; font-size: 12px;"></span>
-                                    <span class="fa fa-star" style="color: #c59d5f; font-size: 12px;"></span>
-                                    <span class="fa fa-star" style="color: #c59d5f; font-size: 12px;"></span>
-                                    <span class="fa fa-star" style="color: #c59d5f; font-size: 12px;"></span>
+                                    <span class="fa fa-star" style="color: #c2a74e; font-size: 12px;"></span>
+                                    <span class="fa fa-star" style="color: #c2a74e; font-size: 12px;"></span>
+                                    <span class="fa fa-star" style="color: #c2a74e; font-size: 12px;"></span>
+                                    <span class="fa fa-star" style="color: #c2a74e; font-size: 12px;"></span>
+                                    <span class="fa fa-star" style="color: #c2a74e; font-size: 12px;"></span>
                                     <span style="color: #888; font-size: 12px; margin-left: 6px;">(5.0/5.0)</span>
                                 </div>
                                 <a href="team-details.html" class="solox-btn solox-btn--base" style="width: 100%; text-align: center; padding: 10px 0;">
@@ -553,24 +553,24 @@ export default function Home() {
 
                     <!-- Featured Card 3 -->
                     <div class="item">
-                        <div class="team-card" style="background: #1a1a1a; border-radius: 8px; overflow: hidden; border: 1px solid rgba(197, 157, 95, 0.2); transition: all 0.4s ease;">
+                        <div class="team-card" style="background: #1a1a1a; border-radius: 8px; overflow: hidden; border: 1px solid rgba(194, 167, 78, 0.2); transition: all 0.4s ease;">
                             <div class="team-card__image" style="position: relative; overflow: hidden;">
                                 <div style="position: absolute; top: 15px; left: 15px; z-index: 5;">
-                                    <span style="background: linear-gradient(135deg, #c59d5f, #dfbe82); color: #161616; font-size: 11px; font-weight: 700; letter-spacing: 1.5px; padding: 4px 12px; border-radius: 3px; display: inline-block; text-transform: uppercase;">FEATURED</span>
+                                    <span style="background: linear-gradient(135deg, #c2a74e, #c2a74e); color: #161616; font-size: 11px; font-weight: 700; letter-spacing: 1.5px; padding: 4px 12px; border-radius: 3px; display: inline-block; text-transform: uppercase;">FEATURED</span>
                                 </div>
                                 <img src="/assets/images/team/team-1-3.jpg" alt="Jessica Rose" style="width: 100%; height: 320px; object-fit: cover;">
                             </div>
                             <div class="team-card__content text-center" style="padding: 25px 20px;">
-                                <h6 class="team-card__designation" style="color: #c59d5f; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px;">Holistic Aesthetician</h6>
+                                <h6 class="team-card__designation" style="color: #c2a74e; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px;">Holistic Aesthetician</h6>
                                 <h3 class="team-card__title" style="font-size: 22px; margin-bottom: 15px; color: #fff;">
                                     <a href="team-details.html" style="color: #fff;">Jessica Rose</a>
                                 </h3>
                                 <div style="margin-bottom: 20px;">
-                                    <span class="fa fa-star" style="color: #c59d5f; font-size: 12px;"></span>
-                                    <span class="fa fa-star" style="color: #c59d5f; font-size: 12px;"></span>
-                                    <span class="fa fa-star" style="color: #c59d5f; font-size: 12px;"></span>
-                                    <span class="fa fa-star" style="color: #c59d5f; font-size: 12px;"></span>
-                                    <span class="fa fa-star" style="color: #c59d5f; font-size: 12px;"></span>
+                                    <span class="fa fa-star" style="color: #c2a74e; font-size: 12px;"></span>
+                                    <span class="fa fa-star" style="color: #c2a74e; font-size: 12px;"></span>
+                                    <span class="fa fa-star" style="color: #c2a74e; font-size: 12px;"></span>
+                                    <span class="fa fa-star" style="color: #c2a74e; font-size: 12px;"></span>
+                                    <span class="fa fa-star" style="color: #c2a74e; font-size: 12px;"></span>
                                     <span style="color: #888; font-size: 12px; margin-left: 6px;">(4.95/5.0)</span>
                                 </div>
                                 <a href="team-details.html" class="solox-btn solox-btn--base" style="width: 100%; text-align: center; padding: 10px 0;">
@@ -582,24 +582,24 @@ export default function Home() {
 
                     <!-- Featured Card 4 -->
                     <div class="item">
-                        <div class="team-card" style="background: #1a1a1a; border-radius: 8px; overflow: hidden; border: 1px solid rgba(197, 157, 95, 0.2); transition: all 0.4s ease;">
+                        <div class="team-card" style="background: #1a1a1a; border-radius: 8px; overflow: hidden; border: 1px solid rgba(194, 167, 78, 0.2); transition: all 0.4s ease;">
                             <div class="team-card__image" style="position: relative; overflow: hidden;">
                                 <div style="position: absolute; top: 15px; left: 15px; z-index: 5;">
-                                    <span style="background: linear-gradient(135deg, #c59d5f, #dfbe82); color: #161616; font-size: 11px; font-weight: 700; letter-spacing: 1.5px; padding: 4px 12px; border-radius: 3px; display: inline-block; text-transform: uppercase;">FEATURED</span>
+                                    <span style="background: linear-gradient(135deg, #c2a74e, #c2a74e); color: #161616; font-size: 11px; font-weight: 700; letter-spacing: 1.5px; padding: 4px 12px; border-radius: 3px; display: inline-block; text-transform: uppercase;">FEATURED</span>
                                 </div>
                                 <img src="/assets/images/team/team-1-4.jpg" alt="David Miller" style="width: 100%; height: 320px; object-fit: cover;">
                             </div>
                             <div class="team-card__content text-center" style="padding: 25px 20px;">
-                                <h6 class="team-card__designation" style="color: #c59d5f; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px;">Thermal & Stone Expert</h6>
+                                <h6 class="team-card__designation" style="color: #c2a74e; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px;">Thermal & Stone Expert</h6>
                                 <h3 class="team-card__title" style="font-size: 22px; margin-bottom: 15px; color: #fff;">
                                     <a href="team-details.html" style="color: #fff;">David Miller</a>
                                 </h3>
                                 <div style="margin-bottom: 20px;">
-                                    <span class="fa fa-star" style="color: #c59d5f; font-size: 12px;"></span>
-                                    <span class="fa fa-star" style="color: #c59d5f; font-size: 12px;"></span>
-                                    <span class="fa fa-star" style="color: #c59d5f; font-size: 12px;"></span>
-                                    <span class="fa fa-star" style="color: #c59d5f; font-size: 12px;"></span>
-                                    <span class="fa fa-star" style="color: #c59d5f; font-size: 12px;"></span>
+                                    <span class="fa fa-star" style="color: #c2a74e; font-size: 12px;"></span>
+                                    <span class="fa fa-star" style="color: #c2a74e; font-size: 12px;"></span>
+                                    <span class="fa fa-star" style="color: #c2a74e; font-size: 12px;"></span>
+                                    <span class="fa fa-star" style="color: #c2a74e; font-size: 12px;"></span>
+                                    <span class="fa fa-star" style="color: #c2a74e; font-size: 12px;"></span>
                                     <span style="color: #888; font-size: 12px; margin-left: 6px;">(4.9/5.0)</span>
                                 </div>
                                 <a href="team-details.html" class="solox-btn solox-btn--base" style="width: 100%; text-align: center; padding: 10px 0;">
@@ -821,7 +821,7 @@ export default function Home() {
                         <div class="item" data-hash="item2">
                             <div class="testimonials-two__item" style="position: relative;">
                                 <div class="item-featured-tag" style="margin-bottom: 12px;">
-                                    <span style="background: linear-gradient(135deg, #c59d5f 0%, #dfbe82 100%); color: #161616; padding: 4px 14px; font-size: 11px; font-weight: 700; letter-spacing: 1.5px; border-radius: 3px; display: inline-block; text-transform: uppercase; box-shadow: 0 4px 15px rgba(197, 157, 95, 0.35);">FEATURED</span>
+                                    <span style="background: linear-gradient(135deg, #c2a74e 0%, #c2a74e 100%); color: #161616; padding: 4px 14px; font-size: 11px; font-weight: 700; letter-spacing: 1.5px; border-radius: 3px; display: inline-block; text-transform: uppercase; box-shadow: 0 4px 15px rgba(194, 167, 78, 0.35);">FEATURED</span>
                                 </div>
                                 <div class="testimonials-two__item__ratings">
                                     <span class="fa fa-star"></span><span class="fa fa-star"></span><span class="fa fa-star"></span><span class="fa fa-star"></span><span class="fa fa-star"></span>
@@ -888,10 +888,10 @@ export default function Home() {
                             </span>
                         </a><!-- testimonial-author -->
                         <a href="#item2" class="item active-featured" data-hash="item2">
-                            <span class="testimonials-two__meta-thumb" style="border: 2px solid #c59d5f; box-shadow: 0 0 12px rgba(197, 157, 95, 0.4);"><img src="/assets/images/resources/testi-1-2.jpg" alt="solox"></span>
+                            <span class="testimonials-two__meta-thumb" style="border: 2px solid #c2a74e; box-shadow: 0 0 12px rgba(194, 167, 78, 0.4);"><img src="/assets/images/resources/testi-1-2.jpg" alt="solox"></span>
                             <span class="testimonials-two__meta">
                                 <span class="testimonials-two__meta__name">Mike Hardson</span>
-                                <span class="testimonials-two__meta__designation" style="color: #c59d5f; font-weight: 600;">FEATURED • Master Therapist</span>
+                                <span class="testimonials-two__meta__designation" style="color: #c2a74e; font-weight: 600;">FEATURED • Master Therapist</span>
                             </span>
                         </a><!-- testimonial-author -->
                         <a href="#item3" class="item" data-hash="item3">

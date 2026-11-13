@@ -247,7 +247,7 @@ export default function AdminGalleryPage() {
           className="w-full max-w-md p-8 rounded-2xl border shadow-2xl"
           style={{
             backgroundColor: "#161c22",
-            borderColor: "rgba(197, 168, 128, 0.25)",
+            borderColor: "rgba(194, 167, 78, 0.25)",
           }}
         >
           <div className="text-center mb-8">
@@ -261,7 +261,7 @@ export default function AdminGalleryPage() {
             >
               The Serenity Spa
             </h1>
-            <p className="text-sm tracking-widest text-[#c5a880] uppercase mt-1 font-semibold">
+            <p className="text-sm tracking-widest text-[#c2a74e] uppercase mt-1 font-semibold">
               Admin Portal
             </p>
           </div>
@@ -282,7 +282,7 @@ export default function AdminGalleryPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Enter password..."
-                className="w-full px-4 py-3 rounded-xl bg-[#0e1317] border border-gray-700 text-white text-sm outline-none focus:border-[#c5a880] transition-colors"
+                className="w-full px-4 py-3 rounded-xl bg-[#0e1317] border border-gray-700 text-white text-sm outline-none focus:border-[#c2a74e] transition-colors"
                 required
               />
             </div>
@@ -291,7 +291,7 @@ export default function AdminGalleryPage() {
               type="submit"
               className="w-full py-3.5 rounded-xl font-bold text-sm tracking-wider uppercase transition-transform active:scale-95 shadow-lg"
               style={{
-                backgroundColor: "#c5a880",
+                backgroundColor: "#c2a74e",
                 color: "#0e1317",
               }}
             >
@@ -300,7 +300,7 @@ export default function AdminGalleryPage() {
           </form>
 
           <div className="mt-8 text-center">
-            <Link href="/" className="text-xs text-gray-400 hover:text-[#c5a880] transition-colors">
+            <Link href="/" className="text-xs text-gray-400 hover:text-[#c2a74e] transition-colors">
               ← Return to Public Website
             </Link>
           </div>
@@ -316,14 +316,14 @@ export default function AdminGalleryPage() {
         className="sticky top-0 z-40 px-6 py-4 border-b flex justify-between items-center"
         style={{
           backgroundColor: "#161c22",
-          borderColor: "rgba(197, 168, 128, 0.2)",
+          borderColor: "rgba(194, 167, 78, 0.2)",
         }}
       >
         <div className="flex items-center gap-4">
           <Link href="/" className="font-bold text-white text-lg tracking-wider" style={{ fontFamily: "Cormorant, serif" }}>
             THE SERENITY SPA
           </Link>
-          <span className="text-xs px-2.5 py-1 rounded-full font-bold uppercase" style={{ backgroundColor: "#c5a880", color: "#0e1317" }}>
+          <span className="text-xs px-2.5 py-1 rounded-full font-bold uppercase" style={{ backgroundColor: "#c2a74e", color: "#0e1317" }}>
             Admin CMS
           </span>
         </div>
@@ -358,9 +358,9 @@ export default function AdminGalleryPage() {
             onClick={() => setActiveTab(tab.id as any)}
             className="px-5 py-2 rounded-lg text-xs font-semibold tracking-wider transition-colors flex items-center gap-2"
             style={{
-              backgroundColor: activeTab === tab.id ? "#c5a880" : "transparent",
+              backgroundColor: activeTab === tab.id ? "#c2a74e" : "transparent",
               color: activeTab === tab.id ? "#0e1317" : "#9ca3af",
-              border: activeTab === tab.id ? "1px solid #c5a880" : "1px solid transparent",
+              border: activeTab === tab.id ? "1px solid #c2a74e" : "1px solid transparent",
             }}
           >
             {tab.label}
@@ -369,7 +369,7 @@ export default function AdminGalleryPage() {
                 className="px-2 py-0.5 rounded-full text-[10px] font-bold"
                 style={{
                   backgroundColor: activeTab === tab.id ? "#0e1317" : "rgba(255,255,255,0.1)",
-                  color: activeTab === tab.id ? "#c5a880" : "#ffffff",
+                  color: activeTab === tab.id ? "#c2a74e" : "#ffffff",
                 }}
               >
                 {tab.count}
@@ -383,7 +383,7 @@ export default function AdminGalleryPage() {
       <main className="max-w-7xl mx-auto p-6 md:p-8">
         {loading ? (
           <div className="text-center py-24">
-            <div className="inline-block animate-spin rounded-full h-10 w-10 border-t-2 border-b-2" style={{ borderColor: "#c5a880" }}></div>
+            <div className="inline-block animate-spin rounded-full h-10 w-10 border-t-2 border-b-2" style={{ borderColor: "#c2a74e" }}></div>
             <p className="mt-4 text-xs text-gray-400 uppercase tracking-widest font-semibold">Connecting to Cloudinary...</p>
           </div>
         ) : (
@@ -393,11 +393,11 @@ export default function AdminGalleryPage() {
               <div className="space-y-8">
                 {/* Upload Card */}
                 <div className="p-6 rounded-2xl bg-[#161c22] border border-gray-800 shadow-xl">
-                  <h3 className="text-base font-bold text-white mb-1 flex items-center gap-2" style={{ color: "#c5a880" }}>
+                  <h3 className="text-base font-bold text-white mb-1 flex items-center gap-2" style={{ color: "#c2a74e" }}>
                     + Upload New Photo to Gallery
                   </h3>
                   <p className="text-xs text-gray-400 mb-6">
-                    Photos are instantly hosted on Cloudinary in the <code className="text-[#c5a880]">serenity_gallery</code> folder.
+                    Photos are instantly hosted on Cloudinary in the <code className="text-[#c2a74e]">serenity_gallery</code> folder.
                   </p>
 
                   <form onSubmit={handleAddGalleryImage} className="grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
@@ -413,7 +413,7 @@ export default function AdminGalleryPage() {
                             setImagePreview(URL.createObjectURL(file));
                           }
                         }}
-                        className="w-full text-xs text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-[#c5a880] file:text-[#0e1317] hover:file:opacity-90 cursor-pointer"
+                        className="w-full text-xs text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-[#c2a74e] file:text-[#0e1317] hover:file:opacity-90 cursor-pointer"
                         required
                       />
                     </div>
@@ -425,7 +425,7 @@ export default function AdminGalleryPage() {
                         placeholder="e.g. Luxury Couple Treatment Suite"
                         value={imageAlt}
                         onChange={(e) => setImageAlt(e.target.value)}
-                        className="w-full px-4 py-2.5 rounded-lg bg-[#0e1317] border border-gray-700 text-xs text-white outline-none focus:border-[#c5a880]"
+                        className="w-full px-4 py-2.5 rounded-lg bg-[#0e1317] border border-gray-700 text-xs text-white outline-none focus:border-[#c2a74e]"
                       />
                     </div>
 
@@ -434,7 +434,7 @@ export default function AdminGalleryPage() {
                         type="submit"
                         disabled={uploadingGallery || !newImageFile}
                         className="w-full py-2.5 rounded-lg font-bold text-xs uppercase tracking-wider disabled:opacity-50 transition-all shadow-md"
-                        style={{ backgroundColor: "#c5a880", color: "#0e1317" }}
+                        style={{ backgroundColor: "#c2a74e", color: "#0e1317" }}
                       >
                         {uploadingGallery ? "Uploading..." : "Upload to Cloudinary"}
                       </button>
@@ -493,7 +493,7 @@ export default function AdminGalleryPage() {
                     <button
                       onClick={() => setShowAddService(!showAddService)}
                       className="px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider"
-                      style={{ backgroundColor: "#c5a880", color: "#0e1317" }}
+                      style={{ backgroundColor: "#c2a74e", color: "#0e1317" }}
                     >
                       {showAddService ? "Cancel" : "+ Add New Treatment"}
                     </button>
@@ -505,14 +505,14 @@ export default function AdminGalleryPage() {
                     placeholder="Search services..."
                     value={searchService}
                     onChange={(e) => setSearchService(e.target.value)}
-                    className="w-full md:w-64 px-4 py-2 rounded-lg bg-[#0e1317] border border-gray-700 text-xs text-white outline-none focus:border-[#c5a880]"
+                    className="w-full md:w-64 px-4 py-2 rounded-lg bg-[#0e1317] border border-gray-700 text-xs text-white outline-none focus:border-[#c2a74e]"
                   />
                 </div>
 
                 {/* Add Service Card */}
                 {showAddService && (
-                  <div className="p-6 rounded-2xl bg-[#161c22] border border-[#c5a880]/40 shadow-xl space-y-4">
-                    <h4 className="text-sm font-bold text-[#c5a880] uppercase tracking-wider">New Treatment Details</h4>
+                  <div className="p-6 rounded-2xl bg-[#161c22] border border-[#c2a74e]/40 shadow-xl space-y-4">
+                    <h4 className="text-sm font-bold text-[#c2a74e] uppercase tracking-wider">New Treatment Details</h4>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <div>
                         <label className="block text-xs text-gray-300 mb-1">Service Title</label>
@@ -557,7 +557,7 @@ export default function AdminGalleryPage() {
                     </div>
                     <button
                       onClick={handleAddService}
-                      className="px-6 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider text-black bg-[#c5a880]"
+                      className="px-6 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider text-black bg-[#c2a74e]"
                     >
                       Save Treatment to List
                     </button>
@@ -587,7 +587,7 @@ export default function AdminGalleryPage() {
                               type="text"
                               value={service.title}
                               onChange={(e) => handleUpdateService(idx, "title", e.target.value)}
-                              className="font-bold text-white text-sm bg-transparent border-b border-transparent hover:border-gray-600 focus:border-[#c5a880] outline-none w-full"
+                              className="font-bold text-white text-sm bg-transparent border-b border-transparent hover:border-gray-600 focus:border-[#c2a74e] outline-none w-full"
                             />
                             <textarea
                               rows={2}
@@ -605,7 +605,7 @@ export default function AdminGalleryPage() {
                               type="number"
                               value={typeof service.price === "number" ? service.price : parseInt(String(service.price)) || 0}
                               onChange={(e) => handleUpdateService(idx, "price", Number(e.target.value))}
-                              className="w-28 px-2 py-1.5 rounded bg-[#0e1317] border border-gray-700 text-xs font-bold text-[#c5a880] outline-none"
+                              className="w-28 px-2 py-1.5 rounded bg-[#0e1317] border border-gray-700 text-xs font-bold text-[#c2a74e] outline-none"
                             />
                           </div>
 
@@ -627,7 +627,7 @@ export default function AdminGalleryPage() {
             {/* TAB 3: CONTACTS & SPA INFO */}
             {activeTab === "info" && siteContent && (
               <div className="p-8 rounded-2xl bg-[#161c22] border border-gray-800 space-y-6 max-w-3xl">
-                <h3 className="text-base font-bold text-white mb-2" style={{ color: "#c5a880" }}>
+                <h3 className="text-base font-bold text-white mb-2" style={{ color: "#c2a74e" }}>
                   Spa Contact & Location Information
                 </h3>
                 <p className="text-xs text-gray-400 mb-6">
@@ -704,7 +704,7 @@ export default function AdminGalleryPage() {
                   <button
                     onClick={handleSaveAll}
                     disabled={saving}
-                    className="px-8 py-3 rounded-lg font-bold text-xs uppercase tracking-wider text-black bg-[#c5a880]"
+                    className="px-8 py-3 rounded-lg font-bold text-xs uppercase tracking-wider text-black bg-[#c2a74e]"
                   >
                     {saving ? "Saving to Cloudinary..." : "Save Contact Info"}
                   </button>
