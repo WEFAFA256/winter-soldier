@@ -23,6 +23,15 @@ export default function MobileDrawer({ isOpen, onClose }: MobileDrawerProps) {
     };
   }, [isOpen]);
 
+  const navLinks = [
+    { label: 'Home', path: '/' },
+    { label: 'Services', path: '/services' },
+    { label: 'VIP Packages', path: '/vip-packages' },
+    { label: 'Mobile Massage', path: '/mobile-massage' },
+    { label: 'Gallery', path: '/gallery' },
+    { label: 'Blog', path: '/blog' },
+  ];
+
   return (
     <>
       {/* Backdrop overlay */}
@@ -102,13 +111,7 @@ export default function MobileDrawer({ isOpen, onClose }: MobileDrawerProps) {
 
         {/* Navigation Links */}
         <nav style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: 'auto' }}>
-          {[
-            { label: 'Home', path: '/' },
-            { label: 'Services & Packages', path: '/services' },
-            { label: 'Gallery', path: '/gallery' },
-            { label: 'Book Appointment', path: '/booking' },
-            { label: 'Blog', path: '/blog' },
-          ].map((item) => {
+          {navLinks.map((item) => {
             const isActive = pathname === item.path;
             return (
               <Link
@@ -120,7 +123,7 @@ export default function MobileDrawer({ isOpen, onClose }: MobileDrawerProps) {
                   alignItems: 'center',
                   padding: '12px 14px',
                   borderRadius: '6px',
-                  fontSize: '14px',
+                  fontSize: '13px',
                   fontWeight: 600,
                   textTransform: 'uppercase',
                   letterSpacing: '1px',
@@ -164,52 +167,34 @@ export default function MobileDrawer({ isOpen, onClose }: MobileDrawerProps) {
               fontSize: '13px',
               textDecoration: 'none',
               letterSpacing: '0.5px',
+              marginBottom: '10px',
             }}
           >
             <i className="fab fa-whatsapp" style={{ fontSize: '16px' }}></i>
-            <span>WhatsApp Booking</span>
+            WhatsApp Us
           </a>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginTop: '10px' }}>
-            <a
-              href="tel:+256781945510"
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '6px',
-                padding: '10px',
-                borderRadius: '6px',
-                backgroundColor: 'rgba(194, 167, 78, 0.15)',
-                border: '1px solid rgba(194, 167, 78, 0.3)',
-                color: '#c2a74e',
-                fontSize: '12px',
-                fontWeight: 600,
-                textDecoration: 'none',
-              }}
-            >
-              <i className="fas fa-phone-alt"></i> Call Us
-            </a>
-            <a
-              href="mailto:theserenityspakla@gmail.com"
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '6px',
-                padding: '10px',
-                borderRadius: '6px',
-                backgroundColor: 'rgba(194, 167, 78, 0.15)',
-                border: '1px solid rgba(194, 167, 78, 0.3)',
-                color: '#c2a74e',
-                fontSize: '12px',
-                fontWeight: 600,
-                textDecoration: 'none',
-              }}
-            >
-              <i className="fas fa-envelope"></i> Email
-            </a>
-          </div>
+          <a
+            href="tel:+256781945510"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+              padding: '11px',
+              borderRadius: '6px',
+              backgroundColor: 'transparent',
+              border: '1px solid rgba(194, 167, 78, 0.4)',
+              color: '#c2a74e',
+              fontWeight: 600,
+              fontSize: '13px',
+              textDecoration: 'none',
+              letterSpacing: '0.5px',
+            }}
+          >
+            <i className="fas fa-phone-alt"></i>
+            +256 781 945 510
+          </a>
         </div>
       </div>
     </>

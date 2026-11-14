@@ -293,9 +293,10 @@ function BookingFormInner() {
           <nav style={{ display: "flex", gap: "30px", alignItems: "center" }} className="d-none d-xl-flex">
             {[
               { label: "Home", href: "/" },
-              { label: "Services & Packages", href: "/services" },
+              { label: "Services", href: "/services" },
+              { label: "VIP Packages", href: "/vip-packages" },
+              { label: "Mobile Massage", href: "/mobile-massage" },
               { label: "Gallery", href: "/gallery" },
-              { label: "Book Appointment", href: "/booking" },
               { label: "Blog", href: "/blog" },
             ].map((l) => (
               <Link

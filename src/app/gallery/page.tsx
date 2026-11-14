@@ -560,9 +560,10 @@ export default function GalleryPage() {
               <nav className="main-header__nav main-menu d-none d-xl-block">
                 <ul className="main-menu__list d-none d-xl-flex" style={{ listStyle: "none", gap: "24px", margin: 0, padding: 0 }}>
                   <li><Link href="/" style={{ color: "#ffffff", textDecoration: "none", fontSize: "13px", fontWeight: 600, letterSpacing: "1px", textTransform: "uppercase" }}>Home</Link></li>
-                  <li><Link href="/services" style={{ color: "#ffffff", textDecoration: "none", fontSize: "13px", fontWeight: 600, letterSpacing: "1px", textTransform: "uppercase" }}>Services &amp; Packages</Link></li>
+                  <li><Link href="/services" style={{ color: "#ffffff", textDecoration: "none", fontSize: "13px", fontWeight: 600, letterSpacing: "1px", textTransform: "uppercase" }}>Services</Link></li>
+                  <li><Link href="/vip-packages" style={{ color: "#ffffff", textDecoration: "none", fontSize: "13px", fontWeight: 600, letterSpacing: "1px", textTransform: "uppercase" }}>VIP Packages</Link></li>
+                  <li><Link href="/mobile-massage" style={{ color: "#ffffff", textDecoration: "none", fontSize: "13px", fontWeight: 600, letterSpacing: "1px", textTransform: "uppercase" }}>Mobile Massage</Link></li>
                   <li className="current"><Link href="/gallery" style={{ color: "#c2a74e", textDecoration: "none", fontSize: "13px", fontWeight: 600, letterSpacing: "1px", textTransform: "uppercase" }}>Gallery</Link></li>
-                  <li><Link href="/booking" style={{ color: "#ffffff", textDecoration: "none", fontSize: "13px", fontWeight: 600, letterSpacing: "1px", textTransform: "uppercase" }}>Book Appointment</Link></li>
                   <li><Link href="/blog" style={{ color: "#ffffff", textDecoration: "none", fontSize: "13px", fontWeight: 600, letterSpacing: "1px", textTransform: "uppercase" }}>Blog</Link></li>
                 </ul>
               </nav>
@@ -716,7 +717,9 @@ export default function GalleryPage() {
                 <h4 style={{ color: "#ffffff", fontFamily: "Cormorant, serif", fontSize: "1.2rem", marginBottom: "16px" }}>Navigation</h4>
                 <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: "8px", fontSize: "13px" }}>
                   <li><Link href="/" style={{ color: "#9ca3af", textDecoration: "none" }}>Home</Link></li>
-                  <li><Link href="/services" style={{ color: "#9ca3af", textDecoration: "none" }}>Services &amp; Packages</Link></li>
+                  <li><Link href="/services" style={{ color: "#9ca3af", textDecoration: "none" }}>Services</Link></li>
+                  <li><Link href="/vip-packages" style={{ color: "#9ca3af", textDecoration: "none" }}>VIP Packages</Link></li>
+                  <li><Link href="/mobile-massage" style={{ color: "#9ca3af", textDecoration: "none" }}>Mobile Massage</Link></li>
                   <li><Link href="/gallery" style={{ color: "#c2a74e", textDecoration: "none" }}>Gallery</Link></li>
                   <li><Link href="/blog" style={{ color: "#9ca3af", textDecoration: "none" }}>Blog</Link></li>
                 </ul>

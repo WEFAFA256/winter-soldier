@@ -35,7 +35,13 @@ export default function BlogPage() {
                                 <a href="/">Home</a>
                             </li>
                             <li>
-                                <a href="/services">Services &amp; Packages</a>
+                                <a href="/services">Services</a>
+                            </li>
+                            <li>
+                                <a href="/vip-packages">VIP Packages</a>
+                            </li>
+                            <li>
+                                <a href="/mobile-massage">Mobile Massage</a>
                             </li>
                             <li>
                                 <a href="/gallery">Gallery</a>
@@ -250,6 +256,8 @@ export default function BlogPage() {
                 <ul class="main-menu__list">
                     <li><a href="/">Home</a></li>
                     <li><a href="/services">Services</a></li>
+                    <li><a href="/vip-packages">VIP Packages</a></li>
+                    <li><a href="/mobile-massage">Mobile Massage</a></li>
                     <li><a href="/gallery">Gallery</a></li>
                     <li class="current"><a href="/blog">Blog</a></li>
                 </ul>
