@@ -965,8 +965,55 @@ export default function GalleryPage() {
           </div>
         </div>
 
-        {/* ─── SECTION 1: THERAPIES IN MOTION (VIDEO DEMONSTRATIONS) ─── */}
-        <section style={{ padding: "70px 0 60px 0", backgroundColor: "#0a0e12", borderBottom: "1px solid rgba(194, 167, 78, 0.15)" }}>
+        {/* ─── SECTION 1: SPECIALIST PROFILES & SANCTUARY GALLERY ─── */}
+        <section style={{ padding: "70px 0 60px 0", borderBottom: "1px solid rgba(194, 167, 78, 0.15)" }}>
+          <div className="container">
+            <div style={{ textAlign: "center", maxWidth: "760px", margin: "0 auto 36px auto" }}>
+              <span style={{ color: "#c2a74e", fontFamily: "'Great Vibes', cursive, Cormorant, serif", fontSize: "1.7rem", display: "block", marginBottom: "6px" }}>
+                Our Specialists &amp; Suites
+              </span>
+              <h2 style={{ fontFamily: "Cormorant, serif", fontSize: "clamp(2rem, 4vw, 3rem)", fontWeight: 700, color: "#ffffff", margin: "0 0 12px 0" }}>
+                Therapist Profiles &amp; Sanctuary Gallery
+              </h2>
+              <p style={{ color: "rgba(255,255,255,0.75)", fontSize: "14px", lineHeight: 1.6, margin: 0 }}>
+                Check live room and specialist availability in real-time. Click any profile to view full-resolution photographs, or book your preferred therapist directly.
+              </p>
+            </div>
+
+            {loading ? (
+              <div style={{ textAlign: "center", padding: "80px 0" }}>
+                <div className="spinner-border text-warning" role="status" style={{ width: "3rem", height: "3rem" }}>
+                  <span className="visually-hidden">Loading gallery...</span>
+                </div>
+                <p style={{ marginTop: "16px", color: "#9ca3af" }}>Loading specialist photographs...</p>
+              </div>
+            ) : images.length === 0 ? (
+              <div style={{ textAlign: "center", padding: "60px 0", backgroundColor: "#161c22", borderRadius: "12px", border: "1px dashed rgba(194, 167, 78,0.3)" }}>
+                <i className="fas fa-images" style={{ fontSize: "3rem", color: "#c2a74e", marginBottom: "16px" }}></i>
+                <h3 style={{ color: "#fff", fontFamily: "Cormorant, serif", fontSize: "1.8rem" }}>No profiles found</h3>
+                <p style={{ color: "#9ca3af" }}>Check back soon as we update our luxury suite gallery.</p>
+              </div>
+            ) : (
+              <div className="row g-4">
+                {images.map((img, index) => {
+                  const fallbackImg = `/assets/images/instagram/instagram-2-${(index % 5) + 1}.jpg`;
+                  return (
+                    <GalleryCard
+                      key={img.id || index}
+                      img={img}
+                      index={index}
+                      fallbackImg={fallbackImg}
+                      onClick={() => setSelectedIndex(index)}
+                    />
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </section>
+
+        {/* ─── SECTION 2: THERAPIES IN MOTION (VIDEO DEMONSTRATIONS) ─── */}
+        <section style={{ padding: "70px 0 90px 0", backgroundColor: "#0a0e12" }}>
           <div className="container">
             <div style={{ textAlign: "center", maxWidth: "780px", margin: "0 auto 36px auto" }}>
               <span style={{ color: "#c2a74e", fontFamily: "'Great Vibes', cursive, Cormorant, serif", fontSize: "1.7rem", display: "block", marginBottom: "6px", letterSpacing: "1px" }}>
@@ -1247,53 +1294,6 @@ export default function GalleryPage() {
                 </div>
               ))}
             </div>
-          </div>
-        </section>
-
-        {/* ─── SECTION 2: SPECIALIST PROFILES & SANCTUARY GALLERY ─── */}
-        <section style={{ padding: "70px 0 90px 0" }}>
-          <div className="container">
-            <div style={{ textAlign: "center", maxWidth: "760px", margin: "0 auto 36px auto" }}>
-              <span style={{ color: "#c2a74e", fontFamily: "'Great Vibes', cursive, Cormorant, serif", fontSize: "1.7rem", display: "block", marginBottom: "6px" }}>
-                Our Specialists &amp; Suites
-              </span>
-              <h2 style={{ fontFamily: "Cormorant, serif", fontSize: "clamp(2rem, 4vw, 3rem)", fontWeight: 700, color: "#ffffff", margin: "0 0 12px 0" }}>
-                Therapist Profiles &amp; Sanctuary Gallery
-              </h2>
-              <p style={{ color: "rgba(255,255,255,0.75)", fontSize: "14px", lineHeight: 1.6, margin: 0 }}>
-                Check live room and specialist availability in real-time. Click any profile to view full-resolution photographs, or book your preferred therapist directly.
-              </p>
-            </div>
-
-            {loading ? (
-              <div style={{ textAlign: "center", padding: "80px 0" }}>
-                <div className="spinner-border text-warning" role="status" style={{ width: "3rem", height: "3rem" }}>
-                  <span className="visually-hidden">Loading gallery...</span>
-                </div>
-                <p style={{ marginTop: "16px", color: "#9ca3af" }}>Loading specialist photographs...</p>
-              </div>
-            ) : images.length === 0 ? (
-              <div style={{ textAlign: "center", padding: "60px 0", backgroundColor: "#161c22", borderRadius: "12px", border: "1px dashed rgba(194, 167, 78,0.3)" }}>
-                <i className="fas fa-images" style={{ fontSize: "3rem", color: "#c2a74e", marginBottom: "16px" }}></i>
-                <h3 style={{ color: "#fff", fontFamily: "Cormorant, serif", fontSize: "1.8rem" }}>No profiles found</h3>
-                <p style={{ color: "#9ca3af" }}>Check back soon as we update our luxury suite gallery.</p>
-              </div>
-            ) : (
-              <div className="row g-4">
-                {images.map((img, index) => {
-                  const fallbackImg = `/assets/images/instagram/instagram-2-${(index % 5) + 1}.jpg`;
-                  return (
-                    <GalleryCard
-                      key={img.id || index}
-                      img={img}
-                      index={index}
-                      fallbackImg={fallbackImg}
-                      onClick={() => setSelectedIndex(index)}
-                    />
-                  );
-                })}
-              </div>
-            )}
           </div>
         </section>
 
