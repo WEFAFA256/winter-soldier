@@ -650,11 +650,15 @@ export default function ServicesPage() {
     fetchServices();
   }, []);
 
-  // Filter logic
+  // Filter logic — only services strictly less than 400,000 UGX (400k+ belong to VIP Packages)
   const filteredServices = useMemo(() => {
-    let list = services.filter(
-      (s) => s.title && s.title.toLowerCase() !== "new spa treatment" && s.title.trim() !== ""
-    );
+    let list = services.filter((s) => {
+      if (!s.title || s.title.toLowerCase() === "new spa treatment" || s.title.trim() === "") {
+        return false;
+      }
+      const num = typeof s.price === "number" ? s.price : parseInt(String(s.price).replace(/\D/g, ""), 10);
+      return !isNaN(num) && num < 400000;
+    });
 
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
@@ -677,12 +681,6 @@ export default function ServicesPage() {
     if (activeCategory === "multihand") {
       const keywords = ["4hands", "6hands"];
       return list.filter((s) => keywords.some((k) => s.title.toLowerCase().includes(k)));
-    }
-    if (activeCategory === "vip") {
-      return list.filter((s) => {
-        const num = typeof s.price === "number" ? s.price : parseInt(String(s.price).replace(/\D/g, ""), 10);
-        return num >= 450000;
-      });
     }
     return list;
   }, [services, activeCategory, searchQuery]);
@@ -805,7 +803,7 @@ export default function ServicesPage() {
               Our Spa Services &amp; Wellness Rituals
             </h1>
             <p style={{ color: "rgba(255,255,255,0.75)", fontSize: "clamp(0.85rem, 2vw, 1rem)", maxWidth: "600px", margin: "0 auto 18px auto", lineHeight: 1.6 }}>
-              Explore our complete collection of 30 authentic therapies in Kampala — from restorative Swedish strokes to exclusive multi-hand rituals and royal Turkish hammam packages.
+              Explore our essential therapies in Kampala — from restorative Swedish strokes and deep tissue therapy to soothing scrubs, aromatherapy, and relaxing couples sessions.
             </p>
             <nav style={{ fontSize: "12px", color: "rgba(255,255,255,0.5)", letterSpacing: "1.5px", textTransform: "uppercase" }}>
               <Link href="/" style={{ color: "rgba(255,255,255,0.5)", textDecoration: "none" }}>Home</Link>

@@ -18,130 +18,111 @@ interface Service {
 
 const INITIAL_VIP_PACKAGES: Service[] = [
   {
-    title: "6hands Kamasutra",
-    image: "/assets/6hands-kamasutra.jpg",
-    fullImage: "/assets/6hands-kamasutra.jpg",
-    description: "Pure Romance, Erotic, and Tantric practices. Maximise the session with three therapists using extra full body contact and sacred body slides for the ultimate experience.",
-    delay: "delay-100",
-    needsCrop: true,
-    price: 1200000,
+    "title": "Body Care Packages",
+    "image": "/assets/service7.jpg",
+    "fullImage": "/assets/body-care-full.jpg",
+    "description": "Got the time for Pure Relaxation & Stress Off? Out for a 120mins | 180mins Session as a Package for the Spa Day. We've got you covered! - Try these Massage sessions!",
+    "delay": "delay-100",
+    "price": 400000
   },
   {
-    title: "6hands Full Service",
-    image: "/assets/6hands-full-service.jpg",
-    fullImage: "/assets/6hands-full-service.jpg",
-    description: "Combining B2b, Erotic & Aromatherapy. Unique pleasure using thighs, breasts, lips with extra body contact from three therapists in complete luxury.",
-    delay: "delay-200",
-    needsCrop: true,
-    price: 900000,
+    "title": "Kamasutra Session",
+    "image": "/assets/kamasutra-session.jpg",
+    "fullImage": "/assets/kamasutra-session.jpg",
+    "description": "Pure intimacy and control. A distinctive session involving deep body contact, warm oils, and inverse B2B techniques. (400K)",
+    "delay": "delay-200",
+    "needsCrop": true,
+    "price": 400000
   },
   {
-    title: "4hands Tantra | Yoni",
-    image: "/assets/4hands-tantra-yoni.jpg",
-    fullImage: "/assets/4hands-tantra-yoni.jpg",
-    description: "Deep tantric soothing and arousal. Two therapists focus on intimate detail, sacred energy flow, and pure sensation for ultimate release.",
-    delay: "delay-300",
-    needsCrop: true,
-    price: 750000,
+    "title": "Premium Body Care Pack",
+    "image": "/assets/premium-collage.jpg",
+    "fullImage": "/assets/premium-pack.jpg",
+    "description": "Aromatherapy, Body Waxing, Steam Bath, Jacuzzi, Wines & Drinks, Ped & Manicure. (400K)",
+    "delay": "delay-200",
+    "imageOnly": true,
+    "price": 400000
   },
   {
-    title: "4hands Full Service",
-    image: "/assets/4hands-full-service.jpg",
-    fullImage: "/assets/4hands-full-service.jpg",
-    description: "Intense duo intimacy. Thighs, curves, and extreme contact with warm scented oils. Pure sensation delivered simultaneously by two therapists.",
-    delay: "delay-100",
-    needsCrop: true,
-    price: 650000,
+    "title": "Couples | Duo Packages",
+    "image": "/assets/service8.jpg",
+    "fullImage": "/assets/couples-duo-full.jpg",
+    "description": "Got the time for Pure Relaxation & Stress Off? Out for a 90mins | 120mins Session as a Package for the Spa Day. We've got you covered! - Try these Massage sessions!",
+    "delay": "delay-200",
+    "price": 450000
   },
   {
-    title: "Affluent Body Care Pack",
-    image: "/assets/affluent-collage.jpg",
-    fullImage: "/assets/affluent-pack.jpg",
-    description: "Tantra Full Pack, Scrubs & Waxing, Turkish Hammam, Jacuzzi & Steam, Pedicure & Manicure. The pinnacle of full-day executive self-care.",
-    delay: "delay-200",
-    imageOnly: true,
-    price: 600000,
+    "title": "4hands Nuru | B2b",
+    "image": "/assets/4hands-nuru-b2b.jpg",
+    "fullImage": "/assets/4hands-nuru-b2b.jpg",
+    "description": "Experience pure arousal with two therapists. Sensual slides, sticky oils, and extreme body contact at its best. (450K)",
+    "delay": "delay-300",
+    "needsCrop": true,
+    "price": 450000
   },
   {
-    title: "Classical Body Care Pack",
-    image: "/assets/classical-collage.jpg",
-    fullImage: "/assets/classical-pack.jpg",
-    description: "Nuru Full Pack, Waxing & Scrubs, Turkish Hammam, Foam Massage, Steam Facials, Pedicure & Manicure. Complete head-to-toe rejuvenation.",
-    delay: "delay-300",
-    imageOnly: true,
-    price: 500000,
+    "title": "6hands Erotic",
+    "image": "/assets/6hands-erotic.jpg",
+    "fullImage": "/assets/6hands-erotic.jpg",
+    "description": "Soothing beyond normal Erotic Sessions. Stimulate all sexual pleasures through intimate, romantic & teasing touches by three therapists. (450K)",
+    "delay": "delay-200",
+    "needsCrop": true,
+    "price": 450000
   },
   {
-    title: "Couples | Duo Packages",
-    image: "/assets/service8.jpg",
-    fullImage: "/assets/couples-duo-full.jpg",
-    description: "Got the time for Pure Relaxation & Stress Off? Out for a 90mins | 120mins Session as a Package for the Spa Day in our private luxury suite.",
-    delay: "delay-100",
-    price: 450000,
+    "title": "Classical Body Care Pack",
+    "image": "/assets/classical-collage.jpg",
+    "fullImage": "/assets/classical-pack.jpg",
+    "description": "Nuru Full Pack, Waxing & Scrubs, Turkish Hammam, Foam Massage, Steam Facials, Ped & Manicure. (500K)",
+    "delay": "delay-300",
+    "imageOnly": true,
+    "price": 500000
   },
   {
-    title: "4hands Nuru | B2b",
-    image: "/assets/4hands-nuru-b2b.jpg",
-    fullImage: "/assets/4hands-nuru-b2b.jpg",
-    description: "Experience pure arousal with two therapists. Sensual slides, sticky authentic seaweed oils, and extreme body contact at its best.",
-    delay: "delay-200",
-    needsCrop: true,
-    price: 450000,
+    "title": "Affluent Body Care Pack",
+    "image": "/assets/affluent-collage.jpg",
+    "fullImage": "/assets/affluent-pack.jpg",
+    "description": "Tantra Full Pack, Scrubs & Waxing, Turkish Hammam, Jacuzzi & Steam, Ped & Manicure. (600K)",
+    "delay": "delay-100",
+    "imageOnly": true,
+    "price": 600000
   },
   {
-    title: "6hands Erotic",
-    image: "/assets/6hands-erotic.jpg",
-    fullImage: "/assets/6hands-erotic.jpg",
-    description: "Soothing beyond normal Erotic Sessions. Stimulate all sexual pleasures through intimate, romantic & teasing touches by three therapists.",
-    delay: "delay-300",
-    needsCrop: true,
-    price: 450000,
+    "title": "4hands Full Service",
+    "image": "/assets/4hands-full-service.jpg",
+    "fullImage": "/assets/4hands-full-service.jpg",
+    "description": "Intense duo intimacy. Thighs, curves, and extreme contact with warm scented oils. Pure sensation. (650K)",
+    "delay": "delay-100",
+    "needsCrop": true,
+    "price": 650000
   },
   {
-    title: "Premium Body Care Pack",
-    image: "/assets/service6.jpg",
-    fullImage: "/assets/premium-body-care-full.jpg",
-    description: "Complete wellness ritual including deep exfoliation, warm hydrotherapy, full body oil massage, and private steam room access.",
-    delay: "delay-100",
-    imageOnly: true,
-    price: 400000,
+    "title": "4hands Tantra | Yoni",
+    "image": "/assets/4hands-tantra-yoni.jpg",
+    "fullImage": "/assets/4hands-tantra-yoni.jpg",
+    "description": "Deep tantric soothing and arousal. Two therapists focus on intimate detail and pure sensation for ultimate release. (750K)",
+    "delay": "delay-200",
+    "needsCrop": true,
+    "price": 750000
   },
   {
-    title: "Kamasutra Session",
-    image: "/assets/kamasutra-session.jpg",
-    fullImage: "/assets/kamasutra-session.jpg",
-    description: "Intimate and artistic touch inspired by ancient tantric wellness. Sensual pressure and deep connection designed for ultimate relaxation.",
-    delay: "delay-200",
-    needsCrop: true,
-    price: 400000,
+    "title": "6hands Full Service",
+    "image": "/assets/6hands-full-service.jpg",
+    "fullImage": "/assets/6hands-full-service.jpg",
+    "description": "Combining B2b, Erotic & Aromatherapy. Unique pleasure using thighs, breasts, lips with extra body contact from three therapists. (900K)",
+    "delay": "delay-300",
+    "needsCrop": true,
+    "price": 900000
   },
   {
-    title: "Turkish Bath Packages",
-    image: "/assets/turkish-bath-packages.jpg",
-    fullImage: "/assets/turkish-bath-packages.jpg",
-    description: "Authentic hammam steam, black olive soap scrubbing, exfoliating mitt cleanse, and warm cloud foam massage.",
-    delay: "delay-300",
-    needsCrop: true,
-    price: 350000,
-  },
-  {
-    title: "Full Service Pack",
-    image: "/assets/full-service-pack.jpg",
-    fullImage: "/assets/full-service-pack.jpg",
-    description: "The most Sensual Erotically Satisfying Session. Combines B2b & Erotic Massage. Complete pack inclusive of Extra Services for immense Romantic Tantra Mood.",
-    delay: "delay-100",
-    needsCrop: true,
-    price: 300000,
-  },
-  {
-    title: "Womens' Packages",
-    image: "/assets/womens-packages.jpg",
-    fullImage: "/assets/womens-packages.jpg",
-    description: "Dedicated full wellness day tailored specifically for ladies: aromatic oil bath, deep tissue relaxation, facial cleanse, and pedicure.",
-    delay: "delay-200",
-    needsCrop: true,
-    price: 250000,
-  },
+    "title": "6hands Kamasutra",
+    "image": "/assets/6hands-kamasutra.jpg",
+    "fullImage": "/assets/6hands-kamasutra.jpg",
+    "description": "Pure Romance, Erotic, and Tantric practices. Maximise the session with three therapists using extra full body contact. (1.2M)",
+    "delay": "delay-100",
+    "needsCrop": true,
+    "price": 1200000
+  }
 ];
 
 const whatsappNumber = "256781945510";
@@ -454,7 +435,7 @@ export default function VipPackagesPage() {
           if (data && data.services && Array.isArray(data.services) && data.services.length > 0) {
             const vip = data.services.filter((s: Service) => {
               const p = typeof s.price === "number" ? s.price : parseInt(String(s.price).replace(/\D/g, ""), 10);
-              return p >= 350000 || s.title.toLowerCase().includes("package") || s.title.toLowerCase().includes("pack");
+              return !isNaN(p) && p >= 400000;
             });
             if (vip.length > 0) {
               setPackages(vip);
@@ -475,6 +456,53 @@ export default function VipPackagesPage() {
   return (
     <>
       <CustomCursor />
+      <style jsx global>{`
+        @keyframes vipGoldShimmer {
+          0% {
+            background-position: -200% 0;
+          }
+          100% {
+            background-position: 200% 0;
+          }
+        }
+        @keyframes vipGlowPulse {
+          0%, 100% {
+            filter: drop-shadow(0 0 12px rgba(194, 167, 78, 0.45)) drop-shadow(0 0 24px rgba(255, 215, 0, 0.25));
+          }
+          50% {
+            filter: drop-shadow(0 0 22px rgba(194, 167, 78, 0.9)) drop-shadow(0 0 40px rgba(255, 215, 0, 0.55));
+          }
+        }
+        .vip-shimmer-text {
+          background: linear-gradient(
+            110deg,
+            #c2a74e 0%,
+            #dfc268 20%,
+            #ffffff 45%,
+            #fff4c2 55%,
+            #e2b842 75%,
+            #c2a74e 100%
+          );
+          background-size: 200% 100%;
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          animation: vipGoldShimmer 3s ease-in-out infinite, vipGlowPulse 2.8s ease-in-out infinite;
+          display: inline-block;
+          font-weight: 900;
+          letter-spacing: 3px;
+        }
+        .vip-badge-shimmer {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          padding: 6px 18px;
+          border-radius: 30px;
+          background: rgba(14, 19, 23, 0.75);
+          border: 1px solid rgba(194, 167, 78, 0.6);
+          box-shadow: 0 0 20px rgba(194, 167, 78, 0.3), inset 0 0 12px rgba(194, 167, 78, 0.15);
+          margin-bottom: 14px;
+        }
+      `}</style>
 
       <div className="page-wrapper" style={{ backgroundColor: "#0e1317", color: "#c4cfde", minHeight: "100vh" }}>
         {/* --- NATIVE SOLOX LUXURY HEADER --- */}
@@ -583,11 +611,17 @@ export default function VipPackagesPage() {
             <span style={{ color: "#c2a74e", fontFamily: "'Great Vibes', cursive, Cormorant, serif", fontSize: "1.6rem", display: "block", marginBottom: "10px", letterSpacing: "2px" }}>
               Exclusive &amp; Bespoke
             </span>
-            <h1 style={{ fontFamily: "Cormorant, serif", fontSize: "clamp(2.2rem, 5vw, 3.6rem)", fontWeight: 700, color: "#ffffff", margin: "0 0 14px 0", lineHeight: 1.15 }}>
-              VIP Luxury Packages &amp; Multi-Hand Rituals
+            <div className="vip-badge-shimmer">
+              <i className="fas fa-crown" style={{ color: "#c2a74e", fontSize: "14px" }}></i>
+              <span className="vip-shimmer-text" style={{ fontSize: "13px", letterSpacing: "2.5px" }}>
+                EXECUTIVE SUITE PRIVILEGE
+              </span>
+            </div>
+            <h1 style={{ fontFamily: "Cormorant, serif", fontSize: "clamp(2.2rem, 5vw, 3.8rem)", fontWeight: 700, color: "#ffffff", margin: "0 0 14px 0", lineHeight: 1.15 }}>
+              <span className="vip-shimmer-text">VIP</span> Luxury Packages &amp; Multi-Hand Rituals
             </h1>
             <p style={{ color: "rgba(255,255,255,0.85)", fontSize: "clamp(0.9rem, 2vw, 1.05rem)", maxWidth: "660px", margin: "0 auto 20px auto", lineHeight: 1.6 }}>
-              Curated for discerning clients seeking the pinnacle of indulgence in Kampala — from synchronized 4-hand and 6-hand sessions to full-day Turkish hammam and romantic couple rituals.
+              Curated exclusively for discerning clients seeking therapies of 400,000 UGX and above in Kampala — from synchronized 4-hand and 6-hand sessions to full-day Turkish hammam and royal body care rituals.
             </p>
             <nav style={{ fontSize: "12px", color: "rgba(255,255,255,0.5)", letterSpacing: "1.5px", textTransform: "uppercase" }}>
               <Link href="/" style={{ color: "rgba(255,255,255,0.5)", textDecoration: "none" }}>Home</Link>
