@@ -359,31 +359,30 @@ function ServiceCard({
       <div
         className="service-theme-card"
         style={{
-          backgroundImage: 'url(/assets/images/shapes/funfact-bg-2.jpg)',
-          backgroundColor: '#c2a74e',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center center',
-          backgroundRepeat: 'no-repeat',
+          backgroundColor: '#14191f',
+          backgroundImage: 'linear-gradient(165deg, #171d24 0%, #0e1216 100%)',
           borderRadius: '12px',
           overflow: 'hidden',
-          border: '1px solid rgba(194, 167, 78, 0.4)',
-          boxShadow: '0 12px 30px rgba(0, 0, 0, 0.45)',
+          border: '1px solid rgba(194, 167, 78, 0.22)',
+          boxShadow: '0 10px 30px rgba(0, 0, 0, 0.55)',
           display: 'flex',
           flexDirection: 'column',
           height: '100%',
           position: 'relative',
-          transition: 'transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s ease',
+          transition: 'transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s ease, border-color 0.35s ease',
         }}
         onMouseEnter={(e) => {
           e.currentTarget.style.transform = 'translateY(-10px)';
-          e.currentTarget.style.boxShadow = '0 22px 50px rgba(194, 167, 78, 0.3)';
+          e.currentTarget.style.borderColor = 'rgba(194, 167, 78, 0.55)';
+          e.currentTarget.style.boxShadow = '0 20px 48px rgba(0, 0, 0, 0.75), 0 0 25px rgba(194, 167, 78, 0.12)';
         }}
         onMouseLeave={(e) => {
           e.currentTarget.style.transform = 'translateY(0)';
-          e.currentTarget.style.boxShadow = '0 12px 30px rgba(0, 0, 0, 0.45)';
+          e.currentTarget.style.borderColor = 'rgba(194, 167, 78, 0.22)';
+          e.currentTarget.style.boxShadow = '0 10px 30px rgba(0, 0, 0, 0.55)';
         }}
       >
-        {/* Palm leaf line art overlay from the exact section */}
+        {/* Palm leaf line art overlay with subtle dark theme opacity */}
         <div
           style={{
             position: 'absolute',
@@ -396,7 +395,8 @@ function ServiceCard({
             backgroundRepeat: 'no-repeat',
             backgroundPosition: 'left bottom',
             pointerEvents: 'none',
-            opacity: 0.85,
+            opacity: 0.22,
+            filter: 'brightness(1.5)',
             zIndex: 1,
           }}
         />
@@ -450,7 +450,7 @@ function ServiceCard({
           </div>
         </div>
 
-        {/* Card Content with Exact Funfact Theme Styling */}
+        {/* Card Content with Distinct Obsidian Dark Luxury Theme */}
         <div style={{ padding: '24px 22px', display: 'flex', flexDirection: 'column', flex: 1, position: 'relative', zIndex: 2 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px', gap: '8px' }}>
             <h3
@@ -470,15 +470,15 @@ function ServiceCard({
             </h3>
             <span
               style={{
-                backgroundColor: '#1c1a1d',
-                color: '#ffffff',
+                backgroundColor: 'rgba(194, 167, 78, 0.12)',
+                color: '#e5c970',
                 padding: '4px 12px',
                 borderRadius: '16px',
                 fontWeight: 800,
                 fontSize: '0.85rem',
                 whiteSpace: 'nowrap',
                 boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
-                border: '1px solid rgba(255,255,255,0.15)',
+                border: '1px solid rgba(194, 167, 78, 0.38)',
               }}
             >
               {formatPrice(service.price)}
@@ -487,13 +487,13 @@ function ServiceCard({
 
           <p
             style={{
-              color: 'rgba(255, 255, 255, 0.95)',
+              color: 'rgba(255, 255, 255, 0.78)',
               textShadow: '0 1px 2px rgba(0,0,0,0.3)',
               fontSize: '0.92rem',
               lineHeight: 1.6,
               marginBottom: '20px',
               flex: 1,
-              fontWeight: 500,
+              fontWeight: 400,
               display: '-webkit-box',
               WebkitLineClamp: 3,
               WebkitBoxOrient: 'vertical',
@@ -504,7 +504,7 @@ function ServiceCard({
             {service.description || 'A soothing treatment designed to revitalize mind, body, and senses.'}
           </p>
 
-          {/* Action Buttons using Exact Dark Button from the Reference Image */}
+          {/* Action Buttons */}
           <div
             style={{
               display: 'flex',
@@ -512,7 +512,7 @@ function ServiceCard({
               gap: '12px',
               marginTop: 'auto',
               paddingTop: '16px',
-              borderTop: '1px solid rgba(255, 255, 255, 0.25)',
+              borderTop: '1px solid rgba(194, 167, 78, 0.15)',
             }}
           >
             <button
@@ -521,8 +521,8 @@ function ServiceCard({
                 flex: 1,
                 padding: '11px 14px',
                 backgroundColor: 'transparent',
-                border: '2px solid #1c1a1d',
-                color: '#1c1a1d',
+                border: '1.5px solid rgba(194, 167, 78, 0.45)',
+                color: '#c2a74e',
                 borderRadius: '0px',
                 fontSize: '12px',
                 fontWeight: 800,
@@ -532,12 +532,14 @@ function ServiceCard({
                 transition: 'all 0.25s ease',
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = '#1c1a1d';
+                e.currentTarget.style.backgroundColor = 'rgba(194, 167, 78, 0.15)';
                 e.currentTarget.style.color = '#ffffff';
+                e.currentTarget.style.borderColor = '#c2a74e';
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.backgroundColor = 'transparent';
-                e.currentTarget.style.color = '#1c1a1d';
+                e.currentTarget.style.color = '#c2a74e';
+                e.currentTarget.style.borderColor = 'rgba(194, 167, 78, 0.45)';
               }}
             >
               Learn More
@@ -548,9 +550,9 @@ function ServiceCard({
               style={{
                 flex: 1.3,
                 padding: '11px 14px',
-                backgroundColor: '#1c1a1d',
-                border: '2px solid #1c1a1d',
-                color: '#ffffff',
+                backgroundColor: '#c2a74e',
+                border: '1.5px solid #c2a74e',
+                color: '#0e1317',
                 borderRadius: '0px',
                 fontSize: '12px',
                 fontWeight: 800,
@@ -561,18 +563,18 @@ function ServiceCard({
                 alignItems: 'center',
                 justifyContent: 'center',
                 gap: '8px',
-                boxShadow: '0 4px 14px rgba(0, 0, 0, 0.4)',
+                boxShadow: '0 4px 14px rgba(194, 167, 78, 0.3)',
                 transition: 'all 0.25s ease',
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = '#ffffff';
-                e.currentTarget.style.color = '#1c1a1d';
-                e.currentTarget.style.borderColor = '#ffffff';
+                e.currentTarget.style.backgroundColor = '#dfc268';
+                e.currentTarget.style.borderColor = '#dfc268';
+                e.currentTarget.style.boxShadow = '0 6px 20px rgba(194, 167, 78, 0.5)';
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = '#1c1a1d';
-                e.currentTarget.style.color = '#ffffff';
-                e.currentTarget.style.borderColor = '#1c1a1d';
+                e.currentTarget.style.backgroundColor = '#c2a74e';
+                e.currentTarget.style.borderColor = '#c2a74e';
+                e.currentTarget.style.boxShadow = '0 4px 14px rgba(194, 167, 78, 0.3)';
               }}
             >
               <i className="fas fa-calendar-check"></i> Book Now

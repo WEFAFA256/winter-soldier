@@ -467,40 +467,45 @@ export default function VipPackagesPage() {
         }
         @keyframes vipGlowPulse {
           0%, 100% {
-            filter: drop-shadow(0 0 12px rgba(194, 167, 78, 0.45)) drop-shadow(0 0 24px rgba(255, 215, 0, 0.25));
+            filter: drop-shadow(0 0 14px rgba(255, 215, 0, 0.75)) drop-shadow(0 0 30px rgba(212, 175, 55, 0.55));
           }
           50% {
-            filter: drop-shadow(0 0 22px rgba(194, 167, 78, 0.9)) drop-shadow(0 0 40px rgba(255, 215, 0, 0.55));
+            filter: drop-shadow(0 0 28px rgba(255, 215, 0, 1)) drop-shadow(0 0 55px rgba(218, 165, 32, 0.85)) drop-shadow(0 0 80px rgba(184, 134, 11, 0.5));
           }
         }
         .vip-shimmer-text {
           background: linear-gradient(
-            110deg,
-            #c2a74e 0%,
-            #dfc268 20%,
-            #ffffff 45%,
-            #fff4c2 55%,
-            #e2b842 75%,
-            #c2a74e 100%
+            90deg,
+            #996515 0%,
+            #d4af37 15%,
+            #ffd700 28%,
+            #fff9d6 44%,
+            #ffffff 50%,
+            #fff4b8 56%,
+            #ffd700 70%,
+            #c59b27 85%,
+            #996515 100%
           );
-          background-size: 200% 100%;
+          background-size: 260% 100%;
           -webkit-background-clip: text;
           -webkit-text-fill-color: transparent;
-          animation: vipGoldShimmer 3s ease-in-out infinite, vipGlowPulse 2.8s ease-in-out infinite;
+          animation: vipGoldShimmer 2.8s linear infinite, vipGlowPulse 2.4s ease-in-out infinite;
           display: inline-block;
           font-weight: 900;
-          letter-spacing: 3px;
+          letter-spacing: 3.5px;
+          -webkit-text-stroke: 1.2px rgba(255, 235, 140, 0.85);
+          filter: drop-shadow(0 0 16px rgba(255, 215, 0, 0.8));
         }
         .vip-badge-shimmer {
           display: inline-flex;
           align-items: center;
-          gap: 8px;
-          padding: 6px 18px;
+          gap: 10px;
+          padding: 8px 22px;
           border-radius: 30px;
-          background: rgba(14, 19, 23, 0.75);
-          border: 1px solid rgba(194, 167, 78, 0.6);
-          box-shadow: 0 0 20px rgba(194, 167, 78, 0.3), inset 0 0 12px rgba(194, 167, 78, 0.15);
-          margin-bottom: 14px;
+          background: rgba(14, 19, 23, 0.88);
+          border: 1.5px solid rgba(255, 215, 0, 0.75);
+          box-shadow: 0 0 25px rgba(212, 175, 55, 0.45), inset 0 0 16px rgba(255, 215, 0, 0.2);
+          margin-bottom: 16px;
         }
       `}</style>
 
@@ -618,7 +623,7 @@ export default function VipPackagesPage() {
               </span>
             </div>
             <h1 style={{ fontFamily: "Cormorant, serif", fontSize: "clamp(2.2rem, 5vw, 3.8rem)", fontWeight: 700, color: "#ffffff", margin: "0 0 14px 0", lineHeight: 1.15 }}>
-              <span className="vip-shimmer-text">VIP</span> Luxury Packages &amp; Multi-Hand Rituals
+              <span className="vip-shimmer-text" style={{ fontSize: "1.25em", marginRight: "6px", verticalAlign: "middle" }}>VIP</span> Luxury Packages &amp; Multi-Hand Rituals
             </h1>
             <p style={{ color: "rgba(255,255,255,0.85)", fontSize: "clamp(0.9rem, 2vw, 1.05rem)", maxWidth: "660px", margin: "0 auto 20px auto", lineHeight: 1.6 }}>
               Curated exclusively for discerning clients seeking therapies of 400,000 UGX and above in Kampala — from synchronized 4-hand and 6-hand sessions to full-day Turkish hammam and royal body care rituals.
