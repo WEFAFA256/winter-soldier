@@ -138,6 +138,80 @@ function formatPrice(price: number | string): string {
   return "UGX " + price;
 }
 
+/* Homepage section heading: exactly the .sec-title markup used on `/`
+   (decorative shape, Alex Brush tagline, uppercase Cormorant title). */
+function SectionTitle({
+  tagline,
+  title,
+  shape = "/assets/images/shapes/sec-title-s-1.png",
+  style,
+}: {
+  tagline: string;
+  title: string;
+  shape?: string;
+  style?: React.CSSProperties;
+}) {
+  return (
+    <div className="sec-title text-center" style={style}>
+      <img src={shape} alt="" aria-hidden="true" className="sec-title__img" />
+      <h6 className="sec-title__tagline" style={{ color: "#c2a74e" }}>
+        {tagline}
+      </h6>
+      <h3 className="sec-title__title" style={{ color: "#ffffff" }}>
+        {title}
+      </h3>
+    </div>
+  );
+}
+
+/* Homepage scroll transition (WOW `fadeInUp`: 1000ms ease, upward slide) driven by
+   IntersectionObserver so it also fires for cards that mount after page load. */
+function Reveal({
+  children,
+  delay = 0,
+  offset = 100,
+  style,
+}: {
+  children: React.ReactNode;
+  delay?: number;
+  offset?: number;
+  style?: React.CSSProperties;
+}) {
+  const ref = React.useRef<HTMLDivElement>(null);
+  const [shown, setShown] = React.useState(false);
+
+  React.useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setShown(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.08, rootMargin: "0px 0px -40px 0px" }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <div
+      ref={ref}
+      style={{
+        opacity: shown ? 1 : 0,
+        transform: shown ? "translate3d(0, 0, 0)" : `translate3d(0, ${offset}px, 0)`,
+        transition: `opacity 1000ms ease ${delay}ms, transform 1000ms ease ${delay}ms`,
+        willChange: "opacity, transform",
+        ...style,
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
 function ServiceCard({
   service,
   index,
@@ -176,7 +250,7 @@ function ServiceCard({
     return () => observer.disconnect();
   }, []);
 
-  const staggerDelay = (index % 3) * 0.08;
+  const staggerDelay = (index % 3) * 0.1 + 0.05;
 
   return (
     <div
@@ -184,8 +258,8 @@ function ServiceCard({
       className="col-lg-4 col-md-6 col-12"
       style={{
         opacity: inView ? 1 : 0,
-        transform: inView ? "translate3d(0, 0, 0)" : "translate3d(0, 32px, 0)",
-        transition: `opacity 0.75s cubic-bezier(0.25, 1, 0.5, 1) ${staggerDelay}s, transform 0.75s cubic-bezier(0.25, 1, 0.5, 1) ${staggerDelay}s`,
+        transform: inView ? "translate3d(0, 0, 0)" : "translate3d(0, 60px, 0)",
+        transition: `opacity 1000ms ease ${staggerDelay}s, transform 1000ms ease ${staggerDelay}s`,
         willChange: "transform, opacity",
       }}
     >
@@ -453,6 +527,15 @@ export default function VipPackagesPage() {
     fetchPackages();
   }, []);
 
+  /* Homepage hero entry: the same staged 1000ms / 1200ms ease rise the home
+     slider uses, replicated with state so it doesn't depend on owl-carousel. */
+  const heroReveal = (delay: number, duration = 1000, offset = 40): React.CSSProperties => ({
+    opacity: heroVisible ? 1 : 0,
+    transform: heroVisible ? "translateY(0)" : `translateY(${offset}px)`,
+    transition: `opacity ${duration}ms ease ${delay}ms, transform ${duration}ms ease ${delay}ms`,
+    willChange: "opacity, transform",
+  });
+
   return (
     <>
       <CustomCursor />
@@ -601,27 +684,62 @@ export default function VipPackagesPage() {
               zIndex: 2,
               maxWidth: "800px",
               margin: "0 auto",
-              opacity: heroVisible ? 1 : 0,
-              transform: heroVisible ? "translateY(0)" : "translateY(28px)",
-              transition: "opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.2s, transform 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.2s",
             }}
           >
-            <span style={{ color: "#c2a74e", fontFamily: "'Great Vibes', cursive, Cormorant, serif", fontSize: "1.6rem", display: "block", marginBottom: "10px", letterSpacing: "2px" }}>
+            <span
+              style={{
+                ...heroReveal(250),
+                color: "#c2a74e",
+                fontFamily: '"Alex Brush", cursive',
+                fontSize: "clamp(2rem, 4vw, 2.5rem)",
+                lineHeight: 1.2,
+                display: "block",
+                marginBottom: "4px",
+              }}
+            >
               Exclusive &amp; Bespoke
             </span>
-            <div className="vip-badge-shimmer">
+            <div className="vip-badge-shimmer" style={heroReveal(350)}>
               <i className="fas fa-crown" style={{ color: "#c2a74e", fontSize: "14px" }}></i>
               <span className="vip-shimmer-text" style={{ fontSize: "13px", letterSpacing: "2.5px" }}>
                 EXECUTIVE SUITE PRIVILEGE
               </span>
             </div>
-            <h1 style={{ fontFamily: "Cormorant, serif", fontSize: "clamp(2.2rem, 5vw, 3.8rem)", fontWeight: 700, color: "#ffffff", margin: "0 0 14px 0", lineHeight: 1.15 }}>
+            <h1
+              style={{
+                ...heroReveal(400, 1200, 60),
+                fontFamily: "Cormorant, serif",
+                fontSize: "clamp(2.2rem, 5vw, 3.8rem)",
+                fontWeight: 700,
+                color: "#ffffff",
+                margin: "0 0 14px 0",
+                lineHeight: 1.2,
+                letterSpacing: "normal",
+              }}
+            >
               <span className="vip-shimmer-text" style={{ fontSize: "1.25em", marginRight: "6px", verticalAlign: "middle" }}>VIP</span> Luxury Packages &amp; Multi-Hand Rituals
             </h1>
-            <p style={{ color: "rgba(255,255,255,0.85)", fontSize: "clamp(0.9rem, 2vw, 1.05rem)", maxWidth: "660px", margin: "0 auto 20px auto", lineHeight: 1.6 }}>
+            <p
+              style={{
+                ...heroReveal(550),
+                color: "rgba(255,255,255,0.85)",
+                fontSize: "clamp(0.9rem, 2vw, 1.05rem)",
+                maxWidth: "660px",
+                margin: "0 auto 20px auto",
+                lineHeight: 1.6,
+              }}
+            >
               Curated exclusively for discerning clients seeking therapies of 400,000 UGX and above in Kampala — from synchronized 4-hand and 6-hand sessions to full-day Turkish hammam and royal body care rituals.
             </p>
-            <nav style={{ fontSize: "12px", color: "rgba(255,255,255,0.5)", letterSpacing: "1.5px", textTransform: "uppercase" }}>
+            <nav
+              style={{
+                ...heroReveal(650),
+                fontSize: "12px",
+                color: "rgba(255,255,255,0.5)",
+                letterSpacing: "1.5px",
+                textTransform: "uppercase",
+              }}
+            >
               <Link href="/" style={{ color: "rgba(255,255,255,0.5)", textDecoration: "none" }}>Home</Link>
               <span style={{ margin: "0 8px", color: "#c2a74e" }}>/</span>
               <span style={{ color: "#c2a74e" }}>VIP Packages</span>
@@ -632,6 +750,9 @@ export default function VipPackagesPage() {
         {/* --- VIP PACKAGES GRID --- */}
         <section style={{ padding: "60px 0 90px 0" }}>
           <div className="container">
+            <Reveal offset={80}>
+              <SectionTitle tagline="Signature collection" title="Choose your VIP ritual" />
+            </Reveal>
             {loading ? (
               <div style={{ textAlign: "center", padding: "80px 0" }}>
                 <div className="spinner-border text-warning" role="status" style={{ width: "3rem", height: "3rem" }}>
@@ -664,15 +785,15 @@ export default function VipPackagesPage() {
         {/* --- VIP CONCIERGE BANNER --- */}
         <section style={{ padding: "60px 0", backgroundColor: "#12171c", borderTop: "1px solid rgba(194, 167, 78,0.2)", borderBottom: "1px solid rgba(194, 167, 78,0.2)" }}>
           <div className="container" style={{ textAlign: "center", maxWidth: "800px" }}>
-            <span style={{ color: "#c2a74e", textTransform: "uppercase", letterSpacing: "2px", fontSize: "12px", fontWeight: 700 }}>
-              Custom Tailored Experiences
-            </span>
-            <h2 style={{ fontFamily: "Cormorant, serif", fontSize: "2.4rem", fontWeight: 700, color: "#fff", margin: "10px 0 16px 0" }}>
-              Require a Custom VIP Reservation or Private Suite?
-            </h2>
-            <p style={{ color: "#9ca3af", fontSize: "1rem", lineHeight: 1.6, marginBottom: "26px" }}>
-              Our dedicated executive concierge handles bespoke requests, private suite bookings, champagne setups, and confidential appointments with absolute discretion.
-            </p>
+            <Reveal offset={80}>
+              <SectionTitle tagline="Custom tailored experiences" title="Require a custom VIP reservation?" />
+            </Reveal>
+            <Reveal delay={150} offset={60}>
+              <p style={{ color: "#9ca3af", fontSize: "1rem", lineHeight: 1.6, marginBottom: "26px" }}>
+                Our dedicated executive concierge handles bespoke requests, private suite bookings, champagne setups, and confidential appointments with absolute discretion.
+              </p>
+            </Reveal>
+            <Reveal delay={250} offset={40}>
             <div style={{ display: "flex", gap: "14px", justifyContent: "center", flexWrap: "wrap" }}>
               <a
                 href={`https://wa.me/${whatsappNumber}?text=${encodeURIComponent("Hello, I would like to inquire about a custom VIP package at The Serenity Spa.")}`}
@@ -716,6 +837,7 @@ export default function VipPackagesPage() {
                 Book Appointment
               </Link>
             </div>
+            </Reveal>
           </div>
         </section>
 
