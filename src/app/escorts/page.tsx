@@ -123,10 +123,7 @@ export default function EscortsPage() {
       <div className="page-wrapper" style={{ backgroundColor: "#0e1317", color: "#c4cfde", minHeight: "100vh" }}>
 
         {/* ─── HEADER ─── */}
-        <header
-          className="main-header main-header--two sticky-header sticky-header--normal"
-          style={{ position: "relative", backgroundColor: "#0e1317", borderBottom: "1px solid rgba(194, 167, 78, 0.15)" }}
-        >
+        <header className="main-header main-header--two sticky-header sticky-header--normal">
           <div className="container-fluid">
             <div className="main-header__inner">
               <div className="main-header__logo">
@@ -195,7 +192,8 @@ export default function EscortsPage() {
         <div
           style={{
             position: "relative",
-            height: "420px",
+            height: "525px",
+            paddingTop: "105px",
             overflow: "hidden",
             display: "flex",
             alignItems: "center",

@@ -693,10 +693,7 @@ export default function ServicesPage() {
 
       <div className="page-wrapper" style={{ backgroundColor: "#0e1317", color: "#c4cfde", minHeight: "100vh" }}>
         {/* --- NATIVE SOLOX LUXURY HEADER --- */}
-        <header
-          className="main-header main-header--two sticky-header sticky-header--normal"
-          style={{ position: "relative", backgroundColor: "#0e1317", borderBottom: "1px solid rgba(194, 167, 78, 0.15)" }}
-        >
+        <header className="main-header main-header--two sticky-header sticky-header--normal">
           <div className="container-fluid">
             <div className="main-header__inner">
               <div className="main-header__logo">
@@ -766,7 +763,8 @@ export default function ServicesPage() {
           ref={heroRef}
           style={{
             position: "relative",
-            height: "340px",
+            height: "465px",
+            paddingTop: "125px",
             overflow: "hidden",
             display: "flex",
             alignItems: "center",

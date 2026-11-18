@@ -402,10 +402,7 @@ export default function MobileMassagePage() {
 
       <div className="page-wrapper" style={{ backgroundColor: "#0e1317", color: "#c4cfde", minHeight: "100vh" }}>
         {/* --- NATIVE SOLOX LUXURY HEADER --- */}
-        <header
-          className="main-header main-header--two sticky-header sticky-header--normal"
-          style={{ position: "relative", backgroundColor: "#0e1317", borderBottom: "1px solid rgba(194, 167, 78, 0.15)" }}
-        >
+        <header className="main-header main-header--two sticky-header sticky-header--normal">
           <div className="container-fluid">
             <div className="main-header__inner">
               <div className="main-header__logo">
@@ -474,7 +471,7 @@ export default function MobileMassagePage() {
         <div
           style={{
             position: "relative",
-            minHeight: "440px",
+            minHeight: "485px",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -483,7 +480,7 @@ export default function MobileMassagePage() {
             backgroundSize: "cover",
             backgroundPosition: "center center",
             textAlign: "center",
-            padding: "80px 20px",
+            padding: "175px 20px 80px",
             borderBottom: "1px solid rgba(194, 167, 78,0.2)",
           }}
         >

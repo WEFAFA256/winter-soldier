@@ -235,10 +235,7 @@ function BookingFormInner() {
       <MobileDrawer isOpen={drawerOpen} onClose={() => setDrawerOpen(false)} />
 
       {/* ── HEADER ── */}
-      <header
-          className="main-header main-header--two sticky-header sticky-header--normal"
-          style={{ position: "relative", backgroundColor: "#0e1317", borderBottom: "1px solid rgba(194, 167, 78, 0.15)" }}
-        >
+      <header className="main-header main-header--two sticky-header sticky-header--normal">
           <div className="container-fluid">
             <div className="main-header__inner">
               <div className="main-header__logo">
@@ -308,7 +305,7 @@ function BookingFormInner() {
         style={{
           minHeight: "100vh",
           background: "linear-gradient(175deg, #0a0e12 0%, #0e1317 40%, #111820 100%)",
-          paddingTop: "30px",
+          paddingTop: "120px",
           paddingBottom: "80px",
         }}
       >
