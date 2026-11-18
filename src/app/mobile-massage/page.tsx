@@ -423,14 +423,14 @@ export default function MobileMassagePage() {
               </div>
 
               <nav className="main-header__nav main-menu" style={{ display: "flex", alignItems: "center" }}>
-                <ul style={{ listStyle: "none", gap: "24px", margin: 0, padding: 0, display: "flex", alignItems: "center" }} className="d-none d-xl-flex">
-                  <li><Link href="/" style={{ color: "#ffffff", textDecoration: "none", fontSize: "13px", fontWeight: 600, letterSpacing: "1px", textTransform: "uppercase" }}>Home</Link></li>
-                  <li><Link href="/services" style={{ color: "#ffffff", textDecoration: "none", fontSize: "13px", fontWeight: 600, letterSpacing: "1px", textTransform: "uppercase" }}>Services</Link></li>
-                  <li><Link href="/vip-packages" style={{ color: "#ffffff", textDecoration: "none", fontSize: "13px", fontWeight: 600, letterSpacing: "1px", textTransform: "uppercase" }}>VIP Packages</Link></li>
-                  <li className="current"><Link href="/mobile-massage" style={{ color: "#c2a74e", textDecoration: "none", fontSize: "13px", fontWeight: 600, letterSpacing: "1px", textTransform: "uppercase" }}>Mobile Massage</Link></li>
-                  <li><Link href="/gallery" style={{ color: "#ffffff", textDecoration: "none", fontSize: "13px", fontWeight: 600, letterSpacing: "1px", textTransform: "uppercase" }}>Gallery</Link></li>
-                  <li><Link href="/blog" style={{ color: "#ffffff", textDecoration: "none", fontSize: "13px", fontWeight: 600, letterSpacing: "1px", textTransform: "uppercase" }}>Blog</Link></li>
-                  <li><Link href="/escorts" style={{ color: "#ffffff", textDecoration: "none", fontSize: "13px", fontWeight: 600, letterSpacing: "1px", textTransform: "uppercase" }}>Escorts</Link></li>
+                <ul style={{ listStyle: "none", gap: "22px", margin: 0, padding: 0, display: "flex", alignItems: "center", flexWrap: "nowrap" }} className="d-none d-xl-flex">
+                  <li style={{ whiteSpace: "nowrap" }}><Link href="/" style={{ color: "#ffffff", textDecoration: "none", fontSize: "13px", fontWeight: 600, letterSpacing: "1px", textTransform: "uppercase", whiteSpace: "nowrap" }}>Home</Link></li>
+                  <li style={{ whiteSpace: "nowrap" }}><Link href="/services" style={{ color: "#ffffff", textDecoration: "none", fontSize: "13px", fontWeight: 600, letterSpacing: "1px", textTransform: "uppercase", whiteSpace: "nowrap" }}>Services</Link></li>
+                  <li style={{ whiteSpace: "nowrap" }}><Link href="/vip-packages" style={{ color: "#ffffff", textDecoration: "none", fontSize: "13px", fontWeight: 600, letterSpacing: "1px", textTransform: "uppercase", whiteSpace: "nowrap" }}>VIP Packages</Link></li>
+                  <li className="current" style={{ whiteSpace: "nowrap" }}><Link href="/mobile-massage" style={{ color: "#c2a74e", textDecoration: "none", fontSize: "13px", fontWeight: 600, letterSpacing: "1px", textTransform: "uppercase", whiteSpace: "nowrap" }}>Mobile Massage</Link></li>
+                  <li style={{ whiteSpace: "nowrap" }}><Link href="/gallery" style={{ color: "#ffffff", textDecoration: "none", fontSize: "13px", fontWeight: 600, letterSpacing: "1px", textTransform: "uppercase", whiteSpace: "nowrap" }}>Gallery</Link></li>
+                  <li style={{ whiteSpace: "nowrap" }}><Link href="/blog" style={{ color: "#ffffff", textDecoration: "none", fontSize: "13px", fontWeight: 600, letterSpacing: "1px", textTransform: "uppercase", whiteSpace: "nowrap" }}>Blog</Link></li>
+                  <li style={{ whiteSpace: "nowrap" }}><Link href="/escorts" style={{ color: "#ffffff", textDecoration: "none", fontSize: "13px", fontWeight: 600, letterSpacing: "1px", textTransform: "uppercase", whiteSpace: "nowrap" }}>Escorts</Link></li>
                 </ul>
               </nav>
 

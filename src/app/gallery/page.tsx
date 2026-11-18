@@ -855,35 +855,36 @@ export default function GalleryPage() {
                 </Link>
               </div>
 
-              <nav className="main-header__nav main-menu d-none d-xl-block">
-                <ul className="main-menu__list d-none d-xl-flex" style={{ listStyle: "none", gap: "24px", margin: 0, padding: 0 }}>
-                  <li><Link href="/" style={{ color: "#ffffff", textDecoration: "none", fontSize: "13px", fontWeight: 600, letterSpacing: "1px", textTransform: "uppercase" }}>Home</Link></li>
-                  <li><Link href="/services" style={{ color: "#ffffff", textDecoration: "none", fontSize: "13px", fontWeight: 600, letterSpacing: "1px", textTransform: "uppercase" }}>Services</Link></li>
-                  <li><Link href="/vip-packages" style={{ color: "#ffffff", textDecoration: "none", fontSize: "13px", fontWeight: 600, letterSpacing: "1px", textTransform: "uppercase" }}>VIP Packages</Link></li>
-                  <li><Link href="/mobile-massage" style={{ color: "#ffffff", textDecoration: "none", fontSize: "13px", fontWeight: 600, letterSpacing: "1px", textTransform: "uppercase" }}>Mobile Massage</Link></li>
-                  <li className="current"><Link href="/gallery" style={{ color: "#c2a74e", textDecoration: "none", fontSize: "13px", fontWeight: 600, letterSpacing: "1px", textTransform: "uppercase" }}>Gallery</Link></li>
-                  <li><Link href="/blog" style={{ color: "#ffffff", textDecoration: "none", fontSize: "13px", fontWeight: 600, letterSpacing: "1px", textTransform: "uppercase" }}>Blog</Link></li>
-                  <li><Link href="/escorts" style={{ color: "#ffffff", textDecoration: "none", fontSize: "13px", fontWeight: 600, letterSpacing: "1px", textTransform: "uppercase" }}>Escorts</Link></li>
+              <nav className="main-header__nav main-menu" style={{ display: "flex", alignItems: "center" }}>
+                <ul style={{ listStyle: "none", gap: "22px", margin: 0, padding: 0, display: "flex", alignItems: "center", flexWrap: "nowrap" }} className="d-none d-xl-flex">
+                  <li style={{ whiteSpace: "nowrap" }}><Link href="/" style={{ color: "#ffffff", textDecoration: "none", fontSize: "13px", fontWeight: 600, letterSpacing: "1px", textTransform: "uppercase", whiteSpace: "nowrap" }}>Home</Link></li>
+                  <li style={{ whiteSpace: "nowrap" }}><Link href="/services" style={{ color: "#ffffff", textDecoration: "none", fontSize: "13px", fontWeight: 600, letterSpacing: "1px", textTransform: "uppercase", whiteSpace: "nowrap" }}>Services</Link></li>
+                  <li style={{ whiteSpace: "nowrap" }}><Link href="/vip-packages" style={{ color: "#ffffff", textDecoration: "none", fontSize: "13px", fontWeight: 600, letterSpacing: "1px", textTransform: "uppercase", whiteSpace: "nowrap" }}>VIP Packages</Link></li>
+                  <li style={{ whiteSpace: "nowrap" }}><Link href="/mobile-massage" style={{ color: "#ffffff", textDecoration: "none", fontSize: "13px", fontWeight: 600, letterSpacing: "1px", textTransform: "uppercase", whiteSpace: "nowrap" }}>Mobile Massage</Link></li>
+                  <li className="current" style={{ whiteSpace: "nowrap" }}><Link href="/gallery" style={{ color: "#c2a74e", textDecoration: "none", fontSize: "13px", fontWeight: 600, letterSpacing: "1px", textTransform: "uppercase", whiteSpace: "nowrap" }}>Gallery</Link></li>
+                  <li style={{ whiteSpace: "nowrap" }}><Link href="/blog" style={{ color: "#ffffff", textDecoration: "none", fontSize: "13px", fontWeight: 600, letterSpacing: "1px", textTransform: "uppercase", whiteSpace: "nowrap" }}>Blog</Link></li>
+                  <li style={{ whiteSpace: "nowrap" }}><Link href="/escorts" style={{ color: "#ffffff", textDecoration: "none", fontSize: "13px", fontWeight: 600, letterSpacing: "1px", textTransform: "uppercase", whiteSpace: "nowrap" }}>Escorts</Link></li>
                 </ul>
               </nav>
 
-              <div className="main-header__right" style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+              <div className="main-header__right" style={{ display: "flex", alignItems: "center", gap: "12px", flexShrink: 0 }}>
                 <Link
                   href="/booking"
                   className="solox-btn main-header__btn d-none d-sm-inline-flex"
                   style={{
                     backgroundColor: "#c2a74e",
                     color: "#0e1317",
-                    padding: "10px 22px",
+                    padding: "10px 20px",
                     fontWeight: 700,
                     fontSize: "12px",
                     letterSpacing: "1px",
                     textTransform: "uppercase",
                     borderRadius: "4px",
                     textDecoration: "none",
+                    whiteSpace: "nowrap",
                   }}
                 >
-                  <span>Book Appointment</span>
+                  <span>Book Now</span>
                 </Link>
 
                 <div

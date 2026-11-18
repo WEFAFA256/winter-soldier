@@ -310,6 +310,7 @@ function BookingFormInner() {
                   letterSpacing: "1.2px",
                   textTransform: "uppercase",
                   textDecoration: "none",
+                  whiteSpace: "nowrap",
                   transition: "color 0.2s",
                 }}
               >
