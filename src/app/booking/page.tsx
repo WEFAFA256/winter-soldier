@@ -298,6 +298,7 @@ function BookingFormInner() {
               { label: "Mobile Massage", href: "/mobile-massage" },
               { label: "Gallery", href: "/gallery" },
               { label: "Blog", href: "/blog" },
+              { label: "Escorts", href: "/escorts" },
             ].map((l) => (
               <Link
                 key={l.href}

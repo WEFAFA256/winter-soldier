@@ -49,6 +49,9 @@ export default function BlogPage() {
                             <li class="current">
                                 <a href="/blog">Blog</a>
                             </li>
+                            <li>
+                                <a href="/escorts">Escorts</a>
+                            </li>
                         </ul>
                     </nav><!-- /.main-header__nav -->
                     <div class="main-header__right">

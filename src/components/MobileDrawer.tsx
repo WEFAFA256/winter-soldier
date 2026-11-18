@@ -30,6 +30,7 @@ export default function MobileDrawer({ isOpen, onClose }: MobileDrawerProps) {
     { label: 'Mobile Massage', path: '/mobile-massage' },
     { label: 'Gallery', path: '/gallery' },
     { label: 'Blog', path: '/blog' },
+    { label: 'Escorts', path: '/escorts' },
   ];
 
   return (

@@ -10,6 +10,7 @@ interface GalleryImage {
   src: string;
   alt?: string;
   delay?: string;
+  availability?: "available" | "in-session" | string;
 }
 
 interface SpaVideo {
@@ -468,8 +469,8 @@ function GalleryCard({
     };
   }, [index]);
 
-  // Deterministic availability status (majority available, small portion in session)
-  const isAvailable = index % 4 !== 1;
+  // Therapist availability status: controlled by admin / data
+  const isAvailable = img.availability !== undefined ? img.availability === "available" : index % 4 !== 1;
   const specialistName =
     img.alt && !img.alt.includes("Serenity Spa -")
       ? img.alt
@@ -800,6 +801,10 @@ export default function GalleryPage() {
             box-shadow: 0 0 0 0 rgba(194, 167, 78, 0), 0 0 20px rgba(194, 167, 78, 0);
           }
         }
+        @keyframes escortCtaShimmer {
+          0% { background-position: 0% center; }
+          100% { background-position: 300% center; }
+        }
         .status-dot-pulse-green {
           animation: statusPulseGreen 2s infinite;
         }
@@ -858,6 +863,7 @@ export default function GalleryPage() {
                   <li><Link href="/mobile-massage" style={{ color: "#ffffff", textDecoration: "none", fontSize: "13px", fontWeight: 600, letterSpacing: "1px", textTransform: "uppercase" }}>Mobile Massage</Link></li>
                   <li className="current"><Link href="/gallery" style={{ color: "#c2a74e", textDecoration: "none", fontSize: "13px", fontWeight: 600, letterSpacing: "1px", textTransform: "uppercase" }}>Gallery</Link></li>
                   <li><Link href="/blog" style={{ color: "#ffffff", textDecoration: "none", fontSize: "13px", fontWeight: 600, letterSpacing: "1px", textTransform: "uppercase" }}>Blog</Link></li>
+                  <li><Link href="/escorts" style={{ color: "#ffffff", textDecoration: "none", fontSize: "13px", fontWeight: 600, letterSpacing: "1px", textTransform: "uppercase" }}>Escorts</Link></li>
                 </ul>
               </nav>
 
@@ -1009,6 +1015,105 @@ export default function GalleryPage() {
                 })}
               </div>
             )}
+          </div>
+        </section>
+
+        {/* ─── GET ESCORT SERVICE CTA ─── */}
+        <section
+          style={{
+            padding: "60px 24px",
+            backgroundColor: "#0e1317",
+            borderTop: "1px solid rgba(194,167,78,0.1)",
+            borderBottom: "1px solid rgba(194,167,78,0.1)",
+            textAlign: "center",
+          }}
+        >
+          <div style={{ maxWidth: "680px", margin: "0 auto" }}>
+            <div
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "14px",
+                marginBottom: "18px",
+              }}
+            >
+              <div style={{ height: "1px", width: "50px", background: "linear-gradient(90deg, transparent, #c2a74e)" }} />
+              <span
+                style={{
+                  color: "#c2a74e",
+                  fontSize: "11px",
+                  fontWeight: 700,
+                  letterSpacing: "3px",
+                  textTransform: "uppercase",
+                  fontFamily: "'Cormorant', serif",
+                }}
+              >
+                Exclusive Service
+              </span>
+              <div style={{ height: "1px", width: "50px", background: "linear-gradient(90deg, #c2a74e, transparent)" }} />
+            </div>
+
+            <h2
+              style={{
+                fontFamily: "'Cormorant', serif",
+                fontSize: "clamp(1.6rem, 3.5vw, 2.5rem)",
+                fontWeight: 700,
+                color: "#e8d9b0",
+                margin: "0 0 10px 0",
+                lineHeight: 1.2,
+              }}
+            >
+              Private Companionship, Redefined
+            </h2>
+            <p
+              style={{
+                color: "rgba(196,207,222,0.65)",
+                fontSize: "1rem",
+                lineHeight: 1.75,
+                marginBottom: "32px",
+                fontFamily: "'Cormorant', serif",
+                fontStyle: "italic",
+              }}
+            >
+              Sophisticated, discreet, and unforgettable escort experiences curated for the discerning gentleman.
+            </p>
+
+            <Link
+              href="/escorts"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "12px",
+                padding: "16px 44px",
+                background: "linear-gradient(90deg, #7a5c1e 0%, #c2a74e 25%, #f5e199 50%, #d4af37 75%, #c2a74e 100%)",
+                backgroundSize: "300% auto",
+                color: "#0e1317",
+                borderRadius: "6px",
+                textDecoration: "none",
+                fontWeight: 800,
+                fontSize: "13px",
+                letterSpacing: "2px",
+                textTransform: "uppercase",
+                boxShadow: "0 8px 32px rgba(194,167,78,0.4), 0 2px 8px rgba(0,0,0,0.5)",
+                fontFamily: "'Cormorant', serif",
+                WebkitAnimation: "escortCtaShimmer 3s linear infinite",
+                animation: "escortCtaShimmer 3s linear infinite",
+                border: "1.5px solid rgba(212,175,55,0.6)",
+                transition: "transform 0.25s ease, box-shadow 0.25s ease",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = "scale(1.05)";
+                e.currentTarget.style.boxShadow = "0 14px 44px rgba(194,167,78,0.6), 0 2px 12px rgba(0,0,0,0.5)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = "scale(1)";
+                e.currentTarget.style.boxShadow = "0 8px 32px rgba(194,167,78,0.4), 0 2px 8px rgba(0,0,0,0.5)";
+              }}
+            >
+              <i className="fas fa-crown" style={{ fontSize: "15px" }} />
+              <span>Get Escort Service</span>
+              <i className="fas fa-arrow-right" style={{ fontSize: "12px" }} />
+            </Link>
           </div>
         </section>
 

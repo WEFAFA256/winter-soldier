@@ -9,7 +9,7 @@ interface ServiceItem {
   fullImage?: string; description: string; delay?: string;
   needsCrop?: boolean; imageOnly?: boolean;
 }
-interface GalleryItem { id: string; src: string; alt: string; delay?: string; }
+interface GalleryItem { id: string; src: string; alt: string; delay?: string; availability?: "available" | "in-session"; }
 interface BlogPost { id: string; title: string; excerpt: string; content: string; image: string; date: string; author: string; }
 
 /* ─── Inline style constants ─────────────────────────────────── */
@@ -160,6 +160,36 @@ export default function AdminGalleryPage() {
     if (res.ok) setGallery(gallery.filter(i => i.id !== id));
   };
 
+  const toggleAvailability = async (id: string, currentStatus?: string) => {
+    const newStatus = currentStatus === "in-session" ? "available" : "in-session";
+    setGallery((prev) =>
+      prev.map((img) => (img.id === id ? { ...img, availability: newStatus } : img))
+    );
+
+    try {
+      const res = await fetch("/api/gallery", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${pw.trim()}`,
+        },
+        body: JSON.stringify({ id, availability: newStatus }),
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        alert(err.error || "Failed to update availability");
+        setGallery((prev) =>
+          prev.map((img) => (img.id === id ? { ...img, availability: currentStatus as any } : img))
+        );
+      }
+    } catch {
+      alert("Network error updating therapist availability");
+      setGallery((prev) =>
+        prev.map((img) => (img.id === id ? { ...img, availability: currentStatus as any } : img))
+      );
+    }
+  };
+
   /* Service handlers */
   const updateSvc = (i: number, k: keyof ServiceItem, v: any) => {
     const u = [...services]; u[i] = { ...u[i], [k]: v }; setServices(u);
@@ -301,24 +331,134 @@ export default function AdminGalleryPage() {
                   )}
                 </div>
 
-                {/* Gallery grid */}
-                <p style={{ fontSize:11, color:C.muted, marginBottom:12, fontWeight:600, textTransform:"uppercase", letterSpacing:"0.06em" }}>All Photos ({gallery.length})</p>
-                <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(140px,1fr))", gap:10 }}>
-                  {gallery.map(img => (
-                    <div key={img.id||img.src} className="card img-thumb" style={{ position:"relative", borderRadius:8, overflow:"hidden", aspectRatio:"1", background:C.surface, border:`1px solid ${C.border}` }}>
-                      <img src={img.src} alt={img.alt} style={{ width:"100%", height:"100%", objectFit:"cover", display:"block" }} />
-                      <div style={{ position:"absolute", inset:0, background:"linear-gradient(to top, rgba(0,0,0,0.75) 0%, transparent 50%)", opacity:0, transition:"opacity 0.2s" }}
-                        onMouseEnter={e=>(e.currentTarget.style.opacity="1")} onMouseLeave={e=>(e.currentTarget.style.opacity="0")}>
-                        <div style={{ position:"absolute", bottom:0, left:0, right:0, padding:8 }}>
-                          <p style={{ margin:"0 0 6px", fontSize:10, color:"#fff", fontWeight:600, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{img.alt}</p>
-                          <button onClick={()=>deleteGalleryImage(img.id)} className="btn-danger"
-                            style={{ width:"100%", background:"#da363388", border:"none", borderRadius:4, color:"#fff", fontSize:10, fontWeight:700, padding:"4px 0", cursor:"pointer" }}>
-                            🗑 Delete
-                          </button>
+                {/* Gallery grid & availability controls */}
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16, flexWrap: "wrap", gap: 10 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                    <p style={{ fontSize: 11, color: C.muted, margin: 0, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em" }}>
+                      All Therapists & Photos ({gallery.length})
+                    </p>
+                    <span style={{ fontSize: 11, padding: "2px 8px", borderRadius: 12, background: "rgba(63, 185, 80, 0.15)", color: "#3fb950", border: "1px solid rgba(63, 185, 80, 0.3)", fontWeight: 700 }}>
+                      🟢 {gallery.filter(i => (i.availability || "available") === "available").length} Available
+                    </span>
+                    <span style={{ fontSize: 11, padding: "2px 8px", borderRadius: 12, background: "rgba(248, 81, 73, 0.15)", color: "#f85149", border: "1px solid rgba(248, 81, 73, 0.3)", fontWeight: 700 }}>
+                      🔴 {gallery.filter(i => i.availability === "in-session").length} In Session
+                    </span>
+                  </div>
+                  <span style={{ fontSize: 11, color: C.muted }}>
+                    💡 Click status button on any therapist card to switch between Available and In Session.
+                  </span>
+                </div>
+
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(175px, 1fr))", gap: 14 }}>
+                  {gallery.map(img => {
+                    const isAvail = (img.availability || "available") === "available";
+                    return (
+                      <div
+                        key={img.id || img.src}
+                        className="card"
+                        style={{
+                          borderRadius: 10,
+                          overflow: "hidden",
+                          background: C.surface,
+                          border: `1px solid ${isAvail ? "rgba(63, 185, 80, 0.3)" : "rgba(248, 81, 73, 0.3)"}`,
+                          display: "flex",
+                          flexDirection: "column",
+                          transition: "all 0.2s ease",
+                        }}
+                      >
+                        {/* Image + status chip */}
+                        <div style={{ position: "relative", height: 140, background: "#0a0d12" }}>
+                          <img
+                            src={img.src}
+                            alt={img.alt}
+                            style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+                          />
+                          <div
+                            style={{
+                              position: "absolute",
+                              top: 6,
+                              right: 6,
+                              padding: "2px 8px",
+                              borderRadius: 12,
+                              fontSize: 10,
+                              fontWeight: 700,
+                              textTransform: "uppercase",
+                              letterSpacing: "0.5px",
+                              background: isAvail ? "rgba(16, 185, 129, 0.9)" : "rgba(239, 68, 68, 0.9)",
+                              color: "#ffffff",
+                              boxShadow: "0 2px 6px rgba(0,0,0,0.5)",
+                            }}
+                          >
+                            {isAvail ? "Available" : "In Session"}
+                          </div>
+                        </div>
+
+                        {/* Card Info & Controls */}
+                        <div style={{ padding: "10px 12px", display: "flex", flexDirection: "column", gap: 8, flex: 1, justifyContent: "space-between" }}>
+                          <p
+                            style={{
+                              margin: 0,
+                              fontSize: 11,
+                              fontWeight: 600,
+                              color: C.text,
+                              whiteSpace: "nowrap",
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                            }}
+                            title={img.alt}
+                          >
+                            {img.alt || "Therapist Profile"}
+                          </p>
+
+                          {/* Action row: Toggle availability + Delete */}
+                          <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+                            <button
+                              onClick={() => toggleAvailability(img.id, img.availability || "available")}
+                              title="Click to toggle availability"
+                              style={{
+                                flex: 1,
+                                padding: "6px 8px",
+                                borderRadius: 6,
+                                fontSize: 10,
+                                fontWeight: 700,
+                                textTransform: "uppercase",
+                                letterSpacing: "0.5px",
+                                border: isAvail ? "1px solid rgba(63, 185, 80, 0.5)" : "1px solid rgba(248, 81, 73, 0.5)",
+                                background: isAvail ? "rgba(63, 185, 80, 0.15)" : "rgba(248, 81, 73, 0.15)",
+                                color: isAvail ? "#3fb950" : "#f85149",
+                                cursor: "pointer",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                gap: 4,
+                                transition: "all 0.15s ease",
+                              }}
+                            >
+                              <span style={{ fontSize: 9 }}>{isAvail ? "●" : "■"}</span>
+                              <span>{isAvail ? "Set In-Session" : "Set Available"}</span>
+                            </button>
+
+                            <button
+                              onClick={() => deleteGalleryImage(img.id)}
+                              className="btn-danger"
+                              title="Delete photo"
+                              style={{
+                                background: "rgba(218, 54, 51, 0.2)",
+                                border: "1px solid rgba(218, 54, 51, 0.4)",
+                                borderRadius: 6,
+                                color: "#f85149",
+                                padding: "6px 9px",
+                                fontSize: 11,
+                                cursor: "pointer",
+                              }}
+                            >
+                              🗑
+                            </button>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             )}

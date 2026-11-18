@@ -32,29 +32,50 @@ export async function GET() {
       .max_results(100)
       .execute();
 
-    const cloudinaryImages = (cloudinaryRes.resources || []).map((resource: any) => ({
-      id: resource.public_id,
-      src: resource.secure_url,
-      alt: resource.context?.custom?.alt || 'Serenity Spa Gallery',
-      delay: 'delay-100',
-    }));
-
     const localImages = readLocalData();
+    const localMap = new Map();
+    localImages.forEach((img: any) => {
+      if (img.id) localMap.set(img.id, img);
+      if (img.src) localMap.set(img.src, img);
+    });
+
+    const cloudinaryImages = (cloudinaryRes.resources || []).map((resource: any) => {
+      const id = resource.public_id;
+      const src = resource.secure_url;
+      const matched = localMap.get(id) || localMap.get(src);
+      return {
+        id,
+        src,
+        alt: matched?.alt || resource.context?.custom?.alt || 'Serenity Spa Gallery',
+        delay: 'delay-100',
+        availability: matched?.availability || 'available',
+      };
+    });
+
     const combined = [...cloudinaryImages, ...localImages];
 
     // Deduplicate by src / id
     const seen = new Set();
-    const unique = combined.filter((item: any) => {
-      const key = item.id || item.src;
-      if (seen.has(key)) return false;
-      seen.add(key);
-      return true;
-    });
+    const unique = combined
+      .filter((item: any) => {
+        const key = item.id || item.src;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      })
+      .map((item: any) => ({
+        ...item,
+        availability: item.availability || 'available',
+      }));
 
     return NextResponse.json(unique);
   } catch (error) {
     console.error('Error fetching from Cloudinary, falling back to local JSON:', error);
-    return NextResponse.json(readLocalData());
+    const local = readLocalData().map((item: any) => ({
+      ...item,
+      availability: item.availability || 'available',
+    }));
+    return NextResponse.json(local);
   }
 }
 
@@ -96,6 +117,7 @@ export async function POST(req: Request) {
       src: uploadResult.secure_url,
       alt,
       delay: 'delay-100',
+      availability: 'available',
     };
 
     try {
@@ -110,6 +132,45 @@ export async function POST(req: Request) {
     );
   } catch (error: any) {
     console.error('Error in POST to Cloudinary:', error);
+    return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 });
+  }
+}
+
+export async function PATCH(req: Request) {
+  try {
+    const authHeader = req.headers.get('authorization')?.trim();
+    if (authHeader !== 'Bearer Serenityspa256.') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const { id, availability } = await req.json();
+    if (!id || !['available', 'in-session'].includes(availability)) {
+      return NextResponse.json({ error: 'id and availability ("available" | "in-session") are required' }, { status: 400 });
+    }
+
+    // Update in gallery.json
+    try {
+      const local = readLocalData();
+      let updated = false;
+      const newLocal = local.map((img: any) => {
+        if (img.id === id) {
+          updated = true;
+          return { ...img, availability };
+        }
+        return img;
+      });
+      if (!updated) {
+        // Append if not found (edge case for Cloudinary-only images not in local JSON)
+        newLocal.push({ id, availability });
+      }
+      fs.writeFileSync(dataFilePath, JSON.stringify(newLocal, null, 2), 'utf8');
+    } catch (e) {
+      console.error('Error writing gallery.json:', e);
+    }
+
+    return NextResponse.json({ message: 'Availability updated', id, availability });
+  } catch (error: any) {
+    console.error('Error in PATCH:', error);
     return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 });
   }
 }
