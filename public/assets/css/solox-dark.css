@@ -455,4 +455,13 @@ body,
 .instagram-one--home-four {
   background-color: transparent;
 }
+
+.main-menu .main-menu__list > li > a {
+  white-space: nowrap !important;
+}
+@media (min-width: 1200px) and (max-width: 1450px) {
+  .main-menu .main-menu__list > li + li {
+    margin-left: 28px !important;
+  }
+}
 /*# sourceMappingURL=solox-dark.css.map */

@@ -125,50 +125,66 @@ export default function EscortsPage() {
         {/* ─── HEADER ─── */}
         <header
           className="main-header main-header--two sticky-header sticky-header--normal"
-          style={{ position: "relative", backgroundColor: "#0e1317", borderBottom: "1px solid rgba(194, 167, 78,0.15)" }}
+          style={{ position: "relative", backgroundColor: "#0e1317", borderBottom: "1px solid rgba(194, 167, 78, 0.15)" }}
         >
-          <div className="container" style={{ padding: "0 15px" }}>
-            <div className="main-header__inner" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", minHeight: "82px" }}>
+          <div className="container-fluid">
+            <div className="main-header__inner">
               <div className="main-header__logo">
                 <Link href="/" style={{ display: "flex", alignItems: "center", textDecoration: "none" }}>
                   <img
                     src="/assets/logo.jpg"
                     alt="The Serenity Spa"
-                    style={{ height: "50px", width: "50px", borderRadius: "50%", objectFit: "cover", border: "2px solid rgba(194, 167, 78,0.5)", display: "block" }}
+                    style={{
+                      height: "52px",
+                      width: "52px",
+                      borderRadius: "50%",
+                      objectFit: "cover",
+                      border: "2px solid rgba(194, 167, 78, 0.6)",
+                      display: "block",
+                    }}
                   />
                 </Link>
               </div>
 
-              <nav className="main-header__nav main-menu" style={{ display: "flex", alignItems: "center" }}>
-                <ul style={{ listStyle: "none", gap: "22px", margin: 0, padding: 0, display: "flex", alignItems: "center", flexWrap: "nowrap" }} className="d-none d-xl-flex">
-                  <li style={{ whiteSpace: "nowrap" }}><Link href="/" style={{ color: "#ffffff", textDecoration: "none", fontSize: "13px", fontWeight: 600, letterSpacing: "1px", textTransform: "uppercase", whiteSpace: "nowrap" }}>Home</Link></li>
-                  <li style={{ whiteSpace: "nowrap" }}><Link href="/services" style={{ color: "#ffffff", textDecoration: "none", fontSize: "13px", fontWeight: 600, letterSpacing: "1px", textTransform: "uppercase", whiteSpace: "nowrap" }}>Services</Link></li>
-                  <li style={{ whiteSpace: "nowrap" }}><Link href="/vip-packages" style={{ color: "#ffffff", textDecoration: "none", fontSize: "13px", fontWeight: 600, letterSpacing: "1px", textTransform: "uppercase", whiteSpace: "nowrap" }}>VIP Packages</Link></li>
-                  <li style={{ whiteSpace: "nowrap" }}><Link href="/mobile-massage" style={{ color: "#ffffff", textDecoration: "none", fontSize: "13px", fontWeight: 600, letterSpacing: "1px", textTransform: "uppercase", whiteSpace: "nowrap" }}>Mobile Massage</Link></li>
-                  <li style={{ whiteSpace: "nowrap" }}><Link href="/gallery" style={{ color: "#ffffff", textDecoration: "none", fontSize: "13px", fontWeight: 600, letterSpacing: "1px", textTransform: "uppercase", whiteSpace: "nowrap" }}>Gallery</Link></li>
-                  <li style={{ whiteSpace: "nowrap" }}><Link href="/blog" style={{ color: "#ffffff", textDecoration: "none", fontSize: "13px", fontWeight: 600, letterSpacing: "1px", textTransform: "uppercase", whiteSpace: "nowrap" }}>Blog</Link></li>
-                  <li className="current" style={{ whiteSpace: "nowrap" }}><Link href="/escorts" style={{ color: "#c2a74e", textDecoration: "none", fontSize: "13px", fontWeight: 600, letterSpacing: "1px", textTransform: "uppercase", whiteSpace: "nowrap" }}>Escorts</Link></li>
+              <nav className="main-header__nav main-menu">
+                <ul className="main-menu__list">
+                  <li className="">
+                    <Link href="/">Home</Link>
+                  </li>
+                  <li className="">
+                    <Link href="/services">Services</Link>
+                  </li>
+                  <li className="">
+                    <Link href="/vip-packages">VIP Packages</Link>
+                  </li>
+                  <li className="">
+                    <Link href="/mobile-massage">Mobile Massage</Link>
+                  </li>
+                  <li className="">
+                    <Link href="/gallery">Gallery</Link>
+                  </li>
+                  <li className="">
+                    <Link href="/blog">Blog</Link>
+                  </li>
+                  <li className="current">
+                    <Link href="/escorts">Escorts</Link>
+                  </li>
                 </ul>
               </nav>
 
-              <div className="main-header__right" style={{ display: "flex", alignItems: "center", gap: "12px", flexShrink: 0 }}>
-                <Link
-                  href="/booking"
-                  className="solox-btn main-header__btn d-none d-sm-inline-flex"
-                  style={{ backgroundColor: "#c2a74e", color: "#0e1317", padding: "10px 20px", fontWeight: 700, fontSize: "12px", letterSpacing: "1px", textTransform: "uppercase", borderRadius: "4px", textDecoration: "none", whiteSpace: "nowrap" }}
-                >
-                  <span>Book Now</span>
-                </Link>
+              <div className="main-header__right">
                 <div
-                  className="mobile-nav__btn mobile-nav__toggler d-xl-none"
+                  className="mobile-nav__btn mobile-nav__toggler"
                   onClick={() => setMobileMenuOpen(true)}
-                  style={{ cursor: "pointer", display: "flex", flexDirection: "column", justifyContent: "center", gap: "5px", padding: "8px 10px", background: "rgba(194, 167, 78, 0.1)", border: "1px solid rgba(194, 167, 78, 0.35)", borderRadius: "6px" }}
-                  aria-label="Toggle navigation menu"
+                  style={{ cursor: "pointer" }}
                 >
-                  <span style={{ width: "22px", height: "2px", backgroundColor: "#c2a74e", display: "block" }}></span>
-                  <span style={{ width: "22px", height: "2px", backgroundColor: "#c2a74e", display: "block" }}></span>
-                  <span style={{ width: "22px", height: "2px", backgroundColor: "#c2a74e", display: "block" }}></span>
+                  <span></span>
+                  <span></span>
+                  <span></span>
                 </div>
+                <Link href="/booking" className="solox-btn main-header__btn">
+                  <span>Book now</span>
+                </Link>
               </div>
             </div>
           </div>

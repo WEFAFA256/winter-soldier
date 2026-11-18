@@ -236,143 +236,79 @@ function BookingFormInner() {
 
       {/* ── HEADER ── */}
       <header
-        style={{
-          position: "fixed",
-          top: 0,
-          left: 0,
-          right: 0,
-          zIndex: 9000,
-          background: "rgba(14, 19, 23, 0.98)",
-          borderBottom: "1px solid rgba(194, 167, 78, 0.18)",
-          backdropFilter: "blur(12px)",
-        }}
-      >
-        <div
-          style={{
-            maxWidth: "1280px",
-            margin: "0 auto",
-            padding: "0 20px",
-            height: "76px",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-          }}
+          className="main-header main-header--two sticky-header sticky-header--normal"
+          style={{ position: "relative", backgroundColor: "#0e1317", borderBottom: "1px solid rgba(194, 167, 78, 0.15)" }}
         >
-          {/* Logo */}
-          <Link href="/" style={{ display: "flex", alignItems: "center", gap: "12px", textDecoration: "none" }}>
-            <img
-              src="/assets/logo.jpg"
-              alt="Serenity Spa"
-              style={{
-                width: 48,
-                height: 48,
-                borderRadius: "50%",
-                objectFit: "cover",
-                border: "2px solid rgba(194, 167, 78,0.6)",
-                display: "block",
-              }}
-            />
-            <span
-              style={{
-                fontFamily: "Cormorant, serif",
-                fontSize: "1.25rem",
-                fontWeight: 700,
-                color: "#ffffff",
-                letterSpacing: "1.5px",
-                display: "flex",
-                flexDirection: "column",
-                lineHeight: 1.1,
-              }}
-            >
-              <span>THE SERENITY</span>
-              <span style={{ color: "#c2a74e", fontSize: "0.72rem", letterSpacing: "3px", fontWeight: 400 }}>SPA KAMPALA</span>
-            </span>
-          </Link>
+          <div className="container-fluid">
+            <div className="main-header__inner">
+              <div className="main-header__logo">
+                <Link href="/" style={{ display: "flex", alignItems: "center", textDecoration: "none" }}>
+                  <img
+                    src="/assets/logo.jpg"
+                    alt="The Serenity Spa"
+                    style={{
+                      height: "52px",
+                      width: "52px",
+                      borderRadius: "50%",
+                      objectFit: "cover",
+                      border: "2px solid rgba(194, 167, 78, 0.6)",
+                      display: "block",
+                    }}
+                  />
+                </Link>
+              </div>
 
-          {/* Desktop nav */}
-          <nav style={{ display: "flex", gap: "30px", alignItems: "center" }} className="d-none d-xl-flex">
-            {[
-              { label: "Home", href: "/" },
-              { label: "Services", href: "/services" },
-              { label: "VIP Packages", href: "/vip-packages" },
-              { label: "Mobile Massage", href: "/mobile-massage" },
-              { label: "Gallery", href: "/gallery" },
-              { label: "Blog", href: "/blog" },
-              { label: "Escorts", href: "/escorts" },
-            ].map((l) => (
-              <Link
-                key={l.href}
-                href={l.href}
-                style={{
-                  color: l.href === "/booking" ? "#c2a74e" : "#d4d4d4",
-                  fontSize: "13px",
-                  fontWeight: 600,
-                  letterSpacing: "1.2px",
-                  textTransform: "uppercase",
-                  textDecoration: "none",
-                  whiteSpace: "nowrap",
-                  transition: "color 0.2s",
-                }}
-              >
-                {l.label}
-              </Link>
-            ))}
-          </nav>
+              <nav className="main-header__nav main-menu">
+                <ul className="main-menu__list">
+                  <li className="">
+                    <Link href="/">Home</Link>
+                  </li>
+                  <li className="">
+                    <Link href="/services">Services</Link>
+                  </li>
+                  <li className="">
+                    <Link href="/vip-packages">VIP Packages</Link>
+                  </li>
+                  <li className="">
+                    <Link href="/mobile-massage">Mobile Massage</Link>
+                  </li>
+                  <li className="">
+                    <Link href="/gallery">Gallery</Link>
+                  </li>
+                  <li className="">
+                    <Link href="/blog">Blog</Link>
+                  </li>
+                  <li className="">
+                    <Link href="/escorts">Escorts</Link>
+                  </li>
+                </ul>
+              </nav>
 
-          {/* Header right */}
-          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-            <a
-              href={`https://wa.me/${WHATSAPP_NUMBER}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="serenity-gold-btn"
-              style={{
-                padding: "8px 16px",
-                borderRadius: "4px",
-                fontSize: "12px",
-                fontWeight: 700,
-                letterSpacing: "0.8px",
-                textTransform: "uppercase",
-                display: "inline-flex",
-                alignItems: "center",
-                gap: "6px",
-                textDecoration: "none",
-              }}
-            >
-              <i className="fab fa-whatsapp" style={{ fontSize: "15px" }}></i>
-              <span className="d-none d-sm-inline">WhatsApp</span>
-            </a>
-
-            <div
-              className="mobile-nav__btn mobile-nav__toggler d-xl-none"
-              onClick={() => setDrawerOpen(true)}
-              style={{
-                cursor: "pointer",
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "center",
-                gap: "5px",
-                padding: "8px 10px",
-                background: "rgba(194, 167, 78, 0.1)",
-                border: "1px solid rgba(194, 167, 78, 0.35)",
-                borderRadius: "6px",
-              }}
-              aria-label="Toggle navigation menu"
-            >
-              <span style={{ width: "22px", height: "2px", backgroundColor: "#c2a74e", display: "block" }}></span>
-              <span style={{ width: "22px", height: "2px", backgroundColor: "#c2a74e", display: "block" }}></span>
-              <span style={{ width: "22px", height: "2px", backgroundColor: "#c2a74e", display: "block" }}></span>
+              <div className="main-header__right">
+                <div
+                  className="mobile-nav__btn mobile-nav__toggler"
+                  onClick={() => setDrawerOpen(true)}
+                  style={{ cursor: "pointer" }}
+                >
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                </div>
+                <Link href="/booking" className="solox-btn main-header__btn">
+                  <span>Book now</span>
+                </Link>
+              </div>
             </div>
           </div>
-        </div>
-      </header>
+          
+        </header>
 
       {/* ── MAIN CONTENT ── */}
       <main
         style={{
           minHeight: "100vh",
           background: "linear-gradient(175deg, #0a0e12 0%, #0e1317 40%, #111820 100%)",
-          paddingTop: "76px",
+          paddingTop: "30px",
           paddingBottom: "80px",
         }}
       >
