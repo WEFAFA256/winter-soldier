@@ -212,6 +212,46 @@ function Reveal({
   );
 }
 
+/* The homepage hero animation, lifted from the real `.main-slider-two__*` rules in solox.css:
+   - sub-title  : translateY(-200px) -> 0, 1000ms ease, delay 1100ms (drops in from above)
+   - title      : opacity 0 + translateY(200px) -> 0, 1200ms ease, delay 1300ms
+   - title::after is a solid curtain that sweeps out sideways in 1000ms,
+     cubic-bezier(0.858, 0.01, 0.068, 0.99)
+   - btn        : opacity 0 + translateY(80px) -> 0, 1500ms ease, delay 1800ms
+   Everything is clipped by `.main-slider-two__content { overflow: hidden }`, reproduced by
+   the `overflow: hidden` wrapper in the hero. `direction={-1}` gives the sub-title entry. */
+function HeroLine({
+  children,
+  shown,
+  delay,
+  duration,
+  offset,
+  direction = 1,
+  style,
+}: {
+  children: React.ReactNode;
+  shown: boolean;
+  delay: number;
+  duration: number;
+  offset: number;
+  direction?: 1 | -1;
+  style?: React.CSSProperties;
+}) {
+  return (
+    <div
+      style={{
+        opacity: shown ? 1 : 0,
+        transform: shown ? "translate3d(0, 0, 0)" : `translate3d(0, ${offset * direction}px, 0)`,
+        transition: `transform ${duration}ms ease ${delay}ms, opacity ${duration}ms ease ${delay}ms`,
+        willChange: "transform, opacity",
+        ...style,
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
 function ServiceCard({
   service,
   index,
@@ -527,13 +567,20 @@ export default function VipPackagesPage() {
     fetchPackages();
   }, []);
 
-  /* Homepage hero entry: the same staged 1000ms / 1200ms ease rise the home
-     slider uses, replicated with state so it doesn't depend on owl-carousel. */
-  const heroReveal = (delay: number, duration = 1000, offset = 40): React.CSSProperties => ({
-    opacity: heroVisible ? 1 : 0,
-    transform: heroVisible ? "translateY(0)" : `translateY(${offset}px)`,
-    transition: `opacity ${duration}ms ease ${delay}ms, transform ${duration}ms ease ${delay}ms`,
-    willChange: "opacity, transform",
+  /* The home hero's curtain: `.main-slider-two__title::after` — a solid bar that sits over
+     the title and is swiped off sideways, 1s cubic-bezier(0.858, 0.01, 0.068, 0.99). */
+  const curtain = (delay: number): React.CSSProperties => ({
+    position: "absolute",
+    top: 0,
+    left: 0,
+    width: "101%",
+    height: "100%",
+    background: "#ffffff",
+    transform: heroVisible ? "translateX(101%)" : "translateX(0)",
+    transition: "transform 1000ms cubic-bezier(0.858, 0.01, 0.068, 0.99)",
+    transitionDelay: `${delay}ms`,
+    pointerEvents: "none",
+    zIndex: 3,
   });
 
   return (
@@ -686,64 +733,78 @@ export default function VipPackagesPage() {
               margin: "0 auto",
             }}
           >
-            <span
-              style={{
-                ...heroReveal(250),
-                color: "#c2a74e",
-                fontFamily: '"Alex Brush", cursive',
-                fontSize: "clamp(2rem, 4vw, 2.5rem)",
-                lineHeight: 1.2,
-                display: "block",
-                marginBottom: "4px",
-              }}
-            >
-              Exclusive &amp; Bespoke
-            </span>
-            <div className="vip-badge-shimmer" style={heroReveal(350)}>
-              <i className="fas fa-crown" style={{ color: "#c2a74e", fontSize: "14px" }}></i>
-              <span className="vip-shimmer-text" style={{ fontSize: "13px", letterSpacing: "2.5px" }}>
-                EXECUTIVE SUITE PRIVILEGE
-              </span>
+            {/* `.main-slider-two__content` mask: every line below enters from outside this box */}
+            <div style={{ overflow: "hidden", paddingBottom: "6px" }}>
+              <HeroLine shown={heroVisible} delay={120} duration={1000} offset={120} direction={-1}>
+                <span
+                  style={{
+                    color: "#c2a74e",
+                    fontFamily: '"Alex Brush", cursive',
+                    fontSize: "clamp(2rem, 4vw, 2.5rem)",
+                    lineHeight: 1.2,
+                    display: "block",
+                    marginBottom: "2px",
+                  }}
+                >
+                  Exclusive &amp; Bespoke
+                </span>
+              </HeroLine>
+              <HeroLine shown={heroVisible} delay={260} duration={1000} offset={120} direction={-1}>
+                <div className="vip-badge-shimmer">
+                  <i className="fas fa-crown" style={{ color: "#c2a74e", fontSize: "14px" }}></i>
+                  <span className="vip-shimmer-text" style={{ fontSize: "13px", letterSpacing: "2.5px" }}>
+                    EXECUTIVE SUITE PRIVILEGE
+                  </span>
+                </div>
+              </HeroLine>
+              <div style={{ position: "relative", display: "inline-block", maxWidth: "100%" }}>
+                <HeroLine shown={heroVisible} delay={420} duration={1200} offset={200}>
+                  <h1
+                    style={{
+                      position: "relative",
+                      overflow: "hidden",
+                      fontFamily: "Cormorant, serif",
+                      fontSize: "clamp(2.2rem, 5vw, 3.8rem)",
+                      fontWeight: 700,
+                      color: "#ffffff",
+                      margin: "0 0 14px 0",
+                      lineHeight: 1.2,
+                      letterSpacing: "normal",
+                    }}
+                  >
+                    <span className="vip-shimmer-text" style={{ fontSize: "1.25em", marginRight: "6px", verticalAlign: "middle" }}>VIP</span> Luxury Packages &amp; Multi-Hand Rituals
+                    <span aria-hidden="true" style={curtain(700)} />
+                  </h1>
+                </HeroLine>
+              </div>
+              <HeroLine shown={heroVisible} delay={1500} duration={1500} offset={80}>
+                <p
+                  style={{
+                    color: "rgba(255,255,255,0.85)",
+                    fontSize: "clamp(0.9rem, 2vw, 1.05rem)",
+                    maxWidth: "660px",
+                    margin: "0 auto 20px auto",
+                    lineHeight: 1.6,
+                  }}
+                >
+                  Curated exclusively for discerning clients seeking therapies of 400,000 UGX and above in Kampala — from synchronized 4-hand and 6-hand sessions to full-day Turkish hammam and royal body care rituals.
+                </p>
+              </HeroLine>
+              <HeroLine shown={heroVisible} delay={1750} duration={1500} offset={80}>
+                <nav
+                  style={{
+                    fontSize: "12px",
+                    color: "rgba(255,255,255,0.5)",
+                    letterSpacing: "1.5px",
+                    textTransform: "uppercase",
+                  }}
+                >
+                  <Link href="/" style={{ color: "rgba(255,255,255,0.5)", textDecoration: "none" }}>Home</Link>
+                  <span style={{ margin: "0 8px", color: "#c2a74e" }}>/</span>
+                  <span style={{ color: "#c2a74e" }}>VIP Packages</span>
+                </nav>
+              </HeroLine>
             </div>
-            <h1
-              style={{
-                ...heroReveal(400, 1200, 60),
-                fontFamily: "Cormorant, serif",
-                fontSize: "clamp(2.2rem, 5vw, 3.8rem)",
-                fontWeight: 700,
-                color: "#ffffff",
-                margin: "0 0 14px 0",
-                lineHeight: 1.2,
-                letterSpacing: "normal",
-              }}
-            >
-              <span className="vip-shimmer-text" style={{ fontSize: "1.25em", marginRight: "6px", verticalAlign: "middle" }}>VIP</span> Luxury Packages &amp; Multi-Hand Rituals
-            </h1>
-            <p
-              style={{
-                ...heroReveal(550),
-                color: "rgba(255,255,255,0.85)",
-                fontSize: "clamp(0.9rem, 2vw, 1.05rem)",
-                maxWidth: "660px",
-                margin: "0 auto 20px auto",
-                lineHeight: 1.6,
-              }}
-            >
-              Curated exclusively for discerning clients seeking therapies of 400,000 UGX and above in Kampala — from synchronized 4-hand and 6-hand sessions to full-day Turkish hammam and royal body care rituals.
-            </p>
-            <nav
-              style={{
-                ...heroReveal(650),
-                fontSize: "12px",
-                color: "rgba(255,255,255,0.5)",
-                letterSpacing: "1.5px",
-                textTransform: "uppercase",
-              }}
-            >
-              <Link href="/" style={{ color: "rgba(255,255,255,0.5)", textDecoration: "none" }}>Home</Link>
-              <span style={{ margin: "0 8px", color: "#c2a74e" }}>/</span>
-              <span style={{ color: "#c2a74e" }}>VIP Packages</span>
-            </nav>
           </div>
         </div>
 
