@@ -44,6 +44,18 @@ const TIME_SLOTS = [
 const WHATSAPP_NUMBER = "256781945510";
 const EMAIL = "theserenityspakla@gmail.com";
 
+// Real booking + MTN/Airtel payment API (Cloudflare Worker). The PawaPay
+// callback URL registered in the dashboard points to this same host.
+const PAY_API = "https://serenity-pawapay-webhook.turyatembajohn905.workers.dev";
+
+function to24Hour(value: string) {
+  const m = value.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+  if (!m) return value;
+  let h = parseInt(m[1], 10) % 12;
+  if (m[3].toUpperCase() === "PM") h += 12;
+  return `${String(h).padStart(2, "0")}:${m[2]}`;
+}
+
 function formatPrice(p: number | string) {
   const num = typeof p === "number" ? p : parseInt(String(p).replace(/\D/g, ""), 10);
   return isNaN(num) ? String(p) : `UGX ${num.toLocaleString()}`;
@@ -113,6 +125,22 @@ function BookingFormInner() {
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
+  // Live services from the payment API keep prices/IDs in sync with what
+  // PawaPay will actually charge. Falls back to the hardcoded list if the
+  // API is unreachable, but payment is then disabled.
+  const [apiServices, setApiServices] = useState<{
+    id: string; title: string; price_ugx: number; duration_minutes: number;
+  }[]>([]);
+  const [paying, setPaying] = useState(false);
+  const [payError, setPayError] = useState("");
+
+  useEffect(() => {
+    fetch(`${PAY_API}/api/services`)
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error("services unavailable"))))
+      .then((d) => { if (Array.isArray(d.services)) setApiServices(d.services); })
+      .catch(() => { /* keep fallback list; pay button will explain */ });
+  }, []);
+
   // Sync service from URL if provided
   useEffect(() => {
     if (initialService) {
@@ -120,7 +148,11 @@ function BookingFormInner() {
     }
   }, [initialService]);
 
-  const selectedService = SERVICES.find(
+  const serviceOptions = apiServices.length
+    ? apiServices.map((s) => ({ name: s.title, price: s.price_ugx, id: s.id }))
+    : SERVICES.map((s) => ({ ...s, id: "" }));
+
+  const selectedService = serviceOptions.find(
     (s) => s.name.toLowerCase() === form.service.toLowerCase()
   );
 
@@ -130,31 +162,64 @@ function BookingFormInner() {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   }
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    setPayError("");
     if (!form.name || !form.phone || !form.service || !form.date || !form.time) {
       alert("Please fill in all required fields (Name, Phone, Service, Date, Time).");
       return;
     }
+    if (!selectedService) {
+      setPayError("Choose a treatment from the list.");
+      return;
+    }
+    if (!selectedService.id) {
+      setPayError("Payment options are still loading. Refresh the page and try again.");
+      return;
+    }
 
-    const price = selectedService ? selectedService.price : 150000;
-    const newId = generateBookingId();
+    setPaying(true);
+    try {
+      const res = await fetch(`${PAY_API}/api/bookings`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          serviceId: selectedService.id,
+          name: form.name,
+          phone: form.phone,
+          email: form.email,
+          date: form.date,
+          time: to24Hour(form.time),
+          notes: form.notes,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.checkoutUrl) {
+        throw new Error(data.error || "Could not start payment. Please try again.");
+      }
 
-    const summary = {
-      id: newId,
-      name: form.name,
-      phone: form.phone,
-      email: form.email,
-      service: form.service,
-      price: price,
-      date: form.date,
-      time: form.time,
-      notes: form.notes,
-    };
+      // Keep a local copy in case the customer comes back from the payment page.
+      const summary = {
+        id: data.bookingId || generateBookingId(),
+        name: form.name,
+        phone: form.phone,
+        email: form.email,
+        service: selectedService.name,
+        price: selectedService.price,
+        date: form.date,
+        time: form.time,
+        notes: form.notes,
+      };
+      setBookingSummary(summary);
+      setSubmitted(true);
 
-    setBookingSummary(summary);
-    setSubmitted(true);
-    window.scrollTo({ top: 0, behavior: "smooth" });
+      // PawaPay hosted checkout supports both MTN MoMo and Airtel Money.
+      window.location.href = data.checkoutUrl;
+    } catch (err) {
+      setPayError(err instanceof Error ? err.message : "Payment could not be started.");
+    } finally {
+      setPaying(false);
+    }
   }
 
   // Generate QR Code onto canvas once submitted
@@ -203,7 +268,7 @@ function BookingFormInner() {
   function openWhatsAppWithSummary() {
     if (!bookingSummary) return;
     const lines = [
-      `🌿 *Booking Confirmation — The Serenity Spa*`,
+      `🌿 *Booking Details — The Serenity Spa*`,
       ``,
       `🔖 *Booking ID:* ${bookingSummary.id}`,
       `👤 *Client:* ${bookingSummary.name}`,
@@ -215,7 +280,7 @@ function BookingFormInner() {
       `🕐 *Time:* ${bookingSummary.time}`,
       bookingSummary.notes ? `📝 *Notes:* ${bookingSummary.notes}` : "",
       ``,
-      `_I have completed my reservation on the website and will present my QR confirmation pass._`,
+      `_I have completed booking and payment on the website. Reference: ${bookingSummary.id}_`,
     ]
       .filter(Boolean)
       .join("\n");
@@ -432,7 +497,7 @@ function BookingFormInner() {
                       required
                     >
                       <option value="">— Select a Treatment —</option>
-                      {SERVICES.map((s) => (
+                      {serviceOptions.map((s) => (
                         <option key={s.name} value={s.name}>
                           {s.name} — {formatPrice(s.price)}
                         </option>
@@ -503,9 +568,26 @@ function BookingFormInner() {
                   </div>
 
                   {/* Submit Button */}
+                  {payError && (
+                    <div
+                      role="alert"
+                      style={{
+                        backgroundColor: "rgba(239,68,68,0.1)",
+                        border: "1px solid rgba(239,68,68,0.35)",
+                        color: "#fca5a5",
+                        borderRadius: "8px",
+                        padding: "12px 14px",
+                        fontSize: "13px",
+                        marginBottom: "14px",
+                      }}
+                    >
+                      {payError}
+                    </div>
+                  )}
                   <button
                     type="submit"
                     className="serenity-gold-btn"
+                    disabled={paying}
                     style={{
                       width: "100%",
                       padding: "16px",
@@ -514,19 +596,20 @@ function BookingFormInner() {
                       fontWeight: 800,
                       letterSpacing: "1.5px",
                       textTransform: "uppercase",
-                      cursor: "pointer",
+                      cursor: paying ? "wait" : "pointer",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
                       gap: "10px",
+                      opacity: paying ? 0.7 : 1,
                     }}
                   >
-                    <i className="fas fa-qrcode" style={{ fontSize: "16px" }}></i>
-                    Generate Booking &amp; QR Pass
+                    <i className={paying ? "fas fa-spinner fa-spin" : "fas fa-mobile-alt"} style={{ fontSize: "16px" }}></i>
+                    {paying ? "Starting secure payment…" : "Pay with MTN / Airtel Money"}
                   </button>
 
-                  <p style={{ fontSize: "12px", color: "#6b7280", textAlign: "center", marginTop: "12px", margin: "12px 0 0" }}>
-                    Instant reservation • Pay at venue (Cash / Mobile Money / Card) • No prepayment required
+                  <p style={{ fontSize: "12px", color: "#6b7280", textAlign: "center", margin: "12px 0 0" }}>
+                    Secure payment via PawaPay • MTN MoMo &amp; Airtel Money • Booking confirmed only after payment
                   </p>
                 </form>
               </div>
@@ -547,8 +630,8 @@ function BookingFormInner() {
                   </h3>
                   {[
                     { step: "1", title: "Fill Details", desc: "Choose your therapy, date and preferred time slot." },
-                    { step: "2", title: "Receive QR Pass", desc: "Get an instant verifiable booking pass with your unique ID." },
-                    { step: "3", title: "Present On Arrival", desc: "Show your pass to the reception concierge and enjoy." },
+                    { step: "2", title: "Pay Securely", desc: "Pay with MTN MoMo or Airtel Money on PawaPay's secure page." },
+                    { step: "3", title: "Present On Arrival", desc: "Show your booking reference to reception and enjoy." },
                   ].map((s) => (
                     <div key={s.step} style={{ display: "flex", gap: "14px", marginBottom: "16px" }}>
                       <div
@@ -657,10 +740,10 @@ function BookingFormInner() {
                     ✓
                   </div>
                   <h2 style={{ fontFamily: "Cormorant, serif", fontSize: "2rem", color: "#ffffff", margin: "0 0 6px 0", fontWeight: 700 }}>
-                    Booking Confirmed!
+                    Complete Your Payment
                   </h2>
                   <p style={{ color: "#c2a74e", fontSize: "13px", margin: 0, letterSpacing: "1px", textTransform: "uppercase", fontWeight: 700 }}>
-                    Pass #{bookingSummary.id}
+                    Reference #{bookingSummary.id}
                   </p>
                 </div>
 
@@ -691,7 +774,7 @@ function BookingFormInner() {
                     >
                       <canvas ref={canvasRef} style={{ display: "block" }}></canvas>
                       <span style={{ color: "#0e1317", fontSize: "11px", fontWeight: 700, letterSpacing: "0.5px", marginTop: "8px", textTransform: "uppercase" }}>
-                        Present at Reception
+                        Payment Reference
                       </span>
                     </div>
 
@@ -732,12 +815,24 @@ function BookingFormInner() {
                         <div style={{ display: "flex", justifyContent: "space-between" }}>
                           <span style={{ color: "#9ca3af" }}>Payment Status:</span>
                           <span style={{ color: "#f59e0b", fontWeight: 700, backgroundColor: "rgba(245,158,11,0.12)", padding: "2px 8px", borderRadius: "4px", fontSize: "11px" }}>
-                            Pay at Venue (Cash / MoMo)
+                            Awaiting Mobile Money Payment
                           </span>
                         </div>
                       </div>
                     </div>
                   </div>
+
+                  <p style={{ fontSize: "12px", color: "#9ca3af", textAlign: "center", margin: "0 0 16px" }}>
+                    Your booking is confirmed automatically once PawaPay verifies your payment.{" "}
+                    <a
+                      href={`${PAY_API}/return?booking=${encodeURIComponent(bookingSummary.id)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{ color: "#c2a74e", textDecoration: "underline" }}
+                    >
+                      Check payment status
+                    </a>
+                  </p>
 
                   {/* Actions: Download QR Pass, Send to WhatsApp, or New Booking */}
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px", marginBottom: "16px" }} className="action-row">
@@ -811,7 +906,7 @@ function BookingFormInner() {
                       border: "1px solid rgba(194, 167, 78,0.15)",
                     }}
                   >
-                    📍 Please present this pass on your phone at reception (Sir Apollo Kaggwa Rd or Mengo). Please arrive 10 minutes before your scheduled appointment.
+                    📍 After payment is confirmed, present this reference on your phone at reception (Sir Apollo Kaggwa Rd or Mengo). Please arrive 10 minutes before your scheduled appointment.
                   </div>
                 </div>
               </div>

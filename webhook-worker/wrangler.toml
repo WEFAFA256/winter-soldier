@@ -2,17 +2,24 @@ name = "serenity-pawapay-webhook"
 main = "worker.js"
 compatibility_date = "2026-11-20"
 
-# Stable callback relay for PawaPay.
-# The URL in the PawaPay dashboard never changes:
-#   https://serenity-pawapay-webhook.<account>.workers.dev
-# When the app moves domain, only FORWARD_TO below is updated.
+# Stable PawaPay callback URL:
+#   https://serenity-pawapay-webhook.turyatembajohn905.workers.dev
+# All four PawaPay callback boxes point here. Never change that in the dashboard.
 
 [[kv_namespaces]]
 binding = "SERENITY_PAWAPAY_EVENTS"
 id = "1b4dfdce62c040bbbeee9ae1ab8c37fc"
 
+[[d1_databases]]
+binding = "SERENITY_DB"
+database_name = "serenity-spa"
+database_id = "e347be07-91a9-486c-b03a-415c42b906c3"
+
 [vars]
-# Set to the app's real callback base once it exists, e.g.
-# "https://theserenityspa.ug/api/payments/pawapay"
-# Leave empty during sandbox onboarding: callbacks are still stored + returned 200.
+PAWAPAY_API_BASE_URL = "https://api.sandbox.pawapay.io"
+PAWAPAY_COUNTRY = "UGA"
+PAWAPAY_CURRENCY = "UGX"
+# OPTIONAL: raw callbacks are also forwarded here if the app gains its own handler.
 FORWARD_TO = ""
+# OPTIONAL: linked from the post-payment return page.
+SITE_URL = ""

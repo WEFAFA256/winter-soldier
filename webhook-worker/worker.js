@@ -1,124 +1,391 @@
 /**
- * Permanent PawaPay callback relay for The Serenity Spa.
+ * Serenity Spa — bookings API + permanent PawaPay callback relay.
  *
- * PawaPay dashboard (all four boxes -> this ONE URL):
- *   https://serenity-pawapay-webhook.<account>.workers.dev
+ * Public base: https://serenity-pawapay-webhook.turyatembajohn905.workers.dev
  *
- * Design goal: the URL given to PawaPay never changes. When the booking app
- * moves host/domain, only the FORWARD_TO variable changes — the dashboard,
- * the API token, and staff settings stay exactly as they are.
+ *  POST /                       PawaPay callbacks (all four flows) -> KV + verify + confirm booking
+ *  GET  /health                 health check
+ *  GET  /api/services           active services from D1
+ *  POST /api/bookings           create booking + PawaPay hosted payment page
+ *  GET  /api/bookings/:id       booking status (polling)
+ *  POST /api/bookings/:id/cancel
+ *  GET  /return?booking=:id     post-payment status page
  *
- * - POST: store the raw callback in KV (durable replay source), respond 200 fast.
- * - POST: best-effort forward to FORWARD_TO with original signature headers,
- *   so the app can verify RFC-9421 signed callbacks itself later.
- * - GET : health check, used to prove the URL is live before pasting it.
+ * The PawaPay API token is a Worker SECRET (PAWAPAY_API_TOKEN), never in this file.
  */
 
-const MAX_BODY_BYTES = 64 * 1024;
-const KV_TTL_SECONDS = 60 * 60 * 24 * 90; // 90 days
+const KV_TTL_SECONDS = 60 * 60 * 24 * 90;
+const CORS = {
+  "access-control-allow-origin": "*",
+  "access-control-allow-methods": "GET, POST, OPTIONS",
+  "access-control-allow-headers": "content-type, authorization",
+};
 
-function jsonResponse(body, status = 200) {
+function json(body, status = 200, extraHeaders = {}) {
   return new Response(JSON.stringify(body), {
     status,
-    headers: { "content-type": "application/json; charset=utf-8" },
+    headers: {
+      "content-type": "application/json; charset=utf-8",
+      ...CORS,
+      ...extraHeaders,
+    },
   });
 }
 
-function forwardedHeaders(request) {
-  const headers = new Headers();
-  const skip = new Set([
-    "host",
-    "content-length",
-    "connection",
-    "cf-connecting-ip",
-    "cf-ipcountry",
-    "cf-ray",
-    "cf-visitor",
-    "x-forwarded-for",
-    "x-forwarded-proto",
-    "x-forwarded-host",
-  ]);
-  for (const [name, value] of request.headers) {
-    const lower = name.toLowerCase();
-    if (skip.has(lower) || lower.startsWith("cf-")) continue;
-    // content-digest / signature / signature-input MUST pass through untouched
-    // for signed-callback verification at the app.
-    headers.set(name, value);
+function html(body, status = 200) {
+  return new Response(body, {
+    status,
+    headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" },
+  });
+}
+
+function fail(message, status = 400, detail) {
+  return json({ ok: false, error: message, ...(detail ? { detail } : {}) }, status);
+}
+
+function normalizePhone(input) {
+  let p = String(input || "").replace(/[^\d]/g, "");
+  if (p.startsWith("0")) p = "256" + p.slice(1);
+  if (p.startsWith("2560")) p = "256" + p.slice(4);
+  return /^256\d{9}$/.test(p) ? p : null;
+}
+
+function safeReason(title) {
+  const cleaned = String(title || "Serenity Spa")
+    .replace(/[^a-zA-Z0-9 ]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 22);
+  return cleaned.length >= 4 ? cleaned : "Serenity Spa Booking";
+}
+
+function validDate(d) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(d)) return false;
+  const parsed = new Date(`${d}T00:00:00Z`);
+  if (isNaN(parsed.getTime())) return false;
+  const today = new Date().toISOString().slice(0, 10);
+  return d >= today;
+}
+
+function validTime(t) {
+  return /^([01]\d|2[0-3]):[0-5]\d$/.test(t);
+}
+
+async function pawapay(env, path, options = {}) {
+  const base = (env.PAWAPAY_API_BASE_URL || "https://api.sandbox.pawapay.io").replace(/\/$/, "");
+  const res = await fetch(`${base}${path}`, {
+    ...options,
+    headers: {
+      authorization: `Bearer ${env.PAWAPAY_API_TOKEN}`,
+      "content-type": "application/json",
+      ...(options.headers || {}),
+    },
+  });
+  const text = await res.text();
+  let data;
+  try { data = JSON.parse(text); } catch { data = { raw: text.slice(0, 500) }; }
+  return { status: res.status, ok: res.ok, data };
+}
+
+async function storeEvent(env, record) {
+  await env.SERENITY_PAWAPAY_EVENTS.put(
+    `event:${record.id}`,
+    JSON.stringify(record),
+    { expirationTtl: KV_TTL_SECONDS }
+  );
+}
+
+function extractDeposit(body) {
+  const candidate = body && typeof body === "object" ? body : {};
+  const data = candidate.data || candidate.deposit || candidate;
+  return {
+    depositId: candidate.depositId || data.depositId || null,
+    status: candidate.status || data.status || null,
+    failureCode: (data.failureReason && data.failureReason.failureCode) ||
+      (candidate.failureReason && candidate.failureReason.failureCode) || null,
+  };
+}
+
+async function handleCallback(request, env, ctx, path) {
+  const raw = await request.text();
+  let body;
+  try { body = JSON.parse(raw); } catch { body = { raw: raw.slice(0, 2000) }; }
+
+  const eventId = `${Date.now()}-${crypto.randomUUID()}`;
+  const event = {
+    id: eventId,
+    receivedAt: new Date().toISOString(),
+    path,
+    headers: Object.fromEntries(request.headers.entries()),
+    body: raw.slice(0, 64000),
+  };
+  await storeEvent(env, event);
+
+  // Optional onward forwarding (e.g. to a future app handler). Never blocks the 200.
+  const { depositId, status } = extractDeposit(body);
+  if (env.FORWARD_TO) {
+    const target = `${env.FORWARD_TO.replace(/\/$/, "")}${path === "/" ? "/callback" : path}`;
+    ctx.waitUntil(
+      fetch(target, { method: "POST", headers: request.headers, body: raw }).catch((e) =>
+        console.error("callback forward failed", String(e))
+      )
+    );
   }
-  return headers;
+
+  if (!depositId) {
+    console.log("callback without depositId stored", eventId);
+    return json({ ok: true, id: eventId, note: "stored; no depositId in payload" });
+  }
+
+  // Authoritative verification: ONLY PawaPay's own status lookup can change a booking.
+  // Never fall back to the callback body's claimed status — that would let a forged
+  // POST confirm a booking for free.
+  const checked = await pawapay(env, `/v2/deposits/${encodeURIComponent(depositId)}`);
+  const verified = checked.data && checked.data.status === "FOUND" && checked.data.data
+    ? checked.data.data
+    : null;
+  const finalStatus = verified && verified.depositId === depositId ? verified.status : null;
+
+  if (!finalStatus) {
+    console.log("callback left booking untouched: PawaPay could not verify deposit", { depositId, eventId, apiStatus: checked.status });
+    event.verifiedStatus = "UNVERIFIED";
+    await storeEvent(env, event);
+    return json({ ok: true, id: eventId, depositId, note: "unverified; booking unchanged" });
+  }
+
+  const booking = await env.SERENITY_DB.prepare(
+    "SELECT id, amount_ugx FROM bookings WHERE deposit_id = ?"
+  ).bind(depositId).first();
+
+  // Amount must match too, so a real payment for a different amount can't confirm this booking.
+  const paidAmount = verified.amount ? Number(String(verified.amount).replace(/[^\d.]/g, "")) : null;
+  const amountMatches = Boolean(booking) && paidAmount !== null && paidAmount === booking.amount_ugx;
+
+  if (finalStatus === "COMPLETED" && amountMatches) {
+    const now = new Date().toISOString();
+    const result = await env.SERENITY_DB.prepare(
+      `UPDATE bookings SET status = 'CONFIRMED', confirmed_at = ?, updated_at = ?
+       WHERE deposit_id = ? AND status = 'PENDING_PAYMENT'`
+    ).bind(now, now, depositId).run();
+    if (result.meta && result.meta.changes > 0) {
+      console.log("booking confirmed", { depositId, eventId });
+      event.verifiedStatus = finalStatus;
+      await storeEvent(env, event);
+    }
+  } else if (finalStatus === "FAILED") {
+    // Free the slot immediately so the customer can retry.
+    await env.SERENITY_DB.prepare(
+      `DELETE FROM bookings WHERE deposit_id = ? AND status = 'PENDING_PAYMENT'`
+    ).bind(depositId).run();
+    console.log("failed payment released slot", { depositId, eventId });
+  }
+
+  return json({ ok: true, id: eventId, depositId, status: finalStatus });
+}
+
+async function createBooking(request, env) {
+  let input;
+  try {
+    input = await request.json();
+  } catch {
+    return fail("Invalid JSON body");
+  }
+
+  const serviceId = String(input.serviceId || "").trim();
+  const name = String(input.name || "").trim();
+  const email = String(input.email || "").trim();
+  const phone = normalizePhone(input.phone);
+  const date = String(input.date || "").trim();
+  const time = String(input.time || "").trim();
+
+  if (!serviceId || name.length < 2) return fail("serviceId and name are required");
+  if (!phone) return fail("Enter a valid Uganda phone number (e.g. 0755123456)");
+  if (!validDate(date)) return fail("Choose a valid present or future date (YYYY-MM-DD)");
+  if (!validTime(time)) return fail("Choose a valid time (HH:mm)");
+
+  const service = await env.SERENITY_DB.prepare(
+    "SELECT id, title, price_ugx, duration_minutes FROM services WHERE id = ? AND active = 1"
+  ).bind(serviceId).first();
+
+  if (!service) return fail("Unknown service", 404);
+
+  // Expire stale holds (PawaPay payment pages live for 15 minutes).
+  const cutoff = new Date(Date.now() - 20 * 60 * 1000).toISOString();
+  await env.SERENITY_DB.prepare(
+    "DELETE FROM bookings WHERE status = 'PENDING_PAYMENT' AND created_at < ?"
+  ).bind(cutoff).run();
+
+  const bookingId = crypto.randomUUID();
+  const depositId = crypto.randomUUID();
+  const now = new Date().toISOString();
+  const origin = new URL(request.url).origin;
+  const returnUrl = `${origin}/return?booking=${encodeURIComponent(bookingId)}`;
+
+  try {
+    await env.SERENITY_DB.prepare(
+      `INSERT INTO bookings
+        (id, deposit_id, service_id, service_title, amount_ugx, customer_name,
+         customer_phone, customer_email, booking_date, booking_time, status, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'PENDING_PAYMENT', ?, ?)`
+    ).bind(
+      bookingId, depositId, service.id, service.title, service.price_ugx,
+      name, phone, email || null, date, time, now, now
+    ).run();
+  } catch (e) {
+    if (String(e.message || e).includes("UNIQUE")) {
+      return fail("That time slot is already taken. Pick another time.", 409);
+    }
+    throw e;
+  }
+
+  // Store the depositId BEFORE calling PawaPay, as their docs require.
+  const pay = await pawapay(env, "/v2/paymentpage", {
+    method: "POST",
+    body: JSON.stringify({
+      depositId,
+      returnUrl,
+      phoneNumber: phone,
+      amountDetails: {
+        amount: String(service.price_ugx),
+        currency: env.PAWAPAY_CURRENCY || "UGX",
+      },
+      country: env.PAWAPAY_COUNTRY || "UGA",
+      reason: safeReason(`Serenity ${service.title}`),
+      metadata: [
+        { bookingId: bookingId },
+        { serviceId: service.id },
+        { customerPhone: phone, isPII: true },
+      ],
+    }),
+  });
+
+  if (!pay.ok || !pay.data.redirectUrl) {
+    await env.SERENITY_DB.prepare(
+      "DELETE FROM bookings WHERE id = ? AND status = 'PENDING_PAYMENT'"
+    ).bind(bookingId).run();
+    console.error("paymentpage initiation failed", { status: pay.status, data: pay.data });
+    return fail("Could not start payment with PawaPay. Please try again.", 502, pay.data);
+  }
+
+  await env.SERENITY_DB.prepare(
+    "UPDATE bookings SET checkout_url = ?, updated_at = ? WHERE id = ?"
+  ).bind(pay.data.redirectUrl, new Date().toISOString(), bookingId).run();
+
+  return json({
+    ok: true,
+    bookingId,
+    depositId,
+    status: "PENDING_PAYMENT",
+    checkoutUrl: pay.data.redirectUrl,
+    expiresAt: new Date(Date.now() + 15 * 60 * 1000).toISOString(),
+  }, 201);
+}
+
+async function getBooking(id, env) {
+  const row = await env.SERENITY_DB.prepare(
+    `SELECT id, service_title, amount_ugx, customer_name, booking_date, booking_time,
+            status, confirmed_at, created_at, deposit_id
+     FROM bookings WHERE id = ?`
+  ).bind(id).first();
+  if (!row) return fail("Booking not found", 404);
+  return json({ ok: true, booking: row });
+}
+
+function returnPage(origin, siteUrl) {
+  return html(`<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Payment status — The Serenity Spa</title>
+<style>
+ body{background:#0e1317;color:#fff;font-family:system-ui,sans-serif;display:flex;min-height:100vh;align-items:center;justify-content:center;margin:0}
+ .card{max-width:520px;padding:40px;text-align:center;background:#151c22;border:1px solid rgba(194,167,78,.35);border-radius:12px}
+ h1{color:#c2a74e;font-size:28px} p{color:#c8ced4;line-height:1.6} a{color:#c2a74e}
+ .spin{width:36px;height:36px;border:3px solid #333;border-top-color:#c2a74e;border-radius:50%;animation:s 1s linear infinite;margin:0 auto 22px}
+ @keyframes s{to{transform:rotate(360deg)}}
+</style></head><body><div class="card" id="c"><div class="spin"></div><h1>Checking your payment…</h1><p>Do not close this page.</p></div>
+<script>
+ const id=new URLSearchParams(location.search).get('booking');
+ async function check(){
+  if(!id){document.getElementById('c').innerHTML='<h1>Missing booking reference</h1>';return;}
+  const r=await fetch('/api/bookings/'+encodeURIComponent(id));const d=await r.json();
+  if(!d.ok){document.getElementById('c').innerHTML='<h1>Booking not found</h1>';return;}
+  const b=d.booking;
+  if(b.status==='CONFIRMED'){
+   document.getElementById('c').innerHTML='<h1>You are booked ✓</h1><p><strong>'+b.service_title+'</strong><br>'+b.booking_date+' at '+b.booking_time+'</p><p>Reference: '+b.id+'</p>'+${JSON.stringify(siteUrl ? `<p><a href="${siteUrl}">Back to The Serenity Spa</a></p>` : "")};
+  } else if(b.status==='PENDING_PAYMENT'){
+   setTimeout(check,3000);
+  } else {
+   document.getElementById('c').innerHTML='<h1>Payment not completed</h1><p>Please contact us to arrange another payment.</p><p>Reference: '+b.id+'</p>';
+  }
+ }
+ check();
+</script></body></html>`);
 }
 
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
+    const path = url.pathname;
+    const method = request.method;
 
-    if (request.method === "GET") {
-      if (url.pathname === "/health" || url.pathname === "/") {
-        return jsonResponse({
-          ok: true,
-          service: "serenity-pawapay-webhook",
-          time: new Date().toISOString(),
-          forwarding: env.FORWARD_TO ? "enabled" : "not-configured-yet",
-          note: "POST PawaPay callbacks here. Stored durably; forwarded once FORWARD_TO is set.",
-        });
+    if (method === "OPTIONS") {
+      return new Response(null, { status: 204, headers: CORS });
+    }
+
+    if (method === "GET" && (path === "/" || path === "/health")) {
+      let db = "unknown";
+      try {
+        const r = await env.SERENITY_DB.prepare("SELECT count(*) AS n FROM services").first();
+        db = `${r.n} services`;
+      } catch (e) { db = `error: ${String(e.message || e)}`; }
+      return json({
+        ok: true,
+        service: "serenity-pawapay-webhook",
+        time: new Date().toISOString(),
+        db,
+        forwarding: env.FORWARD_TO ? "enabled" : "disabled",
+      });
+    }
+
+    // PawaPay callback paths (the four dashboard boxes all point to the root URL).
+    const callbackPaths = new Set(["/", "/checkout", "/deposit", "/deposits", "/payouts", "/refunds", "/callback"]);
+    if (method === "POST" && callbackPaths.has(path)) {
+      return handleCallback(request, env, ctx, path);
+    }
+
+    if (method === "GET" && path === "/api/services") {
+      const rows = await env.SERENITY_DB.prepare(
+        "SELECT id, title, price_ugx, duration_minutes FROM services WHERE active = 1 ORDER BY price_ugx, title"
+      ).all();
+      return json({ ok: true, services: rows.results || [] });
+    }
+
+    if (method === "POST" && path === "/api/bookings") {
+      try { return await createBooking(request, env); }
+      catch (e) {
+        console.error("createBooking error", e);
+        return fail("Internal error", 500);
       }
-      return new Response("Not found", { status: 404 });
     }
 
-    if (request.method !== "POST") {
-      return new Response("Method not allowed", { status: 405, headers: { allow: "GET, POST" } });
+    let match = path.match(/^\/api\/bookings\/([0-9a-f-]{36})$/i);
+    if (method === "GET" && match) {
+      try { return await getBooking(match[1], env); }
+      catch (e) { console.error("getBooking error", e); return fail("Internal error", 500); }
     }
 
-    const rawBody = await request.text();
-    if (rawBody.length > MAX_BODY_BYTES) {
-      // Still acknowledge so PawaPay does not retry forever; record the problem.
-      console.error("Oversized callback body", { bytes: rawBody.length, path: url.pathname });
-      return jsonResponse({ ok: true, warning: "body too large to store" });
+    match = path.match(/^\/api\/bookings\/([0-9a-f-]{36})\/cancel$/i);
+    if (method === "POST" && match) {
+      const result = await env.SERENITY_DB.prepare(
+        "UPDATE bookings SET status='CANCELLED', updated_at=? WHERE id=? AND status='PENDING_PAYMENT'"
+      ).bind(new Date().toISOString(), match[1]).run();
+      if (!result.meta || result.meta.changes === 0) return fail("Nothing to cancel", 404);
+      return json({ ok: true, status: "CANCELLED" });
     }
 
-    const headers = Object.fromEntries(request.headers.entries());
-    const eventId = `${Date.now()}-${crypto.randomUUID()}`;
-    const record = {
-      id: eventId,
-      receivedAt: new Date().toISOString(),
-      method: request.method,
-      path: url.pathname,
-      headers,
-      body: rawBody,
-      forwardedTo: null,
-    };
-
-    // Durable first: even if the app is down or not built yet, the callback is safe.
-    await env.SERENITY_PAWAPAY_EVENTS.put(
-      `event:${eventId}`,
-      JSON.stringify(record),
-      { expirationTtl: KV_TTL_SECONDS }
-    );
-
-    // Best-effort forward, never blocks the 200 response PawaPay requires.
-    if (env.FORWARD_TO) {
-      const target = `${env.FORWARD_TO.replace(/\/$/, "")}${url.pathname === "/" ? "/callback" : url.pathname}`;
-      ctx.waitUntil(
-        fetch(target, {
-          method: "POST",
-          headers: forwardedHeaders(request),
-          body: rawBody,
-        })
-          .then(async (res) => {
-            record.forwardedTo = { target, status: res.status };
-            await env.SERENITY_PAWAPAY_EVENTS.put(
-              `event:${eventId}`,
-              JSON.stringify(record),
-              { expirationTtl: KV_TTL_SECONDS }
-            );
-          })
-          .catch((err) => {
-            console.error("Forward failed", { target, error: String(err) });
-          })
-      );
+    if (method === "GET" && path === "/return") {
+      return returnPage(new URL(request.url).origin, env.SITE_URL || "");
     }
 
-    console.log("PawaPay callback stored", { id: eventId, path: url.pathname });
-    return jsonResponse({ ok: true, id: eventId });
+    return fail("Not found", 404);
   },
 };
