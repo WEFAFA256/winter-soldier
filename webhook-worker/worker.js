@@ -353,7 +353,7 @@ async function createBooking(request, env) {
 
 function friendlyPayError(code) {
   switch (code) {
-    case "INVALID_PHONE_NUMBER": return "PawaPay could not use that number. Check it and try again.";
+    case "INVALID_PHONE_NUMBER": return "PawaPay says that number is not registered for mobile money. Use the MTN/Airtel number that receives your MoMo prompts.";
     case "AMOUNT_OUT_OF_BOUNDS": return "This amount is outside the mobile money limit. Please contact us.";
     case "DEPOSITS_NOT_ALLOWED":
     case "AUTHORISATION_ERROR":
@@ -379,7 +379,10 @@ async function initiateDeposit(request, env, bookingId) {
   if (!provider) return fail("Choose MTN MoMo or Airtel Money");
   if (!phone) return fail("Enter a valid Uganda phone number, e.g. 0755123456");
   if (!provider.prefix.test(phone)) {
-    return fail(`That number does not look like ${provider.label}. Check the network and try again.`);
+    const hint = providerKey === "MTN"
+      ? "MTN MoMo numbers start 077, 078 or 079"
+      : "Airtel Money numbers start 075, 076 or 070";
+    return fail(`That number is not ${provider.label}. ${hint}. Tap the correct network and try again.`);
   }
 
   const booking = await env.SERENITY_DB.prepare(
@@ -432,6 +435,12 @@ async function initiateDeposit(request, env, bookingId) {
   const status = pay.data && pay.data.status;
   if (status === "REJECTED") {
     const code = pay.data.failureReason && pay.data.failureReason.failureCode;
+    console.log("deposit rejected by PawaPay", {
+      code,
+      provider: providerKey,
+      phoneTail: phone.slice(-3),
+      response: pay.data && pay.data.failureReason,
+    });
     return fail(friendlyPayError(code), 502, code || undefined);
   }
   if (status !== "ACCEPTED" && status !== "DUPLICATE_IGNORED") {

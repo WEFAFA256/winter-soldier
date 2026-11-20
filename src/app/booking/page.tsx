@@ -66,6 +66,21 @@ function getTodayString() {
   return d.toISOString().split("T")[0];
 }
 
+// Ugandan MoMo prefixes. Used to catch a wrong-network number in the browser
+// before a booking is created or PawaPay is called.
+function detectProvider(phone: string): "MTN" | "AIRTEL" | null {
+  let p = String(phone || "").replace(/\D/g, "");
+  if (p.startsWith("0")) p = "256" + p.slice(1);
+  if (p.startsWith("2560")) p = "256" + p.slice(4);
+  if (!/^256\d{9}$/.test(p)) return null;
+  const prefix = p.slice(3, 5);
+  if (["77", "78", "79"].includes(prefix)) return "MTN";
+  if (["75", "76", "70"].includes(prefix)) return "AIRTEL";
+  return null;
+}
+
+const PROVIDER_LABEL = { MTN: "MTN MoMo", AIRTEL: "Airtel Money" } as const;
+
 const inputStyle: React.CSSProperties = {
   width: "100%",
   background: "rgba(255,255,255,0.04)",
@@ -201,6 +216,15 @@ function BookingFormInner() {
     }
     if (!payPhone.trim()) {
       setPayError("Enter the phone number you want to pay from.");
+      return;
+    }
+    const detected = detectProvider(payPhone);
+    if (!detected) {
+      setPayError("Enter a valid Uganda MoMo number, e.g. 078 123 4567 (MTN) or 075 123 4567 (Airtel).");
+      return;
+    }
+    if (detected !== provider) {
+      setPayError(`That number is ${PROVIDER_LABEL[detected]}. Tap the ${PROVIDER_LABEL[detected]} button above, then Confirm & Pay.`);
       return;
     }
     if (!selectedService?.id) {
@@ -769,12 +793,26 @@ function BookingFormInner() {
                         type="tel"
                         inputMode="tel"
                         autoComplete="tel"
-                        placeholder="e.g. 0755 123 456"
+                        placeholder={
+                          provider === "AIRTEL"
+                            ? "e.g. 075 123 4567"
+                            : provider === "MTN"
+                              ? "e.g. 078 123 4567"
+                              : "e.g. 078 123 4567 (MTN) or 075 123 4567 (Airtel)"
+                        }
                         value={payPhone}
-                        onChange={(e) => setPayPhone(e.target.value)}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          setPayPhone(value);
+                          const detected = detectProvider(value);
+                          if (detected) setProvider(detected);
+                          if (payError) setPayError("");
+                        }}
                       />
                       <p style={{ fontSize: "11px", color: "#6b7280", margin: "6px 0 16px" }}>
-                        Enter the MTN or Airtel number that will receive the payment prompt.
+                        {detectProvider(payPhone)
+                          ? `Detected ${PROVIDER_LABEL[detectProvider(payPhone)!]} from that number.`
+                          : "Enter the MTN or Airtel number that will receive the payment prompt."}
                       </p>
 
                       <button
