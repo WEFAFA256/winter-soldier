@@ -16,7 +16,7 @@ database_name = "serenity-spa"
 database_id = "e347be07-91a9-486c-b03a-415c42b906c3"
 
 [vars]
-PAWAPAY_API_BASE_URL = "https://api.sandbox.pawapay.io"
+PAWAPAY_API_BASE_URL = "https://api.pawapay.io"
 PAWAPAY_COUNTRY = "UGA"
 PAWAPAY_CURRENCY = "UGX"
 # OPTIONAL: raw callbacks are also forwarded here if the app gains its own handler.
