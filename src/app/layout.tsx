@@ -15,10 +15,20 @@ export const metadata: Metadata = {
     siteName: "The Serenity Spa",
     title: "The Serenity Spa || Luxury Massage & Wellness Center",
     description: "Luxury massage and wellness treatments in Kampala, Uganda.",
+    // Search / social results show the actual site logo, not a placeholder.
+    images: [
+      {
+        url: "/assets/logo.jpg",
+        width: 320,
+        height: 320,
+        alt: "The Serenity Spa",
+      },
+    ],
   },
   twitter: { card: "summary_large_image" },
   icons: {
     icon: [
+      { url: "/assets/images/favicons/favicon-48x48.png", sizes: "48x48", type: "image/png" },
       { url: "/assets/images/favicons/favicon-32x32.png", sizes: "32x32", type: "image/png" },
       { url: "/assets/images/favicons/favicon-16x16.png", sizes: "16x16", type: "image/png" },
       { url: "/favicon.ico", sizes: "any" },

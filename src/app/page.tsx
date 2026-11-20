@@ -1,11 +1,58 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import CustomCursor from "@/components/CustomCursor";
 import MobileDrawer from "@/components/MobileDrawer";
 
 export default function Home() {
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const drawerWasOpen = useRef(false);
+
+  const initSlider = () => {
+    const $ = (window as any).jQuery;
+    if (!$ || !$.fn || !$.fn.owlCarousel) return;
+
+    const $slider = $(".main-slider-two__carousel");
+    if ($slider.length) {
+      if ($slider.hasClass("owl-loaded")) {
+        try {
+          $slider.trigger("destroy.owl.carousel");
+          $slider.removeClass("owl-loaded owl-hidden");
+        } catch (e) {}
+      }
+      try {
+        $slider.owlCarousel({
+          loop: true,
+          animateOut: "fadeOut",
+          animateIn: "fadeIn",
+          items: 1,
+          autoplay: true,
+          autoplayTimeout: 7000,
+          smartSpeed: 1000,
+          nav: false,
+          dots: true,
+          margin: 0,
+        });
+      } catch (err) {}
+    }
+
+    if ((window as any).soloxInitLoad) {
+      try {
+        (window as any).soloxInitLoad();
+      } catch (e) {}
+    }
+
+    if ((window as any).WOW) {
+      try {
+        new (window as any).WOW({
+          boxClass: "wow",
+          animateClass: "animated",
+          mobile: true,
+          live: true,
+        }).init();
+      } catch (e) {}
+    }
+  };
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -20,52 +67,6 @@ export default function Home() {
     };
     document.addEventListener("click", handleTogglerClick, true);
 
-    const initSlider = () => {
-      const $ = (window as any).jQuery;
-      if (!$ || !$.fn || !$.fn.owlCarousel) return;
-
-      const $slider = $(".main-slider-two__carousel");
-      if ($slider.length) {
-        if ($slider.hasClass("owl-loaded")) {
-          try {
-            $slider.trigger("destroy.owl.carousel");
-            $slider.removeClass("owl-loaded owl-hidden");
-          } catch (e) {}
-        }
-        try {
-          $slider.owlCarousel({
-            loop: true,
-            animateOut: "fadeOut",
-            animateIn: "fadeIn",
-            items: 1,
-            autoplay: true,
-            autoplayTimeout: 7000,
-            smartSpeed: 1000,
-            nav: false,
-            dots: true,
-            margin: 0,
-          });
-        } catch (err) {}
-      }
-
-      if ((window as any).soloxInitLoad) {
-        try {
-          (window as any).soloxInitLoad();
-        } catch (e) {}
-      }
-
-      if ((window as any).WOW) {
-        try {
-          new (window as any).WOW({
-            boxClass: "wow",
-            animateClass: "animated",
-            mobile: true,
-            live: true,
-          }).init();
-        } catch (e) {}
-      }
-    };
-
     // Initialize once without jarring destroying/rebuilding cycles
     const timer = setTimeout(initSlider, 100);
 
@@ -74,6 +75,18 @@ export default function Home() {
       document.removeEventListener("click", handleTogglerClick, true);
     };
   }, []);
+
+  // Recover the hero slider whenever the mobile drawer closes. Opening a
+  // full-screen blurred backdrop over the carousel and then unmounting it can
+  // leave owl-carousel's stage / active item in a blank (black) state on
+  // mobile. Re-initializing re-establishes the active image and forces a
+  // repaint so the slideshow keeps animating after the sidebar closes.
+  useEffect(() => {
+    if (drawerWasOpen.current && !drawerOpen) {
+      requestAnimationFrame(() => initSlider());
+    }
+    drawerWasOpen.current = drawerOpen;
+  }, [drawerOpen, initSlider]);
 
   return (
     <>
