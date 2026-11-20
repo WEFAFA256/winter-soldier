@@ -35,8 +35,9 @@ const CORS = {
 
 const PROVIDERS = {
   // Uganda allocations: MTN 076/077/078/079, Airtel 070/074/075.
-  MTN: { code: "MTN_MOMO_UGA", label: "MTN MoMo", prefix: /^256(76|77|78|79)\d{6}$/ },
-  AIRTEL: { code: "AIRTEL_OAPI_UGA", label: "Airtel Money", prefix: /^256(70|74|75)\d{6}$/ },
+  // Full MSISDN is 256 + 9 digits: 2-digit network prefix + 7 subscriber digits.
+  MTN: { code: "MTN_MOMO_UGA", label: "MTN MoMo", prefix: /^256(76|77|78|79)\d{7}$/ },
+  AIRTEL: { code: "AIRTEL_OAPI_UGA", label: "Airtel Money", prefix: /^256(70|74|75)\d{7}$/ },
 };
 
 function applySecurity(response, request, env) {
@@ -378,7 +379,7 @@ async function initiateDeposit(request, env, bookingId) {
   const phone = normalizePhone(input.phoneNumber);
 
   if (!provider) return fail("Choose MTN MoMo or Airtel Money");
-  if (!phone) return fail("Enter a valid Uganda phone number, e.g. 0755123456");
+  if (!phone) return fail("Enter a valid Uganda MoMo number, e.g. 0781234567 (MTN) or 0751234567 (Airtel)");
   if (!provider.prefix.test(phone)) {
     const hint = providerKey === "MTN"
       ? "MTN MoMo numbers start 076, 077, 078 or 079"
