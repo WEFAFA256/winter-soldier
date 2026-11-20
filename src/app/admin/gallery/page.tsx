@@ -53,6 +53,27 @@ const css = `
   
    /* fixed: removed orphaned keyframe fragment */
   .adm .line-clamp2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+  /* ─── Mobile responsiveness ─── */
+  @media (max-width: 640px) {
+    .adm header { flex-wrap: wrap !important; height: auto !important; padding: 10px 12px !important; gap: 8px !important; }
+    .adm header > div:first-child { flex: 1 1 100% !important; justify-content: center !important; }
+    .adm header > div:last-child { gap: 6px !important; }
+    .adm header .btn-gold, .adm header button { padding: 5px 10px !important; font-size: 10px !important; }
+    .adm main { padding: 12px 10px !important; max-width: 100% !important; }
+    .adm .tab-wrap { overflow-x: auto !important; -webkit-overflow-scrolling: touch !important; scrollbar-width: none !important; }
+    .adm .tab-wrap::-webkit-scrollbar { display: none !important; }
+    .adm .tab-btn { white-space: nowrap !important; flex-shrink: 0 !important; padding: 10px 12px !important; font-size: 11px !important; }
+    .adm .upload-grid { grid-template-columns: 1fr !important; }
+    .adm .svc-form-grid { grid-template-columns: 1fr !important; }
+    .adm .blog-form-grid { grid-template-columns: 1fr !important; }
+    .adm .settings-grid { grid-template-columns: 1fr !important; }
+    .adm .blog-card { flex-direction: column !important; align-items: flex-start !important; gap: 8px !important; }
+    .adm .blog-card img { width: 100% !important; height: auto !important; max-height: 140px !important; flex-shrink: 0 !important; }
+    .adm .service-card { flex-direction: column !important; align-items: flex-start !important; gap: 10px !important; }
+    .adm .bookings-table td, .adm .bookings-table th { white-space: normal !important; }
+    .adm input, .adm select, .adm textarea { font-size: 16px !important; }
+  }
 `;
 
 /* ─── Reusable UI helpers ────────────────────────────────────── */
@@ -389,7 +410,7 @@ export default function AdminGalleryPage() {
       </header>
 
       {/* ── TAB BAR ── */}
-      <div style={{ background:C.surface, borderBottom:`1px solid ${C.border}`, padding:"0 20px", display:"flex", gap:4 }}>
+      <div className="adm tab-wrap" style={{ background:C.surface, borderBottom:`1px solid ${C.border}`, padding:"0 20px", display:"flex", gap:4 }}>
         {tabs.map(t => (
           <button key={t.id} onClick={()=>setTab(t.id as any)} className="tab-btn"
             style={{ background:"transparent", border:"none", borderBottom: tab===t.id ? `2px solid ${C.gold}` : "2px solid transparent", color: tab===t.id ? C.gold : C.muted, padding:"10px 14px", fontSize:12, fontWeight:600, cursor:"pointer", display:"flex", alignItems:"center", gap:6, marginBottom:-1 }}>
@@ -416,7 +437,7 @@ export default function AdminGalleryPage() {
                 {/* Upload form */}
                 <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:10, padding:20, marginBottom:24 }}>
                   <p style={{ margin:"0 0 14px", fontSize:12, fontWeight:700, color:C.gold, textTransform:"uppercase", letterSpacing:"0.06em" }}>+ Upload New Photo</p>
-                  <form onSubmit={addGalleryImage} style={{ display:"grid", gridTemplateColumns:"1fr 1fr auto", gap:12, alignItems:"end" }}>
+                  <form onSubmit={addGalleryImage} className="adm upload-grid" style={{ display:"grid", gridTemplateColumns:"1fr 1fr auto", gap:12, alignItems:"end" }}>
                     <div>
                       <label style={{ display:"block", fontSize:11, fontWeight:600, color:C.muted, textTransform:"uppercase", letterSpacing:"0.06em", marginBottom:6 }}>Image File</label>
                       <input type="file" accept="image/*" required onChange={e=>{ const f=e.target.files?.[0]; if(f){setGalFile(f);setGalPreview(URL.createObjectURL(f));} }}
@@ -583,7 +604,7 @@ export default function AdminGalleryPage() {
                 {showAddSvc && (
                   <div className="admin-pane" style={{ background:C.surface, border:`1px solid ${C.gold}44`, borderRadius:10, padding:20, marginBottom:16 }}>
                     <p style={{ margin:"0 0 14px", fontSize:12, fontWeight:700, color:C.gold, textTransform:"uppercase" }}>New Treatment</p>
-                    <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:12, marginBottom:12 }}>
+                    <div className="adm svc-form-grid" style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:12, marginBottom:12 }}>
                       <Input label="Title" placeholder="e.g. Hot Stone Massage" value={newSvc.title||""} onChange={(e:any)=>setNewSvc({...newSvc,title:e.target.value})} />
                       <Input label="Price (UGX)" type="number" value={newSvc.price||""} onChange={(e:any)=>setNewSvc({...newSvc,price:+e.target.value})} />
                       <Input label="Image Path" placeholder="/assets/service1.jpg" value={newSvc.image||""} onChange={(e:any)=>setNewSvc({...newSvc,image:e.target.value})} />
@@ -596,7 +617,7 @@ export default function AdminGalleryPage() {
                 {/* Services list */}
                 <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
                   {services.filter(s=>s.title.toLowerCase().includes(svcSearch.toLowerCase())).map((svc,i)=>(
-                    <div key={i} className="card" style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:8, padding:"12px 16px", display:"flex", gap:12, alignItems:"center" }}>
+                    <div key={i} className="card adm service-card" style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:8, padding:"12px 16px", display:"flex", gap:12, alignItems:"center" }}>
                       <img src={svc.image} alt={svc.title} style={{ width:48, height:48, objectFit:"cover", borderRadius:6, border:`1px solid ${C.border}`, flexShrink:0 }}
                         onError={(e:any)=>{ e.target.src="/assets/service1.jpg"; }} />
                       <div style={{ flex:1, minWidth:0 }}>
@@ -637,13 +658,13 @@ export default function AdminGalleryPage() {
                   <div className="admin-pane" style={{ background:C.surface, border:`1px solid ${C.gold}44`, borderRadius:10, padding:20, marginBottom:20 }}>
                     <p style={{ margin:"0 0 16px", fontSize:12, fontWeight:700, color:C.gold, textTransform:"uppercase" }}>New Blog Post</p>
                     <form onSubmit={addBlog}>
-                      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12 }}>
+                      <div className="adm blog-form-grid" style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12 }}>
                         <Input label="Title *" required placeholder="e.g. Benefits of Aromatherapy" value={newBlog.title||""} onChange={(e:any)=>setNewBlog({...newBlog,title:e.target.value})} />
                         <Input label="Author" placeholder="Admin" value={newBlog.author||""} onChange={(e:any)=>setNewBlog({...newBlog,author:e.target.value})} />
                       </div>
                       <Input label="Short Excerpt" placeholder="A brief teaser shown on the blog card…" value={newBlog.excerpt||""} onChange={(e:any)=>setNewBlog({...newBlog,excerpt:e.target.value})} />
                       <Textarea label="Full Content *" required rows={5} placeholder="Write the full article here…" value={newBlog.content||""} onChange={(e:any)=>setNewBlog({...newBlog,content:e.target.value})} />
-                      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12 }}>
+                      <div className="adm blog-form-grid" style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12 }}>
                         <div>
                           <label style={{ display:"block", fontSize:11, fontWeight:600, color:C.muted, textTransform:"uppercase", letterSpacing:"0.06em", marginBottom:6 }}>Cover Image</label>
                           <input type="file" accept="image/*" onChange={e=>{ const f=e.target.files?.[0]; if(f){setBlogFile(f);setBlogPreview(URL.createObjectURL(f));} }}
@@ -667,7 +688,7 @@ export default function AdminGalleryPage() {
                 ) : (
                   <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
                     {blogs.map(post=>(
-                      <div key={post.id} className="card" style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:8, padding:"12px 16px", display:"flex", gap:14, alignItems:"center" }}>
+                      <div key={post.id} className="card adm blog-card" style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:8, padding:"12px 16px", display:"flex", gap:14, alignItems:"center" }}>
                         {post.image && <img src={post.image} alt={post.title} style={{ width:64, height:48, objectFit:"cover", borderRadius:6, border:`1px solid ${C.border}`, flexShrink:0 }} onError={(e:any)=>{e.target.style.display="none";}} />}
                         <div style={{ flex:1, minWidth:0 }}>
                           <p style={{ margin:0, fontWeight:700, fontSize:13, color:C.text, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{post.title}</p>
@@ -728,7 +749,7 @@ export default function AdminGalleryPage() {
                     <p style={{ fontSize:13 }}>No bookings found.</p>
                   </div>
                 ) : (
-                  <div style={{ overflowX:"auto", background:C.surface, border:`1px solid ${C.border}`, borderRadius:10 }}>
+                  <div className="adm bookings-table" style={{ overflowX:"auto", background:C.surface, border:`1px solid ${C.border}`, borderRadius:10 }}>
                     <table style={{ width:"100%", borderCollapse:"collapse", fontSize:12 }}>
                       <thead>
                         <tr style={{ textAlign:"left", color:C.muted, fontSize:10, textTransform:"uppercase", letterSpacing:"0.06em" }}>
@@ -785,7 +806,7 @@ export default function AdminGalleryPage() {
               <div className="admin-pane">
                 <SectionHead title="Spa Settings" sub="Update contact details, phone numbers and location across the entire website." />
                 <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:10, padding:24, maxWidth:600 }}>
-                  <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16, marginBottom:4 }}>
+                  <div className="adm settings-grid" style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16, marginBottom:4 }}>
                     <Input label="WhatsApp Number" placeholder="+256781945510" value={siteContent.contact?.spa?.whatsapp||""}
                       onChange={(e:any)=>{ const c={...siteContent}; if(!c.contact)c.contact={}; if(!c.contact.spa)c.contact.spa={}; c.contact.spa.whatsapp=e.target.value; setSiteContent(c); }} />
                     <Input label="Phone Line" placeholder="+256764001922" value={siteContent.contact?.spa?.phone||""}
