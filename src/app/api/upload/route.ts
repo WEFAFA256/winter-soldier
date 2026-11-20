@@ -8,6 +8,11 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
+const MAX_UPLOAD_BYTES = 10 * 1024 * 1024;
+const ALLOWED_IMAGE_TYPES = new Set([
+  'image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/avif',
+]);
+
 export async function POST(req: Request) {
   try {
     if (!isAdmin(req)) {
@@ -19,6 +24,12 @@ export async function POST(req: Request) {
 
     if (!file) {
       return NextResponse.json({ error: 'No file uploaded' }, { status: 400 });
+    }
+    if (file.size > MAX_UPLOAD_BYTES) {
+      return NextResponse.json({ error: 'Image is too large (max 10 MB)' }, { status: 413 });
+    }
+    if (file.type && !ALLOWED_IMAGE_TYPES.has(file.type)) {
+      return NextResponse.json({ error: 'Only JPG, PNG, WebP, GIF or AVIF images are allowed' }, { status: 415 });
     }
 
     const arrayBuffer = await file.arrayBuffer();

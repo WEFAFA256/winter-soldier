@@ -93,6 +93,12 @@ export async function POST(req: Request) {
     if (!file) {
       return NextResponse.json({ error: 'No file uploaded' }, { status: 400 });
     }
+    if (file.size > 10 * 1024 * 1024) {
+      return NextResponse.json({ error: 'Image is too large (max 10 MB)' }, { status: 413 });
+    }
+    if (file.type && !['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/avif'].includes(file.type)) {
+      return NextResponse.json({ error: 'Only JPG, PNG, WebP, GIF or AVIF images are allowed' }, { status: 415 });
+    }
 
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
@@ -143,8 +149,9 @@ export async function PATCH(req: Request) {
     }
 
     const { id, availability } = await req.json();
-    if (!id || !['available', 'in-session'].includes(availability)) {
-      return NextResponse.json({ error: 'id and availability ("available" | "in-session") are required' }, { status: 400 });
+    if (!id || typeof id !== 'string' || !id.startsWith('serenity_gallery/') ||
+        !['available', 'in-session'].includes(availability)) {
+      return NextResponse.json({ error: 'A valid gallery id and availability are required' }, { status: 400 });
     }
 
     // Update in gallery.json
@@ -183,8 +190,8 @@ export async function DELETE(req: Request) {
     const { searchParams } = new URL(req.url);
     const id = searchParams.get('id');
 
-    if (!id) {
-      return NextResponse.json({ error: 'ID is required' }, { status: 400 });
+    if (!id || !id.startsWith('serenity_gallery/')) {
+      return NextResponse.json({ error: 'A valid gallery image ID is required' }, { status: 400 });
     }
 
     try {

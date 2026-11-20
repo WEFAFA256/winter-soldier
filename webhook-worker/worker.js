@@ -6,8 +6,9 @@
  *  POST /                       PawaPay callbacks (all four flows) -> KV + verify + confirm booking
  *  GET  /health                 health check
  *  GET  /api/services           active services from D1
- *  POST /api/bookings           create booking + PawaPay hosted payment page
- *  GET  /api/bookings/:id       booking status (polling)
+ *  POST /api/bookings           create a pending booking (amount always from D1)
+ *  POST /api/bookings/:id/pay   initiate MTN/Airtel deposit directly on the booking page
+ *  GET  /api/bookings/:id       booking status (polling + authoritative PawaPay fallback)
  *  POST /api/bookings/:id/cancel
  *  GET  /api/admin/bookings     admin list (Bearer ADMIN_API_TOKEN)
  *  POST /api/admin/bookings/:id/cancel
@@ -17,11 +18,54 @@
  */
 
 const KV_TTL_SECONDS = 60 * 60 * 24 * 90;
+
+// Wildcard CORS allowed any site to drive the booking/payment API from a
+// visitor's browser. Only the real site origins are allowed now.
+const ALLOWED_ORIGINS = new Set([
+  "https://www.executiveserenityspa.com",
+  "https://executiveserenityspa.com",
+  "http://localhost:3000",
+]);
+
 const CORS = {
-  "access-control-allow-origin": "*",
   "access-control-allow-methods": "GET, POST, OPTIONS",
   "access-control-allow-headers": "content-type, authorization",
+  "access-control-max-age": "600",
 };
+
+const PROVIDERS = {
+  MTN: { code: "MTN_MOMO_UGA", label: "MTN MoMo", prefix: /^256(77|78|79)\d{6}$/ },
+  AIRTEL: { code: "AIRTEL_OAPI_UGA", label: "Airtel Money", prefix: /^256(75|76|70)\d{6}$/ },
+};
+
+function applySecurity(response, request, env) {
+  const headers = new Headers(response.headers);
+  const origin = request.headers.get("origin") || "";
+  const siteUrl = (env.SITE_URL || "").replace(/\/$/, "");
+  const allowed = new Set(ALLOWED_ORIGINS);
+  if (siteUrl) allowed.add(siteUrl);
+  if (origin && allowed.has(origin)) {
+    headers.set("access-control-allow-origin", origin);
+    headers.set("vary", "Origin");
+  }
+  headers.set("x-content-type-options", "nosniff");
+  headers.set("x-frame-options", "DENY");
+  headers.set("referrer-policy", "no-referrer");
+  headers.set("permissions-policy", "camera=(), microphone=(), geolocation=(), payment=(self)");
+  headers.set("strict-transport-security", "max-age=63072000; includeSubDomains; preload");
+  const type = headers.get("content-type") || "";
+  if (type.includes("text/html")) {
+    headers.set(
+      "content-security-policy",
+      "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; " +
+        "img-src 'self' data: https:; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'"
+    );
+  } else {
+    headers.set("content-security-policy", "default-src 'none'; frame-ancestors 'none'; base-uri 'none'");
+    if (!headers.has("cache-control")) headers.set("cache-control", "no-store");
+  }
+  return new Response(response.body, { status: response.status, statusText: response.statusText, headers });
+}
 
 function json(body, status = 200, extraHeaders = {}) {
   return new Response(JSON.stringify(body), {
@@ -50,15 +94,6 @@ function normalizePhone(input) {
   if (p.startsWith("0")) p = "256" + p.slice(1);
   if (p.startsWith("2560")) p = "256" + p.slice(4);
   return /^256\d{9}$/.test(p) ? p : null;
-}
-
-function safeReason(title) {
-  const cleaned = String(title || "Serenity Spa")
-    .replace(/[^a-zA-Z0-9 ]/g, " ")
-    .replace(/\s+/g, " ")
-    .trim()
-    .slice(0, 22);
-  return cleaned.length >= 4 ? cleaned : "Serenity Spa Booking";
 }
 
 function validDate(d) {
@@ -110,6 +145,22 @@ async function rateLimited(request, env) {
     "SELECT count(*) AS n FROM bookings WHERE created_at > ?"
   ).bind(new Date(Date.now() - 60 * 60 * 1000).toISOString()).first();
   return Boolean(recent && Number(recent.n) > 50);
+}
+
+// Separate, tighter throttle for payment initiation so a hostile client
+// cannot flood PawaPay with provider prompts even if it creates bookings slowly.
+async function payRateLimited(request, env) {
+  const windowMs = 10 * 60 * 1000;
+  const bucket = Math.floor(Date.now() / windowMs);
+  const key = `pay:${clientIp(request)}:${bucket}`;
+  await env.SERENITY_DB.prepare(
+    `INSERT INTO rate_limits (key, window_start, count) VALUES (?, ?, 1)
+     ON CONFLICT(key) DO UPDATE SET count = count + 1`
+  ).bind(key, new Date(bucket * windowMs).toISOString()).run();
+  const row = await env.SERENITY_DB.prepare(
+    "SELECT count FROM rate_limits WHERE key = ?"
+  ).bind(key).first();
+  return Boolean(row && Number(row.count) > 8);
 }
 
 function isAdmin(request, env) {
@@ -269,8 +320,6 @@ async function createBooking(request, env) {
   const bookingId = crypto.randomUUID();
   const depositId = crypto.randomUUID();
   const now = new Date().toISOString();
-  const origin = new URL(request.url).origin;
-  const returnUrl = `${origin}/return?booking=${encodeURIComponent(bookingId)}`;
 
   try {
     await env.SERENITY_DB.prepare(
@@ -289,56 +338,168 @@ async function createBooking(request, env) {
     throw e;
   }
 
-  // Store the depositId BEFORE calling PawaPay, as their docs require.
-  const pay = await pawapay(env, "/v2/paymentpage", {
-    method: "POST",
-    body: JSON.stringify({
-      depositId,
-      returnUrl,
-      phoneNumber: phone,
-      amountDetails: {
-        amount: String(amount),
-        currency: env.PAWAPAY_CURRENCY || "UGX",
-      },
-      country: env.PAWAPAY_COUNTRY || "UGA",
-      reason: safeReason(`Serenity ${service.title}`),
-      metadata: [
-        { bookingId: bookingId },
-        { serviceId: service.id },
-        { customerPhone: phone, isPII: true },
-      ],
-    }),
-  });
-
-  if (!pay.ok || !pay.data.redirectUrl) {
-    await env.SERENITY_DB.prepare(
-      "DELETE FROM bookings WHERE id = ? AND status = 'PENDING_PAYMENT'"
-    ).bind(bookingId).run();
-    console.error("paymentpage initiation failed", { status: pay.status, data: pay.data });
-    return fail("Could not start payment with PawaPay. Please try again.", 502, pay.data);
-  }
-
-  await env.SERENITY_DB.prepare(
-    "UPDATE bookings SET checkout_url = ?, updated_at = ? WHERE id = ?"
-  ).bind(pay.data.redirectUrl, new Date().toISOString(), bookingId).run();
-
+  // No hosted checkout: the deposit is initiated by /api/bookings/:id/pay once
+  // the customer has chosen MTN or Airtel and entered the wallet number.
   return json({
     ok: true,
     bookingId,
     depositId,
+    amount,
     status: "PENDING_PAYMENT",
-    checkoutUrl: pay.data.redirectUrl,
+    paymentRequired: true,
     expiresAt: new Date(Date.now() + 15 * 60 * 1000).toISOString(),
+  }, 201);
+}
+
+function friendlyPayError(code) {
+  switch (code) {
+    case "INVALID_PHONE_NUMBER": return "PawaPay could not use that number. Check it and try again.";
+    case "AMOUNT_OUT_OF_BOUNDS": return "This amount is outside the mobile money limit. Please contact us.";
+    case "DEPOSITS_NOT_ALLOWED":
+    case "AUTHORISATION_ERROR":
+    case "AUTHENTICATION_ERROR": return "Mobile money payments are temporarily unavailable. Please contact us.";
+    case "PROVIDER_TEMPORARILY_UNAVAILABLE": return "That network is temporarily unavailable. Try the other provider.";
+    case "INVALID_PROVIDER": return "Choose MTN MoMo or Airtel Money.";
+    default: return "Payment could not be started. Please try again or contact us.";
+  }
+}
+
+async function initiateDeposit(request, env, bookingId) {
+  let input;
+  try {
+    input = await request.json();
+  } catch {
+    return fail("Invalid JSON body");
+  }
+
+  const providerKey = String(input.provider || "").toUpperCase();
+  const provider = PROVIDERS[providerKey];
+  const phone = normalizePhone(input.phoneNumber);
+
+  if (!provider) return fail("Choose MTN MoMo or Airtel Money");
+  if (!phone) return fail("Enter a valid Uganda phone number, e.g. 0755123456");
+  if (!provider.prefix.test(phone)) {
+    return fail(`That number does not look like ${provider.label}. Check the network and try again.`);
+  }
+
+  const booking = await env.SERENITY_DB.prepare(
+    "SELECT * FROM bookings WHERE id = ?"
+  ).bind(bookingId).first();
+  if (!booking) return fail("Booking not found", 404);
+  if (booking.status === "CONFIRMED") {
+    return json({ ok: true, bookingId, status: "CONFIRMED", amount: booking.amount_ugx });
+  }
+  if (booking.status !== "PENDING_PAYMENT") return fail("This booking can no longer be paid", 409);
+
+  const initiatedAt = booking.deposit_initiated_at ? Date.parse(booking.deposit_initiated_at) : 0;
+  if (initiatedAt && Date.now() - initiatedAt < 2 * 60 * 1000) {
+    return json({
+      ok: true,
+      bookingId,
+      depositId: booking.deposit_id,
+      status: "ALREADY_INITIATED",
+      amount: booking.amount_ugx,
+      provider: booking.payment_provider || providerKey,
+      message: "A payment prompt is already open on that phone. Check it before trying again.",
+    });
+  }
+
+  if (await payRateLimited(request, env)) {
+    return fail("Too many payment attempts. Please wait a few minutes.", 429);
+  }
+
+  // The amount comes from D1 only — never from the browser payload.
+  const pay = await pawapay(env, "/v2/deposits", {
+    method: "POST",
+    body: JSON.stringify({
+      depositId: booking.deposit_id,
+      payer: {
+        type: "MMO",
+        accountDetails: { phoneNumber: phone, provider: provider.code },
+      },
+      amount: String(booking.amount_ugx),
+      currency: env.PAWAPAY_CURRENCY || "UGX",
+      clientReferenceId: booking.id,
+      customerMessage: "Serenity Spa",
+      metadata: [
+        { bookingId: booking.id },
+        { serviceId: booking.service_id },
+        { paymentPhone: phone, isPII: true },
+      ],
+    }),
+  });
+
+  const status = pay.data && pay.data.status;
+  if (status === "REJECTED") {
+    const code = pay.data.failureReason && pay.data.failureReason.failureCode;
+    return fail(friendlyPayError(code), 502, code || undefined);
+  }
+  if (status !== "ACCEPTED" && status !== "DUPLICATE_IGNORED") {
+    console.error("deposit initiation failed", { status: pay.status, data: pay.data });
+    return fail("Could not start payment with PawaPay. Please try again.", 502);
+  }
+
+  const now = new Date().toISOString();
+  await env.SERENITY_DB.prepare(
+    `UPDATE bookings SET payment_provider = ?, payment_phone = ?, deposit_initiated_at = ?, updated_at = ?
+     WHERE id = ?`
+  ).bind(providerKey, phone, now, now, bookingId).run();
+
+  return json({
+    ok: true,
+    bookingId,
+    depositId: booking.deposit_id,
+    status: "PENDING_PAYMENT",
+    amount: booking.amount_ugx,
+    provider: providerKey,
+    message: `Check your ${provider.label} phone for the payment prompt and approve it.`,
   }, 201);
 }
 
 async function getBooking(id, env) {
   const row = await env.SERENITY_DB.prepare(
     `SELECT id, service_title, amount_ugx, customer_name, booking_date, booking_time,
-            status, confirmed_at, created_at, deposit_id
+            status, confirmed_at, created_at, deposit_id, payment_provider,
+            deposit_initiated_at, status_check_at
      FROM bookings WHERE id = ?`
   ).bind(id).first();
   if (!row) return fail("Booking not found", 404);
+
+  // Callbacks are authoritative, but if one is lost or a dashboard URL was
+  // mistyped, a throttled server-to-server status check still finalises the
+  // booking. Only PawaPay's own response can change state here.
+  if (row.status === "PENDING_PAYMENT" && row.deposit_initiated_at) {
+    const last = row.status_check_at ? Date.parse(row.status_check_at) : 0;
+    if (Date.now() - last > 10000) {
+      await env.SERENITY_DB.prepare(
+        "UPDATE bookings SET status_check_at = ? WHERE id = ?"
+      ).bind(new Date().toISOString(), id).run();
+
+      const checked = await pawapay(env, `/v2/deposits/${encodeURIComponent(row.deposit_id)}`);
+      const data = checked.data && checked.data.status === "FOUND" ? checked.data.data : null;
+      const paidAmount = data && data.amount
+        ? Number(String(data.amount).replace(/[^\d.]/g, "")) : null;
+      const amountMatches = paidAmount !== null && paidAmount === Number(row.amount_ugx);
+
+      if (data && data.depositId === row.deposit_id && amountMatches) {
+        const now = new Date().toISOString();
+        if (data.status === "COMPLETED") {
+          await env.SERENITY_DB.prepare(
+            `UPDATE bookings SET status = 'CONFIRMED', confirmed_at = ?, updated_at = ?
+             WHERE id = ? AND status = 'PENDING_PAYMENT'`
+          ).bind(now, now, id).run();
+          row.status = "CONFIRMED";
+          row.confirmed_at = now;
+        } else if (data.status === "FAILED") {
+          await env.SERENITY_DB.prepare(
+            "DELETE FROM bookings WHERE id = ? AND status = 'PENDING_PAYMENT'"
+          ).bind(id).run();
+          return fail("Payment failed. Please make a new booking.", 410);
+        }
+      }
+    }
+  }
+
   return json({ ok: true, booking: row });
 }
 
@@ -372,7 +533,7 @@ function returnPage(origin, siteUrl) {
 </script></body></html>`);
 }
 
-export default {
+const handler = {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
     const path = url.pathname;
@@ -424,6 +585,12 @@ export default {
       catch (e) { console.error("getBooking error", e); return fail("Internal error", 500); }
     }
 
+    match = path.match(/^\/api\/bookings\/([0-9a-f-]{36})\/pay$/i);
+    if (method === "POST" && match) {
+      try { return await initiateDeposit(request, env, match[1]); }
+      catch (e) { console.error("initiateDeposit error", e); return fail("Internal error", 500); }
+    }
+
     match = path.match(/^\/api\/bookings\/([0-9a-f-]{36})\/cancel$/i);
     if (method === "POST" && match) {
       const result = await env.SERENITY_DB.prepare(
@@ -441,7 +608,8 @@ export default {
         const status = url.searchParams.get("status");
         const limit = Math.min(Math.max(Number(url.searchParams.get("limit") || 100), 1), 500);
         const columns = `id, deposit_id, service_title, amount_ugx, customer_name, customer_phone,
-                         customer_email, booking_date, booking_time, status, created_at, confirmed_at`;
+                         customer_email, booking_date, booking_time, status, payment_provider,
+                         payment_phone, created_at, confirmed_at`;
         const rows = status
           ? await env.SERENITY_DB.prepare(
               `SELECT ${columns} FROM bookings WHERE status = ?
@@ -471,5 +639,12 @@ export default {
     }
 
     return fail("Not found", 404);
+  },
+};
+
+export default {
+  async fetch(request, env, ctx) {
+    const response = await handler.fetch(request, env, ctx);
+    return applySecurity(response, request, env);
   },
 };

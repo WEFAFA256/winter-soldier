@@ -66,12 +66,6 @@ function getTodayString() {
   return d.toISOString().split("T")[0];
 }
 
-function generateBookingId() {
-  const ts = Date.now().toString(36).toUpperCase();
-  const rand = Math.random().toString(36).substring(2, 6).toUpperCase();
-  return `SSP-${ts}-${rand}`;
-}
-
 const inputStyle: React.CSSProperties = {
   width: "100%",
   background: "rgba(255,255,255,0.04)",
@@ -134,6 +128,14 @@ function BookingFormInner() {
   const [paying, setPaying] = useState(false);
   const [payError, setPayError] = useState("");
 
+  // Inline mobile-money checkout: nothing is charged until the customer picks
+  // a network, enters the wallet number and confirms on this same page.
+  const [paymentOpen, setPaymentOpen] = useState(false);
+  const [provider, setProvider] = useState<"MTN" | "AIRTEL" | null>(null);
+  const [payPhone, setPayPhone] = useState("");
+  const [paymentStatus, setPaymentStatus] = useState("PENDING_PAYMENT");
+  const [paymentNotice, setPaymentNotice] = useState("");
+
   useEffect(() => {
     fetch(`${PAY_API}/api/services`)
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error("services unavailable"))))
@@ -162,11 +164,18 @@ function BookingFormInner() {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   }
 
-  async function handleSubmit(e: React.FormEvent) {
+  // First tap only reveals the payment controls on this page. No booking and
+  // no payment request is made until the customer confirms the wallet number.
+  function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setPayError("");
-    if (!form.name || !form.phone || !form.service || !form.date || !form.time) {
-      alert("Please fill in all required fields (Name, Phone, Service, Date, Time).");
+    setPaymentNotice("");
+    if (!form.name.trim() || !form.phone.trim() || !form.service || !form.date || !form.time) {
+      setPayError("Please fill in all required fields (Name, Phone, Service, Date, Time).");
+      return;
+    }
+    if (form.name.trim().length < 2) {
+      setPayError("Please enter your full name.");
       return;
     }
     if (!selectedService) {
@@ -174,53 +183,122 @@ function BookingFormInner() {
       return;
     }
     if (!selectedService.id) {
-      setPayError("Payment options are still loading. Refresh the page and try again.");
+      setPayError("Prices are still loading. Refresh the page and try again.");
+      return;
+    }
+    setPaymentOpen((open) => !open);
+  }
+
+  async function handlePay() {
+    setPayError("");
+    if (!provider) {
+      setPayError("Choose MTN MoMo or Airtel Money first.");
+      return;
+    }
+    if (!payPhone.trim()) {
+      setPayError("Enter the phone number you want to pay from.");
+      return;
+    }
+    if (!selectedService?.id) {
+      setPayError("Prices are still loading. Refresh the page and try again.");
       return;
     }
 
     setPaying(true);
     try {
-      const res = await fetch(`${PAY_API}/api/bookings`, {
+      // Amount is taken from D1 by serviceId on the server — never from here.
+      const createdRes = await fetch(`${PAY_API}/api/bookings`, {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
           serviceId: selectedService.id,
-          name: form.name,
-          phone: form.phone,
-          email: form.email,
+          name: form.name.trim(),
+          phone: form.phone.trim(),
+          email: form.email.trim(),
           date: form.date,
           time: to24Hour(form.time),
-          notes: form.notes,
+          notes: form.notes.trim(),
         }),
       });
-      const data = await res.json();
-      if (!res.ok || !data.checkoutUrl) {
-        throw new Error(data.error || "Could not start payment. Please try again.");
+      const created = await createdRes.json();
+      if (!createdRes.ok || !created.bookingId) {
+        throw new Error(created.error || "Could not reserve your slot. Please try again.");
       }
 
-      // Keep a local copy in case the customer comes back from the payment page.
-      const summary = {
-        id: data.bookingId || generateBookingId(),
-        name: form.name,
-        phone: form.phone,
-        email: form.email,
+      const payRes = await fetch(
+        `${PAY_API}/api/bookings/${encodeURIComponent(created.bookingId)}/pay`,
+        {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ provider, phoneNumber: payPhone.trim() }),
+        }
+      );
+      const paid = await payRes.json();
+      if (!payRes.ok) {
+        throw new Error(paid.error || "Could not start the payment. Please try again.");
+      }
+
+      setBookingSummary({
+        id: created.bookingId,
+        name: form.name.trim(),
+        phone: form.phone.trim(),
+        email: form.email.trim(),
         service: selectedService.name,
-        price: selectedService.price,
+        price: Number(created.amount) || selectedService.price,
         date: form.date,
         time: form.time,
-        notes: form.notes,
-      };
-      setBookingSummary(summary);
+        notes: form.notes.trim(),
+      });
+      setPaymentStatus("PENDING_PAYMENT");
+      setPaymentNotice(
+        paid.message || "Check your phone for the payment prompt and approve it."
+      );
       setSubmitted(true);
-
-      // PawaPay hosted checkout supports both MTN MoMo and Airtel Money.
-      window.location.href = data.checkoutUrl;
     } catch (err) {
       setPayError(err instanceof Error ? err.message : "Payment could not be started.");
     } finally {
       setPaying(false);
     }
   }
+
+  // Poll the Worker, which verifies the deposit with PawaPay before reporting
+  // CONFIRMED. The page stays open on mobile while the customer approves.
+  useEffect(() => {
+    if (!submitted || !bookingSummary) return;
+    let active = true;
+    let timer: ReturnType<typeof setTimeout>;
+    let tries = 0;
+    const poll = async () => {
+      if (!active) return;
+      tries += 1;
+      try {
+        const res = await fetch(
+          `${PAY_API}/api/bookings/${encodeURIComponent(bookingSummary.id)}`,
+          { cache: "no-store" }
+        );
+        const data = await res.json().catch(() => ({}));
+        if (data.ok && data.booking) {
+          setPaymentStatus(data.booking.status);
+          if (data.booking.status === "CONFIRMED") {
+            setPaymentNotice("Payment received. Your booking is confirmed.");
+            return;
+          }
+          if (data.booking.status !== "PENDING_PAYMENT") {
+            setPaymentNotice("This payment is no longer pending. Contact us if you already paid.");
+            return;
+          }
+        }
+      } catch {
+        // Transient network errors retry on the next tick.
+      }
+      if (active && tries < 120) timer = setTimeout(poll, 3000);
+    };
+    timer = setTimeout(poll, 1500);
+    return () => {
+      active = false;
+      clearTimeout(timer);
+    };
+  }, [submitted, bookingSummary?.id]);
 
   // Generate QR Code onto canvas once submitted
   useEffect(() => {
@@ -235,7 +313,7 @@ function BookingFormInner() {
         `Amount: UGX ${bookingSummary.price.toLocaleString()}`,
         `Date: ${bookingSummary.date}`,
         `Time: ${bookingSummary.time}`,
-        `Payment: Pay at Venue / Cash / MoMo`,
+        `Payment: MTN/Airtel MoMo (PawaPay)`,
       ].join("\n");
 
       QRCode.toCanvas(
@@ -568,6 +646,109 @@ function BookingFormInner() {
                   </div>
 
                   {/* Submit Button */}
+                  {/* Inline mobile-money checkout — revealed only after the
+                      customer taps the "Pay with MTN / Airtel" button below.
+                      No booking or payment request is made until Confirm. */}
+                  {paymentOpen && (
+                    <div
+                      className="inline-pay-panel"
+                      style={{
+                        backgroundColor: "rgba(194,167,78,0.06)",
+                        border: "1px solid rgba(194,167,78,0.38)",
+                        borderRadius: "12px",
+                        padding: "22px",
+                        marginBottom: "18px",
+                        animation: "cardFloatIn 0.35s cubic-bezier(0.16,1,0.3,1) both",
+                      }}
+                    >
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "18px", gap: "10px" }}>
+                        <h3 style={{ fontFamily: "Cormorant, serif", fontSize: "1.35rem", color: "#fff", margin: 0 }}>
+                          Pay with Mobile Money
+                        </h3>
+                        {selectedService && (
+                          <span style={{ color: "#c2a74e", fontWeight: 800, fontSize: "15px", whiteSpace: "nowrap" }}>
+                            {formatPrice(selectedService.price)}
+                          </span>
+                        )}
+                      </div>
+
+                      <label style={labelStyle}>1. Choose your network</label>
+                      <div className="pay-networks" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginBottom: "20px" }}>
+                        <button
+                          type="button"
+                          onClick={() => setProvider("MTN")}
+                          aria-pressed={provider === "MTN"}
+                          style={{
+                            display: "flex", alignItems: "center", justifyContent: "center", gap: "10px",
+                            padding: "14px 10px", borderRadius: "10px", cursor: "pointer",
+                            border: provider === "MTN" ? "2px solid #FFCC00" : "1px solid rgba(255,255,255,0.15)",
+                            backgroundColor: provider === "MTN" ? "rgba(255,204,0,0.12)" : "rgba(255,255,255,0.03)",
+                            boxShadow: provider === "MTN" ? "0 0 0 3px rgba(255,204,0,0.12)" : "none",
+                            transition: "all 0.2s",
+                          }}
+                        >
+                          <span style={{
+                            width: "36px", height: "36px", borderRadius: "50%", backgroundColor: "#FFCC00",
+                            color: "#0e1317", display: "flex", alignItems: "center", justifyContent: "center",
+                            fontWeight: 900, fontSize: "10px", flexShrink: 0, letterSpacing: "-0.5px",
+                          }}>MTN</span>
+                          <span style={{ color: "#fff", fontWeight: 700, fontSize: "13px" }}>MTN MoMo</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setProvider("AIRTEL")}
+                          aria-pressed={provider === "AIRTEL"}
+                          style={{
+                            display: "flex", alignItems: "center", justifyContent: "center", gap: "10px",
+                            padding: "14px 10px", borderRadius: "10px", cursor: "pointer",
+                            border: provider === "AIRTEL" ? "2px solid #E4002B" : "1px solid rgba(255,255,255,0.15)",
+                            backgroundColor: provider === "AIRTEL" ? "rgba(228,0,43,0.12)" : "rgba(255,255,255,0.03)",
+                            boxShadow: provider === "AIRTEL" ? "0 0 0 3px rgba(228,0,43,0.12)" : "none",
+                            transition: "all 0.2s",
+                          }}
+                        >
+                          <span style={{
+                            width: "36px", height: "36px", borderRadius: "50%", backgroundColor: "#E4002B",
+                            color: "#fff", display: "flex", alignItems: "center", justifyContent: "center",
+                            fontWeight: 900, fontSize: "17px", flexShrink: 0,
+                          }}>A</span>
+                          <span style={{ color: "#fff", fontWeight: 700, fontSize: "13px" }}>Airtel Money</span>
+                        </button>
+                      </div>
+
+                      <label style={labelStyle}>2. Number to withdraw from</label>
+                      <input
+                        style={inputStyle}
+                        type="tel"
+                        inputMode="tel"
+                        autoComplete="tel"
+                        placeholder="e.g. 0755 123 456"
+                        value={payPhone}
+                        onChange={(e) => setPayPhone(e.target.value)}
+                      />
+                      <p style={{ fontSize: "11px", color: "#6b7280", margin: "6px 0 16px" }}>
+                        Enter the MTN or Airtel number that will receive the payment prompt.
+                      </p>
+
+                      <button
+                        type="button"
+                        onClick={handlePay}
+                        disabled={paying}
+                        className="serenity-gold-btn"
+                        style={{
+                          width: "100%", padding: "15px", borderRadius: "8px", fontSize: "13px",
+                          fontWeight: 800, letterSpacing: "1px", textTransform: "uppercase", border: "none",
+                          cursor: paying ? "wait" : "pointer", opacity: paying ? 0.7 : 1,
+                        }}
+                      >
+                        {paying ? "Sending payment prompt…" : "Confirm & Pay"}
+                      </button>
+                      <p style={{ fontSize: "11px", color: "#6b7280", textAlign: "center", margin: "10px 0 0" }}>
+                        A prompt will appear on your phone — approve it to complete payment.
+                      </p>
+                    </div>
+                  )}
+
                   {payError && (
                     <div
                       role="alert"
@@ -604,12 +785,12 @@ function BookingFormInner() {
                       opacity: paying ? 0.7 : 1,
                     }}
                   >
-                    <i className={paying ? "fas fa-spinner fa-spin" : "fas fa-mobile-alt"} style={{ fontSize: "16px" }}></i>
-                    {paying ? "Starting secure payment…" : "Pay with MTN / Airtel Money"}
+                    <i className={paymentOpen ? "fas fa-chevron-up" : "fas fa-mobile-alt"} style={{ fontSize: "16px" }}></i>
+                    {paymentOpen ? "Hide payment options" : "Pay with MTN / Airtel Money"}
                   </button>
 
                   <p style={{ fontSize: "12px", color: "#6b7280", textAlign: "center", margin: "12px 0 0" }}>
-                    Secure payment via PawaPay • MTN MoMo &amp; Airtel Money • Booking confirmed only after payment
+                    Secure on-page payment via PawaPay • MTN MoMo &amp; Airtel Money • Confirmed only after payment
                   </p>
                 </form>
               </div>
@@ -630,7 +811,7 @@ function BookingFormInner() {
                   </h3>
                   {[
                     { step: "1", title: "Fill Details", desc: "Choose your therapy, date and preferred time slot." },
-                    { step: "2", title: "Pay Securely", desc: "Pay with MTN MoMo or Airtel Money on PawaPay's secure page." },
+                    { step: "2", title: "Pay Securely", desc: "Choose MTN or Airtel and approve the prompt right here on this page." },
                     { step: "3", title: "Present On Arrival", desc: "Show your booking reference to reception and enjoy." },
                   ].map((s) => (
                     <div key={s.step} style={{ display: "flex", gap: "14px", marginBottom: "16px" }}>
@@ -727,9 +908,9 @@ function BookingFormInner() {
                       width: "60px",
                       height: "60px",
                       borderRadius: "50%",
-                      backgroundColor: "rgba(37,211,102,0.15)",
-                      border: "2px solid #25D366",
-                      color: "#25D366",
+                      backgroundColor: paymentStatus === "CONFIRMED" ? "rgba(37,211,102,0.15)" : "rgba(194,167,78,0.15)",
+                      border: `2px solid ${paymentStatus === "CONFIRMED" ? "#25D366" : "#c2a74e"}`,
+                      color: paymentStatus === "CONFIRMED" ? "#25D366" : "#c2a74e",
                       fontSize: "26px",
                       display: "flex",
                       alignItems: "center",
@@ -737,10 +918,10 @@ function BookingFormInner() {
                       margin: "0 auto 12px",
                     }}
                   >
-                    ✓
+                    {paymentStatus === "CONFIRMED" ? "✓" : <i className="fas fa-mobile-alt" style={{ fontSize: "24px" }}></i>}
                   </div>
                   <h2 style={{ fontFamily: "Cormorant, serif", fontSize: "2rem", color: "#ffffff", margin: "0 0 6px 0", fontWeight: 700 }}>
-                    Complete Your Payment
+                    {paymentStatus === "CONFIRMED" ? "Booking Confirmed" : "Complete Your Payment"}
                   </h2>
                   <p style={{ color: "#c2a74e", fontSize: "13px", margin: 0, letterSpacing: "1px", textTransform: "uppercase", fontWeight: 700 }}>
                     Reference #{bookingSummary.id}
@@ -812,15 +993,37 @@ function BookingFormInner() {
                           <span style={{ color: "#9ca3af" }}>Date &amp; Time:</span>
                           <strong style={{ color: "#ffffff" }}>{bookingSummary.date} at {bookingSummary.time}</strong>
                         </div>
-                        <div style={{ display: "flex", justifyContent: "space-between" }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                           <span style={{ color: "#9ca3af" }}>Payment Status:</span>
-                          <span style={{ color: "#f59e0b", fontWeight: 700, backgroundColor: "rgba(245,158,11,0.12)", padding: "2px 8px", borderRadius: "4px", fontSize: "11px" }}>
-                            Awaiting Mobile Money Payment
+                          <span
+                            style={{
+                              color: paymentStatus === "CONFIRMED" ? "#25D366" : "#f59e0b",
+                              fontWeight: 700,
+                              backgroundColor: paymentStatus === "CONFIRMED" ? "rgba(37,211,102,0.12)" : "rgba(245,158,11,0.12)",
+                              padding: "2px 8px", borderRadius: "4px", fontSize: "11px",
+                            }}
+                          >
+                            {paymentStatus === "CONFIRMED" ? "Paid & Confirmed" : "Awaiting Mobile Money Payment"}
                           </span>
                         </div>
                       </div>
                     </div>
                   </div>
+
+                  {paymentNotice && (
+                    <div
+                      role="status"
+                      style={{
+                        backgroundColor: paymentStatus === "CONFIRMED" ? "rgba(37,211,102,0.1)" : "rgba(194,167,78,0.1)",
+                        border: `1px solid ${paymentStatus === "CONFIRMED" ? "rgba(37,211,102,0.4)" : "rgba(194,167,78,0.4)"}`,
+                        color: paymentStatus === "CONFIRMED" ? "#86efac" : "#c2a74e",
+                        borderRadius: "8px", padding: "12px 14px", fontSize: "13px",
+                        textAlign: "center", margin: "0 0 16px",
+                      }}
+                    >
+                      {paymentNotice}
+                    </div>
+                  )}
 
                   <p style={{ fontSize: "12px", color: "#9ca3af", textAlign: "center", margin: "0 0 16px" }}>
                     Your booking is confirmed automatically once PawaPay verifies your payment.{" "}
@@ -963,6 +1166,14 @@ function BookingFormInner() {
         @media (max-width: 600px) {
           .form-row {
             grid-template-columns: 1fr !important;
+          }
+        }
+        @media (max-width: 480px) {
+          .inline-pay-panel { padding: 16px !important; }
+          .pay-networks button {
+            flex-direction: column;
+            gap: 6px;
+            padding: 12px 4px;
           }
         }
       `}</style>

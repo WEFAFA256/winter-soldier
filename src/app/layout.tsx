@@ -17,6 +17,15 @@ export const metadata: Metadata = {
     description: "Luxury massage and wellness treatments in Kampala, Uganda.",
   },
   twitter: { card: "summary_large_image" },
+  icons: {
+    icon: [
+      { url: "/assets/images/favicons/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+      { url: "/assets/images/favicons/favicon-16x16.png", sizes: "16x16", type: "image/png" },
+      { url: "/favicon.ico", sizes: "any" },
+    ],
+    apple: { url: "/assets/images/favicons/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+  },
+  manifest: "/assets/images/favicons/site.webmanifest",
 };
 
 export default function RootLayout({
