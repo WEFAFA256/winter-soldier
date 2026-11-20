@@ -80,7 +80,7 @@ function SectionTitle({
       >
         {tagline}
       </span>
-      <h2
+      <h1
         style={{
           fontFamily: SERIF,
           fontSize: "clamp(1.9rem, 4vw, 3rem)",
@@ -93,7 +93,7 @@ function SectionTitle({
         }}
       >
         {title}
-      </h2>
+      </h1>
       <div
         style={{
           width: "72px",
@@ -155,13 +155,7 @@ function Reveal({
 
 export default function EscortsPage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [heroVisible, setHeroVisible] = React.useState(false);
   const [filter, setFilter] = useState<"all" | "available" | "engaged">("all");
-
-  React.useEffect(() => {
-    const t = setTimeout(() => setHeroVisible(true), 80);
-    return () => clearTimeout(t);
-  }, []);
 
   const shownCompanions = companions.filter((c) =>
     filter === "all"
@@ -195,10 +189,6 @@ export default function EscortsPage() {
           70% { box-shadow: 0 0 0 7px rgba(16,185,129,0); }
           100% { box-shadow: 0 0 0 0 rgba(16,185,129,0); }
         }
-        @keyframes escortScrollCue {
-          0% { transform: translateY(0); opacity: 0.9; }
-          100% { transform: translateY(10px); opacity: 0; }
-        }
         .escort-status-pulse { animation: escortStatusPulse 2s infinite; }
         .escort-companion-card {
           transition: transform 0.45s cubic-bezier(0.16,1,0.3,1), border-color 0.3s ease, box-shadow 0.45s ease;
@@ -226,14 +216,9 @@ export default function EscortsPage() {
           background-clip: text;
           animation: escortGoldShimmer 5s linear infinite;
         }
-        .escort-scroll-cue { animation: escortScrollCue 1.8s ease-in-out infinite; }
         .escort-filter-pill { transition: all 0.25s ease; }
         .escort-filter-pill:hover { border-color: rgba(194,167,78,0.8) !important; color: #f5e199 !important; }
         @media (max-width: 991px) {
-          .escort-hero { min-height: 600px !important; padding-top: 100px !important; }
-          .escort-intro-grid { grid-template-columns: 1fr !important; gap: 24px !important; }
-          .escort-trust-strip { flex-direction: column !important; gap: 18px !important; }
-          .escort-trust-divider { display: none !important; }
           .escort-timeline-line { display: none !important; }
         }
       `}</style>
@@ -280,230 +265,8 @@ export default function EscortsPage() {
           <MobileDrawer isOpen={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} />
         </header>
 
-        {/* ─── NEW CINEMATIC HERO ─── */}
-        <div
-          className="escort-hero"
-          style={{
-            position: "relative",
-            minHeight: "680px",
-            paddingTop: "133px",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            overflow: "hidden",
-          }}
-        >
-          <div
-            style={{
-              position: "absolute", inset: 0,
-              backgroundImage: "url('https://res.cloudinary.com/njzctr4m/image/upload/v1784667206/serenity_gallery/u7wll8tto5yxjt4ptcbl.jpg')",
-              backgroundSize: "cover", backgroundPosition: "center 22%",
-              transform: heroVisible ? "scale(1)" : "scale(1.1)",
-              transition: "transform 1.8s cubic-bezier(0.16,1,0.3,1)",
-              filter: "brightness(0.3) saturate(0.85)",
-            }}
-          />
-          <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(14,19,23,0.65) 0%, rgba(14,19,23,0.35) 40%, #0e1317 100%)" }} />
-          <div style={{ position: "absolute", inset: 0, background: "radial-gradient(ellipse at 50% 45%, rgba(194,167,78,0.1) 0%, transparent 62%)" }} />
-          <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "2px", background: "linear-gradient(90deg, transparent, #c2a74e, transparent)" }} />
-          <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: "2px", background: "linear-gradient(90deg, transparent, #c2a74e, transparent)" }} />
-
-          <div style={{ position: "relative", zIndex: 2, textAlign: "center", padding: "40px 24px 80px", maxWidth: "900px" }}>
-            {/* eyebrow drops from above */}
-            <div
-              style={{
-                opacity: heroVisible ? 1 : 0,
-                transform: heroVisible ? "translateY(0)" : "translateY(-60px)",
-                transition: "opacity 900ms ease 120ms, transform 900ms cubic-bezier(0.16,1,0.3,1) 120ms",
-                marginBottom: "18px",
-              }}
-            >
-              <span style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "4px", textTransform: "uppercase", color: "rgba(232,217,176,0.75)" }}>
-                The Serenity Spa · Kampala
-              </span>
-            </div>
-
-            <div
-              style={{
-                opacity: heroVisible ? 1 : 0,
-                transform: heroVisible ? "translateY(0)" : "translateY(-40px)",
-                transition: "opacity 900ms ease 260ms, transform 900ms cubic-bezier(0.16,1,0.3,1) 260ms",
-              }}
-            >
-              <span style={{ fontFamily: SCRIPT, fontSize: "clamp(2.2rem, 5vw, 3.2rem)", lineHeight: 1, color: GOLD, display: "block", marginBottom: "10px" }}>
-                Private Companionship
-              </span>
-            </div>
-
-            {/* title rises through a curtain that sweeps out of its own wrapper */}
-            <div
-              style={{
-                position: "relative", display: "inline-block", overflow: "hidden",
-                opacity: heroVisible ? 1 : 0,
-                transform: heroVisible ? "translateY(0)" : "translateY(70px)",
-                transition: "opacity 1200ms ease 400ms, transform 1200ms cubic-bezier(0.16,1,0.3,1) 400ms",
-                padding: "0 8px",
-              }}
-            >
-              <h1
-                className="escort-gold-title"
-                style={{
-                  fontFamily: SERIF, fontSize: "clamp(3rem, 8vw, 5.6rem)", fontWeight: 700,
-                  lineHeight: 1.05, letterSpacing: "0.03em", textTransform: "uppercase",
-                  margin: "6px 0 0", whiteSpace: "nowrap",
-                }}
-              >
-                Escort Services
-              </h1>
-              <span
-                aria-hidden="true"
-                style={{
-                  position: "absolute", inset: 0, backgroundColor: "#0e1317", zIndex: 2,
-                  transform: heroVisible ? "translateX(101%)" : "translateX(0)",
-                  transition: "transform 1000ms cubic-bezier(0.858,0.01,0.068,0.99) 450ms",
-                }}
-              />
-            </div>
-
-            <div
-              style={{
-                width: "110px", height: "2px", margin: "26px auto",
-                background: "linear-gradient(90deg, transparent, #c2a74e, transparent)",
-                position: "relative",
-              }}
-            >
-              <span style={{ position: "absolute", left: "50%", top: "50%", width: "7px", height: "7px", background: GOLD, transform: "translate(-50%,-50%) rotate(45deg)" }} />
-            </div>
-
-            <p
-              style={{
-                fontFamily: SERIF, fontStyle: "italic",
-                fontSize: "clamp(1.05rem, 2.4vw, 1.35rem)",
-                color: "rgba(232,217,176,0.85)", maxWidth: "620px", margin: "0 auto",
-                lineHeight: 1.7,
-                opacity: heroVisible ? 1 : 0,
-                transform: heroVisible ? "translateY(0)" : "translateY(40px)",
-                transition: "opacity 1500ms ease 650ms, transform 1500ms cubic-bezier(0.16,1,0.3,1) 650ms",
-              }}
-            >
-              Exclusive, discreet, and utterly refined — curated companionship for the discerning gentleman.
-            </p>
-
-            <div
-              style={{
-                display: "flex", gap: "14px", justifyContent: "center", flexWrap: "wrap", marginTop: "34px",
-                opacity: heroVisible ? 1 : 0,
-                transform: heroVisible ? "translateY(0)" : "translateY(40px)",
-                transition: "opacity 1500ms ease 800ms, transform 1500ms cubic-bezier(0.16,1,0.3,1) 800ms",
-              }}
-            >
-              <a
-                href="#companions"
-                style={{
-                  display: "inline-flex", alignItems: "center", gap: "10px", padding: "14px 30px",
-                  background: `linear-gradient(135deg, ${GOLD}, #d4af37, ${GOLD})`, backgroundSize: "200% auto",
-                  color: "#0e1317", borderRadius: "4px", textDecoration: "none", fontWeight: 800,
-                  fontSize: "11px", letterSpacing: "1.6px", textTransform: "uppercase",
-                  animation: "escortGoldShimmer 4s linear infinite",
-                  boxShadow: "0 10px 30px rgba(194,167,78,0.3)",
-                }}
-              >
-                <i className="fas fa-user-check" style={{ fontSize: "13px" }} /> Meet the Companions
-              </a>
-              <a
-                href={waLink("Hello, I would like to enquire about your escort companionship services at The Serenity Spa.")}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{
-                  display: "inline-flex", alignItems: "center", gap: "10px", padding: "14px 30px",
-                  background: "rgba(14,19,23,0.5)", color: CREAM, borderRadius: "4px",
-                  textDecoration: "none", fontWeight: 700, fontSize: "11px", letterSpacing: "1.6px",
-                  textTransform: "uppercase", border: "1px solid rgba(194,167,78,0.55)",
-                  backdropFilter: "blur(4px)",
-                }}
-              >
-                <i className="fab fa-whatsapp" style={{ fontSize: "15px" }} /> WhatsApp Concierge
-              </a>
-            </div>
-          </div>
-
-          <a
-            href="#intro"
-            aria-label="Scroll to introduction"
-            style={{
-              position: "absolute", bottom: "26px", left: "50%", transform: "translateX(-50%)",
-              zIndex: 3, color: GOLD, fontSize: "20px", opacity: 0.85,
-            }}
-          >
-            <i className="fas fa-chevron-down escort-scroll-cue" />
-          </a>
-        </div>
-
-        {/* ─── DISCRETION STRIP (new) ─── */}
-        <div
-          className="escort-trust-strip"
-          style={{
-            display: "flex", alignItems: "center", justifyContent: "center", gap: "0",
-            padding: "26px 24px", background: "#0a0e12",
-            borderTop: "1px solid rgba(194,167,78,0.12)", borderBottom: "1px solid rgba(194,167,78,0.12)",
-          }}
-        >
-          {[
-            { icon: "fa-shield-alt", text: "Verified companion profiles" },
-            { icon: "fa-user-secret", text: "Absolute discretion, always" },
-            { icon: "fa-clock", text: "Concierge available 24/7" },
-          ].map((item, i) => (
-            <React.Fragment key={item.text}>
-              {i > 0 && <div className="escort-trust-divider" style={{ width: "1px", height: "34px", background: "rgba(194,167,78,0.22)", margin: "0 42px" }} />}
-              <Reveal delay={i * 120} offset={24}>
-                <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                  <i className={`fas ${item.icon}`} style={{ color: GOLD, fontSize: "18px" }} />
-                  <span style={{ fontFamily: SERIF, fontSize: "1.05rem", letterSpacing: "0.03em", color: CREAM, whiteSpace: "nowrap" }}>
-                    {item.text}
-                  </span>
-                </div>
-              </Reveal>
-            </React.Fragment>
-          ))}
-        </div>
-
-        {/* ─── INTRO (two-column editorial) ─── */}
-        <section id="intro" style={{ padding: "110px 0 90px", background: "#0e1317" }}>
-          <div className="container">
-            <div className="escort-intro-grid" style={{ display: "grid", gridTemplateColumns: "0.85fr 1.15fr", gap: "70px", alignItems: "start" }}>
-              <Reveal offset={60}>
-                <div style={{ borderLeft: "2px solid rgba(194,167,78,0.5)", paddingLeft: "28px" }}>
-                  <SectionTitle tagline="The Serenity Experience" title="Discreet. Elegant. Unforgettable." align="left" style={{ marginBottom: 0 }} />
-                </div>
-              </Reveal>
-              <Reveal delay={140} offset={60}>
-                <div>
-                  <p style={{ color: "rgba(196,207,222,0.85)", fontSize: "clamp(1.05rem, 1.8vw, 1.2rem)", lineHeight: 1.9, margin: "0 0 22px", fontFamily: SERIF }}>
-                    At The Serenity Spa, our escort service offers a level of sophistication and discretion that is simply unmatched. Whether you require an elegant companion for a corporate gala, a private dinner, a social event, or a memorable getaway — our curated companions are selected for their poise, intellect, and natural charm.
-                  </p>
-                  <p style={{ color: "rgba(196,207,222,0.6)", fontSize: "clamp(1rem, 1.6vw, 1.1rem)", lineHeight: 1.9, margin: 0, fontFamily: SERIF, fontStyle: "italic" }}>
-                    Every engagement is conducted with absolute confidentiality and the highest standards of professionalism. Your privacy is our paramount commitment.
-                  </p>
-                  <div style={{ display: "flex", gap: "30px", marginTop: "34px", flexWrap: "wrap" }}>
-                    {[
-                      { n: "04", l: "Curated companions" },
-                      { n: "100%", l: "Confidential" },
-                      { n: "24/7", l: "Concierge support" },
-                    ].map((s) => (
-                      <div key={s.l}>
-                        <div style={{ fontFamily: SERIF, fontSize: "1.9rem", fontWeight: 700, color: GOLD, lineHeight: 1 }}>{s.n}</div>
-                        <div style={{ fontSize: "10px", letterSpacing: "1.4px", textTransform: "uppercase", color: "rgba(196,207,222,0.55)", marginTop: "6px" }}>{s.l}</div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </Reveal>
-            </div>
-          </div>
-        </section>
-
         {/* ─── COMPANIONS GRID + FILTER ─── */}
-        <section id="companions" style={{ padding: "20px 0 110px", background: "#0e1317" }}>
+        <section id="companions" style={{ padding: "150px 0 110px", background: "#0e1317" }}>
           <div className="container">
             <Reveal offset={50}>
               <SectionTitle tagline="Our Companions" title="Meet the Elite" />

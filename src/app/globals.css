@@ -116,6 +116,45 @@ img {
   display: none !important;
 }
 
+/* ─── Mobile hamburger: real, visible, comfortably tappable touch target ─── */
+.mobile-nav__btn {
+  position: relative !important;
+  width: 44px !important;
+  height: 44px !important;
+  min-width: 44px !important;
+  max-width: 44px !important;
+  min-height: 44px !important;
+  max-height: 44px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-direction: column !important;
+  flex-wrap: nowrap !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  background: rgba(14, 19, 23, 0.55) !important;
+  border: 1px solid rgba(194, 167, 78, 0.45) !important;
+  border-radius: 10px !important;
+  backdrop-filter: blur(4px) !important;
+  -webkit-backdrop-filter: blur(4px) !important;
+  z-index: 40 !important;
+}
+.mobile-nav__btn span {
+  position: absolute !important;
+  left: 11px !important;
+  width: 22px !important;
+  height: 2px !important;
+  background: #f5e199 !important;
+  border-radius: 2px !important;
+}
+.mobile-nav__btn span:nth-child(1) { top: 13px !important; }
+.mobile-nav__btn span:nth-child(2) { top: 21px !important; }
+.mobile-nav__btn span:nth-child(3) { top: 29px !important; }
+.mobile-nav__toggler {
+  width: 44px !important;
+  height: 44px !important;
+}
+
 /* ─── Hide Topbar / Header-Top Bars (not part of our design) ─── */
 .main-header__topbar,
 .topbar,
