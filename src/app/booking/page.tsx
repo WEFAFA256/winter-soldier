@@ -74,8 +74,8 @@ function detectProvider(phone: string): "MTN" | "AIRTEL" | null {
   if (p.startsWith("2560")) p = "256" + p.slice(4);
   if (!/^256\d{9}$/.test(p)) return null;
   const prefix = p.slice(3, 5);
-  if (["77", "78", "79"].includes(prefix)) return "MTN";
-  if (["75", "76", "70"].includes(prefix)) return "AIRTEL";
+  if (["76", "77", "78", "79"].includes(prefix)) return "MTN";
+  if (["70", "74", "75"].includes(prefix)) return "AIRTEL";
   return null;
 }
 
@@ -779,10 +779,16 @@ function BookingFormInner() {
                           }}
                         >
                           <span style={{
-                            width: "36px", height: "36px", borderRadius: "50%", backgroundColor: "#E4002B",
-                            color: "#fff", display: "flex", alignItems: "center", justifyContent: "center",
-                            fontWeight: 900, fontSize: "17px", flexShrink: 0,
-                          }}>A</span>
+                            width: "36px", height: "36px", borderRadius: "50%", backgroundColor: "#ffffff",
+                            display: "flex", alignItems: "center", justifyContent: "center",
+                            flexShrink: 0, padding: "5px",
+                          }}>
+                            <img
+                              src="/assets/images/payments/airtel-logo.svg"
+                              alt=""
+                              style={{ width: "100%", height: "100%", objectFit: "contain" }}
+                            />
+                          </span>
                           <span style={{ color: "#fff", fontWeight: 700, fontSize: "13px" }}>Airtel Money</span>
                         </button>
                       </div>
