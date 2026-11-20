@@ -3,6 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import { v2 as cloudinary } from 'cloudinary';
 import { isAdmin } from '@/lib/admin-auth';
+import { validateImage } from '@/lib/image-validation';
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME || process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
@@ -49,11 +50,23 @@ export async function GET() {
         src,
         alt: matched?.alt || resource.context?.custom?.alt || 'Serenity Spa Gallery',
         delay: 'delay-100',
-        availability: matched?.availability || 'available',
+        // Cloudinary context is the source of truth — Vercel's filesystem is
+        // read-only, so a local JSON write can never persist availability.
+        availability: resource.context?.custom?.availability === 'in-session'
+          ? 'in-session'
+          : resource.context?.custom?.availability === 'available'
+            ? 'available'
+            : matched?.availability || 'available',
       };
     });
 
-    const combined = [...cloudinaryImages, ...localImages];
+    // Only keep genuinely local images; stale local copies of Cloudinary images
+    // would otherwise resurrect deleted photos on every read.
+    const localOnly = localImages.filter((img: any) =>
+      !String(img.id || '').startsWith('serenity_gallery/') &&
+      !String(img.src || '').includes('res.cloudinary.com')
+    );
+    const combined = [...cloudinaryImages, ...localOnly];
 
     // Deduplicate by src / id
     const seen = new Set();
@@ -96,19 +109,20 @@ export async function POST(req: Request) {
     if (file.size > 10 * 1024 * 1024) {
       return NextResponse.json({ error: 'Image is too large (max 10 MB)' }, { status: 413 });
     }
-    if (file.type && !['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/avif'].includes(file.type)) {
-      return NextResponse.json({ error: 'Only JPG, PNG, WebP, GIF or AVIF images are allowed' }, { status: 415 });
-    }
 
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
+    const invalid = validateImage({ type: file.type, size: file.size }, buffer);
+    if (invalid) {
+      return NextResponse.json({ error: invalid }, { status: 415 });
+    }
 
     const uploadResult: any = await new Promise((resolve, reject) => {
       const stream = cloudinary.uploader.upload_stream(
         {
           folder: 'serenity_gallery',
           resource_type: 'image',
-          context: `alt=${alt}`,
+          context: `alt=${alt}|availability=available`,
         },
         (error, result) => {
           if (error) reject(error);
@@ -154,7 +168,20 @@ export async function PATCH(req: Request) {
       return NextResponse.json({ error: 'A valid gallery id and availability are required' }, { status: 400 });
     }
 
-    // Update in gallery.json
+    // Cloudinary context is the durable store — Vercel's filesystem is
+    // read-only, so writing gallery.json alone never survives a redeploy.
+    let alt = 'Serenity Spa Gallery';
+    try {
+      const resource: any = await cloudinary.api.resource(id);
+      alt = resource?.context?.custom?.alt || alt;
+    } catch (e) {
+      console.error('Could not read Cloudinary context for', id, e);
+    }
+    await cloudinary.api.update(id, {
+      context: `alt=${alt}|availability=${availability}`,
+    });
+
+    // Best-effort mirror for local development.
     try {
       const local = readLocalData();
       let updated = false;
@@ -165,13 +192,10 @@ export async function PATCH(req: Request) {
         }
         return img;
       });
-      if (!updated) {
-        // Append if not found (edge case for Cloudinary-only images not in local JSON)
-        newLocal.push({ id, availability });
-      }
+      if (!updated) newLocal.push({ id, availability });
       fs.writeFileSync(dataFilePath, JSON.stringify(newLocal, null, 2), 'utf8');
     } catch (e) {
-      console.error('Error writing gallery.json:', e);
+      console.error('Error writing gallery.json (non-fatal):', e);
     }
 
     return NextResponse.json({ message: 'Availability updated', id, availability });

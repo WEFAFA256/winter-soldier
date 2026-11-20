@@ -46,7 +46,12 @@ const EMAIL = "theserenityspakla@gmail.com";
 
 // Real booking + MTN/Airtel payment API (Cloudflare Worker). The PawaPay
 // callback URL registered in the dashboard points to this same host.
-const PAY_API = "https://serenity-pawapay-webhook.turyatembajohn905.workers.dev";
+const PAY_API = (
+  process.env.NEXT_PUBLIC_PAY_API_URL ||
+  "https://serenity-pawapay-webhook.turyatembajohn905.workers.dev"
+).replace(/\/$/, "");
+const MAX_LEAD_DAYS = 90;
+const MIN_LEAD_MINUTES = 30;
 
 function to24Hour(value: string) {
   const m = value.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
@@ -61,9 +66,23 @@ function formatPrice(p: number | string) {
   return isNaN(num) ? String(p) : `UGX ${num.toLocaleString()}`;
 }
 
+// Kampala is UTC+3 year-round. Using UTC "today" would offer yesterday's date
+// between midnight and 3am local time.
+function kampalaNow() {
+  const d = new Date(Date.now() + 3 * 60 * 60 * 1000);
+  return {
+    date: d.toISOString().slice(0, 10),
+    minutes: d.getUTCHours() * 60 + d.getUTCMinutes(),
+  };
+}
+
 function getTodayString() {
-  const d = new Date();
-  return d.toISOString().split("T")[0];
+  return kampalaNow().date;
+}
+
+function slotMinutes(hhmm: string) {
+  const [h, m] = hhmm.split(":").map(Number);
+  return h * 60 + m;
 }
 
 // Ugandan MoMo prefixes. Used to catch a wrong-network number in the browser
@@ -140,6 +159,8 @@ function BookingFormInner() {
   const [apiServices, setApiServices] = useState<{
     id: string; title: string; price_ugx: number; duration_minutes: number;
   }[]>([]);
+  const [servicesError, setServicesError] = useState("");
+  const [takenSlots, setTakenSlots] = useState<string[]>([]);
   const [paying, setPaying] = useState(false);
   const [payError, setPayError] = useState("");
 
@@ -154,12 +175,34 @@ function BookingFormInner() {
   // prompt, so aborting the PIN prompt cannot cause an endless loop.
   const [pollStopped, setPollStopped] = useState(false);
 
-  useEffect(() => {
-    fetch(`${PAY_API}/api/services`)
+  const loadServices = () => {
+    setServicesError("");
+    fetch(`${PAY_API}/api/services`, { cache: "no-store" })
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error("services unavailable"))))
-      .then((d) => { if (Array.isArray(d.services)) setApiServices(d.services); })
-      .catch(() => { /* keep fallback list; pay button will explain */ });
-  }, []);
+      .then((d) => {
+        if (!Array.isArray(d.services) || d.services.length === 0) {
+          throw new Error("no services");
+        }
+        setApiServices(d.services);
+      })
+      .catch(() => {
+        setServicesError("We could not load live prices. Please retry — do not submit a payment until prices are shown.");
+      });
+  };
+
+  useEffect(() => { loadServices(); }, []);
+
+  // Show which slots are already booked BEFORE the customer enters wallet
+  // details. D1 remains authoritative; the server still returns 409 on a race.
+  useEffect(() => {
+    if (!form.date || submitted) { setTakenSlots([]); return; }
+    let active = true;
+    fetch(`${PAY_API}/api/availability?date=${encodeURIComponent(form.date)}`, { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error("unavailable"))))
+      .then((d) => { if (active) setTakenSlots(Array.isArray(d.taken) ? d.taken : []); })
+      .catch(() => { if (active) setTakenSlots([]); });
+    return () => { active = false; };
+  }, [form.date, submitted]);
 
   // Sync service from URL if provided
   useEffect(() => {
@@ -176,6 +219,13 @@ function BookingFormInner() {
     (s) => s.name.toLowerCase() === form.service.toLowerCase()
   );
 
+  const nowEAT = kampalaNow();
+  const timeOptions = TIME_SLOTS.filter((t) =>
+    form.date !== nowEAT.date || slotMinutes(to24Hour(t)) >= nowEAT.minutes + MIN_LEAD_MINUTES
+  );
+  const maxDate = new Date(Date.now() + MAX_LEAD_DAYS * 24 * 60 * 60 * 1000 + 3 * 60 * 60 * 1000)
+    .toISOString().slice(0, 10);
+
   function handleChange(
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ) {
@@ -186,6 +236,7 @@ function BookingFormInner() {
   // no payment request is made until the customer confirms the wallet number.
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (paying) return;
     setPayError("");
     setPaymentNotice("");
     if (!form.name.trim() || !form.phone.trim() || !form.service || !form.date || !form.time) {
@@ -201,13 +252,23 @@ function BookingFormInner() {
       return;
     }
     if (!selectedService.id) {
-      setPayError("Prices are still loading. Refresh the page and try again.");
+      setPayError(servicesError || "Prices are still loading. Refresh the page and try again.");
+      return;
+    }
+    const hhmm = to24Hour(form.time);
+    if (form.date === getTodayString() && slotMinutes(hhmm) < kampalaNow().minutes + MIN_LEAD_MINUTES) {
+      setPayError("That time has already passed today. Choose a later slot.");
+      return;
+    }
+    if (takenSlots.includes(hhmm)) {
+      setPayError("That time slot is already taken. Pick another time.");
       return;
     }
     setPaymentOpen((open) => !open);
   }
 
   async function handlePay() {
+    if (paying) return;
     setPayError("");
     setPollStopped(false);
     if (!provider) {
@@ -233,6 +294,7 @@ function BookingFormInner() {
     }
 
     setPaying(true);
+    let createdBookingId: string | null = null;
     try {
       // Amount is taken from D1 by serviceId on the server — never from here.
       const createdRes = await fetch(`${PAY_API}/api/bookings`, {
@@ -252,6 +314,7 @@ function BookingFormInner() {
       if (!createdRes.ok || !created.bookingId) {
         throw new Error(created.error || "Could not reserve your slot. Please try again.");
       }
+      createdBookingId = created.bookingId;
 
       const payRes = await fetch(
         `${PAY_API}/api/bookings/${encodeURIComponent(created.bookingId)}/pay`,
@@ -283,6 +346,15 @@ function BookingFormInner() {
       );
       setSubmitted(true);
     } catch (err) {
+      // If the booking was created but the prompt failed, release our own slot
+      // so the customer's retry does not collide with their own pending row.
+      if (createdBookingId) {
+        try {
+          await fetch(`${PAY_API}/api/bookings/${encodeURIComponent(createdBookingId)}/cancel`, {
+            method: "POST",
+          });
+        } catch { /* best effort; the Worker also expires stale holds */ }
+      }
       setPayError(err instanceof Error ? err.message : "Payment could not be started.");
     } finally {
       setPaying(false);
@@ -373,10 +445,9 @@ function BookingFormInner() {
     if (submitted && bookingSummary && canvasRef.current) {
       const qrData = [
         `THE SERENITY SPA KAMPALA`,
-        `BOOKING CONFIRMATION`,
+        `BOOKING REFERENCE`,
         `Booking ID: ${bookingSummary.id}`,
         `Client: ${bookingSummary.name}`,
-        `Phone: ${bookingSummary.phone}`,
         `Service: ${bookingSummary.service}`,
         `Amount: UGX ${bookingSummary.price.toLocaleString()}`,
         `Date: ${bookingSummary.date}`,
@@ -426,7 +497,7 @@ function BookingFormInner() {
       `🕐 *Time:* ${bookingSummary.time}`,
       bookingSummary.notes ? `📝 *Notes:* ${bookingSummary.notes}` : "",
       ``,
-      `_I have completed booking and payment on the website. Reference: ${bookingSummary.id}_`,
+      `_I made this booking on the website. Payment: ${paymentStatus === "CONFIRMED" ? "confirmed" : "awaiting confirmation"}. Reference: ${bookingSummary.id}_`,
     ]
       .filter(Boolean)
       .join("\n");
@@ -440,7 +511,13 @@ function BookingFormInner() {
     setPollStopped(false);
     setPaymentNotice("");
     setPaymentStatus("PENDING_PAYMENT");
-    setForm({ name: "", phone: "", email: "", service: "", date: "", time: "", notes: "" });
+    setPayError("");
+    setPaying(false);
+    setPaymentOpen(false);
+    setProvider(null);
+    setPayPhone("");
+    setTakenSlots([]);
+    setForm({ name: "", phone: "", email: "", service: initialService, date: "", time: "", notes: "" });
   }
 
   return (
@@ -546,7 +623,7 @@ function BookingFormInner() {
           >
             Book an <span style={{ color: "#c2a74e", fontStyle: "italic" }}>Appointment</span>
           </h1>
-          <p style={{ color: "#9ca3af", fontSize: "14px", marginTop: "8px", maxWidth: "560px", margin: "8px auto 0", lineHeight: 1.6 }}>
+          <p style={{ color: "#9ca3af", fontSize: "14px", maxWidth: "560px", margin: "8px auto 0", lineHeight: 1.6 }}>
             {submitted
               ? "Your reservation pass is generated below with your verification QR code."
               : "Complete the reservation form below to receive your QR verification pass to present on arrival."}
@@ -597,8 +674,9 @@ function BookingFormInner() {
                   {/* Name + Phone */}
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", marginBottom: "18px" }} className="form-row">
                     <div>
-                      <label style={labelStyle}>Full Name *</label>
+                      <label htmlFor="booking-name" style={labelStyle}>Full Name *</label>
                       <input
+                        id="booking-name"
                         style={inputStyle}
                         type="text"
                         name="name"
@@ -609,8 +687,9 @@ function BookingFormInner() {
                       />
                     </div>
                     <div>
-                      <label style={labelStyle}>Phone Number *</label>
+                      <label htmlFor="booking-phone" style={labelStyle}>Phone Number *</label>
                       <input
+                        id="booking-phone"
                         style={inputStyle}
                         type="tel"
                         name="phone"
@@ -624,8 +703,9 @@ function BookingFormInner() {
 
                   {/* Email */}
                   <div style={{ marginBottom: "18px" }}>
-                    <label style={labelStyle}>Email Address (Optional)</label>
+                    <label htmlFor="booking-email" style={labelStyle}>Email Address (Optional)</label>
                     <input
+                      id="booking-email"
                       style={inputStyle}
                       type="email"
                       name="email"
@@ -637,8 +717,9 @@ function BookingFormInner() {
 
                   {/* Service Selection */}
                   <div style={{ marginBottom: "18px" }}>
-                    <label style={labelStyle}>Treatment / Package *</label>
+                    <label htmlFor="booking-service" style={labelStyle}>Treatment / Package *</label>
                     <select
+                      id="booking-service"
                       style={{ ...inputStyle, cursor: "pointer" }}
                       name="service"
                       value={form.service}
@@ -671,25 +752,36 @@ function BookingFormInner() {
                         <strong>{formatPrice(selectedService.price)}</strong>
                       </div>
                     )}
+                    {servicesError && (
+                      <div role="alert" style={{ marginTop: "10px", color: "#fca5a5", fontSize: "12px", lineHeight: 1.5 }}>
+                        {servicesError}{" "}
+                        <button type="button" onClick={loadServices} style={{ background: "none", border: "none", color: "#c2a74e", textDecoration: "underline", cursor: "pointer", fontSize: "12px", padding: 0 }}>
+                          Retry
+                        </button>
+                      </div>
+                    )}
                   </div>
 
                   {/* Date + Time */}
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", marginBottom: "18px" }} className="form-row">
                     <div>
-                      <label style={labelStyle}>Appointment Date *</label>
+                      <label htmlFor="booking-date" style={labelStyle}>Appointment Date *</label>
                       <input
+                        id="booking-date"
                         style={inputStyle}
                         type="date"
                         name="date"
                         min={getTodayString()}
+                        max={maxDate}
                         value={form.date}
                         onChange={handleChange}
                         required
                       />
                     </div>
                     <div>
-                      <label style={labelStyle}>Appointment Time *</label>
+                      <label htmlFor="booking-time" style={labelStyle}>Appointment Time *</label>
                       <select
+                        id="booking-time"
                         style={{ ...inputStyle, cursor: "pointer" }}
                         name="time"
                         value={form.time}
@@ -697,17 +789,28 @@ function BookingFormInner() {
                         required
                       >
                         <option value="">— Select Time —</option>
-                        {TIME_SLOTS.map((t) => (
-                          <option key={t} value={t}>{t}</option>
-                        ))}
+                        {timeOptions.map((t) => {
+                          const taken = takenSlots.includes(to24Hour(t));
+                          return (
+                            <option key={t} value={t} disabled={taken}>
+                              {t}{taken ? " — Taken" : ""}
+                            </option>
+                          );
+                        })}
                       </select>
+                      {timeOptions.length === 0 && (
+                        <p style={{ color: "#fca5a5", fontSize: "12px", margin: "8px 0 0" }}>
+                          No slots remain today. Please choose another date.
+                        </p>
+                      )}
                     </div>
                   </div>
 
                   {/* Notes */}
                   <div style={{ marginBottom: "26px" }}>
-                    <label style={labelStyle}>Special Requests / Allergies</label>
+                    <label htmlFor="booking-notes" style={labelStyle}>Special Requests / Allergies</label>
                     <textarea
+                      id="booking-notes"
                       style={{ ...inputStyle, minHeight: "85px", resize: "vertical" }}
                       name="notes"
                       placeholder="Preferences, focus areas (shoulders, lower back), or specific requests..."
@@ -743,7 +846,7 @@ function BookingFormInner() {
                         )}
                       </div>
 
-                      <label style={labelStyle}>1. Choose your network</label>
+                      <div role="group" aria-label="1. Choose your network" style={labelStyle}>1. Choose your network</div>
                       <div className="pay-networks" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginBottom: "20px" }}>
                         <button
                           type="button"
@@ -793,8 +896,9 @@ function BookingFormInner() {
                         </button>
                       </div>
 
-                      <label style={labelStyle}>2. Number to withdraw from</label>
+                      <label htmlFor="pay-phone" style={labelStyle}>2. Number to withdraw from</label>
                       <input
+                        id="pay-phone"
                         style={inputStyle}
                         type="tel"
                         inputMode="tel"

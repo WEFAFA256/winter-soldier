@@ -15,7 +15,11 @@ interface Booking {
   id: string; deposit_id: string; service_title: string; amount_ugx: number;
   customer_name: string; customer_phone: string; customer_email: string | null;
   booking_date: string; booking_time: string; status: string;
-  created_at: string; confirmed_at: string | null;
+  created_at: string; confirmed_at: string | null; notes?: string | null;
+}
+interface Refund {
+  id: string; deposit_id: string; booking_id: string | null; amount_ugx: number;
+  reason: string | null; status: string; created_at: string;
 }
 
 /* ─── Inline style constants ─────────────────────────────────── */
@@ -121,10 +125,12 @@ export default function AdminGalleryPage() {
 
   /* Bookings */
   const [bookings, setBookings] = useState<Booking[]>([]);
+  const [refunds, setRefunds] = useState<Refund[]>([]);
   const [bookingStatus, setBookingStatus] = useState("");
   const [bookingsError, setBookingsError] = useState("");
   const [bookingsLoading, setBookingsLoading] = useState(false);
   const [cancellingId, setCancellingId] = useState("");
+  const [markingRefund, setMarkingRefund] = useState("");
 
   const [loading, setLoading] = useState(false);
 
@@ -137,8 +143,10 @@ export default function AdminGalleryPage() {
       const qs = status ? `?status=${encodeURIComponent(status)}` : "";
       const res = await fetch(`/api/admin/bookings${qs}`, { credentials: "same-origin" });
       const data = await res.json().catch(() => ({}));
-      if (res.ok) setBookings(data.bookings || []);
-      else setBookingsError(data.error || "Could not load bookings");
+      if (res.ok) {
+        setBookings(data.bookings || []);
+        setRefunds(data.refunds || []);
+      } else setBookingsError(data.error || "Could not load bookings");
     } catch {
       setBookingsError("Could not reach the payments API");
     }
@@ -150,7 +158,7 @@ export default function AdminGalleryPage() {
   }, [auth, tab]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const cancelBooking = async (id: string) => {
-    if (!confirm("Cancel this booking? Any refund must be handled manually.")) return;
+    if (!confirm("Cancel this booking? The time slot will be released. If a payment prompt is already open, cancellation is blocked — contact reception instead.")) return;
     setCancellingId(id);
     try {
       const res = await fetch("/api/admin/bookings", {
@@ -166,6 +174,36 @@ export default function AdminGalleryPage() {
       alert("Network error cancelling booking");
     }
     setCancellingId("");
+  };
+
+  // A payment that completed after a cancellation is recorded as a refund task.
+  // Marking it here records that staff returned the money in PawaPay's dashboard.
+  const markRefund = async (depositId: string) => {
+    if (!confirm("Confirm this deposit was refunded in the PawaPay dashboard?")) return;
+    setMarkingRefund(depositId);
+    try {
+      const res = await fetch("/api/admin/refunds", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+        body: JSON.stringify({ depositId }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) setRefunds((prev) => prev.filter((r) => r.deposit_id !== depositId));
+      else alert(data.error || "Could not record refund");
+    } catch {
+      alert("Network error recording refund");
+    }
+    setMarkingRefund("");
+  };
+
+  const logout = async () => {
+    try {
+      await fetch("/api/admin/login", { method: "DELETE", credentials: "same-origin" });
+    } catch { /* clear local state regardless */ }
+    setAuth(false);
+    setBookings([]);
+    setRefunds([]);
   };
 
   useEffect(() => {
@@ -308,8 +346,8 @@ export default function AdminGalleryPage() {
         {pwErr && <div style={{ background:"#f8514922", border:"1px solid #f8514944", borderRadius:6, padding:"10px 14px", color:C.danger, fontSize:12, marginBottom:16, textAlign:"center" }}>{pwErr}</div>}
 
         <form onSubmit={login}>
-          <label style={{ display:"block", fontSize:11, fontWeight:600, color:C.muted, textTransform:"uppercase", letterSpacing:"0.06em", marginBottom:6 }}>Admin Passkey</label>
-          <input type="password" value={pw} onChange={e=>setPw(e.target.value)} placeholder="Enter your passkey…" required
+          <label htmlFor="admin-passkey" style={{ display:"block", fontSize:11, fontWeight:600, color:C.muted, textTransform:"uppercase", letterSpacing:"0.06em", marginBottom:6 }}>Admin Passkey</label>
+          <input id="admin-passkey" type="password" value={pw} onChange={e=>setPw(e.target.value)} placeholder="Enter your passkey…" required
             style={{ width:"100%", background:C.bg, border:`1px solid ${C.border}`, borderRadius:8, padding:"11px 14px", color:C.text, fontSize:14, marginBottom:16 }} />
           <button type="submit" className="btn-gold" style={{ width:"100%", background:C.gold, color:"#0d1117", border:"none", borderRadius:8, padding:12, fontSize:13, fontWeight:700, letterSpacing:"0.06em", textTransform:"uppercase", cursor:"pointer" }}>
             Unlock Dashboard
@@ -346,7 +384,7 @@ export default function AdminGalleryPage() {
           <BtnGold onClick={saveAll} disabled={saving} style={{ padding:"6px 14px", fontSize:11 }}>
             {saving ? "Saving…" : "💾 Save Changes"}
           </BtnGold>
-          <BtnOutline onClick={()=>setAuth(false)} style={{ padding:"5px 12px", fontSize:11 }}>Log out</BtnOutline>
+          <BtnOutline onClick={logout} style={{ padding:"5px 12px", fontSize:11 }}>Log out</BtnOutline>
         </div>
       </header>
 
@@ -649,6 +687,23 @@ export default function AdminGalleryPage() {
               <div className="admin-pane">
                 <SectionHead title="Bookings" sub="Live bookings from the payments service. A booking is only marked Confirmed after PawaPay verifies the payment." />
 
+                {refunds.length > 0 && (
+                  <div style={{ background:"#f59e0b1c", border:"1px solid #f59e0b55", borderRadius:8, padding:"12px 14px", marginBottom:16 }}>
+                    <div style={{ color:C.gold, fontWeight:700, fontSize:12, marginBottom:8 }}>
+                      ⚠ {refunds.length} payment{refunds.length === 1 ? "" : "s"} received after cancellation — refund required in PawaPay
+                    </div>
+                    {refunds.map(r => (
+                      <div key={r.id} style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:10, fontSize:11, color:C.text, padding:"6px 0", borderTop:"1px solid #f59e0b33", flexWrap:"wrap" }}>
+                        <span>Deposit {r.deposit_id} · {Number(r.amount_ugx||0).toLocaleString()} UGX · {r.reason || "payment after cancellation"}</span>
+                        <button onClick={()=>markRefund(r.deposit_id)} disabled={markingRefund===r.deposit_id}
+                          style={{ background:"transparent", border:`1px solid ${C.gold}`, borderRadius:6, color:C.gold, padding:"4px 10px", fontSize:11, cursor:"pointer" }}>
+                          {markingRefund === r.deposit_id ? "…" : "Mark refunded"}
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
                 <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:16, flexWrap:"wrap" }}>
                   <select value={bookingStatus} onChange={e=>{ setBookingStatus(e.target.value); loadBookings(e.target.value); }}
                     style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:6, padding:"7px 10px", color:C.text, fontSize:12 }}>
@@ -694,7 +749,10 @@ export default function AdminGalleryPage() {
                               <td style={{ padding:"10px 12px", whiteSpace:"nowrap" }}>
                                 {b.booking_date}<br/><span style={{ color:C.muted }}>{b.booking_time}</span>
                               </td>
-                              <td style={{ padding:"10px 12px" }}>{b.service_title}</td>
+                              <td style={{ padding:"10px 12px" }}>
+                                {b.service_title}
+                                {b.notes && <><br/><span style={{ color:C.muted, fontSize:10 }} title={b.notes}>📝 {b.notes.slice(0,40)}{b.notes.length > 40 ? "…" : ""}</span></>}
+                              </td>
                               <td style={{ padding:"10px 12px" }}>
                                 {b.customer_name}
                                 {b.customer_email && <><br/><span style={{ color:C.muted }}>{b.customer_email}</span></>}

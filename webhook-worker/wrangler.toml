@@ -17,12 +17,11 @@ database_id = "e347be07-91a9-486c-b03a-415c42b906c3"
 
 [vars]
 PAWAPAY_API_BASE_URL = "https://api.pawapay.io"
-PAWAPAY_COUNTRY = "UGA"
 PAWAPAY_CURRENCY = "UGX"
 # OPTIONAL: raw callbacks are also forwarded here if the app gains its own handler.
 FORWARD_TO = ""
 # OPTIONAL: linked from the post-payment return page.
 SITE_URL = "https://www.executiveserenityspa.com"
 # Set to e.g. 30 to charge a 30% deposit instead of the full service price.
-# 100 (or unset) charges the full price. Values are rounded up to the next 1,000 UGX.
+# 100 (or unset) charges the full price. Partial deposits round UP to 1,000 UGX.
 PAWAPAY_DEPOSIT_PERCENT = "100"

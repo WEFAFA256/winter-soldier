@@ -1,17 +1,13 @@
 import { NextResponse } from 'next/server';
 import { v2 as cloudinary } from 'cloudinary';
 import { isAdmin } from '@/lib/admin-auth';
+import { validateImage } from '@/lib/image-validation';
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME || process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
-
-const MAX_UPLOAD_BYTES = 10 * 1024 * 1024;
-const ALLOWED_IMAGE_TYPES = new Set([
-  'image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/avif',
-]);
 
 export async function POST(req: Request) {
   try {
@@ -25,15 +21,16 @@ export async function POST(req: Request) {
     if (!file) {
       return NextResponse.json({ error: 'No file uploaded' }, { status: 400 });
     }
-    if (file.size > MAX_UPLOAD_BYTES) {
+    if (file.size > 10 * 1024 * 1024) {
       return NextResponse.json({ error: 'Image is too large (max 10 MB)' }, { status: 413 });
-    }
-    if (file.type && !ALLOWED_IMAGE_TYPES.has(file.type)) {
-      return NextResponse.json({ error: 'Only JPG, PNG, WebP, GIF or AVIF images are allowed' }, { status: 415 });
     }
 
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
+    const invalid = validateImage({ type: file.type, size: file.size }, buffer);
+    if (invalid) {
+      return NextResponse.json({ error: invalid }, { status: 415 });
+    }
 
     const uploadResult: any = await new Promise((resolve, reject) => {
       const stream = cloudinary.uploader.upload_stream(
