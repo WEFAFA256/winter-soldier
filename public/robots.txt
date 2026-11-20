@@ -1,6 +1,0 @@
-User-agent: *
-Allow: /
-Disallow: /api/
-Disallow: /booking/
-
-Sitemap: https://www.executiveserenityspa.com/sitemap.xml

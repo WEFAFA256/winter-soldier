@@ -4,9 +4,19 @@ import FloatingContactButtons from "@/components/FloatingContactButtons";
 import AppShell from "@/components/AppShell";
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"),
   title: "The Serenity Spa || Luxury Massage & Wellness Center",
   description:
     "The Serenity Spa is a premier luxury wellness center offering hydrotherapy, relaxing massages, and holistic treatments.",
+  alternates: { canonical: "/" },
+  openGraph: {
+    type: "website",
+    locale: "en_UG",
+    siteName: "The Serenity Spa",
+    title: "The Serenity Spa || Luxury Massage & Wellness Center",
+    description: "Luxury massage and wellness treatments in Kampala, Uganda.",
+  },
+  twitter: { card: "summary_large_image" },
 };
 
 export default function RootLayout({

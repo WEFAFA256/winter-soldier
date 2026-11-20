@@ -23,3 +23,6 @@ PAWAPAY_CURRENCY = "UGX"
 FORWARD_TO = ""
 # OPTIONAL: linked from the post-payment return page.
 SITE_URL = ""
+# Set to e.g. 30 to charge a 30% deposit instead of the full service price.
+# 100 (or unset) charges the full price. Values are rounded up to the next 1,000 UGX.
+PAWAPAY_DEPOSIT_PERCENT = "100"

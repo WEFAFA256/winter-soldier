@@ -29,6 +29,8 @@ refunds — and save once. When the app moves hosts, only `FORWARD_TO` in `wrang
 | `POST` | `/api/bookings` | Create a pending booking and PawaPay checkout session; returns `checkoutUrl` |
 | `GET` | `/api/bookings/:id` | Poll booking status (`PENDING_PAYMENT` / `CONFIRMED` / `CANCELLED`) |
 | `POST` | `/api/bookings/:id/cancel` | Cancel a pending booking and free the slot |
+| `GET` | `/api/admin/bookings?status=&limit=` | Admin list of bookings (requires `Authorization: Bearer <ADMIN_API_TOKEN>`) |
+| `POST` | `/api/admin/bookings/:id/cancel` | Admin cancel of a pending or confirmed booking (refund is manual) |
 | `GET` | `/return?booking=:id` | Post-payment page that polls the booking until confirmed |
 | `POST` | `/` (also `/checkout`, `/deposit`, `/deposits`, `/payouts`, `/refunds`, `/callback`) | PawaPay callbacks: store raw body in KV, verify with PawaPay, confirm booking |
 
@@ -46,7 +48,12 @@ refunds — and save once. When the app moves hosts, only `FORWARD_TO` in `wrang
 ```
 
 The amount is always looked up from D1 by `serviceId` — the browser never decides what to charge.
-The hosted payment page supports both **MTN MoMo** and **Airtel Money**.
+The hosted payment page supports both **MTN MoMo** and **Airtel Money**. By default the full
+service price is charged. To take a deposit instead, set `PAWAPAY_DEPOSIT_PERCENT` (e.g. `30`);
+amounts are rounded up to the next 1,000 UGX.
+
+`POST /api/bookings` is throttled: at most 5 attempts per client IP per 10-minute window, plus a
+global stop at 50 bookings created in the last hour. Excess requests get HTTP 429.
 
 ## Deployment
 
@@ -60,7 +67,10 @@ Bindings (in `wrangler.toml`):
 - D1 `SERENITY_DB` → `serenity-spa` (`e347be07-91a9-486c-b03a-415c42b906c3`)
 - KV `SERENITY_PAWAPAY_EVENTS` (`1b4dfdce62c040bbbeee9ae1ab8c37fc`) — raw callbacks, 90-day TTL
 - Secret `PAWAPAY_API_TOKEN` — set with `wrangler secret put PAWAPAY_API_TOKEN`; **never in files or git**
-- Vars: `PAWAPAY_API_BASE_URL`, `PAWAPAY_COUNTRY=UGA`, `PAWAPAY_CURRENCY=UGX`, `FORWARD_TO`, `SITE_URL`
+- Secret `ADMIN_API_TOKEN` — set with `wrangler secret put ADMIN_API_TOKEN`; protects the admin
+  bookings endpoints. Use the same value as the Next app's `ADMIN_API_TOKEN` env var.
+- Vars: `PAWAPAY_API_BASE_URL`, `PAWAPAY_COUNTRY=UGA`, `PAWAPAY_CURRENCY=UGX`, `FORWARD_TO`,
+  `SITE_URL`, `PAWAPAY_DEPOSIT_PERCENT=100`
 
 Database schema and seed data are in `schema.sql` and `seed.sql`. Apply with:
 
@@ -68,6 +78,8 @@ Database schema and seed data are in `schema.sql` and `seed.sql`. Apply with:
 wrangler d1 execute serenity-spa --remote --file schema.sql
 wrangler d1 execute serenity-spa --remote --file seed.sql
 ```
+
+`schema.sql` is safe to re-run — it only creates tables/indexes that do not exist yet.
 
 ## Verify
 

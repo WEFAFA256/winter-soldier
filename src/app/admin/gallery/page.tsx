@@ -11,6 +11,12 @@ interface ServiceItem {
 }
 interface GalleryItem { id: string; src: string; alt: string; delay?: string; availability?: "available" | "in-session"; }
 interface BlogPost { id: string; title: string; excerpt: string; content: string; image: string; date: string; author: string; }
+interface Booking {
+  id: string; deposit_id: string; service_title: string; amount_ugx: number;
+  customer_name: string; customer_phone: string; customer_email: string | null;
+  booking_date: string; booking_time: string; status: string;
+  created_at: string; confirmed_at: string | null;
+}
 
 /* ─── Inline style constants ─────────────────────────────────── */
 const C = {
@@ -41,7 +47,7 @@ const css = `
   .adm .spin { animation: spin 1s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
   
-   to { opacity: 1; transform: none; } }
+   /* fixed: removed orphaned keyframe fragment */
   .adm .line-clamp2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 `;
 
@@ -85,7 +91,7 @@ const SectionHead = ({ title, sub }: any) => (
 
 /* ─── Main Component ─────────────────────────────────────────── */
 export default function AdminGalleryPage() {
-  const [tab, setTab] = useState<"gallery"|"services"|"blog"|"info">("gallery");
+  const [tab, setTab] = useState<"gallery"|"services"|"blog"|"bookings"|"info">("gallery");
   const [auth, setAuth] = useState(false);
   const [pw, setPw] = useState("");
   const [pwErr, setPwErr] = useState("");
@@ -113,14 +119,76 @@ export default function AdminGalleryPage() {
   const [blogUploading, setBlogUploading] = useState(false);
   const [newBlog, setNewBlog] = useState<Partial<BlogPost>>({ title:"", excerpt:"", content:"", image:"", date: new Date().toLocaleDateString("en-GB",{day:"2-digit",month:"long",year:"numeric"}), author:"Admin" });
 
+  /* Bookings */
+  const [bookings, setBookings] = useState<Booking[]>([]);
+  const [bookingStatus, setBookingStatus] = useState("");
+  const [bookingsError, setBookingsError] = useState("");
+  const [bookingsLoading, setBookingsLoading] = useState(false);
+  const [cancellingId, setCancellingId] = useState("");
+
   const [loading, setLoading] = useState(false);
 
   useEffect(() => { if (auth) loadData(); }, [auth]);
 
-  const login = (e: React.FormEvent) => {
+  const loadBookings = async (status = bookingStatus) => {
+    setBookingsLoading(true);
+    setBookingsError("");
+    try {
+      const qs = status ? `?status=${encodeURIComponent(status)}` : "";
+      const res = await fetch(`/api/admin/bookings${qs}`, { credentials: "same-origin" });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) setBookings(data.bookings || []);
+      else setBookingsError(data.error || "Could not load bookings");
+    } catch {
+      setBookingsError("Could not reach the payments API");
+    }
+    setBookingsLoading(false);
+  };
+
+  useEffect(() => {
+    if (auth && tab === "bookings") loadBookings();
+  }, [auth, tab]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const cancelBooking = async (id: string) => {
+    if (!confirm("Cancel this booking? Any refund must be handled manually.")) return;
+    setCancellingId(id);
+    try {
+      const res = await fetch("/api/admin/bookings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+        body: JSON.stringify({ id }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) setBookings((prev) => prev.map((b) => b.id === id ? { ...b, status: "CANCELLED" } : b));
+      else alert(data.error || "Could not cancel booking");
+    } catch {
+      alert("Network error cancelling booking");
+    }
+    setCancellingId("");
+  };
+
+  useEffect(() => {
+    fetch("/api/admin/login")
+      .then((r) => (r.ok ? r.json() : { authenticated: false }))
+      .then((d) => { if (d.authenticated) setAuth(true); })
+      .catch(() => {});
+  }, []);
+
+  const login = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (pw.trim() === "Serenityspa256.") { setAuth(true); setPwErr(""); }
-    else setPwErr("Incorrect passkey. Please try again.");
+    setPwErr("");
+    try {
+      const res = await fetch("/api/admin/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ passkey: pw.trim() }),
+      });
+      if (res.ok) { setAuth(true); setPw(""); }
+      else setPwErr("Incorrect passkey. Please try again.");
+    } catch {
+      setPwErr("Could not reach the server. Please try again.");
+    }
   };
 
   const loadData = async () => {
@@ -138,7 +206,7 @@ export default function AdminGalleryPage() {
 
   const uploadFile = async (file: File): Promise<string|null> => {
     const fd = new FormData(); fd.append("file", file);
-    const res = await fetch("/api/upload", { method:"POST", headers:{ Authorization:`Bearer ${pw.trim()}` }, body:fd });
+    const res = await fetch("/api/upload", { method:"POST", body:fd, credentials:"same-origin" });
     if (res.ok) return (await res.json()).secure_url;
     return null;
   };
@@ -148,7 +216,7 @@ export default function AdminGalleryPage() {
     e.preventDefault(); if (!galFile) return;
     setGalUploading(true);
     const fd = new FormData(); fd.append("file", galFile); fd.append("alt", galAlt||"The Serenity Spa");
-    const res = await fetch("/api/gallery", { method:"POST", headers:{ Authorization:`Bearer ${pw.trim()}` }, body:fd });
+    const res = await fetch("/api/gallery", { method:"POST", body:fd, credentials:"same-origin" });
     if (res.ok) { const d = await res.json(); setGallery([d.image, ...gallery]); setGalFile(null); setGalPreview(null); setGalAlt(""); }
     else alert((await res.json()).error || "Upload failed");
     setGalUploading(false);
@@ -156,7 +224,7 @@ export default function AdminGalleryPage() {
 
   const deleteGalleryImage = async (id: string) => {
     if (!confirm("Delete this photo?")) return;
-    const res = await fetch(`/api/gallery?id=${encodeURIComponent(id)}`, { method:"DELETE", headers:{ Authorization:`Bearer ${pw.trim()}` } });
+    const res = await fetch(`/api/gallery?id=${encodeURIComponent(id)}`, { method:"DELETE", credentials:"same-origin" });
     if (res.ok) setGallery(gallery.filter(i => i.id !== id));
   };
 
@@ -169,10 +237,8 @@ export default function AdminGalleryPage() {
     try {
       const res = await fetch("/api/gallery", {
         method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${pw.trim()}`,
-        },
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
         body: JSON.stringify({ id, availability: newStatus }),
       });
       if (!res.ok) {
@@ -200,7 +266,7 @@ export default function AdminGalleryPage() {
   const saveAll = async () => {
     setSaving(true);
     const body = { ...siteContent, services };
-    const res = await fetch("/api/content", { method:"POST", headers:{ "Content-Type":"application/json", Authorization:`Bearer ${pw.trim()}` }, body: JSON.stringify(body) });
+    const res = await fetch("/api/content", { method:"POST", headers:{ "Content-Type":"application/json" }, credentials:"same-origin", body: JSON.stringify(body) });
     if (res.ok) { setSiteContent(body); alert("Saved to Cloudinary ✓"); }
     else alert("Save failed");
     setSaving(false);
@@ -213,7 +279,7 @@ export default function AdminGalleryPage() {
     let img = newBlog.image||"";
     if (blogFile) { const u = await uploadFile(blogFile); if (u) img = u; }
     const post: BlogPost = { id: Date.now().toString(), title:newBlog.title||"", excerpt:newBlog.excerpt||"", content:newBlog.content||"", image:img, date:newBlog.date||"", author:newBlog.author||"Admin" };
-    const res = await fetch("/api/blog", { method:"POST", headers:{ "Content-Type":"application/json", Authorization:`Bearer ${pw.trim()}` }, body: JSON.stringify(post) });
+    const res = await fetch("/api/blog", { method:"POST", headers:{ "Content-Type":"application/json" }, credentials:"same-origin", body: JSON.stringify(post) });
     if (res.ok) { setBlogs([post, ...blogs]); setNewBlog({ title:"", excerpt:"", content:"", image:"", date:new Date().toLocaleDateString("en-GB",{day:"2-digit",month:"long",year:"numeric"}), author:"Admin" }); setBlogFile(null); setBlogPreview(null); setShowAddBlog(false); }
     else alert((await res.json()).error || "Failed to publish");
     setBlogUploading(false);
@@ -221,7 +287,7 @@ export default function AdminGalleryPage() {
 
   const deleteBlog = async (id: string) => {
     if (!confirm("Delete this blog post?")) return;
-    const res = await fetch(`/api/blog?id=${encodeURIComponent(id)}`, { method:"DELETE", headers:{ Authorization:`Bearer ${pw.trim()}` } });
+    const res = await fetch(`/api/blog?id=${encodeURIComponent(id)}`, { method:"DELETE", credentials:"same-origin" });
     if (res.ok) setBlogs(blogs.filter(p=>p.id!==id));
   };
 
@@ -262,6 +328,7 @@ export default function AdminGalleryPage() {
     { id:"gallery", label:"Gallery", icon:"📸", count:gallery.length },
     { id:"services", label:"Services", icon:"💅", count:services.length },
     { id:"blog", label:"Blog", icon:"📝", count:blogs.length },
+    { id:"bookings", label:"Bookings", icon:"📅" },
     { id:"info", label:"Settings", icon:"⚙️" },
   ];
 
@@ -572,6 +639,84 @@ export default function AdminGalleryPage() {
                         <button onClick={()=>deleteBlog(post.id)} className="btn-danger" style={{ background:"none", border:`1px solid ${C.border}`, borderRadius:6, color:C.danger, padding:"6px 10px", fontSize:12, cursor:"pointer", flexShrink:0 }}>🗑</button>
                       </div>
                     ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* ══ BOOKINGS TAB ══ */}
+            {tab === "bookings" && (
+              <div className="admin-pane">
+                <SectionHead title="Bookings" sub="Live bookings from the payments service. A booking is only marked Confirmed after PawaPay verifies the payment." />
+
+                <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:16, flexWrap:"wrap" }}>
+                  <select value={bookingStatus} onChange={e=>{ setBookingStatus(e.target.value); loadBookings(e.target.value); }}
+                    style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:6, padding:"7px 10px", color:C.text, fontSize:12 }}>
+                    <option value="">All statuses</option>
+                    <option value="PENDING_PAYMENT">Pending payment</option>
+                    <option value="CONFIRMED">Confirmed</option>
+                    <option value="CANCELLED">Cancelled</option>
+                  </select>
+                  <BtnOutline onClick={()=>loadBookings()} disabled={bookingsLoading} style={{ padding:"6px 12px", fontSize:11 }}>↻ Refresh</BtnOutline>
+                  <span style={{ fontSize:11, color:C.muted }}>{bookings.length} shown</span>
+                </div>
+
+                {bookingsError && (
+                  <div style={{ background:"#f8514922", border:"1px solid #f8514944", borderRadius:6, padding:"10px 14px", color:C.danger, fontSize:12, marginBottom:14 }}>{bookingsError}</div>
+                )}
+
+                {bookingsLoading ? (
+                  <div style={{ textAlign:"center", padding:40, color:C.muted, fontSize:12 }}>Loading bookings…</div>
+                ) : bookings.length === 0 ? (
+                  <div style={{ textAlign:"center", padding:"60px 20px", color:C.muted }}>
+                    <p style={{ fontSize:32, margin:"0 0 8px" }}>📅</p>
+                    <p style={{ fontSize:13 }}>No bookings found.</p>
+                  </div>
+                ) : (
+                  <div style={{ overflowX:"auto", background:C.surface, border:`1px solid ${C.border}`, borderRadius:10 }}>
+                    <table style={{ width:"100%", borderCollapse:"collapse", fontSize:12 }}>
+                      <thead>
+                        <tr style={{ textAlign:"left", color:C.muted, fontSize:10, textTransform:"uppercase", letterSpacing:"0.06em" }}>
+                          <th style={{ padding:"10px 12px" }}>Date / Time</th>
+                          <th style={{ padding:"10px 12px" }}>Service</th>
+                          <th style={{ padding:"10px 12px" }}>Client</th>
+                          <th style={{ padding:"10px 12px" }}>Phone</th>
+                          <th style={{ padding:"10px 12px" }}>Amount</th>
+                          <th style={{ padding:"10px 12px" }}>Status</th>
+                          <th style={{ padding:"10px 12px" }}></th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {bookings.map(b => {
+                          const statusColor = b.status === "CONFIRMED" ? C.success : b.status === "PENDING_PAYMENT" ? C.gold : C.muted;
+                          return (
+                            <tr key={b.id} style={{ borderTop:`1px solid ${C.border}` }}>
+                              <td style={{ padding:"10px 12px", whiteSpace:"nowrap" }}>
+                                {b.booking_date}<br/><span style={{ color:C.muted }}>{b.booking_time}</span>
+                              </td>
+                              <td style={{ padding:"10px 12px" }}>{b.service_title}</td>
+                              <td style={{ padding:"10px 12px" }}>
+                                {b.customer_name}
+                                {b.customer_email && <><br/><span style={{ color:C.muted }}>{b.customer_email}</span></>}
+                              </td>
+                              <td style={{ padding:"10px 12px", whiteSpace:"nowrap" }}>{b.customer_phone}</td>
+                              <td style={{ padding:"10px 12px", color:C.gold, fontWeight:700, whiteSpace:"nowrap" }}>{Number(b.amount_ugx || 0).toLocaleString()}</td>
+                              <td style={{ padding:"10px 12px" }}>
+                                <span style={{ color:statusColor, fontWeight:700, fontSize:11 }}>{b.status.replace("_", " ")}</span>
+                              </td>
+                              <td style={{ padding:"10px 12px", textAlign:"right" }}>
+                                {(b.status === "PENDING_PAYMENT" || b.status === "CONFIRMED") && (
+                                  <button onClick={()=>cancelBooking(b.id)} disabled={cancellingId===b.id}
+                                    style={{ background:"transparent", border:`1px solid ${C.border}`, borderRadius:6, color:C.danger, padding:"5px 10px", fontSize:11, cursor:"pointer" }}>
+                                    {cancellingId === b.id ? "…" : "Cancel"}
+                                  </button>
+                                )}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
                   </div>
                 )}
               </div>

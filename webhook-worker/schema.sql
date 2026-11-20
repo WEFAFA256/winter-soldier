@@ -38,3 +38,10 @@ CREATE TABLE IF NOT EXISTS payment_events (
 );
 
 CREATE INDEX IF NOT EXISTS idx_payment_events_deposit ON payment_events(deposit_id);
+
+-- Per-IP booking throttles (10-minute buckets). Old rows are pruned on each create.
+CREATE TABLE IF NOT EXISTS rate_limits (
+  key TEXT PRIMARY KEY,
+  window_start TEXT NOT NULL,
+  count INTEGER NOT NULL DEFAULT 0
+);

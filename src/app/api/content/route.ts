@@ -2,12 +2,15 @@ import { NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
 import { v2 as cloudinary } from 'cloudinary';
+import { isAdmin } from '@/lib/admin-auth';
 
 cloudinary.config({
-  cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || 'njzctr4m',
-  api_key: process.env.CLOUDINARY_API_KEY || '143573632263644',
-  api_secret: process.env.CLOUDINARY_API_SECRET || 'bRjjHhCZmsSnqvoJHhKg5D9SMOA',
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME || process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
 });
+
+const cloudName = process.env.CLOUDINARY_CLOUD_NAME || process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
 
 const contentFilePath = path.join(process.cwd(), 'public', 'site-content.json');
 
@@ -27,7 +30,8 @@ const readLocalContent = () => {
 export async function GET() {
   try {
     // Read from Cloudinary raw upload using a cache buster
-    const cloudUrl = `https://res.cloudinary.com/njzctr4m/raw/upload/site-content.json?cb=${Date.now()}`;
+    if (!cloudName) return NextResponse.json(readLocalContent());
+    const cloudUrl = `https://res.cloudinary.com/${encodeURIComponent(cloudName)}/raw/upload/site-content.json?cb=${Date.now()}`;
     const res = await fetch(cloudUrl, { cache: 'no-store' });
     if (res.ok) {
       const data = await res.json();
@@ -44,8 +48,7 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
-    const authHeader = req.headers.get('authorization')?.trim();
-    if (authHeader !== 'Bearer Serenityspa256.') {
+    if (!isAdmin(req)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 

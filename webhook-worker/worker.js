@@ -9,9 +9,11 @@
  *  POST /api/bookings           create booking + PawaPay hosted payment page
  *  GET  /api/bookings/:id       booking status (polling)
  *  POST /api/bookings/:id/cancel
+ *  GET  /api/admin/bookings     admin list (Bearer ADMIN_API_TOKEN)
+ *  POST /api/admin/bookings/:id/cancel
  *  GET  /return?booking=:id     post-payment status page
  *
- * The PawaPay API token is a Worker SECRET (PAWAPAY_API_TOKEN), never in this file.
+ * The PawaPay API token and ADMIN_API_TOKEN are Worker SECRETS, never in this file.
  */
 
 const KV_TTL_SECONDS = 60 * 60 * 24 * 90;
@@ -69,6 +71,50 @@ function validDate(d) {
 
 function validTime(t) {
   return /^([01]\d|2[0-3]):[0-5]\d$/.test(t);
+}
+
+function chargeAmount(env, service) {
+  const percent = Number(env.PAWAPAY_DEPOSIT_PERCENT || 100);
+  if (!Number.isFinite(percent) || percent <= 0 || percent >= 100) return service.price_ugx;
+  const amount = Math.round((service.price_ugx * percent) / 100 / 1000) * 1000;
+  return Math.max(1000, amount);
+}
+
+function clientIp(request) {
+  return request.headers.get("cf-connecting-ip") ||
+    (request.headers.get("x-forwarded-for") || "").split(",")[0]?.trim() ||
+    "unknown";
+}
+
+async function rateLimited(request, env) {
+  const windowMs = 10 * 60 * 1000;
+  const bucket = Math.floor(Date.now() / windowMs);
+  const windowStart = new Date(bucket * windowMs).toISOString();
+  const key = `book:${clientIp(request)}:${bucket}`;
+
+  await env.SERENITY_DB.prepare(
+    "DELETE FROM rate_limits WHERE window_start < ?"
+  ).bind(new Date(Date.now() - windowMs * 2).toISOString()).run();
+
+  await env.SERENITY_DB.prepare(
+    `INSERT INTO rate_limits (key, window_start, count) VALUES (?, ?, 1)
+     ON CONFLICT(key) DO UPDATE SET count = count + 1`
+  ).bind(key, windowStart).run();
+
+  const row = await env.SERENITY_DB.prepare(
+    "SELECT count FROM rate_limits WHERE key = ?"
+  ).bind(key).first();
+  if (row && Number(row.count) > 5) return true;
+
+  const recent = await env.SERENITY_DB.prepare(
+    "SELECT count(*) AS n FROM bookings WHERE created_at > ?"
+  ).bind(new Date(Date.now() - 60 * 60 * 1000).toISOString()).first();
+  return Boolean(recent && Number(recent.n) > 50);
+}
+
+function isAdmin(request, env) {
+  const header = request.headers.get("authorization") || "";
+  return Boolean(env.ADMIN_API_TOKEN) && header === `Bearer ${env.ADMIN_API_TOKEN}`;
 }
 
 async function pawapay(env, path, options = {}) {
@@ -208,6 +254,11 @@ async function createBooking(request, env) {
   ).bind(serviceId).first();
 
   if (!service) return fail("Unknown service", 404);
+  if (await rateLimited(request, env)) {
+    return fail("Too many booking attempts. Please try again shortly.", 429);
+  }
+
+  const amount = chargeAmount(env, service);
 
   // Expire stale holds (PawaPay payment pages live for 15 minutes).
   const cutoff = new Date(Date.now() - 20 * 60 * 1000).toISOString();
@@ -228,7 +279,7 @@ async function createBooking(request, env) {
          customer_phone, customer_email, booking_date, booking_time, status, created_at, updated_at)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'PENDING_PAYMENT', ?, ?)`
     ).bind(
-      bookingId, depositId, service.id, service.title, service.price_ugx,
+      bookingId, depositId, service.id, service.title, amount,
       name, phone, email || null, date, time, now, now
     ).run();
   } catch (e) {
@@ -246,7 +297,7 @@ async function createBooking(request, env) {
       returnUrl,
       phoneNumber: phone,
       amountDetails: {
-        amount: String(service.price_ugx),
+        amount: String(amount),
         currency: env.PAWAPAY_CURRENCY || "UGX",
       },
       country: env.PAWAPAY_COUNTRY || "UGA",
@@ -380,6 +431,39 @@ export default {
       ).bind(new Date().toISOString(), match[1]).run();
       if (!result.meta || result.meta.changes === 0) return fail("Nothing to cancel", 404);
       return json({ ok: true, status: "CANCELLED" });
+    }
+
+    // Admin-only bookings management. Requires the ADMIN_API_TOKEN Worker secret.
+    if (path.startsWith("/api/admin/")) {
+      if (!isAdmin(request, env)) return fail("Unauthorized", 401);
+
+      if (method === "GET" && path === "/api/admin/bookings") {
+        const status = url.searchParams.get("status");
+        const limit = Math.min(Math.max(Number(url.searchParams.get("limit") || 100), 1), 500);
+        const columns = `id, deposit_id, service_title, amount_ugx, customer_name, customer_phone,
+                         customer_email, booking_date, booking_time, status, created_at, confirmed_at`;
+        const rows = status
+          ? await env.SERENITY_DB.prepare(
+              `SELECT ${columns} FROM bookings WHERE status = ?
+               ORDER BY booking_date DESC, booking_time DESC LIMIT ?`
+            ).bind(status, limit).all()
+          : await env.SERENITY_DB.prepare(
+              `SELECT ${columns} FROM bookings
+               ORDER BY booking_date DESC, booking_time DESC LIMIT ?`
+            ).bind(limit).all();
+        return json({ ok: true, bookings: rows.results || [] });
+      }
+
+      const adminMatch = path.match(/^\/api\/admin\/bookings\/([0-9a-f-]{36})\/cancel$/i);
+      if (method === "POST" && adminMatch) {
+        // CONFIRMED bookings can be cancelled here; refunds remain a manual staff task.
+        const result = await env.SERENITY_DB.prepare(
+          `UPDATE bookings SET status='CANCELLED', updated_at=?
+           WHERE id=? AND status IN ('PENDING_PAYMENT','CONFIRMED')`
+        ).bind(new Date().toISOString(), adminMatch[1]).run();
+        if (!result.meta || result.meta.changes === 0) return fail("Nothing to cancel", 404);
+        return json({ ok: true, status: "CANCELLED" });
+      }
     }
 
     if (method === "GET" && path === "/return") {

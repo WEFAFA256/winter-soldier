@@ -2,11 +2,12 @@ import { NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
 import { v2 as cloudinary } from 'cloudinary';
+import { isAdmin } from '@/lib/admin-auth';
 
 cloudinary.config({
-  cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || 'njzctr4m',
-  api_key: process.env.CLOUDINARY_API_KEY || '143573632263644',
-  api_secret: process.env.CLOUDINARY_API_SECRET || 'bRjjHhCZmsSnqvoJHhKg5D9SMOA',
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME || process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
 const BLOG_PUBLIC_ID = 'serenity_data/blog-posts';
@@ -64,8 +65,7 @@ export async function GET() {
 // POST — add a new blog post
 export async function POST(req: Request) {
   try {
-    const auth = req.headers.get('authorization')?.trim();
-    if (auth !== 'Bearer Serenityspa256.') {
+    if (!isAdmin(req)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -91,8 +91,7 @@ export async function POST(req: Request) {
 // DELETE — remove a blog post by id
 export async function DELETE(req: Request) {
   try {
-    const auth = req.headers.get('authorization')?.trim();
-    if (auth !== 'Bearer Serenityspa256.') {
+    if (!isAdmin(req)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
