@@ -516,17 +516,25 @@ function returnPage(origin, siteUrl) {
 </style></head><body><div class="card" id="c"><div class="spin"></div><h1>Checking your payment…</h1><p>Do not close this page.</p></div>
 <script>
  const id=new URLSearchParams(location.search).get('booking');
+ let tries=0; const MAX=40; // ~2 minutes only; never poll forever
  async function check(){
   if(!id){document.getElementById('c').innerHTML='<h1>Missing booking reference</h1>';return;}
-  const r=await fetch('/api/bookings/'+encodeURIComponent(id));const d=await r.json();
-  if(!d.ok){document.getElementById('c').innerHTML='<h1>Booking not found</h1>';return;}
+  try{
+  const r=await fetch('/api/bookings/'+encodeURIComponent(id),{cache:'no-store'});const d=await r.json();
+  if(!d.ok){document.getElementById('c').innerHTML='<h1>'+(d.error||'Booking not found')+'</h1><p>Reference: '+id+'</p>';return;}
   const b=d.booking;
   if(b.status==='CONFIRMED'){
    document.getElementById('c').innerHTML='<h1>You are booked ✓</h1><p><strong>'+b.service_title+'</strong><br>'+b.booking_date+' at '+b.booking_time+'</p><p>Reference: '+b.id+'</p>'+${JSON.stringify(siteUrl ? `<p><a href="${siteUrl}">Back to The Serenity Spa</a></p>` : "")};
   } else if(b.status==='PENDING_PAYMENT'){
-   setTimeout(check,3000);
+   tries+=1;
+   if(tries<MAX){setTimeout(check,3000);return;}
+   document.getElementById('c').innerHTML='<h1>Payment not received</h1><p>We stopped checking automatically. If you paid, tap below; otherwise make a new booking.</p><button onclick="location.reload()" style="padding:10px 16px;background:#c2a74e;color:#0e1317;border:0;border-radius:8px;font-weight:700;cursor:pointer">Check once more</button><p>Reference: '+b.id+'</p>';
   } else {
-   document.getElementById('c').innerHTML='<h1>Payment not completed</h1><p>Please contact us to arrange another payment.</p><p>Reference: '+b.id+'</p>';
+   document.getElementById('c').innerHTML='<h1>Payment not completed</h1><p>Please make a new booking if you still need this slot.</p><p>Reference: '+b.id+'</p>';
+  }
+  }catch(e){
+   if(tries<MAX){tries+=1;setTimeout(check,3000);return;}
+   document.getElementById('c').innerHTML='<h1>Could not check right now</h1><p>Try again shortly.</p>';
   }
  }
  check();

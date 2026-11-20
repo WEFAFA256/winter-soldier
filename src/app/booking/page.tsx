@@ -135,6 +135,9 @@ function BookingFormInner() {
   const [payPhone, setPayPhone] = useState("");
   const [paymentStatus, setPaymentStatus] = useState("PENDING_PAYMENT");
   const [paymentNotice, setPaymentNotice] = useState("");
+  // One payment prompt per attempt. Polling is bounded and never re-issues a
+  // prompt, so aborting the PIN prompt cannot cause an endless loop.
+  const [pollStopped, setPollStopped] = useState(false);
 
   useEffect(() => {
     fetch(`${PAY_API}/api/services`)
@@ -191,6 +194,7 @@ function BookingFormInner() {
 
   async function handlePay() {
     setPayError("");
+    setPollStopped(false);
     if (!provider) {
       setPayError("Choose MTN MoMo or Airtel Money first.");
       return;
@@ -261,13 +265,15 @@ function BookingFormInner() {
     }
   }
 
-  // Poll the Worker, which verifies the deposit with PawaPay before reporting
-  // CONFIRMED. The page stays open on mobile while the customer approves.
+  // Poll the Worker briefly while the customer approves. This is a STATUS
+  // check only — it never starts or re-sends a payment prompt. It stops on a
+  // final state or after ~2 minutes, then waits for an explicit user action.
   useEffect(() => {
-    if (!submitted || !bookingSummary) return;
+    if (!submitted || !bookingSummary || pollStopped) return;
     let active = true;
     let timer: ReturnType<typeof setTimeout>;
     let tries = 0;
+    const MAX_TRIES = 40; // 40 × 3s = 2 minutes
     const poll = async () => {
       if (!active) return;
       tries += 1;
@@ -281,24 +287,62 @@ function BookingFormInner() {
           setPaymentStatus(data.booking.status);
           if (data.booking.status === "CONFIRMED") {
             setPaymentNotice("Payment received. Your booking is confirmed.");
+            setPollStopped(true);
             return;
           }
           if (data.booking.status !== "PENDING_PAYMENT") {
-            setPaymentNotice("This payment is no longer pending. Contact us if you already paid.");
+            setPaymentNotice("This payment is no longer pending. Please make a new booking if you still need it.");
+            setPollStopped(true);
             return;
           }
+        } else if (!data.ok) {
+          // e.g. 410 "Payment failed" — the Worker already released the slot.
+          setPaymentNotice(data.error || "Payment was not completed. Please make a new booking.");
+          setPollStopped(true);
+          return;
         }
       } catch {
-        // Transient network errors retry on the next tick.
+        // Transient network error: retry on the next tick.
       }
-      if (active && tries < 120) timer = setTimeout(poll, 3000);
+      if (active && tries < MAX_TRIES) {
+        timer = setTimeout(poll, 3000);
+      } else if (active) {
+        setPaymentNotice("We didn't receive your payment. No further prompt was sent — check your phone once, or make a new booking.");
+        setPollStopped(true);
+      }
     };
     timer = setTimeout(poll, 1500);
     return () => {
       active = false;
       clearTimeout(timer);
     };
-  }, [submitted, bookingSummary?.id]);
+  }, [submitted, bookingSummary?.id, pollStopped]);
+
+  // Single, user-triggered status check. Never initiates a new deposit.
+  async function checkStatusOnce() {
+    if (!bookingSummary) return;
+    try {
+      const res = await fetch(
+        `${PAY_API}/api/bookings/${encodeURIComponent(bookingSummary.id)}`,
+        { cache: "no-store" }
+      );
+      const data = await res.json().catch(() => ({}));
+      if (data.ok && data.booking) {
+        setPaymentStatus(data.booking.status);
+        if (data.booking.status === "CONFIRMED") {
+          setPaymentNotice("Payment received. Your booking is confirmed.");
+        } else if (data.booking.status !== "PENDING_PAYMENT") {
+          setPaymentNotice("This payment is no longer pending. Please make a new booking if you still need it.");
+        } else {
+          setPaymentNotice("Still awaiting payment. No new prompt was sent — check your phone or make a new booking.");
+        }
+      } else {
+        setPaymentNotice(data.error || "Could not check right now. Please try again shortly.");
+      }
+    } catch {
+      setPaymentNotice("Could not check right now. Please try again shortly.");
+    }
+  }
 
   // Generate QR Code onto canvas once submitted
   useEffect(() => {
@@ -369,6 +413,9 @@ function BookingFormInner() {
   function resetBooking() {
     setSubmitted(false);
     setBookingSummary(null);
+    setPollStopped(false);
+    setPaymentNotice("");
+    setPaymentStatus("PENDING_PAYMENT");
     setForm({ name: "", phone: "", email: "", service: "", date: "", time: "", notes: "" });
   }
 
@@ -1025,6 +1072,22 @@ function BookingFormInner() {
                     </div>
                   )}
 
+                  {pollStopped && paymentStatus !== "CONFIRMED" && (
+                    <div style={{ textAlign: "center", margin: "0 0 14px" }}>
+                      <button
+                        type="button"
+                        onClick={checkStatusOnce}
+                        className="serenity-gold-btn"
+                        style={{
+                          padding: "10px 18px", borderRadius: "8px", fontSize: "12px",
+                          fontWeight: 700, letterSpacing: "0.5px", cursor: "pointer",
+                        }}
+                      >
+                        Check payment status once
+                      </button>
+                    </div>
+                  )}
+
                   <p style={{ fontSize: "12px", color: "#9ca3af", textAlign: "center", margin: "0 0 16px" }}>
                     Your booking is confirmed automatically once PawaPay verifies your payment.{" "}
                     <a
@@ -1033,7 +1096,7 @@ function BookingFormInner() {
                       rel="noopener noreferrer"
                       style={{ color: "#c2a74e", textDecoration: "underline" }}
                     >
-                      Check payment status
+                      Open live status page
                     </a>
                   </p>
 
