@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 
 /* ─── Types ─────────────────────────────────────────────────── */
@@ -56,6 +56,18 @@ const css = `
   .adm .img-thumb:hover { transform: scale(1.03); }
   .adm .spin { animation: spin 1s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Add-image form: preview box + Upload Image button on the left, Name + Save
+     on the right. Flex-wrap lets the Save group drop to its own line on narrow
+     screens instead of being squeezed into an unusable sliver. */
+  .adm .gal-add-form { display: flex !important; flex-wrap: wrap !important; gap: 16px !important; align-items: flex-end !important; }
+  .adm .gal-upload-area { display: flex !important; align-items: center !important; gap: 12px !important; flex: 0 0 auto !important; }
+  .adm .gal-preview { width: 96px !important; height: 96px !important; flex-shrink: 0 !important; border-radius: 8px !important; border: 1px dashed ${C.border} !important; background: ${C.bg} !important; overflow: hidden !important; display: flex !important; align-items: center !important; justify-content: center !important; color: ${C.muted} !important; font-size: 28px !important; line-height: 1 !important; }
+  .adm .gal-preview img { width: 100% !important; height: 100% !important; object-fit: cover !important; display: block !important; }
+  .adm .gal-upload-side { display: flex !important; flex-direction: column !important; gap: 8px !important; align-items: flex-start !important; }
+  .adm .gal-save-area { display: flex !important; flex: 1 1 260px !important; align-items: flex-end !important; gap: 10px !important; min-width: 0 !important; }
+  .adm .gal-save-area .gal-name-wrap { flex: 1 1 auto !important; min-width: 0 !important; margin-bottom: 0 !important; }
+  .adm .gal-upload-btn, .adm .gal-save-btn { min-height: 44px !important; white-space: nowrap !important; }
   
    /* fixed: removed orphaned keyframe fragment */
   .adm .line-clamp2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
@@ -90,6 +102,11 @@ const css = `
     .adm .service-card .svc-card-actions > div { flex: 1 !important; }
     .adm .service-card .svc-card-actions input { width: 100% !important; }
     .adm .bookings-table td, .adm .bookings-table th { white-space: normal !important; }
+    /* Add-image form: stack everything and make both buttons full width. */
+    .adm .gal-upload-area { width: 100% !important; }
+    .adm .gal-save-area { flex-direction: column !important; align-items: stretch !important; width: 100% !important; flex: 1 1 100% !important; }
+    .adm .gal-save-area .gal-name-wrap { width: 100% !important; }
+    .adm .gal-upload-btn, .adm .gal-save-btn { width: 100% !important; }
     .adm input, .adm select, .adm textarea { font-size: 16px !important; }
   }
 `;
@@ -145,6 +162,7 @@ export default function AdminGalleryPage() {
   const [galPreview, setGalPreview] = useState<string|null>(null);
   const [galAlt, setGalAlt] = useState("");
   const [galUploading, setGalUploading] = useState(false);
+  const galFileInputRef = useRef<HTMLInputElement>(null);
   const [selectedImages, setSelectedImages] = useState<string[]>([]);
   const [purging, setPurging] = useState(false);
 
@@ -293,12 +311,26 @@ export default function AdminGalleryPage() {
   };
 
   /* Gallery handlers */
+  const resetGalleryForm = () => {
+    if (galPreview) URL.revokeObjectURL(galPreview);
+    setGalFile(null); setGalPreview(null); setGalAlt("");
+    if (galFileInputRef.current) galFileInputRef.current.value = "";
+  };
+
+  const pickGalleryFile = (file: File | undefined) => {
+    if (!file) return;
+    if (galPreview) URL.revokeObjectURL(galPreview);
+    setGalFile(file);
+    setGalPreview(URL.createObjectURL(file));
+  };
+
   const addGalleryImage = async (e: React.FormEvent) => {
-    e.preventDefault(); if (!galFile) return;
+    e.preventDefault();
+    if (!galFile) return alert("Choose an image first");
     setGalUploading(true);
-    const fd = new FormData(); fd.append("file", galFile); fd.append("alt", galAlt||"The Serenity Spa");
+    const fd = new FormData(); fd.append("file", galFile); fd.append("alt", galAlt.trim()||"The Serenity Spa");
     const res = await fetch("/api/gallery", { method:"POST", body:fd, credentials:"same-origin" });
-    if (res.ok) { const d = await res.json(); setGallery([d.image, ...gallery]); setGalFile(null); setGalPreview(null); setGalAlt(""); }
+    if (res.ok) { const d = await res.json(); setGallery([d.image, ...gallery]); resetGalleryForm(); }
     else alert((await res.json()).error || "Upload failed");
     setGalUploading(false);
   };
@@ -529,27 +561,47 @@ export default function AdminGalleryPage() {
               <div className="admin-pane">
                 <SectionHead title="Spa Gallery" sub="Upload photos directly to Cloudinary — they appear on the gallery page instantly." />
 
-                {/* Upload form */}
+                {/* Add Image — small preview box + Upload Image button, Name + Save */}
                 <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:10, padding:20, marginBottom:24 }}>
-                  <p style={{ margin:"0 0 14px", fontSize:12, fontWeight:700, color:C.gold, textTransform:"uppercase", letterSpacing:"0.06em" }}>+ Upload New Photo</p>
-                  <form onSubmit={addGalleryImage} className="adm upload-grid" style={{ display:"grid", gridTemplateColumns:"1fr 1fr auto", gap:12, alignItems:"end" }}>
-                    <div>
-                      <label style={{ display:"block", fontSize:11, fontWeight:600, color:C.muted, textTransform:"uppercase", letterSpacing:"0.06em", marginBottom:6 }}>Image File</label>
-                      <input type="file" accept="image/*" required onChange={e=>{ const f=e.target.files?.[0]; if(f){setGalFile(f);setGalPreview(URL.createObjectURL(f));} }}
-                        style={{ width:"100%", fontSize:12, color:C.muted, background:C.bg, border:`1px solid ${C.border}`, borderRadius:6, padding:"7px 10px" }} />
+                  <p style={{ margin:"0 0 14px", fontSize:12, fontWeight:700, color:C.gold, textTransform:"uppercase", letterSpacing:"0.06em" }}>+ Add Image</p>
+                  <form onSubmit={addGalleryImage} className="adm gal-add-form">
+                    {/* The preview box replaces the native "Choose File" control */}
+                    <div className="gal-upload-area">
+                      <div className="gal-preview" title="Image preview">
+                        {galPreview ? <img src={galPreview} alt="Selected preview" /> : <span>＋</span>}
+                      </div>
+                      <div className="gal-upload-side">
+                        <input
+                          ref={galFileInputRef}
+                          type="file"
+                          accept="image/*"
+                          onChange={e=>pickGalleryFile(e.target.files?.[0])}
+                          style={{ display:"none" }}
+                        />
+                        <BtnGold type="button" className="btn-gold gal-upload-btn" onClick={()=>galFileInputRef.current?.click()} style={{ padding:"0 16px" }}>
+                          Upload Image
+                        </BtnGold>
+                        {galFile && (
+                          <div style={{ display:"flex", alignItems:"center", gap:6, maxWidth:170 }}>
+                            <span style={{ fontSize:10, color:C.muted, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{galFile.name}</span>
+                            <button type="button" onClick={resetGalleryForm} title="Remove selected image" style={{ fontSize:11, color:C.danger, background:"none", border:"none", cursor:"pointer", padding:"2px 4px" }}>✕</button>
+                          </div>
+                        )}
+                      </div>
                     </div>
-                    <Input label="Alt / Description" placeholder="e.g. Hot stone massage session" value={galAlt} onChange={(e:any)=>setGalAlt(e.target.value)} style={{ marginBottom:0 }} />
-                    <BtnGold type="submit" disabled={galUploading||!galFile} style={{ height:36, whiteSpace:"nowrap", padding:"0 16px" }}>
-                      {galUploading ? "Uploading…" : "Upload"}
-                    </BtnGold>
+
+                    {/* Name is stored as the image label and shown on the gallery cards */}
+                    <div className="gal-save-area">
+                      <div className="gal-name-wrap">
+                        <label style={{ display:"block", fontSize:11, fontWeight:600, color:C.muted, textTransform:"uppercase", letterSpacing:"0.06em", marginBottom:6 }}>Name</label>
+                        <input type="text" placeholder="e.g. Hot stone massage session" value={galAlt} onChange={(e:any)=>setGalAlt(e.target.value)}
+                          style={{ width:"100%", background:C.bg, border:`1px solid ${C.border}`, borderRadius:6, padding:"10px 12px", color:C.text, fontSize:13, minHeight:44 }} />
+                      </div>
+                      <BtnGold type="submit" className="btn-gold gal-save-btn" disabled={galUploading||!galFile} style={{ padding:"0 20px" }}>
+                        {galUploading ? "Saving…" : "Save"}
+                      </BtnGold>
+                    </div>
                   </form>
-                  {galPreview && (
-                    <div style={{ marginTop:12, display:"flex", alignItems:"center", gap:10 }}>
-                      <img src={galPreview} style={{ width:56, height:56, objectFit:"cover", borderRadius:6, border:`1px solid ${C.border}` }} alt="preview" />
-                      <span style={{ fontSize:11, color:C.muted }}>{galFile?.name}</span>
-                      <button onClick={()=>{setGalFile(null);setGalPreview(null);}} style={{ fontSize:10, color:C.danger, background:"none", border:"none", cursor:"pointer" }}>✕ Remove</button>
-                    </div>
-                  )}
                 </div>
 
                 {/* Gallery grid & availability controls */}

@@ -34,6 +34,14 @@ function isImageAvailable(img: GalleryImage, index: number): boolean {
   return img.availability !== undefined ? img.availability === "available" : index % 4 !== 1;
 }
 
+// The admin "Name" field is stored as the image's `alt`. Return it only when it is a
+// real custom name — generic placeholder values must not produce a fabricated label.
+function getCustomName(img: GalleryImage): string {
+  const alt = (img.alt || "").trim();
+  if (!alt || alt.toLowerCase() === "the serenity spa" || alt.includes("Serenity Spa -")) return "";
+  return alt;
+}
+
 const INITIAL_IMAGES: GalleryImage[] = [
   {
     "id": "serenity_gallery/u7wll8tto5yxjt4ptcbl",
@@ -478,10 +486,8 @@ function GalleryCard({
 
   // Therapist availability status: controlled by admin / data (shared with the lightbox)
   const isAvailable = isImageAvailable(img, index);
-  const specialistName =
-    img.alt && !img.alt.includes("Serenity Spa -")
-      ? img.alt
-      : `Specialist #${index + 1}`;
+  const customName = getCustomName(img);
+  const specialistName = customName || `Specialist #${index + 1}`;
 
   return (
     <div
@@ -585,6 +591,36 @@ function GalleryCard({
             {isAvailable ? "Available" : "In Session"}
           </span>
         </div>
+
+        {/* Name caption — the exact value entered in the admin "Name" field */}
+        {customName && (
+          <div
+            className="gallery-name-caption"
+            style={{
+              position: "absolute",
+              top: "12px",
+              left: "12px",
+              zIndex: 6,
+              maxWidth: "calc(100% - 110px)",
+              padding: "5px 11px",
+              borderRadius: "20px",
+              backgroundColor: "rgba(10, 14, 18, 0.88)",
+              backdropFilter: "blur(6px)",
+              border: "1px solid rgba(194, 167, 78, 0.5)",
+              boxShadow: "0 4px 12px rgba(0, 0, 0, 0.45)",
+              color: "#ffffff",
+              fontSize: "12px",
+              fontWeight: 700,
+              lineHeight: 1.2,
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+            }}
+            title={customName}
+          >
+            {customName}
+          </div>
+        )}
 
         {/* Image Container */}
         <div style={{ position: "relative", width: "100%", height: "100%", overflow: "hidden" }}>
@@ -1735,9 +1771,7 @@ export default function GalleryPage() {
           // availability from the lightbox position.
           const isLightboxAvailable = isImageAvailable(selectedImage, selectedIndex);
           const specialistName =
-            selectedImage.alt && !selectedImage.alt.includes("Serenity Spa -")
-              ? selectedImage.alt
-              : `Specialist #${selectedIndex + 1}`;
+            getCustomName(selectedImage) || `Specialist #${selectedIndex + 1}`;
 
           return (
             <div
