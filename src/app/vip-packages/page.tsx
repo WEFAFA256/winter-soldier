@@ -257,13 +257,11 @@ function ServiceCard({
   index,
   imgSrc,
   fallbackImg,
-  onLearnMore,
 }: {
   service: Service;
   index: number;
   imgSrc: string;
   fallbackImg: string;
-  onLearnMore: () => void;
 }) {
   const ref = React.useRef<HTMLDivElement>(null);
   const [inView, setInView] = React.useState(false);
@@ -347,11 +345,9 @@ function ServiceCard({
           }}
         />
 
-        {/* Card Image — real button so it is keyboard-focusable/activatable */}
-        <button
-          type="button"
-          onClick={onLearnMore}
-          style={{ height: "220px", width: "100%", overflow: "hidden", position: "relative", cursor: "pointer", backgroundColor: "#0e1317", zIndex: 2, display: "block", border: "none", padding: 0, margin: 0, textAlign: "left", font: "inherit", color: "inherit" }}
+        {/* Card Image — static, fills the entire image area with no empty edges */}
+        <div
+          style={{ height: "220px", width: "100%", overflow: "hidden", position: "relative", backgroundColor: "#0e1317", zIndex: 2 }}
         >
           <img
             src={imgSrc}
@@ -360,7 +356,7 @@ function ServiceCard({
             style={{
               width: "100%",
               height: "100%",
-              objectFit: service.needsCrop ? "cover" : "contain",
+              objectFit: "cover",
               transition: "transform 0.6s cubic-bezier(0.16, 1, 0.3, 1)",
             }}
             onMouseEnter={(e) => {
@@ -373,28 +369,7 @@ function ServiceCard({
               (e.target as HTMLImageElement).src = fallbackImg;
             }}
           />
-          <div
-            style={{
-              position: "absolute",
-              bottom: "12px",
-              left: "14px",
-              backgroundColor: "rgba(14, 19, 23, 0.85)",
-              backdropFilter: "blur(4px)",
-              color: "#c2a74e",
-              padding: "4px 12px",
-              borderRadius: "4px",
-              fontSize: "11px",
-              fontWeight: 700,
-              display: "flex",
-              alignItems: "center",
-              gap: "6px",
-              border: "1px solid rgba(194, 167, 78, 0.4)",
-              letterSpacing: "0.5px",
-            }}
-          >
-            <i className="fas fa-search-plus"></i> View Flyer
-          </div>
-        </button>
+        </div>
 
         {/* Card Content */}
         <div style={{ padding: "24px 22px", display: "flex", flexDirection: "column", flex: 1, position: "relative", zIndex: 2 }}>
@@ -460,34 +435,6 @@ function ServiceCard({
               borderTop: "1px solid rgba(255, 255, 255, 0.25)",
             }}
           >
-            <button
-              onClick={onLearnMore}
-              style={{
-                flex: 1,
-                padding: "11px 14px",
-                backgroundColor: "transparent",
-                border: "2px solid #1c1a1d",
-                color: "#1c1a1d",
-                borderRadius: "0px",
-                fontSize: "12px",
-                fontWeight: 800,
-                letterSpacing: "1px",
-                textTransform: "uppercase",
-                cursor: "pointer",
-                transition: "all 0.25s ease",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = "#1c1a1d";
-                e.currentTarget.style.color = "#ffffff";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = "transparent";
-                e.currentTarget.style.color = "#1c1a1d";
-              }}
-            >
-              Learn More
-            </button>
-
             <Link
               href={"/booking?service=" + encodeURIComponent(service.title) + "&price=" + encodeURIComponent(String(service.price))}
               style={{
@@ -532,7 +479,6 @@ function ServiceCard({
 export default function VipPackagesPage() {
   const [packages, setPackages] = useState<Service[]>(INITIAL_VIP_PACKAGES);
   const [loading, setLoading] = useState(false);
-  const [modalService, setModalService] = useState<Service | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [heroVisible, setHeroVisible] = useState(false);
 
@@ -836,7 +782,6 @@ export default function VipPackagesPage() {
                       index={index}
                       imgSrc={imgSrc}
                       fallbackImg={fallbackImg}
-                      onLearnMore={() => setModalService(service)}
                     />
                   );
                 })}
@@ -924,128 +869,6 @@ export default function VipPackagesPage() {
           </div>
         </footer>
 
-        {/* --- MODAL DETAIL FLYER --- */}
-        {modalService && (
-          <div
-            style={{
-              position: "fixed",
-              inset: 0,
-              zIndex: 99999,
-              backgroundColor: "rgba(0,0,0,0.92)",
-              backdropFilter: "blur(6px)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              padding: "16px",
-            }}
-            onClick={() => setModalService(null)}
-          >
-            <div
-              style={{
-                position: "relative",
-                maxWidth: "680px",
-                width: "100%",
-                backgroundColor: "#161c22",
-                borderRadius: "12px",
-                overflow: "hidden",
-                border: "1px solid rgba(194, 167, 78,0.35)",
-                boxShadow: "0 20px 60px rgba(0,0,0,0.8)",
-                display: "flex",
-                flexDirection: "column",
-                maxHeight: "90vh",
-              }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div style={{ height: "360px", backgroundColor: "#000", position: "relative", overflow: "hidden" }}>
-                <img
-                  src={modalService.fullImage || modalService.image}
-                  alt={modalService.title}
-                  style={{ width: "100%", height: "100%", objectFit: "contain" }}
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).src = "/assets/service1.jpg";
-                  }}
-                />
-                <button
-                  onClick={() => setModalService(null)}
-                  style={{
-                    position: "absolute",
-                    top: "14px",
-                    right: "14px",
-                    width: "36px",
-                    height: "36px",
-                    borderRadius: "50%",
-                    backgroundColor: "rgba(0,0,0,0.7)",
-                    border: "1px solid rgba(194, 167, 78,0.5)",
-                    color: "#fff",
-                    fontSize: "16px",
-                    cursor: "pointer",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  ✕
-                </button>
-              </div>
-
-              <div style={{ padding: "26px", overflowY: "auto" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: "14px" }}>
-                  <h3 style={{ fontFamily: "Cormorant, serif", fontSize: "2rem", color: "#fff", margin: 0 }}>
-                    {modalService.title}
-                  </h3>
-                  <span style={{ color: "#c2a74e", fontSize: "1.4rem", fontWeight: 700, fontFamily: "Cormorant, serif" }}>
-                    {formatPrice(modalService.price)}
-                  </span>
-                </div>
-
-                <p style={{ color: "#d1d5db", fontSize: "1rem", lineHeight: 1.7, marginBottom: "24px" }}>
-                  {modalService.description}
-                </p>
-
-                <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
-                  <Link
-                    href={"/booking?service=" + encodeURIComponent(modalService.title) + "&price=" + encodeURIComponent(String(modalService.price))}
-                    style={{
-                      flex: 1,
-                      minWidth: "160px",
-                      padding: "13px 20px",
-                      backgroundColor: "#c2a74e",
-                      color: "#0e1317",
-                      borderRadius: "4px",
-                      fontWeight: 700,
-                      textAlign: "center",
-                      textDecoration: "none",
-                      fontSize: "13px",
-                      textTransform: "uppercase",
-                      letterSpacing: "1px",
-                    }}
-                  >
-                    Proceed to Booking
-                  </Link>
-                  <a
-                    href={`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(`Hello, I'd like to book ${modalService.title} (${formatPrice(modalService.price)}) at The Serenity Spa.`)}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{
-                      padding: "13px 20px",
-                      backgroundColor: "#25D366",
-                      color: "#fff",
-                      borderRadius: "4px",
-                      fontWeight: 700,
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "8px",
-                      textDecoration: "none",
-                      fontSize: "13px",
-                    }}
-                  >
-                    <i className="fab fa-whatsapp"></i> Chat on WhatsApp
-                  </a>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     </>
   );
