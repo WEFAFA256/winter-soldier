@@ -416,13 +416,10 @@ export default function Home() {
                                 <div style="position: absolute; top: 15px; left: 15px; z-index: 5;">
                                     <span style="background: linear-gradient(135deg, #c2a74e, #c2a74e); color: #161616; font-size: 11px; font-weight: 700; letter-spacing: 1.5px; padding: 4px 12px; border-radius: 3px; display: inline-block; text-transform: uppercase;">FEATURED</span>
                                 </div>
-                                <img src="/assets/images/team/team-1-1.jpg" alt="Eleanor Vance" style="width: 100%; height: 320px; object-fit: cover;">
+                                <img src="/assets/images/team/team-1-1.jpg" alt="Serenity Spa wellness specialist" style="width: 100%; height: 320px; object-fit: cover;">
                             </div>
                             <div class="team-card__content text-center" style="padding: 25px 20px;">
                                 <h6 class="team-card__designation" style="color: #c2a74e; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px;">Senior Aromatherapist</h6>
-                                <h3 class="team-card__title" style="font-size: 22px; margin-bottom: 15px; color: #fff;">
-                                    <a href="team-details.html" style="color: #fff;">Eleanor Vance</a>
-                                </h3>
                                 <div style="margin-bottom: 20px;">
                                     <span class="fa fa-star" style="color: #c2a74e; font-size: 12px;"></span>
                                     <span class="fa fa-star" style="color: #c2a74e; font-size: 12px;"></span>
@@ -431,8 +428,8 @@ export default function Home() {
                                     <span class="fa fa-star" style="color: #c2a74e; font-size: 12px;"></span>
                                     <span style="color: #888; font-size: 12px; margin-left: 6px;">(4.9/5.0)</span>
                                 </div>
-                                <a href="team-details.html" class="solox-btn solox-btn--base" style="width: 100%; text-align: center; padding: 10px 0;">
-                                    <span>View Profile</span>
+                                <a href="/services" class="solox-btn solox-btn--base" style="width: 100%; text-align: center; padding: 10px 0;">
+                                    <span>Explore Treatments</span>
                                 </a>
                             </div>
                         </div>
@@ -445,13 +442,10 @@ export default function Home() {
                                 <div style="position: absolute; top: 15px; left: 15px; z-index: 5;">
                                     <span style="background: linear-gradient(135deg, #c2a74e, #c2a74e); color: #161616; font-size: 11px; font-weight: 700; letter-spacing: 1.5px; padding: 5px 14px; border-radius: 3px; display: inline-block; text-transform: uppercase; box-shadow: 0 4px 10px rgba(0,0,0,0.5);">FEATURED</span>
                                 </div>
-                                <img src="/assets/images/team/team-1-2.jpg" alt="Mike Hardson" style="width: 100%; height: 320px; object-fit: cover;">
+                                <img src="/assets/images/team/team-1-2.jpg" alt="Serenity Spa wellness specialist" style="width: 100%; height: 320px; object-fit: cover;">
                             </div>
                             <div class="team-card__content text-center" style="padding: 25px 20px;">
                                 <h6 class="team-card__designation" style="color: #c2a74e; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px;">Lead Hydro-Therapist</h6>
-                                <h3 class="team-card__title" style="font-size: 22px; margin-bottom: 15px; color: #fff;">
-                                    <a href="team-details.html" style="color: #fff;">Mike Hardson</a>
-                                </h3>
                                 <div style="margin-bottom: 20px;">
                                     <span class="fa fa-star" style="color: #c2a74e; font-size: 12px;"></span>
                                     <span class="fa fa-star" style="color: #c2a74e; font-size: 12px;"></span>
@@ -460,8 +454,8 @@ export default function Home() {
                                     <span class="fa fa-star" style="color: #c2a74e; font-size: 12px;"></span>
                                     <span style="color: #888; font-size: 12px; margin-left: 6px;">(5.0/5.0)</span>
                                 </div>
-                                <a href="team-details.html" class="solox-btn solox-btn--base" style="width: 100%; text-align: center; padding: 10px 0;">
-                                    <span>View Profile</span>
+                                <a href="/services" class="solox-btn solox-btn--base" style="width: 100%; text-align: center; padding: 10px 0;">
+                                    <span>Explore Treatments</span>
                                 </a>
                             </div>
                         </div>
@@ -474,13 +468,10 @@ export default function Home() {
                                 <div style="position: absolute; top: 15px; left: 15px; z-index: 5;">
                                     <span style="background: linear-gradient(135deg, #c2a74e, #c2a74e); color: #161616; font-size: 11px; font-weight: 700; letter-spacing: 1.5px; padding: 4px 12px; border-radius: 3px; display: inline-block; text-transform: uppercase;">FEATURED</span>
                                 </div>
-                                <img src="/assets/images/team/team-1-3.jpg" alt="Jessica Rose" style="width: 100%; height: 320px; object-fit: cover;">
+                                <img src="/assets/images/team/team-1-3.jpg" alt="Serenity Spa wellness specialist" style="width: 100%; height: 320px; object-fit: cover;">
                             </div>
                             <div class="team-card__content text-center" style="padding: 25px 20px;">
                                 <h6 class="team-card__designation" style="color: #c2a74e; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px;">Holistic Aesthetician</h6>
-                                <h3 class="team-card__title" style="font-size: 22px; margin-bottom: 15px; color: #fff;">
-                                    <a href="team-details.html" style="color: #fff;">Jessica Rose</a>
-                                </h3>
                                 <div style="margin-bottom: 20px;">
                                     <span class="fa fa-star" style="color: #c2a74e; font-size: 12px;"></span>
                                     <span class="fa fa-star" style="color: #c2a74e; font-size: 12px;"></span>
@@ -489,8 +480,8 @@ export default function Home() {
                                     <span class="fa fa-star" style="color: #c2a74e; font-size: 12px;"></span>
                                     <span style="color: #888; font-size: 12px; margin-left: 6px;">(4.95/5.0)</span>
                                 </div>
-                                <a href="team-details.html" class="solox-btn solox-btn--base" style="width: 100%; text-align: center; padding: 10px 0;">
-                                    <span>View Profile</span>
+                                <a href="/services" class="solox-btn solox-btn--base" style="width: 100%; text-align: center; padding: 10px 0;">
+                                    <span>Explore Treatments</span>
                                 </a>
                             </div>
                         </div>
@@ -503,13 +494,10 @@ export default function Home() {
                                 <div style="position: absolute; top: 15px; left: 15px; z-index: 5;">
                                     <span style="background: linear-gradient(135deg, #c2a74e, #c2a74e); color: #161616; font-size: 11px; font-weight: 700; letter-spacing: 1.5px; padding: 4px 12px; border-radius: 3px; display: inline-block; text-transform: uppercase;">FEATURED</span>
                                 </div>
-                                <img src="/assets/images/team/team-1-4.jpg" alt="David Miller" style="width: 100%; height: 320px; object-fit: cover;">
+                                <img src="/assets/images/team/team-1-4.jpg" alt="Serenity Spa wellness specialist" style="width: 100%; height: 320px; object-fit: cover;">
                             </div>
                             <div class="team-card__content text-center" style="padding: 25px 20px;">
                                 <h6 class="team-card__designation" style="color: #c2a74e; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px;">Thermal & Stone Expert</h6>
-                                <h3 class="team-card__title" style="font-size: 22px; margin-bottom: 15px; color: #fff;">
-                                    <a href="team-details.html" style="color: #fff;">David Miller</a>
-                                </h3>
                                 <div style="margin-bottom: 20px;">
                                     <span class="fa fa-star" style="color: #c2a74e; font-size: 12px;"></span>
                                     <span class="fa fa-star" style="color: #c2a74e; font-size: 12px;"></span>
@@ -518,8 +506,8 @@ export default function Home() {
                                     <span class="fa fa-star" style="color: #c2a74e; font-size: 12px;"></span>
                                     <span style="color: #888; font-size: 12px; margin-left: 6px;">(4.9/5.0)</span>
                                 </div>
-                                <a href="team-details.html" class="solox-btn solox-btn--base" style="width: 100%; text-align: center; padding: 10px 0;">
-                                    <span>View Profile</span>
+                                <a href="/services" class="solox-btn solox-btn--base" style="width: 100%; text-align: center; padding: 10px 0;">
+                                    <span>Explore Treatments</span>
                                 </a>
                             </div>
                         </div>
@@ -532,13 +520,10 @@ export default function Home() {
                                 <div style="position: absolute; top: 15px; left: 15px; z-index: 5;">
                                     <span style="background: linear-gradient(135deg, #c2a74e, #c2a74e); color: #161616; font-size: 11px; font-weight: 700; letter-spacing: 1.5px; padding: 4px 12px; border-radius: 3px; display: inline-block; text-transform: uppercase;">FEATURED</span>
                                 </div>
-                                <img src="/assets/images/team/team-1-5.jpg" alt="Maya Lin" style="width: 100%; height: 320px; object-fit: cover;">
+                                <img src="/assets/images/team/team-1-5.jpg" alt="Serenity Spa wellness specialist" style="width: 100%; height: 320px; object-fit: cover;">
                             </div>
                             <div class="team-card__content text-center" style="padding: 25px 20px;">
                                 <h6 class="team-card__designation" style="color: #c2a74e; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px;">Deep Tissue & Recovery Expert</h6>
-                                <h3 class="team-card__title" style="font-size: 22px; margin-bottom: 15px; color: #fff;">
-                                    <a href="team-details.html" style="color: #fff;">Maya Lin</a>
-                                </h3>
                                 <div style="margin-bottom: 20px;">
                                     <span class="fa fa-star" style="color: #c2a74e; font-size: 12px;"></span>
                                     <span class="fa fa-star" style="color: #c2a74e; font-size: 12px;"></span>
@@ -547,8 +532,8 @@ export default function Home() {
                                     <span class="fa fa-star" style="color: #c2a74e; font-size: 12px;"></span>
                                     <span style="color: #888; font-size: 12px; margin-left: 6px;">(4.95/5.0)</span>
                                 </div>
-                                <a href="team-details.html" class="solox-btn solox-btn--base" style="width: 100%; text-align: center; padding: 10px 0;">
-                                    <span>View Profile</span>
+                                <a href="/services" class="solox-btn solox-btn--base" style="width: 100%; text-align: center; padding: 10px 0;">
+                                    <span>Explore Treatments</span>
                                 </a>
                             </div>
                         </div>
