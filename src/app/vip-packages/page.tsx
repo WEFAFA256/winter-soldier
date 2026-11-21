@@ -4,6 +4,12 @@ import React, { useState, useEffect, useMemo, useRef } from "react";
 import Link from "next/link";
 import CustomCursor from "@/components/CustomCursor";
 import MobileDrawer from "@/components/MobileDrawer";
+import {
+  fetchSiteContent,
+  isRealServiceTitle,
+  orderServices,
+  splitServiceCatalog,
+} from "@/lib/service-order";
 
 interface Service {
   title: string;
@@ -490,41 +496,58 @@ export default function VipPackagesPage() {
   }, []);
 
   useEffect(() => {
-    const isVip = (s: Service) => {
-      const p = typeof s.price === "number" ? s.price : parseInt(String(s.price).replace(/\D/g, ""), 10);
-      return !isNaN(p) && p >= 400000;
-    };
-    const fetchPackages = async () => {
+    const loadPackages = async () => {
       try {
-        const res = await fetch("/api/content");
-        if (res.ok) {
-          const data = await res.json();
-          if (data && data.services && Array.isArray(data.services) && data.services.length > 0) {
-            const vip = data.services.filter(isVip);
+        try {
+          const data = await fetchSiteContent();
+          if (data) {
+            const catalog = splitServiceCatalog(data);
+            const vip = orderServices(
+              catalog.vipServices.filter((s: Service) => isRealServiceTitle(s.title)),
+              "vip"
+            );
             if (vip.length > 0) {
               setPackages(vip);
-              setLoading(false);
               return;
             }
           }
+        } catch (err) {
+          console.error("Failed to load /api/content, trying local JSON...", err);
         }
-      } catch (err) {
-        console.error("Failed to load /api/content, trying local JSON...", err);
-      }
 
-      try {
-        const res = await fetch("/site-content.json");
-        if (res.ok) {
-          const data = await res.json();
-          if (data && Array.isArray(data.services)) setPackages(data.services.filter(isVip));
+        try {
+          const res = await fetch("/site-content.json");
+          if (res.ok) {
+            const data = await res.json();
+            if (data) {
+              const catalog = splitServiceCatalog(data);
+              const vip = orderServices(
+                catalog.vipServices.filter((s: Service) => isRealServiceTitle(s.title)),
+                "vip"
+              );
+              if (vip.length > 0) setPackages(vip);
+            }
+          }
+        } catch (err) {
+          console.error("Failed to load local JSON", err);
         }
-      } catch (err) {
-        console.error("Failed to load local JSON", err);
+      } finally {
+        // Runs on the success return too — otherwise the page stays on the skeleton.
+        setLoading(false);
       }
-      setLoading(false);
     };
 
-    fetchPackages();
+    loadPackages();
+
+    const refreshOnVisible = () => {
+      if (document.visibilityState === "visible") loadPackages();
+    };
+    window.addEventListener("focus", refreshOnVisible);
+    document.addEventListener("visibilitychange", refreshOnVisible);
+    return () => {
+      window.removeEventListener("focus", refreshOnVisible);
+      document.removeEventListener("visibilitychange", refreshOnVisible);
+    };
   }, []);
 
   /* Exact `.main-slider-two__title::after` geometry from solox.css: parked at left:100%

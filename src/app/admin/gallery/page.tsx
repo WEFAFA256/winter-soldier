@@ -3,12 +3,14 @@
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { Companion, DEFAULT_COMPANIONS } from "@/lib/escorts";
+import { parseServicePrice, splitServiceCatalog } from "@/lib/service-order";
 
 /* ─── Types ─────────────────────────────────────────────────── */
 interface ServiceItem {
   title: string; price: number | string; image: string;
   fullImage?: string; description: string; delay?: string;
   needsCrop?: boolean; imageOnly?: boolean;
+  duration?: string; features?: string[];
 }
 interface GalleryItem { id: string; src: string; alt: string; delay?: string; availability?: "available" | "in-session"; }
 interface BlogPost { id: string; title: string; excerpt: string; content: string; image: string; date: string; author: string; }
@@ -72,6 +74,8 @@ const css = `
   
    /* fixed: removed orphaned keyframe fragment */
   .adm .line-clamp2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .adm .mobile-panel-grid { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 16px !important; }
+  .adm .mobile-option-card { display: flex !important; align-items: center !important; gap: 10px !important; }
 
   /* ─── Mobile responsiveness ─── */
   @media (max-width: 640px) {
@@ -99,6 +103,9 @@ const css = `
     .adm .svc-form-grid { grid-template-columns: 1fr !important; }
     .adm .escort-form-grid { grid-template-columns: 1fr !important; }
     .adm .blog-form-grid { grid-template-columns: 1fr !important; }
+    .adm .vip-form-grid { grid-template-columns: 1fr !important; }
+    .adm .mobile-panel-grid { grid-template-columns: 1fr !important; }
+    .adm .mobile-option-card { flex-direction: column !important; align-items: stretch !important; }
     .adm .settings-grid { grid-template-columns: 1fr !important; }
     .adm .blog-card { flex-direction: column !important; align-items: flex-start !important; gap: 8px !important; }
     .adm .blog-card img { width: 100% !important; height: auto !important; max-height: 140px !important; flex-shrink: 0 !important; }
@@ -159,7 +166,7 @@ const SectionHead = ({ title, sub }: any) => (
 
 /* ─── Main Component ─────────────────────────────────────────── */
 export default function AdminGalleryPage() {
-  const [tab, setTab] = useState<"gallery"|"services"|"escorts"|"blog"|"bookings"|"info">("gallery");
+  const [tab, setTab] = useState<"gallery"|"services"|"vip"|"mobile"|"escorts"|"blog"|"bookings"|"info">("gallery");
   const [auth, setAuth] = useState(false);
   const [pw, setPw] = useState("");
   const [pwErr, setPwErr] = useState("");
@@ -174,7 +181,7 @@ export default function AdminGalleryPage() {
   const [selectedImages, setSelectedImages] = useState<string[]>([]);
   const [purging, setPurging] = useState(false);
 
-  /* Services */
+  /* Services page cards */
   const [services, setServices] = useState<ServiceItem[]>([]);
   const [siteContent, setSiteContent] = useState<any>(null);
   const [svcSearch, setSvcSearch] = useState("");
@@ -183,6 +190,18 @@ export default function AdminGalleryPage() {
   const [svcUploadIdx, setSvcUploadIdx] = useState<number | null>(null);
   const [svcNewUploading, setSvcNewUploading] = useState(false);
   const [saving, setSaving] = useState(false);
+
+  /* VIP packages page cards — separate from /services so price edits stay scoped */
+  const [vipServices, setVipServices] = useState<ServiceItem[]>([]);
+  const [vipSearch, setVipSearch] = useState("");
+  const [showAddVip, setShowAddVip] = useState(false);
+  const [newVip, setNewVip] = useState<Partial<ServiceItem>>({ title:"", price:300000, description:"", image:"/assets/service1.jpg" });
+  const [vipUploadIdx, setVipUploadIdx] = useState<number | null>(null);
+  const [vipNewUploading, setVipNewUploading] = useState(false);
+
+  /* Mobile Massage page cards — selected from services + VIP, own prices */
+  const [mobileMassage, setMobileMassage] = useState<ServiceItem[]>([]);
+  const [mobileSearch, setMobileSearch] = useState("");
 
   /* Escort profile cards */
   const [escorts, setEscorts] = useState<Companion[]>([]);
@@ -318,8 +337,11 @@ export default function AdminGalleryPage() {
       if (gRes.ok) setGallery(await gRes.json());
       if (cRes.ok) {
         const c = await cRes.json();
+        const catalog = splitServiceCatalog(c);
         setSiteContent(c);
-        if (c.services) setServices(c.services);
+        setServices(catalog.services);
+        setVipServices(catalog.vipServices);
+        setMobileMassage(Array.isArray(c.mobileMassage) ? c.mobileMassage : []);
         setEscorts(Array.isArray(c.escorts) ? c.escorts : DEFAULT_COMPANIONS);
       }
       if (bRes.ok) setBlogs(await bRes.json());
@@ -475,6 +497,72 @@ export default function AdminGalleryPage() {
     setSvcNewUploading(false);
   };
 
+  /* VIP page handlers — these edit `vipServices` only. */
+  const updateVip = (i: number, k: keyof ServiceItem, v: any) => {
+    const u = [...vipServices]; u[i] = { ...u[i], [k]: v }; setVipServices(u);
+  };
+  const deleteVip = (i: number) => {
+    if (!confirm(`Delete "${vipServices[i].title}" from VIP packages?`)) return;
+    setVipServices(vipServices.filter((_, j) => j !== i));
+  };
+  const addVip = () => {
+    if (!newVip.title) return alert("Enter a VIP package title");
+    setVipServices([newVip as ServiceItem, ...vipServices]);
+    setNewVip({ title:"", price:300000, description:"", image:"/assets/service1.jpg" });
+    setShowAddVip(false);
+  };
+  const changeVipImage = async (i: number, file: File | undefined) => {
+    if (!file) return;
+    setVipUploadIdx(i);
+    try {
+      const url = await uploadFile(file);
+      if (url) updateVip(i, "image", url);
+      else alert("Image upload failed. Please try again.");
+    } catch {
+      alert("Image upload failed. Please try again.");
+    }
+    setVipUploadIdx(null);
+  };
+  const uploadNewVipImage = async (file: File | undefined) => {
+    if (!file) return;
+    setVipNewUploading(true);
+    try {
+      const url = await uploadFile(file);
+      if (url) setNewVip(s => ({ ...s, image: url }));
+      else alert("Image upload failed. Please try again.");
+    } catch {
+      alert("Image upload failed. Please try again.");
+    }
+    setVipNewUploading(false);
+  };
+
+  /* Mobile Massage handlers — prices here are a copy for /mobile-massage only. */
+  const titleKey = (value: string) => String(value || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+  const addToMobile = (source: ServiceItem) => {
+    if (mobileMassage.some(card => titleKey(card.title) === titleKey(source.title))) {
+      return alert("This treatment is already on the Mobile Massage page.");
+    }
+    setMobileMassage([...mobileMassage, {
+      title: source.title,
+      price: source.price,
+      image: source.image,
+      description: source.description || "Premium out-call treatment delivered to your location.",
+      duration: "60 - 90 mins",
+      features: [
+        "Delivered to your hotel or residence",
+        "Professional therapist and portable setup",
+        "Fresh linens and aromatic oils",
+        "Discreet, punctual service",
+      ],
+    }]);
+  };
+  const updateMobilePrice = (i: number, price: number) => {
+    const u = [...mobileMassage]; u[i] = { ...u[i], price }; setMobileMassage(u);
+  };
+  const removeFromMobile = (i: number) => {
+    setMobileMassage(mobileMassage.filter((_, j) => j !== i));
+  };
+
   /* Escort card handlers */
   const updateEscort = (i: number, k: keyof Companion, v: any) => {
     const u = [...escorts]; u[i] = { ...u[i], [k]: v }; setEscorts(u);
@@ -516,7 +604,7 @@ export default function AdminGalleryPage() {
 
   const saveAll = async () => {
     setSaving(true);
-    const body = { ...siteContent, services, escorts };
+    const body = { ...siteContent, services, vipServices, mobileMassage, escorts };
     const res = await fetch("/api/content", { method:"POST", headers:{ "Content-Type":"application/json" }, credentials:"same-origin", body: JSON.stringify(body) });
     if (res.ok) { setSiteContent(body); alert("Saved to Cloudinary ✓"); }
     else alert("Save failed");
@@ -575,9 +663,16 @@ export default function AdminGalleryPage() {
   );
 
   /* ── MAIN DASHBOARD ──────────────────────────────────────────── */
+  const mobileOptions = [
+    ...services.map((svc, i) => ({ svc, i, label: "Service" })),
+    ...vipServices.map((svc, i) => ({ svc, i, label: "VIP" })),
+  ].filter(({ svc }) => svc.title.toLowerCase().includes(mobileSearch.toLowerCase()));
+
   const tabs = [
     { id:"gallery", label:"Gallery", icon:"📸", count:gallery.length },
     { id:"services", label:"Services", icon:"💅", count:services.length },
+    { id:"vip", label:"VIP", icon:"👑", count:vipServices.length },
+    { id:"mobile", label:"Mobile Massage", icon:"🚗", count:mobileMassage.length },
     { id:"escorts", label:"Escorts", icon:"💃", count:escorts.length },
     { id:"blog", label:"Blog", icon:"📝", count:blogs.length },
     { id:"bookings", label:"Bookings", icon:"📅" },
@@ -875,7 +970,7 @@ export default function AdminGalleryPage() {
             {/* ══ SERVICES TAB ══ */}
             {tab === "services" && (
               <div className="admin-pane">
-                <SectionHead title="Treatments & Pricing" sub="Edit titles, descriptions, prices and card images — click a thumbnail to upload a new photo, or paste an image URL. Click Save Changes when done." />
+                <SectionHead title="Services Page Treatments" sub="These cards and prices appear on /services only. Edit titles, descriptions, prices and card images, then click Save Changes." />
 
                 <div className="svc-toolbar" style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:16, gap:12 }}>
                   <BtnGold onClick={()=>setShowAddSvc(!showAddSvc)}>{showAddSvc ? "✕ Cancel" : "+ Add Treatment"}</BtnGold>
@@ -935,13 +1030,147 @@ export default function AdminGalleryPage() {
                       <div className="svc-card-actions" style={{ display:"flex", alignItems:"center", gap:8, flexShrink:0 }}>
                         <div>
                           <p style={{ margin:"0 0 2px", fontSize:9, color:C.muted, fontWeight:600, textTransform:"uppercase" }}>Price (UGX)</p>
-                          <input type="number" value={typeof svc.price==="number"?svc.price:parseInt(String(svc.price))||0} onChange={e=>updateSvc(i,"price",+e.target.value)}
+                          <input type="number" aria-label={`Service price for ${svc.title}`} value={typeof svc.price==="number"?svc.price:parseInt(String(svc.price))||0} onChange={e=>updateSvc(i,"price",+e.target.value)}
                             style={{ width:110, background:C.bg, border:`1px solid ${C.border}`, borderRadius:6, padding:"5px 8px", color:C.gold, fontSize:12, fontWeight:700, textAlign:"right" }} />
                         </div>
                         <button onClick={()=>deleteSvc(i)} className="btn-danger" style={{ background:"none", border:`1px solid ${C.border}`, borderRadius:6, color:C.danger, padding:"6px 10px", fontSize:12, cursor:"pointer" }}>🗑</button>
                       </div>
                     </div>
                   ))}
+                </div>
+                <div style={{ marginTop:20 }}>
+                  <BtnGold onClick={saveAll} disabled={saving}>{saving ? "Saving…" : "💾 Save All Changes"}</BtnGold>
+                </div>
+              </div>
+            )}
+
+            {/* ══ VIP TAB ══ */}
+            {tab === "vip" && (
+              <div className="admin-pane">
+                <SectionHead title="VIP Packages" sub="These cards and prices appear on /vip-packages only. Price edits here never change the /services cards." />
+
+                <div className="svc-toolbar" style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:16, gap:12 }}>
+                  <BtnGold onClick={()=>setShowAddVip(!showAddVip)}>{showAddVip ? "✕ Cancel" : "+ Add VIP Package"}</BtnGold>
+                  <input placeholder="🔍  Search VIP packages…" value={vipSearch} onChange={e=>setVipSearch(e.target.value)}
+                    style={{ flex:1, maxWidth:260, background:C.surface, border:`1px solid ${C.border}`, borderRadius:6, padding:"7px 12px", color:C.text, fontSize:12 }} />
+                </div>
+
+                {showAddVip && (
+                  <div className="admin-pane" style={{ background:C.surface, border:`1px solid ${C.gold}44`, borderRadius:10, padding:20, marginBottom:16 }}>
+                    <p style={{ margin:"0 0 14px", fontSize:12, fontWeight:700, color:C.gold, textTransform:"uppercase" }}>New VIP Package</p>
+                    <div className="adm vip-form-grid" style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:12, marginBottom:12 }}>
+                      <Input label="Title" placeholder="e.g. 4hands Tantra Yoni" value={newVip.title||""} onChange={(e:any)=>setNewVip({...newVip,title:e.target.value})} />
+                      <Input label="Price (UGX)" type="number" value={newVip.price||""} onChange={(e:any)=>setNewVip({...newVip,price:+e.target.value})} />
+                      <div>
+                        <Input label="Image URL / Path" placeholder="/assets/service1.jpg" value={newVip.image||""} onChange={(e:any)=>setNewVip({...newVip,image:e.target.value})} />
+                        <label style={{ display:"inline-flex", alignItems:"center", gap:5, marginTop:6, padding:"5px 10px", borderRadius:6, border:`1px solid ${C.border}`, color:C.gold, fontSize:11, fontWeight:600, cursor:"pointer" }}>
+                          {vipNewUploading ? "Uploading…" : "⬆ Upload image"}
+                          <input type="file" accept="image/*" disabled={vipNewUploading} onChange={e=>uploadNewVipImage(e.target.files?.[0])} style={{ display:"none" }} />
+                        </label>
+                      </div>
+                    </div>
+                    <Textarea label="Description" rows={2} placeholder="Describe this VIP package…" value={newVip.description||""} onChange={(e:any)=>setNewVip({...newVip,description:e.target.value})} />
+                    <BtnGold onClick={addVip}>Save VIP Package</BtnGold>
+                  </div>
+                )}
+
+                <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
+                  {vipServices.map((svc,i)=>({svc,i})).filter(({svc})=>svc.title.toLowerCase().includes(vipSearch.toLowerCase())).map(({svc,i})=>(
+                    <div key={i} className="card adm service-card" style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:8, padding:"12px 16px", display:"flex", gap:12, alignItems:"center" }}>
+                      <label title="Click to change this card's image" style={{ position:"relative", width:56, height:56, flexShrink:0, borderRadius:6, overflow:"hidden", border:`1px solid ${C.border}`, background:"#0a0d12", cursor:"pointer", display:"block" }}>
+                        <img src={svc.image} alt={svc.title} style={{ width:"100%", height:"100%", objectFit:"cover", display:"block" }}
+                          onError={(e:any)=>{ e.target.src="/assets/service1.jpg"; }} />
+                        <span style={{ position:"absolute", bottom:2, right:2, padding:"1px 4px", borderRadius:4, background:"rgba(13,17,23,0.85)", color:C.gold, fontSize:10, fontWeight:700, lineHeight:1.3 }}>✎</span>
+                        {vipUploadIdx === i && (<span style={{ position:"absolute", inset:0, display:"flex", alignItems:"center", justifyContent:"center", background:"rgba(0,0,0,0.65)", color:C.gold, fontSize:9, fontWeight:700 }}>Uploading…</span>)}
+                        <input type="file" accept="image/*" disabled={vipUploadIdx === i} onChange={e=>changeVipImage(i, e.target.files?.[0])} style={{ display:"none" }} />
+                      </label>
+                      <div style={{ flex:1, minWidth:0 }}>
+                        <input value={svc.title} onChange={e=>updateVip(i,"title",e.target.value)}
+                          style={{ width:"100%", background:"transparent", border:"none", borderBottom:"1px solid transparent", color:C.text, fontSize:13, fontWeight:600, padding:"2px 0" }}
+                          onFocus={e=>(e.target.style.borderBottomColor=C.gold)} onBlur={e=>(e.target.style.borderBottomColor="transparent")} />
+                        <input value={svc.description} onChange={e=>updateVip(i,"description",e.target.value)}
+                          style={{ width:"100%", background:"transparent", border:"none", color:C.muted, fontSize:11, padding:"2px 0", marginTop:3 }}
+                          placeholder="Description…" />
+                      </div>
+                      <div className="svc-card-actions" style={{ display:"flex", alignItems:"center", gap:8, flexShrink:0 }}>
+                        <div>
+                          <p style={{ margin:"0 0 2px", fontSize:9, color:C.muted, fontWeight:600, textTransform:"uppercase" }}>VIP Price (UGX)</p>
+                          <input type="number" aria-label={`VIP price for ${svc.title}`} value={typeof svc.price==="number"?svc.price:parseServicePrice(svc.price)||0} onChange={e=>updateVip(i,"price",+e.target.value)}
+                            style={{ width:110, background:C.bg, border:`1px solid ${C.border}`, borderRadius:6, padding:"5px 8px", color:C.gold, fontSize:12, fontWeight:700, textAlign:"right" }} />
+                        </div>
+                        <button onClick={()=>deleteVip(i)} className="btn-danger" style={{ background:"none", border:`1px solid ${C.border}`, borderRadius:6, color:C.danger, padding:"6px 10px", fontSize:12, cursor:"pointer" }}>🗑</button>
+                      </div>
+                    </div>
+                  ))}
+                  {vipServices.length === 0 && <p style={{ color:C.muted, fontSize:12 }}>No VIP packages yet. Add one above.</p>}
+                </div>
+                <div style={{ marginTop:20 }}>
+                  <BtnGold onClick={saveAll} disabled={saving}>{saving ? "Saving…" : "💾 Save All Changes"}</BtnGold>
+                </div>
+              </div>
+            )}
+
+            {/* ══ MOBILE MASSAGE TAB ══ */}
+            {tab === "mobile" && (
+              <div className="admin-pane">
+                <SectionHead title="Mobile Massage Page" sub="Add any service or VIP option to /mobile-massage. Prices edited here are a separate mobile price and never change /services or /vip-packages." />
+
+                <div className="mobile-panel-grid">
+                  <div className="admin-pane" style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:10, padding:16 }}>
+                    <p style={{ margin:"0 0 12px", fontSize:12, fontWeight:700, color:C.gold, textTransform:"uppercase" }}>All Services &amp; VIP Options</p>
+                    <input placeholder="🔍  Search all options…" value={mobileSearch} onChange={e=>setMobileSearch(e.target.value)}
+                      style={{ width:"100%", background:C.bg, border:`1px solid ${C.border}`, borderRadius:6, padding:"8px 12px", color:C.text, fontSize:12, marginBottom:12 }} />
+                    <div style={{ display:"flex", flexDirection:"column", gap:8, maxHeight:520, overflowY:"auto" }}>
+                      {mobileOptions.map(({svc,i,label}) => {
+                        const alreadyAdded = mobileMassage.some(card => titleKey(card.title) === titleKey(svc.title));
+                        const priceNum = parseServicePrice(svc.price);
+                        return (
+                          <div key={`${label}-${i}`} className="card adm mobile-option-card" style={{ background:C.bg, border:`1px solid ${C.border}`, borderRadius:8, padding:10 }}>
+                            <img src={svc.image} alt="" style={{ width:44, height:44, borderRadius:6, objectFit:"cover", flexShrink:0 }}
+                              onError={(e:any)=>{ e.target.src="/assets/service1.jpg"; }} />
+                            <div style={{ flex:1, minWidth:0 }}>
+                              <strong style={{ display:"block", color:C.text, fontSize:12 }}>{svc.title}</strong>
+                              <span style={{ color:C.muted, fontSize:10 }}>{label} · {Number.isNaN(priceNum) ? String(svc.price) : `UGX ${priceNum.toLocaleString()}`}</span>
+                            </div>
+                            <BtnOutline onClick={()=>addToMobile(svc)} disabled={alreadyAdded}
+                              style={{ color:alreadyAdded?C.success:C.gold, borderColor:alreadyAdded?`${C.success}66`:`${C.gold}66`, fontSize:10, padding:"6px 8px", opacity:alreadyAdded?0.85:1 }}>
+                              {alreadyAdded ? "✓ Added" : "+ Add to Mobile Massage"}
+                            </BtnOutline>
+                          </div>
+                        );
+                      })}
+                      {mobileOptions.length === 0 && <p style={{ color:C.muted, fontSize:12 }}>No options match that search.</p>}
+                    </div>
+                  </div>
+
+                  <div className="admin-pane" style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:10, padding:16 }}>
+                    <p style={{ margin:"0 0 12px", fontSize:12, fontWeight:700, color:C.gold, textTransform:"uppercase" }}>Selected for /mobile-massage ({mobileMassage.length})</p>
+                    {mobileMassage.length === 0 ? (
+                      <p style={{ color:C.muted, fontSize:12 }}>No treatments selected yet. Use “Add to Mobile Massage” on the left.</p>
+                    ) : (
+                      <div style={{ display:"flex", flexDirection:"column", gap:8, maxHeight:520, overflowY:"auto" }}>
+                        {mobileMassage.map((card,i)=>(
+                          <div key={`${card.title}-${i}`} className="card adm service-card" style={{ background:C.bg, border:`1px solid ${C.border}`, borderRadius:8, padding:10, display:"flex", gap:10, alignItems:"center" }}>
+                            <img src={card.image} alt="" style={{ width:48, height:48, borderRadius:6, objectFit:"cover", flexShrink:0 }}
+                              onError={(e:any)=>{ e.target.src="/assets/service1.jpg"; }} />
+                            <div style={{ flex:1, minWidth:0 }}>
+                              <strong style={{ display:"block", color:C.text, fontSize:12 }}>{card.title}</strong>
+                              <span style={{ color:C.muted, fontSize:10 }}>{card.description}</span>
+                            </div>
+                            <div className="svc-card-actions" style={{ display:"flex", alignItems:"center", gap:6, flexShrink:0 }}>
+                              <div>
+                                <p style={{ margin:"0 0 2px", fontSize:9, color:C.muted, fontWeight:600, textTransform:"uppercase" }}>Mobile Price</p>
+                                <input type="number" aria-label={`Mobile price for ${card.title}`} value={typeof card.price==="number"?card.price:parseServicePrice(card.price)||0} onChange={e=>updateMobilePrice(i,+e.target.value)}
+                                  style={{ width:100, background:C.bg, border:`1px solid ${C.border}`, borderRadius:6, padding:"5px 7px", color:C.gold, fontSize:12, fontWeight:700, textAlign:"right" }} />
+                              </div>
+                              <button onClick={()=>removeFromMobile(i)} className="btn-danger" title="Remove from mobile page"
+                                style={{ background:"none", border:`1px solid ${C.border}`, borderRadius:6, color:C.danger, padding:"6px 8px", fontSize:11, cursor:"pointer" }}>✕</button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
                 <div style={{ marginTop:20 }}>
                   <BtnGold onClick={saveAll} disabled={saving}>{saving ? "Saving…" : "💾 Save All Changes"}</BtnGold>

@@ -207,7 +207,95 @@
       "delay": "delay-300",
       "needsCrop": true,
       "price": 250000
+    }
+  ],
+  "hotelPriceList": {
+    "images": [
+      "/assets/hotel_pricelist/price1.jpg",
+      "/assets/hotel_pricelist/price2.jpg",
+      "/assets/hotel_pricelist/price3.jpg",
+      "/assets/hotel_pricelist/price4.jpg",
+      "/assets/hotel_pricelist/price5.jpg",
+      "/assets/hotel_pricelist/price6.jpg",
+      "/assets/hotel_pricelist/price7.jpg",
+      "/assets/hotel_pricelist/price8.jpg"
+    ]
+  },
+  "rooms": [
+    {
+      "title": "Economy Stay",
+      "image": "/assets/hotel_rooms/economy_stay.jpg",
+      "description": "Budget friendly option with essential amenities. Includes Breakfast, Room Service, and access to Foot Spa. Ideal for solo travelers.",
+      "price": "30$ / UGX 100K",
+      "delay": "delay-100"
     },
+    {
+      "title": "Deluxe Queen",
+      "image": "/assets/hotel_rooms/deluxe_queen.jpg",
+      "description": "Perfect comfort & luxury. Self-contained with Queen Size Bed, Aerial & Airport View. Includes Breakfast and Spa access.",
+      "price": "80$ / UGX 250K",
+      "delay": "delay-200"
+    },
+    {
+      "title": "Deluxe Twinbed",
+      "image": "/assets/hotel_rooms/deluxe_twin.jpg",
+      "description": "Spacious twin bed setup. Includes all Deluxe amenities plus Music Party Free access. Great for friends or colleagues.",
+      "price": "100$ / UGX 350K",
+      "delay": "delay-300"
+    },
+    {
+      "title": "Penthouse Deluxe",
+      "image": "/assets/hotel_rooms/penthouse_deluxe.jpg",
+      "description": "Premium Luxury. King Size Bed, Laundry Service, and Party Free access. The ultimate experience for up to 3 adults.",
+      "price": "130$ / UGX 450K",
+      "delay": "delay-100"
+    }
+  ],
+  "contact": {
+    "spa": {
+      "phone": "0764001922",
+      "whatsapp": "256705657285",
+      "email": "theserenitybookings@gmail.com",
+      "address": "Makerere Hill Road, Kiyindi, 2 Close\nKampala, Uganda",
+      "mapQuery": "0.326564,32.564663"
+    },
+    "hotel": {
+      "phone": "0742641607",
+      "whatsapp": "256758547586",
+      "email": "marinastaysbookings@gmail.com"
+    }
+  },
+  "blogs": [
+    {
+      "id": "1",
+      "title": "5 Benefits of Regular Massage Therapy",
+      "slug": "benefits-of-massage-therapy",
+      "date": "August 4, 2026",
+      "readTime": "3 min read",
+      "excerpt": "Discover how regular massage therapy can reduce stress, alleviate pain, improve blood circulation, and boost wellness.",
+      "coverImage": "/assets/service1.jpg",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "Regular massage therapy is more than just a relaxing escape; it is a fundamental pillar of wellness. Over time, physical stress, emotional pressure, and bad posture can create tension in our bodies. A professional massage session is designed to break down these knots and encourage healing."
+        },
+        {
+          "type": "heading",
+          "text": "1. Stress Reduction and Mental Clarity"
+        },
+        {
+          "type": "paragraph",
+          "text": "One of the most immediate effects of a massage is a deep sense of calm. Studies show that massage reduces cortisol (the body's primary stress hormone) while boosting serotonin and dopamine, the hormones responsible for happiness and relaxation."
+        },
+        {
+          "type": "image",
+          "url": "/assets/spa-bg.jpg",
+          "caption": "A peaceful massage room setup at The Serenity Spa"
+        }
+      ]
+    }
+  ],
+  "vipServices": [
     {
       "title": "Xclusive Sessions",
       "image": "/assets/service5.jpg",
@@ -367,89 +455,83 @@
       "price": 1200000
     }
   ],
-  "hotelPriceList": {
-    "images": [
-      "/assets/hotel_pricelist/price1.jpg",
-      "/assets/hotel_pricelist/price2.jpg",
-      "/assets/hotel_pricelist/price3.jpg",
-      "/assets/hotel_pricelist/price4.jpg",
-      "/assets/hotel_pricelist/price5.jpg",
-      "/assets/hotel_pricelist/price6.jpg",
-      "/assets/hotel_pricelist/price7.jpg",
-      "/assets/hotel_pricelist/price8.jpg"
-    ]
-  },
-  "rooms": [
+  "mobileMassage": [
     {
-      "title": "Economy Stay",
-      "image": "/assets/hotel_rooms/economy_stay.jpg",
-      "description": "Budget friendly option with essential amenities. Includes Breakfast, Room Service, and access to Foot Spa. Ideal for solo travelers.",
-      "price": "30$ / UGX 100K",
-      "delay": "delay-100"
+      "title": "Swedish Massage",
+      "price": 200000,
+      "image": "/assets/service1.jpg",
+      "description": "This is one of the most common & basic massage types traditionally for relaxing the mind & soothing the body. It's performed with slow simple calm movements to energize the body & overall health involving actions ie. Kneading, Rolling & Tapping. Oils are used.",
+      "duration": "60 - 90 mins",
+      "features": [
+        "Delivered to your hotel or residence",
+        "Professional therapist and portable setup",
+        "Fresh linens and aromatic oils",
+        "Discreet, punctual service"
+      ]
     },
     {
-      "title": "Deluxe Queen",
-      "image": "/assets/hotel_rooms/deluxe_queen.jpg",
-      "description": "Perfect comfort & luxury. Self-contained with Queen Size Bed, Aerial & Airport View. Includes Breakfast and Spa access.",
-      "price": "80$ / UGX 250K",
-      "delay": "delay-200"
+      "title": "Deeptissue Massage",
+      "price": 230000,
+      "image": "/assets/service2.jpg",
+      "description": "Similar to Swedish Massage, also known as Hard Massage but with a deeptissue massage, the therapist applies slow, firm pressure to release muscle tension. The focus is on the deepest layers of muscle tissue, tendons & fascia. Highly recommended for clients with body pains, aches",
+      "duration": "60 - 90 mins",
+      "features": [
+        "Delivered to your hotel or residence",
+        "Professional therapist and portable setup",
+        "Fresh linens and aromatic oils",
+        "Discreet, punctual service"
+      ]
     },
     {
-      "title": "Deluxe Twinbed",
-      "image": "/assets/hotel_rooms/deluxe_twin.jpg",
-      "description": "Spacious twin bed setup. Includes all Deluxe amenities plus Music Party Free access. Great for friends or colleagues.",
-      "price": "100$ / UGX 350K",
-      "delay": "delay-300"
+      "title": "Aromatherapy",
+      "price": 250000,
+      "image": "/assets/service4.jpg",
+      "description": "Aromatherapy incorporates the use of warm scented essential oils into a massage while alternating between gentle and harder pressure while using a specific blend of essential oils. Highly recommended for Clients working in fumes,etc to renew the Breathe Senses & Relax",
+      "duration": "60 - 90 mins",
+      "features": [
+        "Delivered to your hotel or residence",
+        "Professional therapist and portable setup",
+        "Fresh linens and aromatic oils",
+        "Discreet, punctual service"
+      ]
     },
     {
-      "title": "Penthouse Deluxe",
-      "image": "/assets/hotel_rooms/penthouse_deluxe.jpg",
-      "description": "Premium Luxury. King Size Bed, Laundry Service, and Party Free access. The ultimate experience for up to 3 adults.",
-      "price": "130$ / UGX 450K",
-      "delay": "delay-100"
-    }
-  ],
-  "contact": {
-    "spa": {
-      "phone": "0764001922",
-      "whatsapp": "256705657285",
-      "email": "theserenitybookings@gmail.com",
-      "address": "Makerere Hill Road, Kiyindi, 2 Close\nKampala, Uganda",
-      "mapQuery": "0.326564,32.564663"
+      "title": "Couples Massage",
+      "price": 450000,
+      "image": "/assets/couples-massage-flyer.jpg",
+      "description": "Shared experience for two. Erotic/Swedish with 2 girls or 1 girl & 1 guy. A life time adventure creating memories forever. (250K)",
+      "duration": "60 - 90 mins",
+      "features": [
+        "Delivered to your hotel or residence",
+        "Professional therapist and portable setup",
+        "Fresh linens and aromatic oils",
+        "Discreet, punctual service"
+      ]
     },
-    "hotel": {
-      "phone": "0742641607",
-      "whatsapp": "256758547586",
-      "email": "marinastaysbookings@gmail.com"
-    }
-  },
-  "blogs": [
     {
-      "id": "1",
-      "title": "5 Benefits of Regular Massage Therapy",
-      "slug": "benefits-of-massage-therapy",
-      "date": "August 4, 2026",
-      "readTime": "3 min read",
-      "excerpt": "Discover how regular massage therapy can reduce stress, alleviate pain, improve blood circulation, and boost wellness.",
-      "coverImage": "/assets/service1.jpg",
-      "content": [
-        {
-          "type": "paragraph",
-          "text": "Regular massage therapy is more than just a relaxing escape; it is a fundamental pillar of wellness. Over time, physical stress, emotional pressure, and bad posture can create tension in our bodies. A professional massage session is designed to break down these knots and encourage healing."
-        },
-        {
-          "type": "heading",
-          "text": "1. Stress Reduction and Mental Clarity"
-        },
-        {
-          "type": "paragraph",
-          "text": "One of the most immediate effects of a massage is a deep sense of calm. Studies show that massage reduces cortisol (the body's primary stress hormone) while boosting serotonin and dopamine, the hormones responsible for happiness and relaxation."
-        },
-        {
-          "type": "image",
-          "url": "/assets/spa-bg.jpg",
-          "caption": "A peaceful massage room setup at The Serenity Spa"
-        }
+      "title": "Erotic & Body to Body",
+      "price": 350000,
+      "image": "/assets/service3.jpg",
+      "description": "Definitely the most Relaxing & Sensual Massage Session combining Erotic Soothing Touches & Body 2 body Sensual Techniques of Romance. Except its more gentle & affectionate with calm relaxing touches to arouse intimacy",
+      "duration": "60 - 90 mins",
+      "features": [
+        "Delivered to your hotel or residence",
+        "Professional therapist and portable setup",
+        "Fresh linens and aromatic oils",
+        "Discreet, punctual service"
+      ]
+    },
+    {
+      "title": "4hands Nuru | B2b",
+      "price": 550000,
+      "image": "/assets/4hands-nuru-b2b.jpg",
+      "description": "Experience pure arousal with two therapists. Sensual slides, sticky oils, and extreme body contact at its best. (450K)",
+      "duration": "60 - 90 mins",
+      "features": [
+        "Delivered to your hotel or residence",
+        "Professional therapist and portable setup",
+        "Fresh linens and aromatic oils",
+        "Discreet, punctual service"
       ]
     }
   ]

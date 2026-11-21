@@ -4,6 +4,12 @@ import React, { useState, useEffect, useMemo, useRef, useCallback } from "react"
 import Link from "next/link";
 import CustomCursor from "@/components/CustomCursor";
 import MobileDrawer from "@/components/MobileDrawer";
+import {
+  fetchSiteContent,
+  isRealServiceTitle,
+  orderServices,
+  splitServiceCatalog,
+} from "@/lib/service-order";
 
 interface Service {
   title: string;
@@ -558,13 +564,13 @@ export default function ServicesPage() {
   }, []);
 
   useEffect(() => {
-    const fetchServices = async () => {
+    const loadServices = async () => {
       try {
-        const res = await fetch("/api/content");
-        if (res.ok) {
-          const data = await res.json();
-          if (data && data.services && Array.isArray(data.services) && data.services.length > 0) {
-            setServices(data.services);
+        const data = await fetchSiteContent();
+        if (data) {
+          const catalog = splitServiceCatalog(data);
+          if (catalog.services.length > 0) {
+            setServices(catalog.services);
             setLoading(false);
             return;
           }
@@ -577,8 +583,9 @@ export default function ServicesPage() {
         const localRes = await fetch("/site-content.json");
         if (localRes.ok) {
           const localData = await localRes.json();
-          if (localData && localData.services) {
-            setServices(localData.services);
+          if (localData) {
+            const catalog = splitServiceCatalog(localData);
+            if (catalog.services.length > 0) setServices(catalog.services);
           }
         }
       } catch (localErr) {
@@ -588,18 +595,28 @@ export default function ServicesPage() {
       }
     };
 
-    fetchServices();
+    loadServices();
+
+    // An admin save should show up in an already-open public tab as soon as the
+    // visitor returns to it. The probe is cache-busted and read-only.
+    const refreshOnVisible = () => {
+      if (document.visibilityState === "visible") loadServices();
+    };
+    window.addEventListener("focus", refreshOnVisible);
+    document.addEventListener("visibilitychange", refreshOnVisible);
+    return () => {
+      window.removeEventListener("focus", refreshOnVisible);
+      document.removeEventListener("visibilitychange", refreshOnVisible);
+    };
   }, []);
 
-  // Filter logic — only services strictly less than 400,000 UGX (400k+ belong to VIP Packages)
+  // Explicit catalogue order from the site owner first; every unlisted card is
+  // merged in by price so nothing disappears from the page.
   const filteredServices = useMemo(() => {
-    let list = services.filter((s) => {
-      if (!s.title || s.title.toLowerCase() === "new spa treatment" || s.title.trim() === "") {
-        return false;
-      }
-      const num = typeof s.price === "number" ? s.price : parseInt(String(s.price).replace(/\D/g, ""), 10);
-      return !isNaN(num) && num < 400000;
-    });
+    let list = orderServices(
+      services.filter((s) => isRealServiceTitle(s.title)),
+      "services"
+    );
 
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();

@@ -4,10 +4,16 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import CustomCursor from "@/components/CustomCursor";
 import MobileDrawer from "@/components/MobileDrawer";
+import {
+  fetchSiteContent,
+  formatServicePrice,
+  isRealServiceTitle,
+  parseServicePrice,
+} from "@/lib/service-order";
 
 interface MobileService {
   title: string;
-  price: string;
+  price: number | string;
   duration: string;
   description: string;
   features: string[];
@@ -80,6 +86,27 @@ const COVERAGE_AREAS = [
 
 const whatsappNumber = "256781945510";
 
+const DEFAULT_MOBILE_FEATURES = [
+  "Delivered to your hotel or residence",
+  "Professional therapist and portable setup",
+  "Fresh linens and aromatic oils",
+  "Discreet, punctual service",
+];
+
+function normaliseMobileCard(raw: any): MobileService | null {
+  if (!raw || !isRealServiceTitle(raw.title)) return null;
+  return {
+    title: String(raw.title),
+    price: raw.price ?? 0,
+    duration: String(raw.duration || "60 - 90 mins"),
+    description: String(raw.description || "A premium out-call treatment delivered to your location."),
+    features: Array.isArray(raw.features) && raw.features.length
+      ? raw.features.map(String)
+      : DEFAULT_MOBILE_FEATURES,
+    image: String(raw.image || "/assets/service1.jpg"),
+  };
+}
+
 function MobileServiceCard({
   service,
   index,
@@ -113,6 +140,8 @@ function MobileServiceCard({
   }, []);
 
   const staggerDelay = (index % 3) * 0.08;
+  const displayPrice = formatServicePrice(service.price);
+  const bookingPrice = parseServicePrice(service.price);
 
   return (
     <div
@@ -270,7 +299,7 @@ function MobileServiceCard({
                 border: "1px solid rgba(194, 167, 78, 0.38)",
               }}
             >
-              {service.price}
+              {formatServicePrice(service.price)}
             </span>
           </div>
 
@@ -310,7 +339,7 @@ function MobileServiceCard({
             }}
           >
             <a
-              href={`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(`Hello, I'd like to book an out-call for ${service.title} (${service.price}) at my location.`)}`}
+              href={`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(`Hello, I'd like to book an out-call for ${service.title} (${displayPrice}) at my location.`)}`}
               target="_blank"
               rel="noopener noreferrer"
               style={{
@@ -347,7 +376,9 @@ function MobileServiceCard({
             </a>
 
             <Link
-              href={`/booking?service=${encodeURIComponent(service.title)}&price=${encodeURIComponent(service.price)}`}
+              href={`/booking?service=${encodeURIComponent(service.title)}&price=${encodeURIComponent(
+                Number.isNaN(bookingPrice) ? String(service.price) : String(bookingPrice)
+              )}`}
               style={{
                 flex: 1.3,
                 padding: "11px 14px",
@@ -390,10 +421,44 @@ function MobileServiceCard({
 export default function MobileMassagePage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [heroVisible, setHeroVisible] = useState(false);
+  const [mobileServices, setMobileServices] = useState<MobileService[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const t = setTimeout(() => setHeroVisible(true), 80);
     return () => clearTimeout(t);
+  }, []);
+
+  useEffect(() => {
+    const loadMobileCards = async () => {
+      try {
+        const data = await fetchSiteContent();
+        if (data && Array.isArray(data.mobileMassage)) {
+          const cards = data.mobileMassage
+            .map(normaliseMobileCard)
+            .filter((card: MobileService | null): card is MobileService => Boolean(card));
+          setMobileServices(cards);
+          setLoading(false);
+          return;
+        }
+      } catch (err) {
+        console.error("Failed to load mobile massage cards, using defaults...", err);
+      }
+      setMobileServices(MOBILE_SERVICES);
+      setLoading(false);
+    };
+
+    loadMobileCards();
+
+    const refreshOnVisible = () => {
+      if (document.visibilityState === "visible") loadMobileCards();
+    };
+    window.addEventListener("focus", refreshOnVisible);
+    document.addEventListener("visibilitychange", refreshOnVisible);
+    return () => {
+      window.removeEventListener("focus", refreshOnVisible);
+      document.removeEventListener("visibilitychange", refreshOnVisible);
+    };
   }, []);
 
   return (
@@ -526,15 +591,29 @@ export default function MobileMassagePage() {
               </h2>
             </div>
 
-            <div className="row g-4">
-              {MOBILE_SERVICES.map((service, index) => (
-                <MobileServiceCard
-                  key={service.title || index}
-                  service={service}
-                  index={index}
-                />
-              ))}
-            </div>
+            {loading ? (
+              <div style={{ textAlign: "center", padding: "60px 0" }}>
+                <div className="spinner-border text-warning" role="status" style={{ width: "3rem", height: "3rem" }}>
+                  <span className="visually-hidden">Loading mobile therapies...</span>
+                </div>
+                <p style={{ marginTop: "16px", color: "#9ca3af" }}>Loading out-call therapies...</p>
+              </div>
+            ) : mobileServices.length === 0 ? (
+              <div style={{ textAlign: "center", padding: "60px 0", backgroundColor: "#161c22", borderRadius: "12px", border: "1px dashed rgba(194,167,78,0.3)" }}>
+                <h3 style={{ color: "#fff", fontFamily: "Cormorant, serif", fontSize: "1.8rem" }}>No out-call therapies selected yet</h3>
+                <p style={{ color: "#9ca3af" }}>Ask the admin to add a treatment from the Mobile Massage tab.</p>
+              </div>
+            ) : (
+              <div className="row g-4">
+                {mobileServices.map((service, index) => (
+                  <MobileServiceCard
+                    key={`${service.title}-${index}`}
+                    service={service}
+                    index={index}
+                  />
+                ))}
+              </div>
+            )}
           </div>
         </section>
 
