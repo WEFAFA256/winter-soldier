@@ -4,12 +4,14 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import CustomCursor from "@/components/CustomCursor";
+import MobileDrawer from "@/components/MobileDrawer";
 
 export default function BlogPostPage() {
   const params = useParams<{ id: string }>();
   const id = params?.id;
   const [post, setPost] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     fetch("/api/blog", { cache: "no-store" })
@@ -24,12 +26,72 @@ export default function BlogPostPage() {
       .finally(() => setLoading(false));
   }, [id]);
 
+  // Solox's global script adds `body.locked` (overflow:hidden) when the hamburger is
+  // tapped; make sure that class never survives closing the React drawer.
+  useEffect(() => {
+    if (!mobileMenuOpen) document.body.classList.remove("locked");
+  }, [mobileMenuOpen]);
+
   const content = String(post?.content || "");
   const read = Math.max(1, Math.ceil(content.trim().split(/\s+/).filter(Boolean).length / 200));
 
   return (
     <>
       <CustomCursor />
+
+      {/* Same native Solox header as every other page: full nav on desktop,
+          hamburger + React drawer on mobile. */}
+      <header className="main-header main-header--two sticky-header sticky-header--normal">
+        <div className="container-fluid">
+          <div className="main-header__inner">
+            <div className="main-header__logo">
+              <Link href="/" style={{ display: "flex", alignItems: "center", textDecoration: "none" }}>
+                <img
+                  src="/assets/logo.jpg"
+                  alt="The Serenity Spa"
+                  style={{
+                    height: "52px",
+                    width: "52px",
+                    borderRadius: "50%",
+                    objectFit: "cover",
+                    border: "2px solid rgba(194, 167, 78, 0.6)",
+                    display: "block",
+                  }}
+                />
+              </Link>
+            </div>
+
+            <nav className="main-header__nav main-menu">
+              <ul className="main-menu__list">
+                <li><Link href="/">Home</Link></li>
+                <li><Link href="/services">Services</Link></li>
+                <li><Link href="/vip-packages">VIP Packages</Link></li>
+                <li><Link href="/mobile-massage">Mobile Massage</Link></li>
+                <li><Link href="/gallery">Gallery</Link></li>
+                <li className="current"><Link href="/blog">Blog</Link></li>
+                <li><Link href="/escorts">Escorts</Link></li>
+              </ul>
+            </nav>
+
+            <div className="main-header__right">
+              <div
+                className="mobile-nav__btn mobile-nav__toggler"
+                onClick={() => setMobileMenuOpen(true)}
+                style={{ cursor: "pointer" }}
+              >
+                <span></span>
+                <span></span>
+                <span></span>
+              </div>
+              <Link href="/booking" className="solox-btn main-header__btn">
+                <span>Book now</span>
+              </Link>
+            </div>
+          </div>
+        </div>
+        <MobileDrawer isOpen={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} />
+      </header>
+
       <main className="post-root">
         <style>{`
           .post-root * { box-sizing: border-box; }
@@ -37,26 +99,7 @@ export default function BlogPostPage() {
             min-height: 100vh; background: #0e1317; color: #e6edf3;
             font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
           }
-          .post-nav {
-            background: rgba(14,19,23,.97); border-bottom: 1px solid rgba(194,167,78,.18);
-            position: sticky; top: 0; z-index: 20;
-          }
-          .post-nav__inner {
-            max-width: 1100px; margin: 0 auto; padding: 14px 20px;
-            display: flex; align-items: center; justify-content: space-between; gap: 16px;
-          }
-          .post-nav__brand { display: flex; align-items: center; gap: 12px; text-decoration: none; }
-          .post-nav__brand img {
-            width: 44px; height: 44px; border-radius: 50%; object-fit: cover;
-            border: 2px solid rgba(194,167,78,.6);
-          }
-          .post-nav__brand span { font-family: 'Cormorant', Georgia, serif; font-size: 21px; color: #fff; }
-          .post-nav__links { display: flex; align-items: center; gap: 22px; }
-          .post-nav__links a {
-            color: #aab3bd; font-size: 13px; text-decoration: none; transition: color .2s;
-          }
-          .post-nav__links a:hover { color: #c2a74e; }
-          .post-wrap { max-width: 860px; margin: 0 auto; padding: 64px 20px 90px; }
+          .post-wrap { max-width: 860px; margin: 0 auto; padding: 150px 20px 90px; }
           .post-back {
             display: inline-flex; align-items: center; gap: 8px; color: #c2a74e;
             font-size: 12px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
@@ -100,27 +143,11 @@ export default function BlogPostPage() {
           }
           .post-empty p { color: #aab3bd; font-size: 15px; line-height: 1.7; margin: 0 0 24px; }
           @media (max-width: 640px) {
-            .post-nav__links { gap: 14px; }
-            .post-nav__links a { font-size: 12px; }
-            .post-wrap { padding: 40px 16px 70px; }
+            .post-wrap { padding: 105px 16px 70px; }
             .post-cover { margin-bottom: 28px; }
             .post-content { font-size: 15px; line-height: 1.85; }
           }
         `}</style>
-
-        <nav className="post-nav">
-          <div className="post-nav__inner">
-            <Link href="/" className="post-nav__brand">
-              <img src="/assets/logo.jpg" alt="The Serenity Spa" />
-              <span>The Serenity Spa</span>
-            </Link>
-            <div className="post-nav__links">
-              <Link href="/">Home</Link>
-              <Link href="/services">Services</Link>
-              <Link href="/blog">Journal</Link>
-            </div>
-          </div>
-        </nav>
 
         <div className="post-wrap">
           <Link href="/blog" className="post-back">← Back to journal</Link>
