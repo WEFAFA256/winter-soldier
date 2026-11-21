@@ -395,6 +395,7 @@ async function handleCallback(request, env, ctx, path) {
 
   let finalStatus = null;
   let paidAmount = null;
+  let failureCode = extractDeposit(body).failureCode;
   const cachedLookup = await env.SERENITY_DB.prepare(
     "SELECT checked_at, status, amount FROM callback_lookups WHERE deposit_id = ?"
   ).bind(depositId).first();
@@ -426,6 +427,9 @@ async function handleCallback(request, env, ctx, path) {
     }
     finalStatus = verified.status;
     paidAmount = extractPaidAmount(verified);
+    if (verified.failureReason && verified.failureReason.failureCode) {
+      failureCode = verified.failureReason.failureCode;
+    }
     await env.SERENITY_DB.prepare(
       `INSERT INTO callback_lookups (deposit_id, checked_at, status, amount)
        VALUES (?, ?, ?, ?)
@@ -488,7 +492,8 @@ async function handleCallback(request, env, ctx, path) {
     // overturn an already CONFIRMED booking and free a paid customer's slot.
     if (booking.status === "PENDING_PAYMENT") {
       await archiveRow(env, booking, "FAILED", "pawapay-failed");
-      console.log("failed payment released slot", { depositId, eventId });
+      await recordPaymentFailure(env, booking.id, depositId, failureCode);
+      console.log("failed payment released slot", { depositId, eventId, failureCode });
     } else {
       console.log("late FAILED callback ignored; booking already terminal", {
         depositId, eventId, status: booking.status,
@@ -589,6 +594,42 @@ function friendlyPayError(code) {
     case "PROVIDER_TEMPORARILY_UNAVAILABLE": return "That network is temporarily unavailable. Try the other provider.";
     case "INVALID_PROVIDER": return "Choose MTN MoMo or Airtel Money.";
     default: return "Payment could not be started. Please try again or contact us.";
+  }
+}
+
+// A failed callback archives the active booking so its slot is freed. Without a
+// durable failure record the customer's status poll gets "Booking not found",
+// which reads as a broken app. Store the authoritative provider reason and
+// surface it on the next status check.
+function friendlyFailureMessage(code) {
+  switch (code) {
+    case "INSUFFICIENT_BALANCE":
+      return "Payment was declined: that mobile-money wallet has insufficient balance or has reached its transaction limit. Top up or use another number.";
+    case "INVALID_PHONE_NUMBER":
+      return "Payment was declined: that number is not registered for mobile money on the selected network.";
+    case "AMOUNT_OUT_OF_BOUNDS":
+      return "Payment was declined: the amount is outside that wallet's transaction limit.";
+    case "DEPOSITS_NOT_ALLOWED":
+      return "Payment was declined: that wallet does not allow incoming payments.";
+    default:
+      return "Payment was declined by the mobile-money provider. Please try again or use another wallet.";
+  }
+}
+
+async function recordPaymentFailure(env, bookingId, depositId, code) {
+  if (!bookingId) return;
+  try {
+    await env.SERENITY_DB.prepare(
+      `INSERT INTO payment_failures (booking_id, deposit_id, failure_code, failure_message, created_at)
+       VALUES (?, ?, ?, ?, ?)
+       ON CONFLICT(booking_id) DO UPDATE SET failure_code = excluded.failure_code,
+         failure_message = excluded.failure_message, created_at = excluded.created_at`
+    ).bind(
+      bookingId, depositId || null, code || null,
+      friendlyFailureMessage(code), new Date().toISOString()
+    ).run();
+  } catch (e) {
+    console.warn("could not record payment failure", String(e));
   }
 }
 
@@ -737,7 +778,15 @@ async function getBooking(id, env) {
             deposit_initiated_at, status_check_at
      FROM bookings WHERE id = ?`
   ).bind(id).first();
-  if (!row) return fail("Booking not found", 404);
+  if (!row) {
+    // A failed payment archives the row to free the slot. Return the real
+    // provider reason instead of the misleading "Booking not found".
+    const failed = await env.SERENITY_DB.prepare(
+      "SELECT failure_message FROM payment_failures WHERE booking_id = ?"
+    ).bind(id).first();
+    if (failed) return fail(failed.failure_message, 410);
+    return fail("Booking not found", 404);
+  }
 
   // Callbacks are authoritative, but if one is lost or a dashboard URL was
   // mistyped, a throttled server-to-server status check still finalises the
@@ -764,8 +813,10 @@ async function getBooking(id, env) {
           row.status = "CONFIRMED";
           row.confirmed_at = now;
         } else if (data.status === "FAILED") {
+          const code = data.failureReason && data.failureReason.failureCode;
           await archiveBookingById(env, id, "FAILED", "status-check");
-          return fail("Payment failed. Please make a new booking.", 410);
+          await recordPaymentFailure(env, id, row.deposit_id, code);
+          return fail(friendlyFailureMessage(code), 410);
         }
       }
     }
