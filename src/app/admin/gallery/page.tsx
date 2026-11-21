@@ -154,6 +154,8 @@ export default function AdminGalleryPage() {
   const [svcSearch, setSvcSearch] = useState("");
   const [showAddSvc, setShowAddSvc] = useState(false);
   const [newSvc, setNewSvc] = useState<Partial<ServiceItem>>({ title:"", price:150000, description:"", image:"/assets/service1.jpg" });
+  const [svcUploadIdx, setSvcUploadIdx] = useState<number | null>(null);
+  const [svcNewUploading, setSvcNewUploading] = useState(false);
   const [saving, setSaving] = useState(false);
 
   /* Blog */
@@ -385,6 +387,35 @@ export default function AdminGalleryPage() {
   };
   const deleteSvc = (i: number) => { if (!confirm(`Delete "${services[i].title}"?`)) return; setServices(services.filter((_,j)=>j!==i)); };
   const addSvc = () => { if (!newSvc.title) return alert("Enter a service title"); setServices([newSvc as ServiceItem, ...services]); setNewSvc({ title:"", price:150000, description:"", image:"/assets/service1.jpg" }); setShowAddSvc(false); };
+
+  // Upload a replacement image for an existing service card. Images go to the
+  // same Cloudinary store as gallery/blog images; the returned secure URL is
+  // written into the service record and persists when "Save All Changes" runs.
+  const changeSvcImage = async (i: number, file: File | undefined) => {
+    if (!file) return;
+    setSvcUploadIdx(i);
+    try {
+      const url = await uploadFile(file);
+      if (url) updateSvc(i, "image", url);
+      else alert("Image upload failed. Please try again.");
+    } catch {
+      alert("Image upload failed. Please try again.");
+    }
+    setSvcUploadIdx(null);
+  };
+
+  const uploadNewSvcImage = async (file: File | undefined) => {
+    if (!file) return;
+    setSvcNewUploading(true);
+    try {
+      const url = await uploadFile(file);
+      if (url) setNewSvc(s => ({ ...s, image: url }));
+      else alert("Image upload failed. Please try again.");
+    } catch {
+      alert("Image upload failed. Please try again.");
+    }
+    setSvcNewUploading(false);
+  };
 
   const saveAll = async () => {
     setSaving(true);
@@ -726,7 +757,7 @@ export default function AdminGalleryPage() {
             {/* ══ SERVICES TAB ══ */}
             {tab === "services" && (
               <div className="admin-pane">
-                <SectionHead title="Treatments & Pricing" sub="Edit service titles, descriptions, and prices. Click Save Changes when done." />
+                <SectionHead title="Treatments & Pricing" sub="Edit titles, descriptions, prices and card images — click a thumbnail to upload a new photo, or paste an image URL. Click Save Changes when done." />
 
                 <div className="svc-toolbar" style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:16, gap:12 }}>
                   <BtnGold onClick={()=>setShowAddSvc(!showAddSvc)}>{showAddSvc ? "✕ Cancel" : "+ Add Treatment"}</BtnGold>
@@ -741,7 +772,13 @@ export default function AdminGalleryPage() {
                     <div className="adm svc-form-grid" style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:12, marginBottom:12 }}>
                       <Input label="Title" placeholder="e.g. Hot Stone Massage" value={newSvc.title||""} onChange={(e:any)=>setNewSvc({...newSvc,title:e.target.value})} />
                       <Input label="Price (UGX)" type="number" value={newSvc.price||""} onChange={(e:any)=>setNewSvc({...newSvc,price:+e.target.value})} />
-                      <Input label="Image Path" placeholder="/assets/service1.jpg" value={newSvc.image||""} onChange={(e:any)=>setNewSvc({...newSvc,image:e.target.value})} />
+                      <div>
+                        <Input label="Image URL / Path" placeholder="/assets/service1.jpg" value={newSvc.image||""} onChange={(e:any)=>setNewSvc({...newSvc,image:e.target.value})} />
+                        <label style={{ display:"inline-flex", alignItems:"center", gap:5, marginTop:6, padding:"5px 10px", borderRadius:6, border:`1px solid ${C.border}`, color:C.gold, fontSize:11, fontWeight:600, cursor:"pointer" }}>
+                          {svcNewUploading ? "Uploading…" : "⬆ Upload image"}
+                          <input type="file" accept="image/*" disabled={svcNewUploading} onChange={e=>uploadNewSvcImage(e.target.files?.[0])} style={{ display:"none" }} />
+                        </label>
+                      </div>
                     </div>
                     <Textarea label="Description" rows={2} placeholder="Describe this treatment…" value={newSvc.description||""} onChange={(e:any)=>setNewSvc({...newSvc,description:e.target.value})} />
                     <BtnGold onClick={addSvc}>Save Treatment</BtnGold>
@@ -750,10 +787,20 @@ export default function AdminGalleryPage() {
 
                 {/* Services list */}
                 <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
-                  {services.filter(s=>s.title.toLowerCase().includes(svcSearch.toLowerCase())).map((svc,i)=>(
+                  {/* Map over the FULL array first so `i` stays the real index even
+                      while a search filter is active — otherwise edits/delete/image
+                      uploads would hit the wrong service. */}
+                  {services.map((svc,i)=>({svc,i})).filter(({svc})=>svc.title.toLowerCase().includes(svcSearch.toLowerCase())).map(({svc,i})=>(
                     <div key={i} className="card adm service-card" style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:8, padding:"12px 16px", display:"flex", gap:12, alignItems:"center" }}>
-                      <img src={svc.image} alt={svc.title} style={{ width:48, height:48, objectFit:"cover", borderRadius:6, border:`1px solid ${C.border}`, flexShrink:0 }}
-                        onError={(e:any)=>{ e.target.src="/assets/service1.jpg"; }} />
+                      <label title="Click to change this card's image" style={{ position:"relative", width:56, height:56, flexShrink:0, borderRadius:6, overflow:"hidden", border:`1px solid ${C.border}`, background:"#0a0d12", cursor:"pointer", display:"block" }}>
+                        <img src={svc.image} alt={svc.title} style={{ width:"100%", height:"100%", objectFit:"cover", display:"block" }}
+                          onError={(e:any)=>{ e.target.src="/assets/service1.jpg"; }} />
+                        <span style={{ position:"absolute", bottom:2, right:2, padding:"1px 4px", borderRadius:4, background:"rgba(13,17,23,0.85)", color:C.gold, fontSize:10, fontWeight:700, lineHeight:1.3 }}>✎</span>
+                        {svcUploadIdx === i && (
+                          <span style={{ position:"absolute", inset:0, display:"flex", alignItems:"center", justifyContent:"center", background:"rgba(0,0,0,0.65)", color:C.gold, fontSize:9, fontWeight:700 }}>Uploading…</span>
+                        )}
+                        <input type="file" accept="image/*" disabled={svcUploadIdx === i} onChange={e=>changeSvcImage(i, e.target.files?.[0])} style={{ display:"none" }} />
+                      </label>
                       <div style={{ flex:1, minWidth:0 }}>
                         <input value={svc.title} onChange={e=>updateSvc(i,"title",e.target.value)}
                           style={{ width:"100%", background:"transparent", border:"none", borderBottom:`1px solid transparent`, color:C.text, fontSize:13, fontWeight:600, padding:"2px 0" }}
@@ -761,6 +808,11 @@ export default function AdminGalleryPage() {
                         <input value={svc.description} onChange={e=>updateSvc(i,"description",e.target.value)}
                           style={{ width:"100%", background:"transparent", border:"none", color:C.muted, fontSize:11, padding:"2px 0", marginTop:3 }}
                           placeholder="Description…" />
+                        <div style={{ marginTop:4, display:"flex", alignItems:"center", gap:6 }}>
+                          <span style={{ fontSize:9, color:C.muted, fontWeight:600, textTransform:"uppercase", flexShrink:0 }}>Image</span>
+                          <input value={svc.image||""} onChange={e=>updateSvc(i,"image",e.target.value)} placeholder="/assets/service1.jpg" aria-label={`Image URL for ${svc.title}`}
+                            style={{ flex:1, minWidth:0, background:C.bg, border:`1px solid ${C.border}`, borderRadius:5, padding:"4px 7px", color:C.muted, fontSize:10 }} />
+                        </div>
                       </div>
                       <div className="svc-card-actions" style={{ display:"flex", alignItems:"center", gap:8, flexShrink:0 }}>
                         <div>
