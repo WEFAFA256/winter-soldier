@@ -584,8 +584,18 @@ async function createBooking(request, env) {
   }, 201);
 }
 
+// Shared, provider-agnostic wording used for BOTH the immediate /pay rejection
+// and the async FAILED callback — MTN and Airtel get exactly the same message.
+const INSUFFICIENT_FUNDS_MESSAGE =
+  "Insufficient funds: that MTN/Airtel wallet does not have enough balance or has reached its transaction limit. Top up or use another number.";
+
 function friendlyPayError(code) {
   switch (code) {
+    case "INSUFFICIENT_BALANCE":
+    case "INSUFFICIENT_FUNDS":
+    case "LIMIT_EXCEEDED":
+    case "DAILY_LIMIT_EXCEEDED":
+    case "MONTHLY_LIMIT_EXCEEDED": return INSUFFICIENT_FUNDS_MESSAGE;
     case "INVALID_PHONE_NUMBER": return "PawaPay says that number is not registered for mobile money. Use the MTN/Airtel number that receives your MoMo prompts.";
     case "AMOUNT_OUT_OF_BOUNDS": return "This amount is outside the mobile money limit. Please contact us.";
     case "DEPOSITS_NOT_ALLOWED":
@@ -604,7 +614,11 @@ function friendlyPayError(code) {
 function friendlyFailureMessage(code) {
   switch (code) {
     case "INSUFFICIENT_BALANCE":
-      return "Payment was declined: that mobile-money wallet has insufficient balance or has reached its transaction limit. Top up or use another number.";
+    case "INSUFFICIENT_FUNDS":
+    case "LIMIT_EXCEEDED":
+    case "DAILY_LIMIT_EXCEEDED":
+    case "MONTHLY_LIMIT_EXCEEDED":
+      return INSUFFICIENT_FUNDS_MESSAGE;
     case "INVALID_PHONE_NUMBER":
       return "Payment was declined: that number is not registered for mobile money on the selected network.";
     case "AMOUNT_OUT_OF_BOUNDS":

@@ -175,6 +175,13 @@ function BookingFormInner() {
   // prompt, so aborting the PIN prompt cannot cause an endless loop.
   const [pollStopped, setPollStopped] = useState(false);
 
+  // The Worker returns the provider's authoritative reason for a declined
+  // payment (insufficient funds, limit reached, etc.). Style those messages as
+  // errors for BOTH MTN and Airtel so the customer cannot miss them.
+  const isDecline = (text: string) =>
+    /insufficient|declin|not enough|transaction limit|reached its limit/i.test(text);
+  const declined = isDecline(paymentNotice) || isDecline(payError);
+
   const loadServices = () => {
     setServicesError("");
     fetch(`${PAY_API}/api/services`, { cache: "no-store" })
@@ -959,6 +966,33 @@ function BookingFormInner() {
                       {payError}
                     </div>
                   )}
+
+                  {/* Declined payments (insufficient funds / limit reached) get a
+                      prominent red banner with a clear next step, on either network. */}
+                  {paymentNotice && declined && (
+                    <div
+                      role="alert"
+                      style={{
+                        backgroundColor: "rgba(239,68,68,0.12)",
+                        border: "1px solid rgba(239,68,68,0.45)",
+                        color: "#fca5a5",
+                        borderRadius: "8px",
+                        padding: "14px 16px",
+                        fontSize: "13px",
+                        lineHeight: 1.6,
+                        textAlign: "center",
+                        margin: "0 0 16px",
+                      }}
+                    >
+                      <strong style={{ display: "block", marginBottom: "4px", fontSize: "14px" }}>
+                        Payment declined — insufficient funds
+                      </strong>
+                      {paymentNotice}
+                      <span style={{ display: "block", marginTop: "6px", opacity: 0.85 }}>
+                        Top up that wallet or choose the other network, then make a new booking.
+                      </span>
+                    </div>
+                  )}
                   <button
                     type="submit"
                     className="serenity-gold-btn"
@@ -1204,7 +1238,7 @@ function BookingFormInner() {
                     </div>
                   </div>
 
-                  {paymentNotice && (
+                  {paymentNotice && !declined && (
                     <div
                       role="status"
                       style={{
