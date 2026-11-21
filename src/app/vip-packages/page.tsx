@@ -477,8 +477,10 @@ function ServiceCard({
 }
 
 export default function VipPackagesPage() {
-  const [packages, setPackages] = useState<Service[]>(INITIAL_VIP_PACKAGES);
-  const [loading, setLoading] = useState(false);
+  // Never render the hardcoded INITIAL_VIP_PACKAGES array: it contains old
+  // image paths and caused a brief stale-image flash before content resolved.
+  const [packages, setPackages] = useState<Service[]>([]);
+  const [loading, setLoading] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [heroVisible, setHeroVisible] = useState(false);
 
@@ -488,16 +490,17 @@ export default function VipPackagesPage() {
   }, []);
 
   useEffect(() => {
+    const isVip = (s: Service) => {
+      const p = typeof s.price === "number" ? s.price : parseInt(String(s.price).replace(/\D/g, ""), 10);
+      return !isNaN(p) && p >= 400000;
+    };
     const fetchPackages = async () => {
       try {
         const res = await fetch("/api/content");
         if (res.ok) {
           const data = await res.json();
           if (data && data.services && Array.isArray(data.services) && data.services.length > 0) {
-            const vip = data.services.filter((s: Service) => {
-              const p = typeof s.price === "number" ? s.price : parseInt(String(s.price).replace(/\D/g, ""), 10);
-              return !isNaN(p) && p >= 400000;
-            });
+            const vip = data.services.filter(isVip);
             if (vip.length > 0) {
               setPackages(vip);
               setLoading(false);
@@ -506,7 +509,17 @@ export default function VipPackagesPage() {
           }
         }
       } catch (err) {
-        console.error("Failed to load /api/content", err);
+        console.error("Failed to load /api/content, trying local JSON...", err);
+      }
+
+      try {
+        const res = await fetch("/site-content.json");
+        if (res.ok) {
+          const data = await res.json();
+          if (data && Array.isArray(data.services)) setPackages(data.services.filter(isVip));
+        }
+      } catch (err) {
+        console.error("Failed to load local JSON", err);
       }
       setLoading(false);
     };

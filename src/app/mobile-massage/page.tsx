@@ -514,6 +514,30 @@ export default function MobileMassagePage() {
           </div>
         </div>
 
+        {/* --- MOBILE SERVICES LIST --- */}
+        <section style={{ padding: "70px 0 90px 0" }}>
+          <div className="container">
+            <div style={{ textAlign: "center", marginBottom: "50px" }}>
+              <span style={{ color: "#c2a74e", textTransform: "uppercase", letterSpacing: "2px", fontSize: "12px", fontWeight: 700 }}>
+                Popular Out-Call Therapies
+              </span>
+              <h2 style={{ fontFamily: "Cormorant, serif", fontSize: "2.4rem", fontWeight: 700, color: "#fff", margin: "8px 0 0 0" }}>
+                Therapies Available for Out-Call
+              </h2>
+            </div>
+
+            <div className="row g-4">
+              {MOBILE_SERVICES.map((service, index) => (
+                <MobileServiceCard
+                  key={service.title || index}
+                  service={service}
+                  index={index}
+                />
+              ))}
+            </div>
+          </div>
+        </section>
+
         {/* --- HOW IT WORKS (3 STEPS) --- */}
         <section style={{ padding: "60px 0 50px 0", backgroundColor: "#12171c" }}>
           <div className="container">
@@ -572,30 +596,6 @@ export default function MobileMassagePage() {
                     </p>
                   </div>
                 </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* --- MOBILE SERVICES LIST --- */}
-        <section style={{ padding: "70px 0 90px 0" }}>
-          <div className="container">
-            <div style={{ textAlign: "center", marginBottom: "50px" }}>
-              <span style={{ color: "#c2a74e", textTransform: "uppercase", letterSpacing: "2px", fontSize: "12px", fontWeight: 700 }}>
-                Popular Out-Call Therapies
-              </span>
-              <h2 style={{ fontFamily: "Cormorant, serif", fontSize: "2.4rem", fontWeight: 700, color: "#fff", margin: "8px 0 0 0" }}>
-                Therapies Available for Out-Call
-              </h2>
-            </div>
-
-            <div className="row g-4">
-              {MOBILE_SERVICES.map((service, index) => (
-                <MobileServiceCard
-                  key={service.title || index}
-                  service={service}
-                  index={index}
-                />
               ))}
             </div>
           </div>

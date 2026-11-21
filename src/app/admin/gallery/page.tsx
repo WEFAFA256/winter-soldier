@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import { Companion, DEFAULT_COMPANIONS } from "@/lib/escorts";
 
 /* ─── Types ─────────────────────────────────────────────────── */
 interface ServiceItem {
@@ -87,12 +88,16 @@ const css = `
     .adm .svc-toolbar { flex-direction: column !important; align-items: stretch !important; gap: 10px !important; }
     .adm .svc-toolbar .btn-gold { width: 100% !important; }
     .adm .svc-toolbar input { width: 100% !important; max-width: none !important; flex: none !important; }
+    .adm .escort-toolbar { flex-direction: column !important; align-items: stretch !important; gap: 10px !important; }
+    .adm .escort-toolbar .btn-gold { width: 100% !important; }
+    .adm .escort-toolbar input { width: 100% !important; max-width: none !important; flex: none !important; }
     .adm .upload-grid { grid-template-columns: 1fr !important; }
     /* Gallery purge controls: stack cleanly instead of crowding 390px screens. */
     .adm .gal-toolbar { flex-direction: column !important; align-items: stretch !important; }
     .adm .gal-toolbar > div { width: 100% !important; }
     .adm .gal-toolbar button { width: 100% !important; }
     .adm .svc-form-grid { grid-template-columns: 1fr !important; }
+    .adm .escort-form-grid { grid-template-columns: 1fr !important; }
     .adm .blog-form-grid { grid-template-columns: 1fr !important; }
     .adm .settings-grid { grid-template-columns: 1fr !important; }
     .adm .blog-card { flex-direction: column !important; align-items: flex-start !important; gap: 8px !important; }
@@ -101,6 +106,9 @@ const css = `
     .adm .service-card .svc-card-actions { width: 100% !important; justify-content: space-between !important; }
     .adm .service-card .svc-card-actions > div { flex: 1 !important; }
     .adm .service-card .svc-card-actions input { width: 100% !important; }
+    .adm .escort-card { flex-direction: column !important; align-items: stretch !important; gap: 10px !important; }
+    .adm .escort-card .escort-card-actions { flex-direction: row !important; width: 100% !important; justify-content: space-between !important; }
+    .adm .escort-card .escort-card-actions select { flex: 1 !important; }
     .adm .bookings-table td, .adm .bookings-table th { white-space: normal !important; }
     /* Add-image form: stack everything and make both buttons full width. */
     .adm .gal-upload-area { width: 100% !important; }
@@ -151,7 +159,7 @@ const SectionHead = ({ title, sub }: any) => (
 
 /* ─── Main Component ─────────────────────────────────────────── */
 export default function AdminGalleryPage() {
-  const [tab, setTab] = useState<"gallery"|"services"|"blog"|"bookings"|"info">("gallery");
+  const [tab, setTab] = useState<"gallery"|"services"|"escorts"|"blog"|"bookings"|"info">("gallery");
   const [auth, setAuth] = useState(false);
   const [pw, setPw] = useState("");
   const [pwErr, setPwErr] = useState("");
@@ -175,6 +183,17 @@ export default function AdminGalleryPage() {
   const [svcUploadIdx, setSvcUploadIdx] = useState<number | null>(null);
   const [svcNewUploading, setSvcNewUploading] = useState(false);
   const [saving, setSaving] = useState(false);
+
+  /* Escort profile cards */
+  const [escorts, setEscorts] = useState<Companion[]>([]);
+  const [escortSearch, setEscortSearch] = useState("");
+  const [showAddEscort, setShowAddEscort] = useState(false);
+  const [newEscort, setNewEscort] = useState<Partial<Companion>>({
+    name: "", title: "Elite Companion", specialty: "",
+    availability: "available", image: "/assets/service1.jpg", description: "",
+  });
+  const [escortUploadIdx, setEscortUploadIdx] = useState<number | null>(null);
+  const [escortNewUploading, setEscortNewUploading] = useState(false);
 
   /* Blog */
   const [blogs, setBlogs] = useState<BlogPost[]>([]);
@@ -297,9 +316,16 @@ export default function AdminGalleryPage() {
         fetch("/api/gallery"), fetch("/api/content"), fetch("/api/blog")
       ]);
       if (gRes.ok) setGallery(await gRes.json());
-      if (cRes.ok) { const c = await cRes.json(); setSiteContent(c); if (c.services) setServices(c.services); }
+      if (cRes.ok) {
+        const c = await cRes.json();
+        setSiteContent(c);
+        if (c.services) setServices(c.services);
+        setEscorts(Array.isArray(c.escorts) ? c.escorts : DEFAULT_COMPANIONS);
+      }
       if (bRes.ok) setBlogs(await bRes.json());
-    } catch {}
+    } catch {
+      if (escorts.length === 0) setEscorts(DEFAULT_COMPANIONS);
+    }
     setLoading(false);
   };
 
@@ -449,9 +475,48 @@ export default function AdminGalleryPage() {
     setSvcNewUploading(false);
   };
 
+  /* Escort card handlers */
+  const updateEscort = (i: number, k: keyof Companion, v: any) => {
+    const u = [...escorts]; u[i] = { ...u[i], [k]: v }; setEscorts(u);
+  };
+  const deleteEscort = (i: number) => {
+    if (!confirm(`Delete "${escorts[i].name}"?`)) return;
+    setEscorts(escorts.filter((_, j) => j !== i));
+  };
+  const addEscort = () => {
+    if (!newEscort.name) return alert("Enter a name");
+    setEscorts([newEscort as Companion, ...escorts]);
+    setNewEscort({ name: "", title: "Elite Companion", specialty: "", availability: "available", image: "/assets/service1.jpg", description: "" });
+    setShowAddEscort(false);
+  };
+  const changeEscortImage = async (i: number, file: File | undefined) => {
+    if (!file) return;
+    setEscortUploadIdx(i);
+    try {
+      const url = await uploadFile(file);
+      if (url) updateEscort(i, "image", url);
+      else alert("Image upload failed. Please try again.");
+    } catch {
+      alert("Image upload failed. Please try again.");
+    }
+    setEscortUploadIdx(null);
+  };
+  const uploadNewEscortImage = async (file: File | undefined) => {
+    if (!file) return;
+    setEscortNewUploading(true);
+    try {
+      const url = await uploadFile(file);
+      if (url) setNewEscort(s => ({ ...s, image: url }));
+      else alert("Image upload failed. Please try again.");
+    } catch {
+      alert("Image upload failed. Please try again.");
+    }
+    setEscortNewUploading(false);
+  };
+
   const saveAll = async () => {
     setSaving(true);
-    const body = { ...siteContent, services };
+    const body = { ...siteContent, services, escorts };
     const res = await fetch("/api/content", { method:"POST", headers:{ "Content-Type":"application/json" }, credentials:"same-origin", body: JSON.stringify(body) });
     if (res.ok) { setSiteContent(body); alert("Saved to Cloudinary ✓"); }
     else alert("Save failed");
@@ -513,6 +578,7 @@ export default function AdminGalleryPage() {
   const tabs = [
     { id:"gallery", label:"Gallery", icon:"📸", count:gallery.length },
     { id:"services", label:"Services", icon:"💅", count:services.length },
+    { id:"escorts", label:"Escorts", icon:"💃", count:escorts.length },
     { id:"blog", label:"Blog", icon:"📝", count:blogs.length },
     { id:"bookings", label:"Bookings", icon:"📅" },
     { id:"info", label:"Settings", icon:"⚙️" },
@@ -873,6 +939,92 @@ export default function AdminGalleryPage() {
                             style={{ width:110, background:C.bg, border:`1px solid ${C.border}`, borderRadius:6, padding:"5px 8px", color:C.gold, fontSize:12, fontWeight:700, textAlign:"right" }} />
                         </div>
                         <button onClick={()=>deleteSvc(i)} className="btn-danger" style={{ background:"none", border:`1px solid ${C.border}`, borderRadius:6, color:C.danger, padding:"6px 10px", fontSize:12, cursor:"pointer" }}>🗑</button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div style={{ marginTop:20 }}>
+                  <BtnGold onClick={saveAll} disabled={saving}>{saving ? "Saving…" : "💾 Save All Changes"}</BtnGold>
+                </div>
+              </div>
+            )}
+
+            {/* ══ ESCORTS TAB ══ */}
+            {tab === "escorts" && (
+              <div className="admin-pane">
+                <SectionHead title="Escort Profile Cards" sub="Add, edit and reorder the companion cards shown on /escorts. Upload a photo or paste an image URL, then click Save Changes." />
+
+                <div className="escort-toolbar" style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:16, gap:12 }}>
+                  <BtnGold onClick={()=>setShowAddEscort(!showAddEscort)}>{showAddEscort ? "✕ Cancel" : "+ Add Companion"}</BtnGold>
+                  <input placeholder="🔍  Search companions…" value={escortSearch} onChange={e=>setEscortSearch(e.target.value)}
+                    style={{ flex:1, maxWidth:260, background:C.surface, border:`1px solid ${C.border}`, borderRadius:6, padding:"7px 12px", color:C.text, fontSize:12 }} />
+                </div>
+
+                {showAddEscort && (
+                  <div className="admin-pane" style={{ background:C.surface, border:`1px solid ${C.gold}44`, borderRadius:10, padding:20, marginBottom:16 }}>
+                    <p style={{ margin:"0 0 14px", fontSize:12, fontWeight:700, color:C.gold, textTransform:"uppercase" }}>New Companion</p>
+                    <div className="adm escort-form-grid" style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:12, marginBottom:12 }}>
+                      <Input label="Name *" placeholder="e.g. Sophia" value={newEscort.name||""} onChange={(e:any)=>setNewEscort({...newEscort,name:e.target.value})} />
+                      <Input label="Title" placeholder="Elite Companion" value={newEscort.title||""} onChange={(e:any)=>setNewEscort({...newEscort,title:e.target.value})} />
+                      <Input label="Specialty" placeholder="Fine Dining & Corporate Events" value={newEscort.specialty||""} onChange={(e:any)=>setNewEscort({...newEscort,specialty:e.target.value})} />
+                      <div>
+                        <Input label="Image URL / Path" placeholder="/assets/service1.jpg" value={newEscort.image||""} onChange={(e:any)=>setNewEscort({...newEscort,image:e.target.value})} />
+                        <label style={{ display:"inline-flex", alignItems:"center", gap:5, marginTop:6, padding:"5px 10px", borderRadius:6, border:`1px solid ${C.border}`, color:C.gold, fontSize:11, fontWeight:600, cursor:"pointer" }}>
+                          {escortNewUploading ? "Uploading…" : "⬆ Upload image"}
+                          <input type="file" accept="image/*" disabled={escortNewUploading} onChange={e=>uploadNewEscortImage(e.target.files?.[0])} style={{ display:"none" }} />
+                        </label>
+                      </div>
+                      <div>
+                        <label style={{ display:"block", fontSize:11, fontWeight:600, color:C.muted, textTransform:"uppercase", letterSpacing:"0.06em", marginBottom:5 }}>Status</label>
+                        <select value={newEscort.availability||"available"} onChange={(e:any)=>setNewEscort({...newEscort,availability:e.target.value as Companion["availability"]})}
+                          style={{ width:"100%", background:C.bg, border:`1px solid ${C.border}`, borderRadius:6, padding:"8px 12px", color:C.text, fontSize:13 }}>
+                          <option value="available">Available</option>
+                          <option value="in-session">Currently Engaged</option>
+                        </select>
+                      </div>
+                    </div>
+                    <Textarea label="Description" rows={2} placeholder="Describe this companion…" value={newEscort.description||""} onChange={(e:any)=>setNewEscort({...newEscort,description:e.target.value})} />
+                    <BtnGold onClick={addEscort}>Save Companion</BtnGold>
+                  </div>
+                )}
+
+                <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
+                  {escorts.map((c,i)=>({c,i})).filter(({c})=>c.name.toLowerCase().includes(escortSearch.toLowerCase())).map(({c,i})=>(
+                    <div key={i} className="card adm escort-card" style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:8, padding:"12px 16px", display:"flex", gap:12, alignItems:"center" }}>
+                      <label title="Click to change this card's image" style={{ position:"relative", width:64, height:64, flexShrink:0, borderRadius:6, overflow:"hidden", border:`1px solid ${C.border}`, background:"#0a0d12", cursor:"pointer", display:"block" }}>
+                        <img src={c.image} alt={c.name} style={{ width:"100%", height:"100%", objectFit:"cover", display:"block" }}
+                          onError={(e:any)=>{ e.target.src="/assets/service1.jpg"; }} />
+                        <span style={{ position:"absolute", bottom:2, right:2, padding:"1px 4px", borderRadius:4, background:"rgba(13,17,23,0.85)", color:C.gold, fontSize:10, fontWeight:700, lineHeight:1.3 }}>✎</span>
+                        {escortUploadIdx === i && (
+                          <span style={{ position:"absolute", inset:0, display:"flex", alignItems:"center", justifyContent:"center", background:"rgba(0,0,0,0.65)", color:C.gold, fontSize:9, fontWeight:700 }}>Uploading…</span>
+                        )}
+                        <input type="file" accept="image/*" disabled={escortUploadIdx === i} onChange={e=>changeEscortImage(i, e.target.files?.[0])} style={{ display:"none" }} />
+                      </label>
+                      <div style={{ flex:1, minWidth:0 }}>
+                        <input value={c.name} onChange={e=>updateEscort(i,"name",e.target.value)} aria-label={`Name for companion ${i+1}`}
+                          style={{ width:"100%", background:"transparent", border:"none", borderBottom:`1px solid transparent`, color:C.text, fontSize:13, fontWeight:600, padding:"2px 0" }}
+                          onFocus={e=>(e.target.style.borderBottomColor=C.gold)} onBlur={e=>(e.target.style.borderBottomColor="transparent")} />
+                        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8, marginTop:4 }}>
+                          <input value={c.title} onChange={e=>updateEscort(i,"title",e.target.value)} aria-label={`Title for ${c.name}`} placeholder="Title"
+                            style={{ width:"100%", minWidth:0, background:C.bg, border:`1px solid ${C.border}`, borderRadius:5, padding:"4px 7px", color:C.text, fontSize:11 }} />
+                          <input value={c.specialty} onChange={e=>updateEscort(i,"specialty",e.target.value)} aria-label={`Specialty for ${c.name}`} placeholder="Specialty"
+                            style={{ width:"100%", minWidth:0, background:C.bg, border:`1px solid ${C.border}`, borderRadius:5, padding:"4px 7px", color:C.text, fontSize:11 }} />
+                        </div>
+                        <input value={c.description} onChange={e=>updateEscort(i,"description",e.target.value)} aria-label={`Description for ${c.name}`} placeholder="Description…"
+                          style={{ width:"100%", background:"transparent", border:"none", color:C.muted, fontSize:11, padding:"2px 0", marginTop:3 }} />
+                        <div style={{ marginTop:4, display:"flex", alignItems:"center", gap:6 }}>
+                          <span style={{ fontSize:9, color:C.muted, fontWeight:600, textTransform:"uppercase", flexShrink:0 }}>Image</span>
+                          <input value={c.image||""} onChange={e=>updateEscort(i,"image",e.target.value)} placeholder="/assets/service1.jpg" aria-label={`Image URL for ${c.name}`}
+                            style={{ flex:1, minWidth:0, background:C.bg, border:`1px solid ${C.border}`, borderRadius:5, padding:"4px 7px", color:C.muted, fontSize:10 }} />
+                        </div>
+                      </div>
+                      <div className="escort-card-actions" style={{ display:"flex", flexDirection:"column", gap:8, flexShrink:0 }}>
+                        <select value={c.availability} onChange={e=>updateEscort(i,"availability",e.target.value as Companion["availability"])} aria-label={`Status for ${c.name}`}
+                          style={{ background:C.bg, border:`1px solid ${C.border}`, borderRadius:6, padding:"5px 8px", color:c.availability==="available"?C.success:C.danger, fontSize:11, fontWeight:700 }}>
+                          <option value="available">Available</option>
+                          <option value="in-session">Engaged</option>
+                        </select>
+                        <button onClick={()=>deleteEscort(i)} className="btn-danger" style={{ background:"none", border:`1px solid ${C.border}`, borderRadius:6, color:C.danger, padding:"6px 10px", fontSize:12, cursor:"pointer" }}>🗑</button>
                       </div>
                     </div>
                   ))}

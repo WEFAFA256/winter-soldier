@@ -1094,9 +1094,6 @@ export default function GalleryPage() {
               <h2 style={{ fontFamily: "Cormorant, serif", fontSize: "clamp(2rem, 4vw, 3rem)", fontWeight: 700, color: "#ffffff", margin: "0 0 12px 0" }}>
                 Therapist Profiles &amp; Sanctuary Gallery
               </h2>
-              <p style={{ color: "rgba(255,255,255,0.75)", fontSize: "14px", lineHeight: 1.6, margin: 0 }}>
-                Check live room and specialist availability in real-time. Click any profile to view full-resolution photographs, or book your preferred therapist directly.
-              </p>
             </div>
 
             {loading ? (
@@ -1247,9 +1244,6 @@ export default function GalleryPage() {
               <h2 style={{ fontFamily: "Cormorant, serif", fontSize: "clamp(2rem, 4vw, 3.1rem)", fontWeight: 700, color: "#ffffff", margin: "0 0 14px 0", lineHeight: 1.2 }}>
                 Watch Our Specialists At Work
               </h2>
-              <p style={{ color: "rgba(255,255,255,0.78)", fontSize: "15px", lineHeight: 1.65, margin: 0 }}>
-                Step inside our private suites through curated demonstration reels. Witness the rhythmic harmony, authentic Turkish Hammam marble exfoliation, and rejuvenating rituals performed by our certified specialists.
-              </p>
             </div>
 
             {/* Video Category Filter Tabs */}

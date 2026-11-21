@@ -541,8 +541,10 @@ function useScrollReveal() {
 }
 
 export default function ServicesPage() {
-  const [services, setServices] = useState<Service[]>(INITIAL_SERVICES);
-  const [loading, setLoading] = useState(false);
+  // Never render the hardcoded INITIAL_SERVICES array: it contains old image
+  // paths and caused a brief stale-image flash before /api/content resolved.
+  const [services, setServices] = useState<Service[]>([]);
+  const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);

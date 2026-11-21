@@ -1,46 +1,12 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import CustomCursor from "@/components/CustomCursor";
 import MobileDrawer from "@/components/MobileDrawer";
+import { Companion, DEFAULT_COMPANIONS } from "@/lib/escorts";
 
 const whatsappNumber = "256781945510";
-
-const companions = [
-  {
-    name: "Sophia",
-    title: "Elite Companion",
-    specialty: "Fine Dining & Corporate Events",
-    availability: "available",
-    image: "https://res.cloudinary.com/njzctr4m/image/upload/v1784667206/serenity_gallery/u7wll8tto5yxjt4ptcbl.jpg",
-    description: "Sophisticated, articulate, and effortlessly elegant — Sophia brings grace and warmth to any occasion.",
-  },
-  {
-    name: "Valentina",
-    title: "Premium Companion",
-    specialty: "Social Events & Private Dinners",
-    availability: "in-session",
-    image: "https://res.cloudinary.com/njzctr4m/image/upload/v1784667142/serenity_gallery/afxgagluqzhsoe03mqk9.jpg",
-    description: "Charming and refined, Valentina adapts seamlessly to any social setting with poise and intelligence.",
-  },
-  {
-    name: "Isabelle",
-    title: "Luxury Companion",
-    specialty: "Travel & Leisure Companionship",
-    availability: "available",
-    image: "https://res.cloudinary.com/njzctr4m/image/upload/v1784667087/serenity_gallery/cnl0pcncguetzsg6ms5v.jpg",
-    description: "Adventurous yet refined, Isabelle is the perfect travel companion for unforgettable journeys.",
-  },
-  {
-    name: "Aurora",
-    title: "Elite Companion",
-    specialty: "VIP Experiences & Gala Events",
-    availability: "available",
-    image: "https://res.cloudinary.com/njzctr4m/image/upload/v1784667018/serenity_gallery/kxvbybo5fbghkfomnavv.jpg",
-    description: "Aurora brings an air of mystique and allure to every encounter — magnetic, cultured, and unforgettable.",
-  },
-];
 
 const SCRIPT = '"Alex Brush", cursive';
 const SERIF = '"Cormorant", serif';
@@ -156,6 +122,47 @@ function Reveal({
 export default function EscortsPage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [filter, setFilter] = useState<"all" | "available" | "engaged">("all");
+  const [companions, setCompanions] = useState<Companion[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // Admin edits live in the durable content store. Never paint the fallback
+  // cards first — that would flash old images before the saved cards arrive.
+  useEffect(() => {
+    let cancelled = false;
+    const load = async () => {
+      try {
+        const res = await fetch("/api/content", { cache: "no-store" });
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data.escorts)) {
+            if (!cancelled) {
+              setCompanions(data.escorts);
+              setLoading(false);
+            }
+            return;
+          }
+        }
+      } catch {
+        // fall through to the local mirror / defaults
+      }
+      try {
+        const res = await fetch("/site-content.json", { cache: "no-store" });
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data.escorts) && !cancelled) setCompanions(data.escorts);
+          else if (!cancelled) setCompanions(DEFAULT_COMPANIONS);
+        }
+        if (!cancelled) setLoading(false);
+      } catch {
+        if (!cancelled) {
+          setCompanions(DEFAULT_COMPANIONS);
+          setLoading(false);
+        }
+      }
+    };
+    load();
+    return () => { cancelled = true; };
+  }, []);
 
   const shownCompanions = companions.filter((c) =>
     filter === "all"
@@ -299,6 +306,19 @@ export default function EscortsPage() {
               </div>
             </Reveal>
 
+            {loading ? (
+              <div style={{ textAlign: "center", padding: "80px 0" }}>
+                <div className="spinner-border text-warning" role="status" style={{ width: "3rem", height: "3rem" }}>
+                  <span className="visually-hidden">Loading companions...</span>
+                </div>
+                <p style={{ marginTop: "16px", color: "#9ca3af" }}>Loading companions...</p>
+              </div>
+            ) : shownCompanions.length === 0 ? (
+              <div style={{ textAlign: "center", padding: "60px 0", backgroundColor: "#161c22", borderRadius: "12px", border: "1px dashed rgba(194,167,78,0.3)" }}>
+                <h3 style={{ color: "#fff", fontFamily: SERIF, fontSize: "1.8rem" }}>No companions available</h3>
+                <p style={{ color: "#9ca3af" }}>Please check back soon.</p>
+              </div>
+            ) : (
             <div className="row g-4">
               {shownCompanions.map((c, i) => {
                 const isAvailable = c.availability === "available";
@@ -392,6 +412,7 @@ export default function EscortsPage() {
                 );
               })}
             </div>
+            )}
           </div>
         </section>
 
