@@ -4,6 +4,7 @@ import React, { useState, useEffect, useMemo, useRef, useCallback } from "react"
 import Link from "next/link";
 import CustomCursor from "@/components/CustomCursor";
 import MobileDrawer from "@/components/MobileDrawer";
+import { useSiteContact } from "@/components/ContactProvider";
 import {
   fetchSiteContent,
   isRealServiceTitle,
@@ -286,9 +287,6 @@ const INITIAL_SERVICES: Service[] = [
   }
 ];
 
-const whatsappNumber = "256781945510";
-const phoneNumber = "+256 781 945 510";
-
 function formatPrice(price: number | string): string {
   if (typeof price === "number") {
     return "UGX " + price.toLocaleString();
@@ -550,6 +548,7 @@ export default function ServicesPage() {
   // Never render the hardcoded INITIAL_SERVICES array: it contains old image
   // paths and caused a brief stale-image flash before /api/content resolved.
   const [services, setServices] = useState<Service[]>([]);
+  const { phoneHref, phoneDisplay, whatsappDisplay, whatsappLink } = useSiteContact();
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
@@ -843,7 +842,7 @@ export default function ServicesPage() {
               </div>
               <div className="col-lg-4 text-lg-end">
                 <a
-                  href={`https://wa.me/${whatsappNumber}?text=${encodeURIComponent("Hello The Serenity Spa, I would like to inquire about bespoke VIP packages and private suite bookings.")}`}
+                  href={whatsappLink("Hello The Serenity Spa, I would like to inquire about bespoke VIP packages and private suite bookings.")}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="serenity-gold-btn"
@@ -928,8 +927,8 @@ export default function ServicesPage() {
                     </div>
                   </div>
                   <p style={{ color: "#c4cfde", fontSize: "14px", lineHeight: 1.6 }}>
-                    Phone: <a href="tel:+256781945510" style={{ color: "#fff", textDecoration: "none" }}>+256 781 945 510</a><br />
-                    WhatsApp: <a href={`https://wa.me/${whatsappNumber}`} style={{ color: "#25D366", textDecoration: "none" }}>+256 781 945 510</a>
+                    Phone: <a href={phoneHref} style={{ color: "#fff", textDecoration: "none" }}>{phoneDisplay || "Call us"}</a><br />
+                    WhatsApp: <a href={whatsappLink()} style={{ color: "#25D366", textDecoration: "none" }}>{whatsappDisplay || "WhatsApp us"}</a>
                   </p>
                 </div>
               </div>
@@ -966,7 +965,7 @@ export default function ServicesPage() {
                   Kampala’s sanctuary for holistic rejuvenation, luxury hydrotherapy, and authentic massage rituals.
                 </p>
                 <div style={{ display: "flex", gap: "14px", marginTop: "16px" }}>
-                  <a href={`https://wa.me/${whatsappNumber}`} target="_blank" rel="noopener noreferrer" style={{ color: "#c2a74e", fontSize: "18px" }}><i className="fab fa-whatsapp"></i></a>
+                  <a href={whatsappLink()} target="_blank" rel="noopener noreferrer" style={{ color: "#c2a74e", fontSize: "18px" }}><i className="fab fa-whatsapp"></i></a>
                   <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" style={{ color: "#c2a74e", fontSize: "18px" }}><i className="fab fa-instagram"></i></a>
                   <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" style={{ color: "#c2a74e", fontSize: "18px" }}><i className="fab fa-facebook"></i></a>
                 </div>
@@ -987,7 +986,7 @@ export default function ServicesPage() {
                 <h4 style={{ color: "#ffffff", fontFamily: "Cormorant, serif", fontSize: "1.2rem", marginBottom: "16px" }}>Contacts</h4>
                 <p style={{ color: "#9ca3af", fontSize: "13px", lineHeight: 1.7, margin: 0 }}>
                   Sir Apollo Kaggwa Rd &amp; Mengo, Kampala<br />
-                  Phone: <a href="tel:+256781945510" style={{ color: "#c2a74e", textDecoration: "none" }}>+256 781 945 510</a><br />
+                  Phone: <a href={phoneHref} style={{ color: "#c2a74e", textDecoration: "none" }}>{phoneDisplay || "Call us"}</a><br />
                   Email: <a href="mailto:theserenitybookings@gmail.com" style={{ color: "#c2a74e", textDecoration: "none" }}>theserenitybookings@gmail.com</a>
                 </p>
               </div>

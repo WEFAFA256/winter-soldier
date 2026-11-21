@@ -3,10 +3,12 @@
 import React, { useEffect, useRef, useState } from "react";
 import CustomCursor from "@/components/CustomCursor";
 import MobileDrawer from "@/components/MobileDrawer";
+import { escapeHtml, useSiteContact } from "@/components/ContactProvider";
 
 export default function Home() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const drawerWasOpen = useRef(false);
+  const { contact, phoneHref, phoneDisplay, whatsappLink, locationDisplay } = useSiteContact();
 
   const initSlider = () => {
     const $ = (window as any).jQuery;
@@ -87,6 +89,14 @@ export default function Home() {
     }
     drawerWasOpen.current = drawerOpen;
   }, [drawerOpen, initSlider]);
+
+  // Contact values arrive after hydration. Re-running the slider setup keeps
+  // the carousel intact if the HTML string is re-injected with the new numbers.
+  useEffect(() => {
+    if (!contact) return;
+    const timer = setTimeout(() => initSlider(), 180);
+    return () => clearTimeout(timer);
+  }, [contact]);
 
   return (
     <>
@@ -663,7 +673,7 @@ export default function Home() {
                                         <div class="contact-one__info__content">
                                             <p class="contact-one__info__text">Have any Question?</p>
                                             <!-- /.contact-one__info__text -->
-                                            <h4 class="contact-one__info__title"><a href="tel:+256781945510">+256 781 945 510</a></h4><!-- /.contact-one__info__title -->
+                                            <h4 class="contact-one__info__title"><a href="${escapeHtml(phoneHref)}">${escapeHtml(phoneDisplay || "Call us")}</a></h4><!-- /.contact-one__info__title -->
                                         </div><!-- /.contact-one__info__content -->
                                     </li>
                                     <li class="contact-one__info__item">
@@ -683,7 +693,7 @@ export default function Home() {
                                         </div><!-- /.contact-one__info__icon -->
                                         <div class="contact-one__info__content">
                                             <p class="contact-one__info__text">Visit Now </p> <!-- /.contact-one__info__text -->
-                                            <h4 class="contact-one__info__title"><a href="https://www.google.com/maps">Sir Apollo Kaggwa Rd & Mengo, Kampala</a></h4><!-- /.contact-one__info__title -->
+                                            <h4 class="contact-one__info__title"><a href="https://www.google.com/maps">${escapeHtml(locationDisplay)}</a></h4><!-- /.contact-one__info__title -->
                                         </div><!-- /.contact-one__info__content -->
                                     </li>
                                 </ul><!-- /.list-unstyled -->
@@ -703,7 +713,7 @@ export default function Home() {
                                 <p class="contact-one__text">Book a treatment or ask us anything — we reply quickly on WhatsApp.</p>
                                 <div class="form-one__group">
                                     <div class="form-one__control form-one__control--full">
-                                        <a href="https://wa.me/256781945510?text=Hello%20The%20Serenity%20Spa%2C%20I%27d%20like%20to%20book%20an%20appointment." class="solox-btn" target="_blank" rel="noopener noreferrer"><span>Chat on WhatsApp</span></a>
+                                        <a href="${escapeHtml(whatsappLink("Hello The Serenity Spa, I'd like to book an appointment."))}" class="solox-btn" target="_blank" rel="noopener noreferrer"><span>Chat on WhatsApp</span></a>
                                     </div><!-- /.form-one__control form-one__control--full -->
                                     <div class="form-one__control form-one__control--full">
                                         <a href="mailto:theserenitybookings@gmail.com?subject=Appointment%20enquiry" class="solox-btn"><span>Email us</span></a>
@@ -748,9 +758,9 @@ export default function Home() {
                             <div class="footer-widget footer-widget--contact">
                                 <h2 class="footer-widget__title">Contact</h2><!-- /.footer-widget__title -->
                                 <ul class="list-unstyled footer-widget__info">
-                                    <li> <a href="tel:+256781945510">+256 781 945 510</a></li>
+                                    <li> <a href="${escapeHtml(phoneHref)}">${escapeHtml(phoneDisplay || "Call us")}</a></li>
                                     <li> <a href="mailto:theserenitybookings@gmail.com">theserenitybookings@gmail.com</a></li>
-                                    <li> <a href="https://www.google.com/maps">Sir Apollo Kaggwa Rd & Mengo, Kampala</a></li>
+                                    <li> <a href="https://www.google.com/maps">${escapeHtml(locationDisplay)}</a></li>
                                 </ul><!-- /.list-unstyled -->
                             </div><!-- /.footer-widget -->
                         </div><!-- /.col-md-6 -->

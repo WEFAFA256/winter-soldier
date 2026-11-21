@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import CustomCursor from "@/components/CustomCursor";
 import MobileDrawer from "@/components/MobileDrawer";
+import { useSiteContact } from "@/components/ContactProvider";
 
 interface GalleryImage {
   id?: string;
@@ -362,8 +363,6 @@ const INITIAL_IMAGES: GalleryImage[] = [
     "delay": "delay-200"
   }
 ];
-
-const whatsappNumber = "256781945510";
 
 const SPA_VIDEOS: SpaVideo[] = [
   {
@@ -754,6 +753,7 @@ export default function GalleryPage() {
   const [activeVideoFilter, setActiveVideoFilter] = useState<string>("all");
   // The gallery opens on Images; the Videos tab reveals the demonstration reels.
   const [activeTab, setActiveTab] = useState<"images" | "videos">("images");
+  const { phoneHref, phoneDisplay, whatsappLink } = useSiteContact();
 
   useEffect(() => {
     const t = setTimeout(() => setHeroVisible(true), 80);
@@ -1546,7 +1546,7 @@ export default function GalleryPage() {
                   Kampala’s premier executive sanctuary for holistic rejuvenation, luxury hydrotherapy, and authentic massage rituals.
                 </p>
                 <div style={{ display: "flex", gap: "14px", marginTop: "16px" }}>
-                  <a href={`https://wa.me/${whatsappNumber}`} target="_blank" rel="noopener noreferrer" style={{ color: "#c2a74e", fontSize: "18px" }}><i className="fab fa-whatsapp"></i></a>
+                  <a href={whatsappLink()} target="_blank" rel="noopener noreferrer" style={{ color: "#c2a74e", fontSize: "18px" }}><i className="fab fa-whatsapp"></i></a>
                   <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" style={{ color: "#c2a74e", fontSize: "18px" }}><i className="fab fa-instagram"></i></a>
                   <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" style={{ color: "#c2a74e", fontSize: "18px" }}><i className="fab fa-facebook"></i></a>
                 </div>
@@ -1568,7 +1568,7 @@ export default function GalleryPage() {
                 <h4 style={{ color: "#ffffff", fontFamily: "Cormorant, serif", fontSize: "1.2rem", marginBottom: "16px" }}>Contacts</h4>
                 <p style={{ color: "#9ca3af", fontSize: "13px", lineHeight: 1.7, margin: 0 }}>
                   Sir Apollo Kaggwa Rd &amp; Mengo, Kampala<br />
-                  Phone: <a href="tel:+256781945510" style={{ color: "#c2a74e", textDecoration: "none" }}>+256 781 945 510</a><br />
+                  Phone: <a href={phoneHref} style={{ color: "#c2a74e", textDecoration: "none" }}>{phoneDisplay || "Call us"}</a><br />
                   Email: <a href="mailto:theserenitybookings@gmail.com" style={{ color: "#c2a74e", textDecoration: "none" }}>theserenitybookings@gmail.com</a>
                 </p>
               </div>
@@ -1704,7 +1704,7 @@ export default function GalleryPage() {
                   {/* Actions */}
                   <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
                     <a
-                      href={`https://wa.me/${whatsappNumber}?text=${encodeURIComponent("Hello Serenity Spa, I just watched the video demonstration of " + selectedVideo.title + " with " + selectedVideo.specialist + ". I would like to inquire about booking this session.")}`}
+                      href={whatsappLink("Hello Serenity Spa, I just watched the video demonstration of " + selectedVideo.title + " with " + selectedVideo.specialist + ". I would like to inquire about booking this session.")}
                       target="_blank"
                       rel="noopener noreferrer"
                       style={{

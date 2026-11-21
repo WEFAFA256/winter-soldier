@@ -4,17 +4,13 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import CustomCursor from "@/components/CustomCursor";
 import MobileDrawer from "@/components/MobileDrawer";
+import { useSiteContact } from "@/components/ContactProvider";
 import { Companion, DEFAULT_COMPANIONS } from "@/lib/escorts";
-
-const whatsappNumber = "256781945510";
 
 const SCRIPT = '"Alex Brush", cursive';
 const SERIF = '"Cormorant", serif';
 const GOLD = "#c2a74e";
 const CREAM = "#e8d9b0";
-
-const waLink = (message: string) =>
-  `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
 
 /* Shared section heading — the exact Alex Brush + Cormorant scale used on the
    homepage and /vip-packages, so this page finally matches the rest of the site. */
@@ -124,6 +120,7 @@ export default function EscortsPage() {
   const [filter, setFilter] = useState<"all" | "available" | "engaged">("all");
   const [companions, setCompanions] = useState<Companion[]>([]);
   const [loading, setLoading] = useState(true);
+  const { whatsappLink } = useSiteContact();
 
   // Admin edits live in the durable content store. Never paint the fallback
   // cards first — that would flash old images before the saved cards arrive.
@@ -384,7 +381,7 @@ export default function EscortsPage() {
                             {c.description}
                           </p>
                           <a
-                            href={waLink(
+                            href={whatsappLink(
                               isAvailable
                                 ? `Hello, I'm interested in booking ${c.name} for escort companionship services at The Serenity Spa.`
                                 : `Hello, I'd like to join the waitlist for ${c.name} at The Serenity Spa.`
@@ -509,7 +506,7 @@ export default function EscortsPage() {
               </p>
               <div style={{ display: "flex", gap: "16px", justifyContent: "center", flexWrap: "wrap" }}>
                 <a
-                  href={waLink("Hello, I would like to enquire about your escort companionship services at The Serenity Spa.")}
+                  href={whatsappLink("Hello, I would like to enquire about your escort companionship services at The Serenity Spa.")}
                   target="_blank"
                   rel="noopener noreferrer"
                   style={{

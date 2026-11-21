@@ -1,51 +1,32 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { usePathname } from 'next/navigation';
+import { useSiteContact } from './ContactProvider';
 
 export default function FloatingContactButtons() {
   const pathname = usePathname();
-  const [contactData, setContactData] = useState<any>(null);
+  const { phoneHref, whatsappLink, emailHref, ready } = useSiteContact();
 
-  if (pathname?.startsWith('/admin')) {
+  if (!ready || pathname?.startsWith('/admin')) {
     return null;
   }
 
-  useEffect(() => {
-    const fetchContactData = async () => {
-      try {
-        const res = await fetch('/api/content');
-        if (res.ok) {
-          const data = await res.json();
-          if (data && data.contact) {
-            setContactData(data.contact);
-          }
-        }
-      } catch (err) {
-        // Fallback silently
-      }
-    };
-    fetchContactData();
-  }, []);
-
-  const whatsappNum = contactData?.spa?.whatsapp || '256781945510';
-  const phoneNum = contactData?.spa?.phone || '+256 781 945 510';
-  const emailAddress = contactData?.spa?.email || 'theserenitybookings@gmail.com';
-  const message = encodeURIComponent('Hello, I would like to book a session at The Serenity Spa.');
+  const message = 'Hello, I would like to book a session at The Serenity Spa.';
 
   const socials = [
     {
       name: 'Email',
       image: '/assets/email-icon.svg',
       fallbackImg: '/assets/email-icon.png',
-      url: `mailto:${emailAddress}`,
+      url: emailHref,
       delay: '0s',
     },
     {
       name: 'WhatsApp',
       image: '/assets/whatsapp-icon.jpg',
       fallbackImg: '/assets/whatsapp-icon.jpg',
-      url: `https://wa.me/${whatsappNum.replace(/\D/g, '')}?text=${message}`,
+      url: whatsappLink(message),
       delay: '0.2s',
     },
     {
@@ -55,7 +36,7 @@ export default function FloatingContactButtons() {
           <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z" fill="white" />
         </svg>
       ),
-      url: `tel:${phoneNum.replace(/\s+/g, '')}`,
+      url: phoneHref,
       background: '#007bff',
       delay: '0.4s',
     },

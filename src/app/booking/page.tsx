@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import CustomCursor from "@/components/CustomCursor";
 import MobileDrawer from "@/components/MobileDrawer";
+import { useSiteContact } from "@/components/ContactProvider";
 import QRCode from "qrcode";
 
 /* ─── Real Services Catalog ───────────────────────────────────────────── */
@@ -41,7 +42,6 @@ const TIME_SLOTS = [
   "09:00 PM", "10:00 PM",
 ];
 
-const WHATSAPP_NUMBER = "256781945510";
 const EMAIL = "theserenitybookings@gmail.com";
 
 // Real booking + MTN/Airtel payment API (Cloudflare Worker). The PawaPay
@@ -126,6 +126,7 @@ const labelStyle: React.CSSProperties = {
 function BookingFormInner() {
   const searchParams = useSearchParams();
   const initialService = searchParams.get("service") || searchParams.get("serviceName") || "";
+  const { whatsappLink } = useSiteContact();
 
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -508,7 +509,7 @@ function BookingFormInner() {
       .filter(Boolean)
       .join("\n");
 
-    window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(lines)}`, "_blank");
+    window.open(whatsappLink(lines), "_blank");
   }
 
   function resetBooking() {
@@ -1083,7 +1084,7 @@ function BookingFormInner() {
                     Speak directly with our front-desk therapist right now for immediate confirmation or custom requests.
                   </p>
                   <a
-                    href={`https://wa.me/${WHATSAPP_NUMBER}`}
+                    href={whatsappLink()}
                     target="_blank"
                     rel="noopener noreferrer"
                     style={{

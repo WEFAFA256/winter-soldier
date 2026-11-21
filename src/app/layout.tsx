@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import FloatingContactButtons from "@/components/FloatingContactButtons";
 import AppShell from "@/components/AppShell";
+import { ContactProvider } from "@/components/ContactProvider";
 
 // Production origin is the safe fallback so canonical/OG URLs are correct even
 // if the platform env var is momentarily missing. Never emit localhost in HTML.
@@ -59,10 +60,12 @@ export default function RootLayout({
         />
       </head>
       <body className="custom-cursor">
-        <AppShell>
-          {children}
-        </AppShell>
-        <FloatingContactButtons />
+        <ContactProvider>
+          <AppShell>
+            {children}
+          </AppShell>
+          <FloatingContactButtons />
+        </ContactProvider>
       </body>
     </html>
   );

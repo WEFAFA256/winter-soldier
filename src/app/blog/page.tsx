@@ -3,6 +3,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import CustomCursor from "@/components/CustomCursor";
 import MobileDrawer from "@/components/MobileDrawer";
+import { useSiteContact } from "@/components/ContactProvider";
 
 const esc = (value: any) =>
   String(value ?? "")
@@ -17,6 +18,7 @@ export default function BlogPage() {
   const [loading, setLoading] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const pageRef = useRef<HTMLDivElement>(null);
+  const { phoneHref, phoneDisplay, locationDisplay } = useSiteContact();
 
   // The legacy Solox drawer is hidden globally, so bind the hamburger to the React
   // drawer via a delegated listener on a stable wrapper (the HTML is re-injected
@@ -251,9 +253,9 @@ export default function BlogPage() {
                             <div class="footer-widget footer-widget--contact">
                                 <h2 class="footer-widget__title">Contact</h2>
                                 <ul class="list-unstyled footer-widget__info">
-                                    <li><a href="tel:+256781945510">+256 781 945 510</a></li>
+                                    <li><a href="${esc(phoneHref)}">${esc(phoneDisplay || "Call us")}</a></li>
                                     <li><a href="mailto:theserenitybookings@gmail.com">theserenitybookings@gmail.com</a></li>
-                                    <li><a href="https://www.google.com/maps">Sir Apollo Kaggwa Rd &amp; Mengo, Kampala</a></li>
+                                    <li><a href="https://www.google.com/maps">${esc(locationDisplay)}</a></li>
                                 </ul>
                             </div>
                         </div>

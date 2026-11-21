@@ -606,7 +606,16 @@ export default function AdminGalleryPage() {
     setSaving(true);
     const body = { ...siteContent, services, vipServices, mobileMassage, escorts };
     const res = await fetch("/api/content", { method:"POST", headers:{ "Content-Type":"application/json" }, credentials:"same-origin", body: JSON.stringify(body) });
-    if (res.ok) { setSiteContent(body); alert("Saved to Cloudinary ✓"); }
+    if (res.ok) {
+      setSiteContent(body);
+      // Tell already-open public tabs (and this browser's other windows) that
+      // content changed so contact/catalogue values refresh immediately.
+      try {
+        window.dispatchEvent(new Event("serenity-content-updated"));
+        localStorage.setItem("serenity-content-version", String(Date.now()));
+      } catch {}
+      alert("Saved to Cloudinary ✓");
+    }
     else alert("Save failed");
     setSaving(false);
   };

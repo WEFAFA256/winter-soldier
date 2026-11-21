@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import CustomCursor from "@/components/CustomCursor";
 import MobileDrawer from "@/components/MobileDrawer";
+import { useSiteContact } from "@/components/ContactProvider";
 import {
   fetchSiteContent,
   formatServicePrice,
@@ -84,8 +85,6 @@ const COVERAGE_AREAS = [
   "All Greater Kampala Residences",
 ];
 
-const whatsappNumber = "256781945510";
-
 const DEFAULT_MOBILE_FEATURES = [
   "Delivered to your hotel or residence",
   "Professional therapist and portable setup",
@@ -116,6 +115,7 @@ function MobileServiceCard({
 }) {
   const ref = React.useRef<HTMLDivElement>(null);
   const [inView, setInView] = React.useState(false);
+  const { whatsappLink } = useSiteContact();
 
   React.useEffect(() => {
     const el = ref.current;
@@ -339,7 +339,7 @@ function MobileServiceCard({
             }}
           >
             <a
-              href={`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(`Hello, I'd like to book an out-call for ${service.title} (${displayPrice}) at my location.`)}`}
+              href={whatsappLink(`Hello, I'd like to book an out-call for ${service.title} (${displayPrice}) at my location.`)}
               target="_blank"
               rel="noopener noreferrer"
               style={{

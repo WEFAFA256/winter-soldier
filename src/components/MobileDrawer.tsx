@@ -3,6 +3,7 @@
 import React, { useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useSiteContact } from './ContactProvider';
 
 interface MobileDrawerProps {
   isOpen: boolean;
@@ -11,6 +12,7 @@ interface MobileDrawerProps {
 
 export default function MobileDrawer({ isOpen, onClose }: MobileDrawerProps) {
   const pathname = usePathname();
+  const { phoneHref, phoneDisplay, whatsappLink, locationDisplay } = useSiteContact();
 
   useEffect(() => {
     if (isOpen) {
@@ -144,7 +146,7 @@ export default function MobileDrawer({ isOpen, onClose }: MobileDrawerProps) {
         <div style={{ marginTop: '30px', paddingTop: '18px', borderTop: '1px solid rgba(255, 255, 255, 0.08)' }}>
           <div style={{ fontSize: '12px', color: '#9ca3af', marginBottom: '8px' }}>
             <i className="fas fa-map-marker-alt" style={{ color: '#c2a74e', marginRight: '6px' }}></i>
-            Mengo &amp; Sir Apollo Kaggwa Rd, Kampala
+            {locationDisplay}
           </div>
           <div style={{ fontSize: '12px', color: '#9ca3af', marginBottom: '16px' }}>
             <i className="fas fa-clock" style={{ color: '#c2a74e', marginRight: '6px' }}></i>
@@ -152,7 +154,7 @@ export default function MobileDrawer({ isOpen, onClose }: MobileDrawerProps) {
           </div>
 
           <a
-            href="https://wa.me/256781945510"
+            href={whatsappLink()}
             target="_blank"
             rel="noopener noreferrer"
             style={{
@@ -176,7 +178,7 @@ export default function MobileDrawer({ isOpen, onClose }: MobileDrawerProps) {
           </a>
 
           <a
-            href="tel:+256781945510"
+            href={phoneHref}
             style={{
               display: 'flex',
               alignItems: 'center',
@@ -194,7 +196,7 @@ export default function MobileDrawer({ isOpen, onClose }: MobileDrawerProps) {
             }}
           >
             <i className="fas fa-phone-alt"></i>
-            +256 781 945 510
+            {phoneDisplay || "Call us"}
           </a>
         </div>
       </div>

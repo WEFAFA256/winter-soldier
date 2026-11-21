@@ -4,6 +4,7 @@ import React, { useState, useEffect, useMemo, useRef } from "react";
 import Link from "next/link";
 import CustomCursor from "@/components/CustomCursor";
 import MobileDrawer from "@/components/MobileDrawer";
+import { useSiteContact } from "@/components/ContactProvider";
 import {
   fetchSiteContent,
   isRealServiceTitle,
@@ -130,8 +131,6 @@ const INITIAL_VIP_PACKAGES: Service[] = [
     "price": 1200000
   }
 ];
-
-const whatsappNumber = "256781945510";
 
 function formatPrice(price: number | string): string {
   if (typeof price === "number") {
@@ -486,6 +485,7 @@ export default function VipPackagesPage() {
   // Never render the hardcoded INITIAL_VIP_PACKAGES array: it contains old
   // image paths and caused a brief stale-image flash before content resolved.
   const [packages, setPackages] = useState<Service[]>([]);
+  const { whatsappLink } = useSiteContact();
   const [loading, setLoading] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [heroVisible, setHeroVisible] = useState(false);
@@ -840,7 +840,7 @@ export default function VipPackagesPage() {
             <Reveal delay={250} offset={40}>
             <div style={{ display: "flex", gap: "14px", justifyContent: "center", flexWrap: "wrap" }}>
               <a
-                href={`https://wa.me/${whatsappNumber}?text=${encodeURIComponent("Hello, I would like to inquire about a custom VIP package at The Serenity Spa.")}`}
+                href={whatsappLink("Hello, I would like to inquire about a custom VIP package at The Serenity Spa.")}
                 target="_blank"
                 rel="noopener noreferrer"
                 style={{
