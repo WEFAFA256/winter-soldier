@@ -252,15 +252,6 @@ export default function Home() {
                                             <li><span class="fa fa-check-circle"></span>Premium skincare with quality oils</li>
                                             <li><span class="fa fa-check-circle"></span>Massages & therapies</li>
                                         </ul>
-                                        <div class="about-two__content__author">
-                                            <div class="about-two__content__author__thumb">
-                                                <img src="/assets/images/resources/about-author-1.png" alt="solox">
-                                            </div>
-                                            <div class="about-two__content__author__meta">
-                                                <img src="/assets/images/resources/about-sign-2.png" alt="solox">
-                                                The Serenity Spa Team
-                                            </div>
-                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -276,16 +267,8 @@ export default function Home() {
                                 </div>
                                 <ul class="about-two__info__list">
                                     <li class="about-two__info__list__item">
-                                        Monday
-                                        <span class="about-two__info__list__time">12:00 pm - 19:00 pm</span>
-                                    </li>
-                                    <li class="about-two__info__list__item">
-                                        Tuesday to Friday
-                                        <span class="about-two__info__list__time">8:00 am - 19:00 pm</span>
-                                    </li>
-                                    <li class="about-two__info__list__item">
-                                        Saturday
-                                        <span class="about-two__info__list__time">8:00 am to 3:30 pm</span>
+                                        Every day
+                                        <span class="about-two__info__list__time">Open 24 hours</span>
                                     </li>
                                 </ul>
                             </div>
@@ -295,43 +278,6 @@ export default function Home() {
                 </div><!-- /.row -->
             </div><!-- /.container -->
         </section><!-- /.about-two -->
-        <div class="client-carousel client-carousel-one">
-            <div class="container">
-                <div
-                    class="client-carousel__one solox-owl__carousel owl-theme owl-carousel" data-owl-options='{"items":5,"margin":55,"smartSpeed":700,"loop":true,"autoplay":6000,"nav":true,"dots":false,"responsive":{"0":{"items":1,"margin":0},"360":{"items":2,"margin":0},"575":{"items":3,"margin":30},"768":{"items":3,"margin":40},"992":{"items":4,"margin":40},"1200":{"items":5}}}'>
-                    <div class="client-carousel__one__item">
-                        <img src="/assets/images/resources/brand-1-1.png" alt="solox">
-                    </div><!-- /.owl-slide-item-->
-                    <div class="client-carousel__one__item">
-                        <img src="/assets/images/resources/brand-1-1.png" alt="solox">
-                    </div><!-- /.owl-slide-item-->
-                    <div class="client-carousel__one__item">
-                        <img src="/assets/images/resources/brand-1-1.png" alt="solox">
-                    </div><!-- /.owl-slide-item-->
-                    <div class="client-carousel__one__item">
-                        <img src="/assets/images/resources/brand-1-1.png" alt="solox">
-                    </div><!-- /.owl-slide-item-->
-                    <div class="client-carousel__one__item">
-                        <img src="/assets/images/resources/brand-1-1.png" alt="solox">
-                    </div><!-- /.owl-slide-item-->
-                    <div class="client-carousel__one__item">
-                        <img src="/assets/images/resources/brand-1-1.png" alt="solox">
-                    </div><!-- /.owl-slide-item-->
-                    <div class="client-carousel__one__item">
-                        <img src="/assets/images/resources/brand-1-1.png" alt="solox">
-                    </div><!-- /.owl-slide-item-->
-                    <div class="client-carousel__one__item">
-                        <img src="/assets/images/resources/brand-1-1.png" alt="solox">
-                    </div><!-- /.owl-slide-item-->
-                    <div class="client-carousel__one__item">
-                        <img src="/assets/images/resources/brand-1-1.png" alt="solox">
-                    </div><!-- /.owl-slide-item-->
-                    <div class="client-carousel__one__item">
-                        <img src="/assets/images/resources/brand-1-1.png" alt="solox">
-                    </div><!-- /.owl-slide-item-->
-                </div><!-- /.thm-owl__slider -->
-            </div><!-- /.container -->
-        </div><!-- /.client-carousel -->
         <section class="video-one">
             <div class="video-one__bg jarallax" data-jarallax data-speed="0.3" data-imgPosition="50% -100%" style="background-image: url(/assets/images/backgrounds/video-bg-1-1.jpg);"></div>
             <!-- /.video-one__bg -->
@@ -855,7 +801,7 @@ export default function Home() {
                                         <div class="contact-one__info__content">
                                             <p class="contact-one__info__text">Write Email </p>
                                             <!-- /.contact-one__info__text -->
-                                            <h4 class="contact-one__info__title"><a href="mailto:theserenityspakla@gmail.com">theserenityspakla@gmail.com</a></h4>
+                                            <h4 class="contact-one__info__title"><a href="mailto:theserenitybookings@gmail.com">theserenitybookings@gmail.com</a></h4>
                                             <!-- /.contact-one__info__title -->
                                         </div><!-- /.contact-one__info__content -->
                                     </li>
@@ -888,7 +834,7 @@ export default function Home() {
                                         <a href="https://wa.me/256781945510?text=Hello%20The%20Serenity%20Spa%2C%20I%27d%20like%20to%20book%20an%20appointment." class="solox-btn" target="_blank" rel="noopener noreferrer"><span>Chat on WhatsApp</span></a>
                                     </div><!-- /.form-one__control form-one__control--full -->
                                     <div class="form-one__control form-one__control--full">
-                                        <a href="mailto:theserenityspakla@gmail.com?subject=Appointment%20enquiry" class="solox-btn"><span>Email us</span></a>
+                                        <a href="mailto:theserenitybookings@gmail.com?subject=Appointment%20enquiry" class="solox-btn"><span>Email us</span></a>
                                     </div><!-- /.form-one__control form-one__control--full -->
                                 </div><!-- /.form-one__group -->
                             </div>
@@ -912,7 +858,7 @@ export default function Home() {
                                 <a href="/" class="footer-widget__logo">
                                     <img src="/assets/images/logo-light.png" width="155" alt="The Serenity Spa">
                                 </a>
-                                <a href="mailto:theserenityspakla@gmail.com?subject=Spa%20updates" class="footer-widget__newsletter-link">Get spa updates by email →</a>
+                                <a href="mailto:theserenitybookings@gmail.com?subject=Spa%20updates" class="footer-widget__newsletter-link">Get spa updates by email →</a>
                             </div><!-- /.footer-widget -->
                         </div><!-- /.col-md-6 -->
                         <div class="col-md-6 col-xl-2">
@@ -931,7 +877,7 @@ export default function Home() {
                                 <h2 class="footer-widget__title">Contact</h2><!-- /.footer-widget__title -->
                                 <ul class="list-unstyled footer-widget__info">
                                     <li> <a href="tel:+256781945510">+256 781 945 510</a></li>
-                                    <li> <a href="mailto:theserenityspakla@gmail.com">theserenityspakla@gmail.com</a></li>
+                                    <li> <a href="mailto:theserenitybookings@gmail.com">theserenitybookings@gmail.com</a></li>
                                     <li> <a href="https://www.google.com/maps">Sir Apollo Kaggwa Rd & Mengo, Kampala</a></li>
                                 </ul><!-- /.list-unstyled -->
                             </div><!-- /.footer-widget -->
@@ -939,7 +885,7 @@ export default function Home() {
                         <div class="col-md-6 col-xl-3">
                             <div class="footer-widget footer-widget--time">
                                 <h2 class="footer-widget__title">Timing</h2><!-- /.footer-widget__title -->
-                                <p class="footer-widget__text">Open Daily: 9:00 AM – 11:00 PM</p>
+                                <p class="footer-widget__text">Open 24 Hours, 7 Days a Week</p>
                                 <!-- /.footer-widget__text -->
                             </div><!-- /.footer-widget -->
                         </div><!-- /.col-md-6 -->

@@ -148,7 +148,7 @@ export default function MobileDrawer({ isOpen, onClose }: MobileDrawerProps) {
           </div>
           <div style={{ fontSize: '12px', color: '#9ca3af', marginBottom: '16px' }}>
             <i className="fas fa-clock" style={{ color: '#c2a74e', marginRight: '6px' }}></i>
-            Open Daily: 9:00 AM – 11:00 PM
+            Open 24 Hours, 7 Days a Week
           </div>
 
           <a

@@ -45,7 +45,7 @@ export default function Header() {
             </span>
             <span className="flex items-center gap-2 hidden lg:flex">
               <Clock className="w-3.5 h-3.5 text-spa-gold" />
-              Mon - Sat: 9:00 AM - 8:00 PM
+              Open 24 Hours
             </span>
           </div>
 

@@ -84,22 +84,9 @@ export default function Footer() {
             <h5 className="font-cormorant text-lg font-bold text-white uppercase tracking-wider mb-4 border-b border-spa-border/40 pb-2">
               Sanctuary Hours
             </h5>
-            <ul className="space-y-2 text-xs">
-              <li className="flex justify-between border-b border-white/5 pb-1">
-                <span>Monday - Friday</span>
-                <span className="text-white">9:00 AM – 9:00 PM</span>
-              </li>
-              <li className="flex justify-between border-b border-white/5 pb-1">
-                <span>Saturday</span>
-                <span className="text-white">9:00 AM – 8:00 PM</span>
-              </li>
-              <li className="flex justify-between border-b border-white/5 pb-1">
-                <span>Sunday</span>
-                <span className="text-spa-gold">10:00 AM – 6:00 PM</span>
-              </li>
-            </ul>
+            <p className="text-sm text-spa-gold font-semibold">Open 24 Hours, 7 Days a Week</p>
             <p className="text-[11px] text-gray-500 mt-4">
-              Private sanctuary bookings available after hours by request.
+              Appointments available day or night by request.
             </p>
           </div>
         </div>

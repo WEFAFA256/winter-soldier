@@ -955,7 +955,7 @@ export default function ServicesPage() {
                     </div>
                   </div>
                   <p style={{ color: "#c4cfde", fontSize: "14px", lineHeight: 1.6 }}>
-                    Monday – Sunday: <strong>9:00 AM – 11:00 PM</strong><br />
+                    Every day: <strong>Open 24 Hours</strong><br />
                     Mobile &amp; Outcall services available upon early booking.
                   </p>
                 </div>
@@ -1033,15 +1033,15 @@ export default function ServicesPage() {
                 <p style={{ color: "#9ca3af", fontSize: "13px", lineHeight: 1.7, margin: 0 }}>
                   Sir Apollo Kaggwa Rd &amp; Mengo, Kampala<br />
                   Phone: <a href="tel:+256781945510" style={{ color: "#c2a74e", textDecoration: "none" }}>+256 781 945 510</a><br />
-                  Email: <a href="mailto:theserenityspakla@gmail.com" style={{ color: "#c2a74e", textDecoration: "none" }}>theserenityspakla@gmail.com</a>
+                  Email: <a href="mailto:theserenitybookings@gmail.com" style={{ color: "#c2a74e", textDecoration: "none" }}>theserenitybookings@gmail.com</a>
                 </p>
               </div>
 
               <div className="col-lg-3 col-md-6">
                 <h4 style={{ color: "#ffffff", fontFamily: "Cormorant, serif", fontSize: "1.2rem", marginBottom: "16px" }}>Hours</h4>
                 <p style={{ color: "#9ca3af", fontSize: "13px", lineHeight: 1.7, margin: 0 }}>
-                  Open Daily (Mon - Sun):<br />
-                  <strong style={{ color: "#fff" }}>9:00 AM – 11:00 PM</strong><br />
+                  Open 24 Hours, 7 Days a Week:<br />
+                  <strong style={{ color: "#fff" }}>Any time, day or night</strong><br />
                   Private appointments accommodated on request.
                 </p>
               </div>

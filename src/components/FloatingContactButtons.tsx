@@ -30,7 +30,7 @@ export default function FloatingContactButtons() {
 
   const whatsappNum = contactData?.spa?.whatsapp || '256781945510';
   const phoneNum = contactData?.spa?.phone || '+256 781 945 510';
-  const emailAddress = contactData?.spa?.email || 'theserenityspakla@gmail.com';
+  const emailAddress = contactData?.spa?.email || 'theserenitybookings@gmail.com';
   const message = encodeURIComponent('Hello, I would like to book a session at The Serenity Spa.');
 
   const socials = [

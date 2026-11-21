@@ -46,7 +46,7 @@ export default function BookingForm() {
                 <span className="w-8 h-8 rounded-full bg-spa-secondary border border-spa-border flex items-center justify-center text-spa-gold shrink-0">
                   <Clock className="w-4 h-4" />
                 </span>
-                <span>Everyday: 9:00 AM – 9:00 PM (Appointments Preferred)</span>
+                <span>Open 24 Hours (Appointments Preferred)</span>
               </div>
             </div>
           </div>

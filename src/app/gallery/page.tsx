@@ -716,6 +716,8 @@ export default function GalleryPage() {
   const [heroVisible, setHeroVisible] = useState(false);
   const [selectedVideo, setSelectedVideo] = useState<SpaVideo | null>(null);
   const [activeVideoFilter, setActiveVideoFilter] = useState<string>("all");
+  // The gallery opens on Images; the Videos tab reveals the demonstration reels.
+  const [activeTab, setActiveTab] = useState<"images" | "videos">("images");
 
   useEffect(() => {
     const t = setTimeout(() => setHeroVisible(true), 80);
@@ -991,8 +993,63 @@ export default function GalleryPage() {
           </div>
         </div>
 
+        {/* ─── IMAGES / VIEWS TOGGLE ─── */}
+        <div
+          role="tablist"
+          aria-label="Gallery view"
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            gap: "12px",
+            flexWrap: "wrap",
+            padding: "26px 20px 0",
+          }}
+        >
+          {[
+            { key: "images" as const, label: "Images", icon: "fas fa-images" },
+            { key: "videos" as const, label: "Videos", icon: "fas fa-video" },
+          ].map((tab) => (
+            <button
+              key={tab.key}
+              type="button"
+              role="tab"
+              aria-selected={activeTab === tab.key}
+              onClick={() => {
+                setActiveTab(tab.key);
+                setSelectedIndex(null);
+                setSelectedVideo(null);
+              }}
+              style={{
+                minWidth: "160px",
+                minHeight: "46px",
+                padding: "12px 26px",
+                borderRadius: "30px",
+                cursor: "pointer",
+                fontWeight: 800,
+                fontSize: "14px",
+                letterSpacing: "1px",
+                textTransform: "uppercase",
+                border: activeTab === tab.key ? "1.5px solid #c2a74e" : "1px solid rgba(255,255,255,0.18)",
+                background: activeTab === tab.key ? "linear-gradient(90deg, #7a5c1e, #c2a74e)" : "rgba(20,26,32,0.85)",
+                color: activeTab === tab.key ? "#0e1317" : "#e5e7eb",
+                transition: "all 0.25s ease",
+                boxShadow: activeTab === tab.key ? "0 6px 22px rgba(194,167,78,0.35)" : "none",
+              }}
+            >
+              <i className={tab.icon} style={{ marginRight: "8px" }} />
+              {tab.label}
+            </button>
+          ))}
+        </div>
+
         {/* ─── SECTION 1: SPECIALIST PROFILES & SANCTUARY GALLERY ─── */}
-        <section style={{ padding: "70px 0 60px 0", borderBottom: "1px solid rgba(194, 167, 78, 0.15)" }}>
+        <section
+          style={{
+            padding: "70px 0 60px 0",
+            borderBottom: "1px solid rgba(194, 167, 78, 0.15)",
+            display: activeTab === "images" ? "block" : "none",
+          }}
+        >
           <div className="container">
             <div style={{ textAlign: "center", maxWidth: "760px", margin: "0 auto 36px auto" }}>
               <span style={{ color: "#c2a74e", fontFamily: "'Great Vibes', cursive, Cormorant, serif", fontSize: "1.7rem", display: "block", marginBottom: "6px" }}>
@@ -1046,6 +1103,7 @@ export default function GalleryPage() {
             borderTop: "1px solid rgba(194,167,78,0.1)",
             borderBottom: "1px solid rgba(194,167,78,0.1)",
             textAlign: "center",
+            display: activeTab === "images" ? "block" : "none",
           }}
         >
           <div style={{ maxWidth: "680px", margin: "0 auto" }}>
@@ -1138,7 +1196,13 @@ export default function GalleryPage() {
         </section>
 
         {/* ─── SECTION 2: THERAPIES IN MOTION (VIDEO DEMONSTRATIONS) ─── */}
-        <section style={{ padding: "70px 0 90px 0", backgroundColor: "#0a0e12" }}>
+        <section
+          style={{
+            padding: "70px 0 90px 0",
+            backgroundColor: "#0a0e12",
+            display: activeTab === "videos" ? "block" : "none",
+          }}
+        >
           <div className="container">
             <div style={{ textAlign: "center", maxWidth: "780px", margin: "0 auto 36px auto" }}>
               <span style={{ color: "#c2a74e", fontFamily: "'Great Vibes', cursive, Cormorant, serif", fontSize: "1.7rem", display: "block", marginBottom: "6px", letterSpacing: "1px" }}>
@@ -1475,15 +1539,15 @@ export default function GalleryPage() {
                 <p style={{ color: "#9ca3af", fontSize: "13px", lineHeight: 1.7, margin: 0 }}>
                   Sir Apollo Kaggwa Rd &amp; Mengo, Kampala<br />
                   Phone: <a href="tel:+256781945510" style={{ color: "#c2a74e", textDecoration: "none" }}>+256 781 945 510</a><br />
-                  Email: <a href="mailto:theserenityspakla@gmail.com" style={{ color: "#c2a74e", textDecoration: "none" }}>theserenityspakla@gmail.com</a>
+                  Email: <a href="mailto:theserenitybookings@gmail.com" style={{ color: "#c2a74e", textDecoration: "none" }}>theserenitybookings@gmail.com</a>
                 </p>
               </div>
 
               <div className="col-lg-3 col-md-6">
                 <h4 style={{ color: "#ffffff", fontFamily: "Cormorant, serif", fontSize: "1.2rem", marginBottom: "16px" }}>Hours</h4>
                 <p style={{ color: "#9ca3af", fontSize: "13px", lineHeight: 1.7, margin: 0 }}>
-                  Open Daily (Mon - Sun):<br />
-                  <strong style={{ color: "#fff" }}>9:00 AM – 11:00 PM</strong><br />
+                  Open 24 Hours, 7 Days a Week:<br />
+                  <strong style={{ color: "#fff" }}>Any time, day or night</strong><br />
                   Private suite appointments accommodated on request.
                 </p>
               </div>

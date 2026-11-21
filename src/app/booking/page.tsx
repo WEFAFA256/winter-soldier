@@ -42,7 +42,7 @@ const TIME_SLOTS = [
 ];
 
 const WHATSAPP_NUMBER = "256781945510";
-const EMAIL = "theserenityspakla@gmail.com";
+const EMAIL = "theserenitybookings@gmail.com";
 
 // Real booking + MTN/Airtel payment API (Cloudflare Worker). The PawaPay
 // callback URL registered in the dashboard points to this same host.

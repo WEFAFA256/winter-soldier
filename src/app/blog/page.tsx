@@ -233,7 +233,7 @@ export default function BlogPage() {
                                 <a href="/" class="footer-widget__logo">
                                     <img src="/assets/images/logo-light.png" width="155" alt="The Serenity Spa">
                                 </a>
-                                <a href="mailto:theserenityspakla@gmail.com?subject=Spa%20updates" class="footer-widget__newsletter-link">Get spa updates by email →</a>
+                                <a href="mailto:theserenitybookings@gmail.com?subject=Spa%20updates" class="footer-widget__newsletter-link">Get spa updates by email →</a>
                             </div>
                         </div>
                         <div class="col-md-6 col-xl-2">
@@ -252,7 +252,7 @@ export default function BlogPage() {
                                 <h2 class="footer-widget__title">Contact</h2>
                                 <ul class="list-unstyled footer-widget__info">
                                     <li><a href="tel:+256781945510">+256 781 945 510</a></li>
-                                    <li><a href="mailto:theserenityspakla@gmail.com">theserenityspakla@gmail.com</a></li>
+                                    <li><a href="mailto:theserenitybookings@gmail.com">theserenitybookings@gmail.com</a></li>
                                     <li><a href="https://www.google.com/maps">Sir Apollo Kaggwa Rd &amp; Mengo, Kampala</a></li>
                                 </ul>
                             </div>
@@ -260,7 +260,7 @@ export default function BlogPage() {
                         <div class="col-md-6 col-xl-3">
                             <div class="footer-widget footer-widget--time">
                                 <h2 class="footer-widget__title">Timing</h2>
-                                <p class="footer-widget__text">Mon to Sat: 9:00am – 6:00pm Sunday: Closed</p>
+                                <p class="footer-widget__text">Open 24 Hours, 7 Days a Week</p>
                             </div>
                         </div>
                     </div>
