@@ -567,16 +567,17 @@ export default function VipPackagesPage() {
     fetchPackages();
   }, []);
 
-  /* The home hero's curtain: `.main-slider-two__title::after` — a solid bar that sits over
-     the title and is swiped off sideways, 1s cubic-bezier(0.858, 0.01, 0.068, 0.99). */
+  /* Exact `.main-slider-two__title::after` geometry from solox.css: parked at left:100%
+     with translateX(-100%) covering the title, then translated back off to the right.
+     Height 85% / top 6px keeps the bar slim like the homepage's. */
   const curtain = (delay: number): React.CSSProperties => ({
     position: "absolute",
-    top: 0,
-    left: 0,
+    top: 6,
+    left: "100%",
     width: "101%",
-    height: "100%",
+    height: "85%",
     background: "#ffffff",
-    transform: heroVisible ? "translateX(101%)" : "translateX(0)",
+    transform: heroVisible ? "translateY(1%)" : "translateX(-100%)",
     transition: "transform 1000ms cubic-bezier(0.858, 0.01, 0.068, 0.99)",
     transitionDelay: `${delay}ms`,
     pointerEvents: "none",
@@ -772,8 +773,8 @@ export default function VipPackagesPage() {
                       letterSpacing: "normal",
                     }}
                   >
-                    <span className="vip-shimmer-text" style={{ fontSize: "1.25em", marginRight: "6px", verticalAlign: "middle" }}>VIP</span> Luxury Packages &amp; Multi-Hand Rituals
-                    <span aria-hidden="true" style={curtain(700)} />
+                    <span className="vip-shimmer-text" style={{ fontSize: "1.25em", marginRight: "6px", verticalAlign: "middle" }}>VIP</span> Luxury Packages
+                    <span aria-hidden="true" style={curtain(720)} />
                   </h1>
                 </HeroLine>
               </div>

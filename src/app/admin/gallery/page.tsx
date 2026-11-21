@@ -681,9 +681,23 @@ export default function AdminGalleryPage() {
                       <div className="adm blog-form-grid" style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12 }}>
                         <div>
                           <label style={{ display:"block", fontSize:11, fontWeight:600, color:C.muted, textTransform:"uppercase", letterSpacing:"0.06em", marginBottom:6 }}>Cover Image</label>
-                          <input type="file" accept="image/*" onChange={e=>{ const f=e.target.files?.[0]; if(f){setBlogFile(f);setBlogPreview(URL.createObjectURL(f));} }}
+                          <input type="file" accept="image/*" onChange={e=>{
+                            const f = e.target.files?.[0];
+                            if (blogPreview) URL.revokeObjectURL(blogPreview);
+                            if (f) { setBlogFile(f); setBlogPreview(URL.createObjectURL(f)); }
+                            else { setBlogFile(null); setBlogPreview(null); }
+                          }}
                             style={{ width:"100%", fontSize:12, color:C.muted, background:C.bg, border:`1px solid ${C.border}`, borderRadius:6, padding:"7px 10px" }} />
-                          {blogPreview && <img src={blogPreview} style={{ marginTop:8, width:72, height:48, objectFit:"cover", borderRadius:6, border:`1px solid ${C.border}` }} alt="preview" />}
+                          {blogPreview && (
+                            <div style={{ marginTop:10 }}>
+                              <p style={{ margin:"0 0 6px", fontSize:10, fontWeight:700, color:C.gold, letterSpacing:"0.06em", textTransform:"uppercase" }}>
+                                Cover preview — full image, not cropped
+                              </p>
+                              <img src={blogPreview} alt="Cover image preview"
+                                style={{ display:"block", width:"100%", maxHeight:240, objectFit:"contain",
+                                  background:"#0b0f14", border:`1px solid ${C.border}`, borderRadius:6 }} />
+                            </div>
+                          )}
                         </div>
                         <Input label="Date" value={newBlog.date||""} onChange={(e:any)=>setNewBlog({...newBlog,date:e.target.value})} />
                       </div>

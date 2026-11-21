@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import CustomCursor from "@/components/CustomCursor";
+import MobileDrawer from "@/components/MobileDrawer";
 
 const esc = (value: any) =>
   String(value ?? "")
@@ -14,6 +15,33 @@ const esc = (value: any) =>
 export default function BlogPage() {
   const [posts, setPosts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const pageRef = useRef<HTMLDivElement>(null);
+
+  // The legacy Solox drawer is hidden globally, so bind the hamburger to the React
+  // drawer via a delegated listener on a stable wrapper (the HTML is re-injected
+  // whenever posts load, which would drop handlers bound directly to its nodes).
+  useEffect(() => {
+    const root = pageRef.current;
+    if (!root) return;
+    const onClick = (e: MouseEvent) => {
+      const t = e.target as HTMLElement;
+      if (t.closest(".mobile-nav__btn.mobile-nav__toggler")) {
+        e.preventDefault();
+        setMobileMenuOpen(true);
+      } else if (t.closest(".mobile-nav__close")) {
+        setMobileMenuOpen(false);
+      }
+    };
+    root.addEventListener("click", onClick);
+    return () => root.removeEventListener("click", onClick);
+  }, []);
+
+  // The legacy Solox script adds `body.locked` when the hamburger is tapped; make sure
+  // that class never survives closing the React drawer.
+  useEffect(() => {
+    if (!mobileMenuOpen) document.body.classList.remove("locked");
+  }, [mobileMenuOpen]);
 
   useEffect(() => {
     if (typeof window !== "undefined" && (window as any).soloxInitLoad) {
@@ -28,7 +56,41 @@ export default function BlogPage() {
 
   const blogSection = (() => {
     const wrap = (inner: string) => `
-        <section class="blog-one blog-one--page" style="padding:100px 0; background-color:#0e1317;">
+        <style>
+          .serenity-blog * { box-sizing: border-box; }
+          .serenity-blog__grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 30px; }
+          .serenity-blog__card { background: #161b22; border: 1px solid #2c333c; border-radius: 12px;
+            overflow: hidden; display: flex; flex-direction: column;
+            transition: transform .25s ease, border-color .25s ease, box-shadow .25s ease; }
+          .serenity-blog__card:hover { transform: translateY(-5px); border-color: rgba(194,167,78,.55);
+            box-shadow: 0 18px 40px rgba(0,0,0,.45); }
+          .serenity-blog__media { position: relative; height: 250px; background: #0b0f14;
+            display: flex; align-items: center; justify-content: center; overflow: hidden; }
+          .serenity-blog__media img { max-width: 100%; max-height: 100%; width: auto; height: auto;
+            object-fit: contain; display: block; }
+          .serenity-blog__date { position: absolute; top: 14px; left: 14px; background: #c2a74e;
+            color: #0e1317; border-radius: 6px; padding: 6px 12px; text-align: center; line-height: 1.1;
+            box-shadow: 0 4px 14px rgba(0,0,0,.4); }
+          .serenity-blog__date b { display: block; font-size: 20px; font-weight: 700; }
+          .serenity-blog__date span { display: block; font-size: 10px; text-transform: uppercase;
+            letter-spacing: 1px; font-weight: 700; }
+          .serenity-blog__body { padding: 24px; display: flex; flex-direction: column; flex: 1; }
+          .serenity-blog__meta { color: #8b949e; font-size: 11px; letter-spacing: .5px; margin-bottom: 12px; }
+          .serenity-blog__title { font-family: 'Cormorant', Georgia, serif; font-size: 30px;
+            line-height: 1.2; color: #fff; margin: 0 0 12px; }
+          .serenity-blog__title a { color: #fff; text-decoration: none; transition: color .2s ease; }
+          .serenity-blog__card:hover .serenity-blog__title a { color: #c2a74e; }
+          .serenity-blog__excerpt { color: #aab3bd; font-size: 14px; line-height: 1.75; margin: 0 0 22px; flex: 1; }
+          .serenity-blog__more { display: inline-flex; align-items: center; gap: 8px; color: #c2a74e;
+            font-size: 12px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
+            text-decoration: none; transition: gap .2s ease; align-self: flex-start; }
+          .serenity-blog__more:hover { gap: 14px; }
+          @media (max-width: 640px) {
+            .serenity-blog__grid { grid-template-columns: 1fr; }
+            .serenity-blog__media { height: 210px; }
+          }
+        </style>
+        <section class="blog-one blog-one--page serenity-blog" style="padding:100px 0; background-color:#0e1317;">
             <div class="container">
                 ${inner}
             </div>
@@ -64,34 +126,45 @@ export default function BlogPage() {
                 </div>`);
     }
 
+    const dateParts = (value: any) => {
+      const s = String(value || "").trim();
+      const m = s.match(/(\d{1,2})\s+([A-Za-z]+)/);
+      if (m) return { day: m[1], month: m[2].slice(0, 3).toUpperCase() };
+      const dt = new Date(s);
+      if (!Number.isNaN(dt.getTime())) {
+        return { day: String(dt.getDate()), month: dt.toLocaleString("en", { month: "short" }).toUpperCase() };
+      }
+      return { day: "✦", month: "NEW" };
+    };
+
     const cards = posts
       .map((post: any) => {
+        const d = dateParts(post.date);
+        const href = `/blog/${encodeURIComponent(String(post.id || ""))}`;
         const image = post.image
-          ? `<div style="height:220px; overflow:hidden; border-radius:8px 8px 0 0; background:#161b22;">
-                       <img src="${esc(post.image)}" alt="${esc(post.title)}"
-                            style="width:100%; height:100%; object-fit:cover;" />
+          ? `<div class="serenity-blog__media">
+                       <img src="${esc(post.image)}" alt="${esc(post.title)}" />
+                       <div class="serenity-blog__date"><b>${esc(d.day)}</b><span>${esc(d.month)}</span></div>
                      </div>`
           : "";
-        const body = String(post.excerpt || post.content || "").trim();
+        const excerpt = String(post.excerpt || "").trim() || String(post.content || "").trim().slice(0, 180);
+        const words = String(post.content || "").trim().split(/\s+/).filter(Boolean).length;
+        const read = Math.max(1, Math.ceil(words / 200));
         return `
-                <article style="background:#161b22; border:1px solid #30363d; border-radius:10px;
-                                overflow:hidden; display:flex; flex-direction:column;">
+                <article class="serenity-blog__card">
                     ${image}
-                    <div style="padding:24px;">
-                        <div style="color:#c2a74e; font-size:11px; font-weight:700; letter-spacing:1.5px;
-                                    text-transform:uppercase; margin-bottom:10px;">
-                            ${esc(post.author || "The Serenity Spa")}${post.date ? ` &nbsp;•&nbsp; ${esc(post.date)}` : ""}
-                        </div>
-                        <h3 style="font-family:'Cormorant',Georgia,serif; font-size:28px; line-height:1.2;
-                                    color:#fff; margin:0 0 12px;">${esc(post.title)}</h3>
-                        <p style="color:#aab3bd; font-size:14px; line-height:1.75; margin:0; white-space:pre-wrap;">${esc(body)}</p>
+                    <div class="serenity-blog__body">
+                        <div class="serenity-blog__meta">✒ ${esc(post.author || "The Serenity Spa")} &nbsp;•&nbsp; ${read} min read</div>
+                        <h3 class="serenity-blog__title"><a href="${href}">${esc(post.title)}</a></h3>
+                        <p class="serenity-blog__excerpt">${esc(excerpt)}</p>
+                        <a class="serenity-blog__more" href="${href}">Read more <span aria-hidden="true">→</span></a>
                     </div>
                 </article>`;
       })
       .join("");
 
     return wrap(`
-                <div class="row gutter-y-30" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(300px, 1fr)); gap:30px;">
+                <div class="serenity-blog__grid">
                     ${cards}
                 </div>`);
   })();
@@ -100,6 +173,7 @@ export default function BlogPage() {
     <>
       <CustomCursor />
       <div
+        ref={pageRef}
         suppressHydrationWarning
         dangerouslySetInnerHTML={{
           __html: `<div class="page-wrapper">
@@ -215,29 +289,6 @@ export default function BlogPage() {
         </footer>
 
     </div><!-- /.page-wrapper -->
-    <div class="mobile-nav__wrapper">
-        <div class="mobile-nav__overlay mobile-nav__toggler"></div>
-        <div class="mobile-nav__content">
-            <span class="mobile-nav__close mobile-nav__toggler"><i class="fa fa-times"></i></span>
-            <div class="logo-box">
-                <a href="/" aria-label="logo image"><img src="/assets/images/logo-light.png" width="155" alt="" /></a>
-            </div>
-            <div class="mobile-nav__container">
-                <ul class="main-menu__list">
-                    <li><a href="/">Home</a></li>
-                    <li><a href="/services">Services</a></li>
-                    <li><a href="/vip-packages">VIP Packages</a></li>
-                    <li><a href="/mobile-massage">Mobile Massage</a></li>
-                    <li><a href="/gallery">Gallery</a></li>
-                    <li class="current"><a href="/blog">Blog</a></li>
-                </ul>
-            </div>
-            <ul class="mobile-nav__contact list-unstyled">
-                <li><i class="fa fa-envelope"></i><a href="mailto:theserenityspakla@gmail.com">theserenityspakla@gmail.com</a></li>
-                <li><i class="fa fa-phone-alt"></i><a href="tel:+256781945510">+256 781 945 510</a></li>
-            </ul>
-        </div>
-    </div>
     <div class="search-popup">
         <div class="search-popup__overlay search-toggler"></div>
         <div class="search-popup__content">
@@ -252,6 +303,7 @@ export default function BlogPage() {
     `,
         }}
       />
+      <MobileDrawer isOpen={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} />
     </>
   );
 }
