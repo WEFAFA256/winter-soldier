@@ -347,10 +347,11 @@ function ServiceCard({
           }}
         />
 
-        {/* Card Image */}
-        <div
+        {/* Card Image — real button so it is keyboard-focusable/activatable */}
+        <button
+          type="button"
           onClick={onLearnMore}
-          style={{ height: "220px", overflow: "hidden", position: "relative", cursor: "pointer", backgroundColor: "#0e1317", zIndex: 2 }}
+          style={{ height: "220px", width: "100%", overflow: "hidden", position: "relative", cursor: "pointer", backgroundColor: "#0e1317", zIndex: 2, display: "block", border: "none", padding: 0, margin: 0, textAlign: "left", font: "inherit", color: "inherit" }}
         >
           <img
             src={imgSrc}
@@ -393,7 +394,7 @@ function ServiceCard({
           >
             <i className="fas fa-search-plus"></i> View Flyer
           </div>
-        </div>
+        </button>
 
         {/* Card Content */}
         <div style={{ padding: "24px 22px", display: "flex", flexDirection: "column", flex: 1, position: "relative", zIndex: 2 }}>
@@ -1045,8 +1046,6 @@ export default function VipPackagesPage() {
             </div>
           </div>
         )}
-
-        <MobileDrawer isOpen={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} />
       </div>
     </>
   );

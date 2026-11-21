@@ -13,6 +13,14 @@ function secret(): string {
   return value;
 }
 
+// Emergency revocation: sessions are stateless, so this version is signed into
+// every token. Changing ADMIN_SESSION_VERSION (and redeploying) invalidates
+// all outstanding sessions at once, even a stolen cookie that was never used
+// to call /api/admin/login (which clears the browser's own cookie).
+function sessionVersion(): string {
+  return process.env.ADMIN_SESSION_VERSION || "1";
+}
+
 function sign(payload: string): string {
   return createHmac("sha256", secret()).update(payload).digest("base64url");
 }
@@ -25,7 +33,10 @@ function safeEqual(a: string, b: string): boolean {
 
 export function createSessionToken(): string {
   const payload = Buffer.from(
-    JSON.stringify({ exp: Date.now() + SESSION_HOURS * 60 * 60 * 1000 })
+    JSON.stringify({
+      exp: Date.now() + SESSION_HOURS * 60 * 60 * 1000,
+      v: sessionVersion(),
+    })
   ).toString("base64url");
   return `${payload}.${sign(payload)}`;
 }
@@ -36,7 +47,12 @@ export function verifySessionToken(token: string | undefined | null): boolean {
   if (!payload || !signature || !safeEqual(signature, sign(payload))) return false;
   try {
     const parsed = JSON.parse(Buffer.from(payload, "base64url").toString("utf8"));
-    return typeof parsed.exp === "number" && parsed.exp > Date.now();
+    return (
+      typeof parsed.exp === "number" &&
+      parsed.exp > Date.now() &&
+      typeof parsed.v === "string" &&
+      parsed.v === sessionVersion()
+    );
   } catch {
     return false;
   }

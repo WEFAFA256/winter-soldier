@@ -484,20 +484,19 @@ function BookingFormInner() {
 
   function openWhatsAppWithSummary() {
     if (!bookingSummary) return;
+    // Send ONLY the reference (plus enough context for the spa to identify the
+    // booking). Never put the client's name, phone, email or notes into a wa.me
+    // URL: it leaks PII into WhatsApp's servers, browser history and logs.
+    // The spa looks the full record up by reference in the admin dashboard.
     const lines = [
-      `🌿 *Booking Details — The Serenity Spa*`,
+      `🌿 *Booking enquiry — The Serenity Spa*`,
       ``,
-      `🔖 *Booking ID:* ${bookingSummary.id}`,
-      `👤 *Client:* ${bookingSummary.name}`,
-      `📞 *Phone:* ${bookingSummary.phone}`,
-      bookingSummary.email ? `📧 *Email:* ${bookingSummary.email}` : "",
+      `🔖 *Reference:* ${bookingSummary.id}`,
       `💆 *Service:* ${bookingSummary.service}`,
-      `💰 *Amount:* ${formatPrice(bookingSummary.price)}`,
       `📅 *Date:* ${bookingSummary.date}`,
       `🕐 *Time:* ${bookingSummary.time}`,
-      bookingSummary.notes ? `📝 *Notes:* ${bookingSummary.notes}` : "",
       ``,
-      `_I made this booking on the website. Payment: ${paymentStatus === "CONFIRMED" ? "confirmed" : "awaiting confirmation"}. Reference: ${bookingSummary.id}_`,
+      `_Payment: ${paymentStatus === "CONFIRMED" ? "confirmed" : "awaiting confirmation"}. Please quote the reference._`,
     ]
       .filter(Boolean)
       .join("\n");

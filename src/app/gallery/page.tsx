@@ -27,6 +27,13 @@ interface SpaVideo {
   bookingService: string;
 }
 
+// Single source of truth for specialist availability. The admin-controlled record field is
+// authoritative; the positional fallback exists only for legacy rows with no availability
+// field, and is kept identical for cards and lightbox so their badges can never disagree.
+function isImageAvailable(img: GalleryImage, index: number): boolean {
+  return img.availability !== undefined ? img.availability === "available" : index % 4 !== 1;
+}
+
 const INITIAL_IMAGES: GalleryImage[] = [
   {
     "id": "serenity_gallery/u7wll8tto5yxjt4ptcbl",
@@ -469,8 +476,8 @@ function GalleryCard({
     };
   }, [index]);
 
-  // Therapist availability status: controlled by admin / data
-  const isAvailable = img.availability !== undefined ? img.availability === "available" : index % 4 !== 1;
+  // Therapist availability status: controlled by admin / data (shared with the lightbox)
+  const isAvailable = isImageAvailable(img, index);
   const specialistName =
     img.alt && !img.alt.includes("Serenity Spa -")
       ? img.alt
@@ -492,6 +499,17 @@ function GalleryCard({
       <div
         className="gallery-card-inner"
         onClick={onClick}
+        role="button"
+        tabIndex={0}
+        aria-label={`View full-size photos of ${specialistName}`}
+        onKeyDown={(e) => {
+          // Ignore keys pressed on the nested "Book Therapist" button so it keeps its own action.
+          if (e.target !== e.currentTarget) return;
+          if (e.key === "Enter" || e.key === " " || e.key === "Spacebar") {
+            e.preventDefault();
+            onClick();
+          }
+        }}
         style={{
           height: "300px",
           borderRadius: "12px",
@@ -828,6 +846,13 @@ export default function GalleryPage() {
         .video-card-poster {
           transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
         }
+        .gallery-card-inner:focus-visible,
+        .video-card-box:focus-visible,
+        .mobile-nav__toggler:focus-visible,
+        .gallery-book-session-btn:focus-visible {
+          outline: 2px solid #c2a74e;
+          outline-offset: 3px;
+        }
       `}</style>
 
       <div className="page-wrapper" style={{ backgroundColor: "#0e1317", color: "#c4cfde", minHeight: "100vh" }}>
@@ -882,6 +907,16 @@ export default function GalleryPage() {
                 <div
                   className="mobile-nav__btn mobile-nav__toggler"
                   onClick={() => setMobileMenuOpen(true)}
+                  role="button"
+                  tabIndex={0}
+                  aria-label="Open navigation menu"
+                  onKeyDown={(e) => {
+                    if (e.target !== e.currentTarget) return;
+                    if (e.key === "Enter" || e.key === " " || e.key === "Spacebar") {
+                      e.preventDefault();
+                      setMobileMenuOpen(true);
+                    }
+                  }}
                   style={{ cursor: "pointer" }}
                 >
                   <span></span>
@@ -1154,6 +1189,17 @@ export default function GalleryPage() {
                   <div
                     className="video-card-box"
                     onClick={() => setSelectedVideo(video)}
+                    role="button"
+                    tabIndex={0}
+                    aria-label={`Play demonstration: ${video.title}`}
+                    onKeyDown={(e) => {
+                      // The nested "Book Session" button handles its own keyboard activation.
+                      if (e.target !== e.currentTarget) return;
+                      if (e.key === "Enter" || e.key === " " || e.key === "Spacebar") {
+                        e.preventDefault();
+                        setSelectedVideo(video);
+                      }
+                    }}
                     style={{
                       backgroundColor: "#13181e",
                       borderRadius: "14px",
@@ -1349,7 +1395,9 @@ export default function GalleryPage() {
                           <i className="fas fa-play-circle"></i> Watch Session
                         </span>
 
-                        <span
+                        <button
+                          type="button"
+                          className="gallery-book-session-btn"
                           onClick={(e) => {
                             e.stopPropagation();
                             window.location.href = `/booking?service=${encodeURIComponent(video.bookingService)}&therapist=${encodeURIComponent(video.specialist)}`;
@@ -1360,6 +1408,8 @@ export default function GalleryPage() {
                             border: "1px solid rgba(194, 167, 78, 0.45)",
                             color: "#c2a74e",
                             borderRadius: "4px",
+                            fontFamily: "inherit",
+                            lineHeight: "inherit",
                             fontSize: "11px",
                             fontWeight: 700,
                             letterSpacing: "0.5px",
@@ -1377,7 +1427,7 @@ export default function GalleryPage() {
                           }}
                         >
                           Book Session
-                        </span>
+                        </button>
                       </div>
                     </div>
                   </div>
@@ -1616,10 +1666,13 @@ export default function GalleryPage() {
 
         {/* --- FULLSCREEN PHOTO LIGHTBOX POPUP --- */}
         {selectedIndex !== null && images[selectedIndex] && (() => {
-          const isLightboxAvailable = selectedIndex % 4 !== 1;
+          const selectedImage = images[selectedIndex];
+          // Read the SAME admin-controlled record field the gallery card uses - never derive
+          // availability from the lightbox position.
+          const isLightboxAvailable = isImageAvailable(selectedImage, selectedIndex);
           const specialistName =
-            images[selectedIndex].alt && !images[selectedIndex].alt.includes("Serenity Spa -")
-              ? images[selectedIndex].alt
+            selectedImage.alt && !selectedImage.alt.includes("Serenity Spa -")
+              ? selectedImage.alt
               : `Specialist #${selectedIndex + 1}`;
 
           return (
@@ -1698,8 +1751,8 @@ export default function GalleryPage() {
                 onClick={(e) => e.stopPropagation()}
               >
                 <img
-                  src={images[selectedIndex].src}
-                  alt={images[selectedIndex].alt || "The Serenity Spa"}
+                  src={selectedImage.src}
+                  alt={selectedImage.alt || "The Serenity Spa"}
                   style={{
                     maxWidth: "100%",
                     maxHeight: "72vh",

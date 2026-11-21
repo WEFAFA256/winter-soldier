@@ -234,6 +234,39 @@ async function payRateLimited(request, env) {
   return Boolean(row && Number(row.count) > 8);
 }
 
+// Callbacks are unauthenticated HTTP POSTs. PawaPay status is never trusted for
+// state changes (see handleCallback), but an attacker could still burn provider
+// API quota / KV storage by posting arbitrary depositIds. Throttle per IP.
+async function callbackRateLimited(request, env) {
+  const windowMs = 10 * 60 * 1000;
+  const bucket = Math.floor(Date.now() / windowMs);
+  const key = `cb:${clientIp(request)}:${bucket}`;
+  await env.SERENITY_DB.prepare(
+    `INSERT INTO rate_limits (key, window_start, count) VALUES (?, ?, 1)
+     ON CONFLICT(key) DO UPDATE SET count = count + 1`
+  ).bind(key, new Date(bucket * windowMs).toISOString()).run();
+  const row = await env.SERENITY_DB.prepare(
+    "SELECT count FROM rate_limits WHERE key = ?"
+  ).bind(key).first();
+  return Boolean(row && Number(row.count) > 50); // PawaPay retries ~8x/25min — generous
+}
+
+// Public booking mutations must be real JSON requests from an allowed origin.
+// CORS alone does not stop a cross-origin no-cors form POST (side effects still
+// happen); this guard does. Absent Origin is allowed for curl/server clients.
+function rejectPublicMutation(request, env) {
+  const ctype = (request.headers.get("content-type") || "").toLowerCase();
+  if (!ctype.includes("application/json")) return fail("Expected application/json", 415);
+  const origin = request.headers.get("origin");
+  if (origin) {
+    const siteUrl = (env.SITE_URL || "").replace(/\/$/, "");
+    const allowed = new Set(ALLOWED_ORIGINS);
+    if (siteUrl) allowed.add(siteUrl);
+    if (!allowed.has(origin)) return fail("Origin not allowed", 403);
+  }
+  return null;
+}
+
 function isAdmin(request, env) {
   const header = request.headers.get("authorization") || "";
   return Boolean(env.ADMIN_API_TOKEN) && constantTimeEqual(header, `Bearer ${env.ADMIN_API_TOKEN}`);
@@ -316,7 +349,11 @@ async function expireStaleHolds(env) {
 }
 
 async function handleCallback(request, env, ctx, path) {
+  if (await callbackRateLimited(request, env)) {
+    return fail("Too many callbacks. Please retry later.", 429);
+  }
   const raw = await request.text();
+  if (raw.length > 65536) return fail("Payload too large", 413);
   let body;
   try { body = JSON.parse(raw); } catch { body = { raw: raw.slice(0, 2000) }; }
 
@@ -332,7 +369,8 @@ async function handleCallback(request, env, ctx, path) {
     receivedAt: new Date().toISOString(),
     path,
     headers,
-    body: raw.slice(0, 64000),
+    // Raw payload kept for audit only; never store more than needed.
+    body: raw.slice(0, 16000),
   };
   const finish = async (extra) => {
     await storeEvent(env, event);
@@ -399,10 +437,14 @@ async function handleCallback(request, env, ctx, path) {
   }
 
   // Keep a durable, queryable record of verified outcomes alongside the raw KV log.
+  // Deterministic id makes INSERT OR IGNORE actually dedupe replays (a random
+  // UUID never collides, so the old code wrote one ledger row per callback).
   await env.SERENITY_DB.prepare(
     `INSERT OR IGNORE INTO payment_events (id, deposit_id, status, raw_body, received_at)
      VALUES (?, ?, ?, ?, ?)`
-  ).bind(crypto.randomUUID(), depositId, finalStatus, raw.slice(0, 64000), event.receivedAt).run();
+  ).bind(
+    `pe:${depositId}:${finalStatus}`, depositId, finalStatus, raw.slice(0, 16000), event.receivedAt
+  ).run();
 
   const booking = await env.SERENITY_DB.prepare(
     "SELECT id, deposit_id, amount_ugx, status, deposit_initiated_at FROM bookings WHERE deposit_id = ?"
@@ -442,8 +484,17 @@ async function handleCallback(request, env, ctx, path) {
       console.log("booking confirmed", { depositId, eventId });
     }
   } else if (finalStatus === "FAILED") {
-    await archiveRow(env, booking, "FAILED", "pawapay-failed");
-    console.log("failed payment released slot", { depositId, eventId });
+    // Terminal states are final. A late/out-of-order FAILED result must never
+    // overturn an already CONFIRMED booking and free a paid customer's slot.
+    if (booking.status === "PENDING_PAYMENT") {
+      await archiveRow(env, booking, "FAILED", "pawapay-failed");
+      console.log("failed payment released slot", { depositId, eventId });
+    } else {
+      console.log("late FAILED callback ignored; booking already terminal", {
+        depositId, eventId, status: booking.status,
+      });
+      event.verifiedStatus = "IGNORED_TERMINAL";
+    }
   } else if (finalStatus === "COMPLETED" && !amountMatches) {
     console.warn("confirmed payment with mismatched amount left unchanged", {
       depositId, eventId, paidAmount, expectedAmount: booking.amount_ugx,
@@ -459,6 +510,8 @@ async function handleCallback(request, env, ctx, path) {
 }
 
 async function createBooking(request, env) {
+  const guard = rejectPublicMutation(request, env);
+  if (guard) return guard;
   let input;
   try {
     input = await request.json();
@@ -546,6 +599,8 @@ async function releasePayClaim(env, bookingId, claimAt) {
 }
 
 async function initiateDeposit(request, env, bookingId) {
+  const guard = rejectPublicMutation(request, env);
+  if (guard) return guard;
   let input;
   try {
     input = await request.json();
@@ -638,7 +693,15 @@ async function initiateDeposit(request, env, bookingId) {
     return fail(friendlyPayError(code), 502, code || undefined);
   }
   if (status !== "ACCEPTED" && status !== "DUPLICATE_IGNORED") {
-    console.error("deposit initiation failed", { status: pay.status, data: pay.data });
+    // Never log the full provider payload — error bodies can echo the payer's
+    // MSISDN. Log only codes and the masked phone tail (matches REJECTED path).
+    console.error("deposit initiation failed", {
+      providerHttpStatus: pay.status,
+      providerStatus: status,
+      failureCode: pay.data && pay.data.failureReason && pay.data.failureReason.failureCode,
+      provider: providerKey,
+      phoneTail: phone.slice(-3),
+    });
     await releasePayClaim(env, bookingId, claimAt);
     return fail("Could not start payment with PawaPay. Please try again.", 502);
   }
@@ -665,6 +728,9 @@ async function initiateDeposit(request, env, bookingId) {
 }
 
 async function getBooking(id, env) {
+  // Expire abandoned holds on read too — otherwise a slot stays blocked and a
+  // customer's status page stays PENDING forever until someone creates a booking.
+  await expireStaleHolds(env);
   const row = await env.SERENITY_DB.prepare(
     `SELECT id, service_title, amount_ugx, customer_name, booking_date, booking_time,
             status, confirmed_at, created_at, deposit_id, payment_provider,
@@ -721,21 +787,22 @@ function returnPage(siteUrl) {
 </style></head><body><div class="card" id="c"><div class="spin"></div><h1>Checking your payment…</h1><p>Do not close this page.</p></div>
 <script>
  const id=new URLSearchParams(location.search).get('booking');
+ const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
  let tries=0; const MAX=40; // ~2 minutes only; never poll forever
  async function check(){
   if(!id){document.getElementById('c').innerHTML='<h1>Missing booking reference</h1>';return;}
   try{
   const r=await fetch('/api/bookings/'+encodeURIComponent(id),{cache:'no-store'});const d=await r.json();
-  if(!d.ok){document.getElementById('c').innerHTML='<h1>'+(d.error||'Booking not found')+'</h1><p>Reference: '+id+'</p>';return;}
+  if(!d.ok){document.getElementById('c').innerHTML='<h1>'+esc(d.error||'Booking not found')+'</h1><p>Reference: '+esc(id)+'</p>';return;}
   const b=d.booking;
   if(b.status==='CONFIRMED'){
-   document.getElementById('c').innerHTML='<h1>You are booked ✓</h1><p><strong>'+b.service_title+'</strong><br>'+b.booking_date+' at '+b.booking_time+'</p><p>Reference: '+b.id+'</p>'+${JSON.stringify(siteUrl ? `<p><a href="${siteUrl}">Back to The Serenity Spa</a></p>` : "")};
+   document.getElementById('c').innerHTML='<h1>You are booked ✓</h1><p><strong>'+esc(b.service_title)+'</strong><br>'+esc(b.booking_date)+' at '+esc(b.booking_time)+'</p><p>Reference: '+esc(b.id)+'</p>'+${JSON.stringify(siteUrl ? `<p><a href="${siteUrl}">Back to The Serenity Spa</a></p>` : "")};
   } else if(b.status==='PENDING_PAYMENT'){
    tries+=1;
    if(tries<MAX){setTimeout(check,3000);return;}
-   document.getElementById('c').innerHTML='<h1>Payment not received</h1><p>We stopped checking automatically. If you paid, tap below; otherwise make a new booking.</p><button onclick="location.reload()" style="padding:10px 16px;background:#c2a74e;color:#0e1317;border:0;border-radius:8px;font-weight:700;cursor:pointer">Check once more</button><p>Reference: '+b.id+'</p>';
+   document.getElementById('c').innerHTML='<h1>Payment not received</h1><p>We stopped checking automatically. If you paid, tap below; otherwise make a new booking.</p><button onclick="location.reload()" style="padding:10px 16px;background:#c2a74e;color:#0e1317;border:0;border-radius:8px;font-weight:700;cursor:pointer">Check once more</button><p>Reference: '+esc(b.id)+'</p>';
   } else {
-   document.getElementById('c').innerHTML='<h1>Payment not completed</h1><p>Please make a new booking if you still need this slot.</p><p>Reference: '+b.id+'</p>';
+   document.getElementById('c').innerHTML='<h1>Payment not completed</h1><p>Please make a new booking if you still need this slot.</p><p>Reference: '+esc(b.id)+'</p>';
   }
   }catch(e){
    if(tries<MAX){tries+=1;setTimeout(check,3000);return;}
@@ -790,6 +857,7 @@ const handler = {
     if (method === "GET" && path === "/api/availability") {
       const date = url.searchParams.get("date") || "";
       if (!validDate(date)) return fail("Choose a valid date within the next 90 days", 400);
+      await expireStaleHolds(env);
       const rows = await env.SERENITY_DB.prepare(
         "SELECT booking_time FROM bookings WHERE booking_date = ? AND status IN ('PENDING_PAYMENT','CONFIRMED')"
       ).bind(date).all();
@@ -818,6 +886,8 @@ const handler = {
 
     match = path.match(/^\/api\/bookings\/([0-9a-f-]{36})\/cancel$/i);
     if (method === "POST" && match) {
+      const guard = rejectPublicMutation(request, env);
+      if (guard) return guard;
       try {
         const row = await env.SERENITY_DB.prepare(
           "SELECT id, status, deposit_initiated_at FROM bookings WHERE id = ?"
@@ -842,7 +912,9 @@ const handler = {
 
       if (method === "GET" && path === "/api/admin/bookings") {
         const status = url.searchParams.get("status");
-        const limit = Math.min(Math.max(Number(url.searchParams.get("limit") || 100), 1), 500);
+        const parsedLimit = Number(url.searchParams.get("limit") || 100);
+        const limit = Number.isFinite(parsedLimit)
+          ? Math.min(Math.max(parsedLimit, 1), 500) : 100;
         const columns = `id, deposit_id, service_title, amount_ugx, customer_name, customer_phone,
                          customer_email, booking_date, booking_time, status, payment_provider,
                          payment_phone, created_at, confirmed_at, notes`;

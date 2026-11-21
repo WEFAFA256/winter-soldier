@@ -140,7 +140,7 @@ export default function Home() {
                             <span></span>
                             <span></span>
                         </div><!-- /.mobile-nav__toggler -->
-                        <a href="/services" class="solox-btn main-header__btn">
+                        <a href="/booking" class="solox-btn main-header__btn">
                             <span>Book now</span>
                         </a><!-- /.thm-btn main-header__btn -->
                     </div><!-- /.main-header__right -->
@@ -245,13 +245,12 @@ export default function Home() {
                                 <div class="col-md-7">
                                     <div class="about-two__content__inner">
                                         <p class="about-two__content__text">
-                                            There are many variations of passages of Lorem Ipsum available, but the majority have suffered simply free
-                                            text available alteration in some form, by injected humour.
+                                            At The Serenity Spa in Mengo, we blend skilled massage techniques with warm Ugandan hospitality. Step away from the bustle of Kampala and let our therapists restore your calm.
                                         </p>
                                         <ul class="about-two__content__list">
-                                            <li><span class="fa fa-check-circle"></span>Making a quality beauty products</li>
-                                            <li><span class="fa fa-check-circle"></span>Most premium skin care process</li>
-                                            <li><span class="fa fa-check-circle"></span>Massages & therapiess</li>
+                                            <li><span class="fa fa-check-circle"></span>Tailored massage and body treatments</li>
+                                            <li><span class="fa fa-check-circle"></span>Premium skincare with quality oils</li>
+                                            <li><span class="fa fa-check-circle"></span>Massages & therapies</li>
                                         </ul>
                                         <div class="about-two__content__author">
                                             <div class="about-two__content__author__thumb">
@@ -259,7 +258,7 @@ export default function Home() {
                                             </div>
                                             <div class="about-two__content__author__meta">
                                                 <img src="/assets/images/resources/about-sign-2.png" alt="solox">
-                                                Christine - Co Founder
+                                                The Serenity Spa Team
                                             </div>
                                         </div>
                                     </div>
@@ -269,7 +268,7 @@ export default function Home() {
                     </div><!-- /.col-lg-8 -->
                     <div class="col-lg-4 wow fadeInRight" data-wow-delay="300ms">
                         <div class="about-two__info">
-                            <div class="about-two__info__text">66 Broklyn Golden Street New York. USA</div>
+                            <div class="about-two__info__text">Sir Apollo Kaggwa Rd &amp; Mengo, Kampala, Uganda</div>
                             <div class="about-two__info__content" style="background-image: url(/assets/images/shapes/about-2-info-shape-bg-dark.png);">
                                 <div class="about-two__info__content-top">
                                     <h3 class="about-two__info__title">Opening<br> Hours</h3>
@@ -296,7 +295,7 @@ export default function Home() {
                 </div><!-- /.row -->
             </div><!-- /.container -->
         </section><!-- /.about-two -->
-        <div class="client-carousel client-carousel-one @@extraClassName">
+        <div class="client-carousel client-carousel-one">
             <div class="container">
                 <div
                     class="client-carousel__one solox-owl__carousel owl-theme owl-carousel" data-owl-options='{"items":5,"margin":55,"smartSpeed":700,"loop":true,"autoplay":6000,"nav":true,"dots":false,"responsive":{"0":{"items":1,"margin":0},"360":{"items":2,"margin":0},"575":{"items":3,"margin":30},"768":{"items":3,"margin":40},"992":{"items":4,"margin":40},"1200":{"items":5}}}'>
@@ -348,7 +347,7 @@ export default function Home() {
 					"forceWidth": true,
 					"forceHeight": true
 				}'>
-                            Watch our masssages Video
+                            Watch our massages Video
                         </div>
                     </div><!-- curved-circle end-->
                 </div><!-- /.video-one__btn -->
@@ -561,7 +560,7 @@ export default function Home() {
                             <div class="faq-one__content__author">
                                 <div class="faq-one__content__author__thumb"><img src="/assets/images/resources/faq-1-author.jpg" alt="solox"></div>
                                 <h5 class="faq-one__content__author__title">An Incredible Spa Experience</h5>
-                                <p class="faq-one__content__author__text">Donec quis felis commodo orem ipsum is<br> simply free text dolor sit amet.</p>
+                                <p class="faq-one__content__author__text">Questions about your visit? Our team is happy to help you choose the right treatment.</p>
                             </div>
                         </div><!-- /.faq-page__contact -->
                     </div><!-- /.col-lg-4 col-xl-3 -->
@@ -577,8 +576,7 @@ export default function Home() {
                                 <div class="accrodion-content">
                                     <div class="inner">
                                         <p>
-                                            There are many variations of passages the majority have suffered alteration in some fo injected humour,
-                                            or randomised words believable. Phasellus a rhoncus erat.
+                                            Direct beauty services are treatments delivered one-to-one by our therapists in a private room at our Mengo spa, or at your location through our mobile massage service.
                                         </p>
                                     </div><!-- /.accordian-content -->
                                 </div>
@@ -592,8 +590,7 @@ export default function Home() {
                                 <div class="accrodion-content">
                                     <div class="inner">
                                         <p>
-                                            There are many variations of passages the majority have suffered alteration in some fo injected humour,
-                                            or randomised words believable. Phasellus a rhoncus erat.
+                                            Regular treatments ease muscle tension, improve circulation and give your skin a healthy glow. They also create dedicated time to unwind from the pace of city life.
                                         </p>
                                     </div><!-- /.accordian-content -->
                                 </div>
@@ -607,8 +604,7 @@ export default function Home() {
                                 <div class="accrodion-content">
                                     <div class="inner">
                                         <p>
-                                            There are many variations of passages the majority have suffered alteration in some fo injected humour,
-                                            or randomised words believable. Phasellus a rhoncus erat.
+                                            Dry skin responds well to gentle exfoliation and a nourishing massage with quality oils. Our therapists can recommend a treatment and a simple home routine for Kampala's climate.
                                         </p>
                                     </div><!-- /.accordian-content -->
                                 </div>
@@ -622,8 +618,7 @@ export default function Home() {
                                 <div class="accrodion-content">
                                     <div class="inner">
                                         <p>
-                                            There are many variations of passages the majority have suffered alteration in some fo injected humour,
-                                            or randomised words believable. Phasellus a rhoncus erat.
+                                            We use skin-friendly oils, butters and natural extracts chosen for their soothing and moisturising properties. Tell your therapist about any sensitivities before your session.
                                         </p>
                                     </div><!-- /.accordian-content -->
                                 </div>
@@ -666,7 +661,7 @@ export default function Home() {
                             <div class="work-process-one__item__content">
                                 <h4 class="work-process-one__item__title">Meeting</h4><!-- /.work-process-title -->
                                 <p class="work-process-one__item__text">
-                                    Lorem Ipsum. Proin gravida nibh vel velit auctor aliquet.
+                                    Tell us how you would like to feel and we will help you choose the right treatment.
                                 </p><!-- /.work-process-text -->
                             </div>
                         </div><!-- /.work-process-item -->
@@ -681,7 +676,7 @@ export default function Home() {
                             <div class="work-process-one__item__content">
                                 <h4 class="work-process-one__item__title">Treatment</h4><!-- /.work-process-title -->
                                 <p class="work-process-one__item__text">
-                                    Lorem Ipsum. Proin gravida nibh vel velit auctor aliquet.
+                                    Your therapist tailors the massage or beauty ritual to your needs, in a calm private room.
                                 </p><!-- /.work-process-text -->
                             </div>
                         </div><!-- /.work-process-item -->
@@ -696,7 +691,7 @@ export default function Home() {
                             <div class="work-process-one__item__content">
                                 <h4 class="work-process-one__item__title">Finalizing</h4><!-- /.work-process-title -->
                                 <p class="work-process-one__item__text">
-                                    Lorem Ipsum. Proin gravida nibh vel velit auctor aliquet.
+                                    Leave feeling rested and refreshed, with aftercare tips to keep the calm going.
                                 </p><!-- /.work-process-text -->
                             </div>
                         </div><!-- /.work-process-item -->
@@ -720,7 +715,6 @@ export default function Home() {
                                 </div>
                                 <div class="testimonials-two__item__quote">
                                     Saturday is a day for the spa. It's not selfish to love yourself, take care of yourself, and to make your happiness a priority.
-                                    Lipsum is simply free text available in market.
                                 </div>
                             </div>
                         </div>
@@ -753,7 +747,6 @@ export default function Home() {
                                 </div>
                                 <div class="testimonials-two__item__quote">
                                     Saturday is a day for the spa. It's not selfish to love yourself, take care of yourself, and to make your happiness a priority.
-                                    Lipsum is simply free text available in market.
                                 </div>
                             </div>
                         </div>
@@ -766,7 +759,6 @@ export default function Home() {
                                 </div>
                                 <div class="testimonials-two__item__quote">
                                     Saturday is a day for the spa. It's not selfish to love yourself, take care of yourself, and to make your happiness a priority.
-                                    Lipsum is simply free text available in market.
                                 </div>
                             </div>
                         </div>
@@ -779,7 +771,6 @@ export default function Home() {
                                 </div>
                                 <div class="testimonials-two__item__quote">
                                     Saturday is a day for the spa. It's not selfish to love yourself, take care of yourself, and to make your happiness a priority.
-                                    Lipsum is simply free text available in market.
                                 </div>
                             </div>
                         </div>
@@ -791,35 +782,35 @@ export default function Home() {
                         <a href="#item1" class="item" data-hash="item1">
                             <span class="testimonials-two__meta-thumb"><img src="/assets/images/resources/testi-1-1.jpg" alt="solox"></span>
                             <span class="testimonials-two__meta">
-                                <span class="testimonials-two__meta__name">Mike Hardson</span>
+                                <span class="testimonials-two__meta__name">Serenity Guest</span>
                                 <span class="testimonials-two__meta__designation">Customer</span>
                             </span>
                         </a><!-- testimonial-author -->
                         <a href="#item2" class="item active-featured" data-hash="item2">
                             <span class="testimonials-two__meta-thumb" style="border: 2px solid #c2a74e; box-shadow: 0 0 12px rgba(194, 167, 78, 0.4);"><img src="/assets/images/resources/testi-1-2.jpg" alt="solox"></span>
                             <span class="testimonials-two__meta">
-                                <span class="testimonials-two__meta__name">Mike Hardson</span>
-                                <span class="testimonials-two__meta__designation" style="color: #c2a74e; font-weight: 600;">FEATURED • Master Therapist</span>
+                                <span class="testimonials-two__meta__name">Serenity Guest</span>
+                                <span class="testimonials-two__meta__designation" style="color: #c2a74e; font-weight: 600;">Featured Guest</span>
                             </span>
                         </a><!-- testimonial-author -->
                         <a href="#item3" class="item" data-hash="item3">
                             <span class="testimonials-two__meta-thumb"><img src="/assets/images/resources/testi-1-3.jpg" alt="solox"></span>
                             <span class="testimonials-two__meta">
-                                <span class="testimonials-two__meta__name">Mike Hardson</span>
+                                <span class="testimonials-two__meta__name">Serenity Guest</span>
                                 <span class="testimonials-two__meta__designation">Customer</span>
                             </span>
                         </a><!-- testimonial-author -->
                         <a href="#item4" class="item" data-hash="item4">
                             <span class="testimonials-two__meta-thumb"><img src="/assets/images/resources/testi-1-4.jpg" alt="solox"></span>
                             <span class="testimonials-two__meta">
-                                <span class="testimonials-two__meta__name">Mike Hardson</span>
+                                <span class="testimonials-two__meta__name">Serenity Guest</span>
                                 <span class="testimonials-two__meta__designation">Customer</span>
                             </span>
                         </a><!-- testimonial-author -->
                         <a href="#item5" class="item" data-hash="item5">
                             <span class="testimonials-two__meta-thumb"><img src="/assets/images/resources/testi-1-5.jpg" alt="solox"></span>
                             <span class="testimonials-two__meta">
-                                <span class="testimonials-two__meta__name">Mike Hardson</span>
+                                <span class="testimonials-two__meta__name">Serenity Guest</span>
                                 <span class="testimonials-two__meta__designation">Customer</span>
                             </span>
                         </a><!-- testimonial-author -->
@@ -845,8 +836,7 @@ export default function Home() {
 
                                     <h3 class="sec-title__title">get in touch</h3><!-- /.sec-title__title -->
                                 </div><!-- /.sec-title -->
-                                <p class="contact-one__text">There are many variations of passages of Lorem Ipsum available, but
-                                    the majority have suffered simply free text available.</p><!-- /.contact-one__text -->
+                                <p class="contact-one__text">Questions or ready to book? Call, email or send us a note and our team will get back to you.</p><!-- /.contact-one__text -->
                                 <ul class="list-unstyled contact-one__info">
                                     <li class="contact-one__info__item">
                                         <div class="contact-one__info__icon">
@@ -855,8 +845,7 @@ export default function Home() {
                                         <div class="contact-one__info__content">
                                             <p class="contact-one__info__text">Have any Question?</p>
                                             <!-- /.contact-one__info__text -->
-                                            <h4 class="contact-one__info__title"><a href="tel:+92(8800)-8960">Free +92 (8800) -
-                                                    8960</a></h4><!-- /.contact-one__info__title -->
+                                            <h4 class="contact-one__info__title"><a href="tel:+256781945510">+256 781 945 510</a></h4><!-- /.contact-one__info__title -->
                                         </div><!-- /.contact-one__info__content -->
                                     </li>
                                     <li class="contact-one__info__item">
@@ -876,14 +865,14 @@ export default function Home() {
                                         </div><!-- /.contact-one__info__icon -->
                                         <div class="contact-one__info__content">
                                             <p class="contact-one__info__text">Visit Now </p> <!-- /.contact-one__info__text -->
-                                            <h4 class="contact-one__info__title"><a href="#">Sir Apollo Kaggwa Rd & Mengo, Kampala</a></h4><!-- /.contact-one__info__title -->
+                                            <h4 class="contact-one__info__title"><a href="https://www.google.com/maps">Sir Apollo Kaggwa Rd & Mengo, Kampala</a></h4><!-- /.contact-one__info__title -->
                                         </div><!-- /.contact-one__info__content -->
                                     </li>
                                 </ul><!-- /.list-unstyled -->
                             </div><!-- /.contact-one__content -->
                         </div><!-- /.col-xl-7 -->
                         <div class="col-xl-5">
-                            <form class="contact-one__form contact-form-validated form-one background-base wow fadeInUp" data-wow-duration="1500ms" action="inc/sendemail.php">
+                            <div class="contact-one__form form-one background-base wow fadeInUp" data-wow-duration="1500ms">
                                 <div class="contact-one__form__top">
                                     <div class="sec-title">
 
@@ -893,37 +882,16 @@ export default function Home() {
                                         <h3 class="sec-title__title">book Now</h3><!-- /.sec-title__title -->
                                     </div><!-- /.sec-title -->
                                 </div><!-- /.contact-one__form__top -->
+                                <p class="contact-one__text">Book a treatment or ask us anything — we reply quickly on WhatsApp.</p>
                                 <div class="form-one__group">
                                     <div class="form-one__control form-one__control--full">
-                                        <input type="text" name="name" placeholder="Your name">
+                                        <a href="https://wa.me/256781945510?text=Hello%20The%20Serenity%20Spa%2C%20I%27d%20like%20to%20book%20an%20appointment." class="solox-btn" target="_blank" rel="noopener noreferrer"><span>Chat on WhatsApp</span></a>
                                     </div><!-- /.form-one__control form-one__control--full -->
                                     <div class="form-one__control form-one__control--full">
-                                        <input type="email" name="email" placeholder="Email address">
+                                        <a href="mailto:theserenityspakla@gmail.com?subject=Appointment%20enquiry" class="solox-btn"><span>Email us</span></a>
                                     </div><!-- /.form-one__control form-one__control--full -->
-                                    <div class="form-one__control form-one__control--full">
-                                        <div class="form-one__control__select">
-                                            <label class="sr-only" for="language-select">Select service</label>
-                                            <!-- /#language-select.sr-only -->
-                                            <select class="selectpicker" id="language-select">
-                                                <option value="Select service">Select service</option>
-                                                <option value="Select service 01">Select service 01</option>
-                                                <option value="Select service 02">Select service 02</option>
-                                            </select>
-                                        </div><!-- /.main-menu__language -->
-
-                                    </div><!-- /.form-one__control form-one__control--full -->
-                                    <div class="form-one__control form-one__control--full">
-                                        <input class="solox-datepicker" type="text" name="date" placeholder="Select date">
-                                        <i class="fa fa-calendar-alt form-one__control__icon"></i>
-                                    </div><!-- /.form-one__control form-one__control--full -->
-                                    <div class="form-one__control form-one__control--full">
-                                        <textarea name="message" placeholder="Write  a message"></textarea><!-- /# -->
-                                    </div><!-- /.form-one__control -->
-                                    <div class="form-one__control form-one__control--full">
-                                        <button type="submit" class="solox-btn"><span>Book now</span></button>
-                                    </div><!-- /.form-one__control -->
                                 </div><!-- /.form-one__group -->
-                            </form>
+                            </div>
                         </div><!-- /.col-xl-5 -->
                     </div><!-- /.row -->
                     <div class="contact-one__inner-shape">
@@ -944,13 +912,7 @@ export default function Home() {
                                 <a href="/" class="footer-widget__logo">
                                     <img src="/assets/images/logo-light.png" width="155" alt="The Serenity Spa">
                                 </a>
-                                <form action="#" data-url="MAILCHIMP_FORM_URL" class="footer-widget__newsletter mc-form">
-                                    <input type="text" name="EMAIL" placeholder="Email address">
-                                    <button type="submit" class="fas fa-paper-plane">
-                                        <span class="sr-only">submit</span><!-- /.sr-only -->
-                                    </button>
-                                </form><!-- /.footer-widget__newsletter mc-form -->
-                                <div class="mc-form__response"></div><!-- /.mc-form__response -->
+                                <a href="mailto:theserenityspakla@gmail.com?subject=Spa%20updates" class="footer-widget__newsletter-link">Get spa updates by email →</a>
                             </div><!-- /.footer-widget -->
                         </div><!-- /.col-md-6 -->
                         <div class="col-md-6 col-xl-2">
@@ -958,8 +920,8 @@ export default function Home() {
                                 <h2 class="footer-widget__title">Links</h2><!-- /.footer-widget__title -->
                                 <ul class="list-unstyled footer-widget__links">
                                     <li><a href="/">About</a></li>
-                                    <li><a href="memberships.html">Pricing Plans</a></li>
-                                    <li><a href="gift-cards.html">Promotions</a></li>
+                                    <li><a href="/vip-packages">Pricing Plans</a></li>
+                                    <li><a href="/services">Our Treatments</a></li>
                                     <li><a href="/services">Contact</a></li>
                                 </ul><!-- /.list-unstyled footer-widget__links -->
                             </div><!-- /.footer-widget -->
@@ -979,24 +941,6 @@ export default function Home() {
                                 <h2 class="footer-widget__title">Timing</h2><!-- /.footer-widget__title -->
                                 <p class="footer-widget__text">Open Daily: 9:00 AM – 11:00 PM</p>
                                 <!-- /.footer-widget__text -->
-                                <div class="footer-widget__social">
-                                    <a href="https://twitter.com">
-                                        <i class="fab fa-twitter" aria-hidden="true"></i>
-                                        <span class="sr-only">Twitter</span>
-                                    </a>
-                                    <a href="https://facebook.com">
-                                        <i class="fab fa-facebook" aria-hidden="true"></i>
-                                        <span class="sr-only">Facebook</span>
-                                    </a>
-                                    <a href="https://pinterest.com">
-                                        <i class="fab fa-pinterest-p" aria-hidden="true"></i>
-                                        <span class="sr-only">Pinterest</span>
-                                    </a>
-                                    <a href="https://instagram.com">
-                                        <i class="fab fa-instagram" aria-hidden="true"></i>
-                                        <span class="sr-only">Instagram</span>
-                                    </a>
-                                </div><!-- /.footer-widget__social -->
                             </div><!-- /.footer-widget -->
                         </div><!-- /.col-md-6 -->
                     </div><!-- /.row -->
@@ -1017,26 +961,6 @@ export default function Home() {
 
 
 
-    
-    <div class="search-popup">
-        <div class="search-popup__overlay search-toggler"></div>
-        <!-- /.search-popup__overlay -->
-        <div class="search-popup__content">
-            <form role="search" method="get" class="search-popup__form" action="#">
-                <input type="text" id="search" placeholder="Search Here..." />
-                <button type="submit" aria-label="search submit" class="solox-btn solox-btn--base">
-                    <span><i class="icon-magnifying-glass"></i></span>
-                </button>
-            </form>
-        </div>
-        <!-- /.search-popup__content -->
-    </div>
-    <!-- /.search-popup -->
-
-    <a href="#" data-target="html" class="scroll-to-target scroll-to-top">
-        <span class="scroll-to-top__text">back top</span>
-        <span class="scroll-to-top__wrapper"><span class="scroll-to-top__inner"></span></span>
-    </a>
 
 
     

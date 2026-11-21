@@ -202,11 +202,7 @@ export default function BlogPage() {
                         <div class="mobile-nav__btn mobile-nav__toggler">
                             <span></span><span></span><span></span>
                         </div><!-- /.mobile-nav__toggler -->
-                        <a href="#" class="search-toggler main-header__search">
-                            <i class="icon-magnifying-glass" aria-hidden="true"></i>
-                            <span class="sr-only">Search</span>
-                        </a><!-- /.search-toggler -->
-                        <a href="/services" class="solox-btn main-header__btn">
+                        <a href="/booking" class="solox-btn main-header__btn">
                             <span>Book now</span>
                         </a><!-- /.thm-btn main-header__btn -->
                     </div><!-- /.main-header__right -->
@@ -237,11 +233,7 @@ export default function BlogPage() {
                                 <a href="/" class="footer-widget__logo">
                                     <img src="/assets/images/logo-light.png" width="155" alt="The Serenity Spa">
                                 </a>
-                                <form action="#" data-url="MAILCHIMP_FORM_URL" class="footer-widget__newsletter mc-form">
-                                    <input type="text" name="EMAIL" placeholder="Email address">
-                                    <button type="submit" class="fas fa-paper-plane"><span class="sr-only">submit</span></button>
-                                </form>
-                                <div class="mc-form__response"></div>
+                                <a href="mailto:theserenityspakla@gmail.com?subject=Spa%20updates" class="footer-widget__newsletter-link">Get spa updates by email →</a>
                             </div>
                         </div>
                         <div class="col-md-6 col-xl-2">
@@ -269,11 +261,6 @@ export default function BlogPage() {
                             <div class="footer-widget footer-widget--time">
                                 <h2 class="footer-widget__title">Timing</h2>
                                 <p class="footer-widget__text">Mon to Sat: 9:00am – 6:00pm Sunday: Closed</p>
-                                <div class="footer-widget__social">
-                                    <a href="https://twitter.com"><i class="fab fa-twitter" aria-hidden="true"></i><span class="sr-only">Twitter</span></a>
-                                    <a href="https://facebook.com"><i class="fab fa-facebook" aria-hidden="true"></i><span class="sr-only">Facebook</span></a>
-                                    <a href="https://instagram.com"><i class="fab fa-instagram" aria-hidden="true"></i><span class="sr-only">Instagram</span></a>
-                                </div>
                             </div>
                         </div>
                     </div>
@@ -289,16 +276,6 @@ export default function BlogPage() {
         </footer>
 
     </div><!-- /.page-wrapper -->
-    <div class="search-popup">
-        <div class="search-popup__overlay search-toggler"></div>
-        <div class="search-popup__content">
-            <form role="search" method="get" class="search-popup__form" action="#">
-                <input type="text" id="search" placeholder="Search Here..." />
-                <button type="submit" aria-label="search submit" class="solox-btn solox-btn--base"><span><i class="icon-magnifying-glass"></i></span></button>
-            </form>
-        </div>
-    </div>
-    <a href="#" data-target="html" class="scroll-to-target scroll-to-top"><span class="scroll-to-top__text">back top</span><span class="scroll-to-top__wrapper"><span class="scroll-to-top__inner"></span></span></a>
 
     `,
         }}

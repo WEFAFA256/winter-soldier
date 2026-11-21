@@ -11,6 +11,7 @@ cloudinary.config({
 });
 
 const BLOG_PUBLIC_ID = 'serenity_data/blog-posts';
+const cloudName = process.env.CLOUDINARY_CLOUD_NAME || process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
 const localBlogPath = path.join(process.cwd(), 'public', 'blog.json');
 
 const readLocalBlog = (): any[] => {
@@ -78,9 +79,22 @@ export async function POST(req: Request) {
     if (!posts.length) posts = readLocalBlog();
 
     posts.unshift(post);
-    writeLocalBlog(posts);
 
-    try { await saveCloudinaryBlog(posts); } catch {}
+    // Cloudinary is the source of truth. On Vercel the local JSON write is
+    // ephemeral, so swallowing a failed upload would report "published" for a
+    // post that vanishes on the next redeploy. Fail loudly instead.
+    if (cloudName) {
+      try {
+        await saveCloudinaryBlog(posts);
+      } catch (err: any) {
+        console.error('Cloudinary blog save failed:', err?.message || err);
+        return NextResponse.json(
+          { error: 'Could not save the post to the durable store. Please retry.' },
+          { status: 502 }
+        );
+      }
+    }
+    writeLocalBlog(posts); // best-effort local mirror only
 
     return NextResponse.json({ message: 'Blog post published', post }, { status: 201 });
   } catch (err: any) {
@@ -103,9 +117,19 @@ export async function DELETE(req: Request) {
     if (!posts.length) posts = readLocalBlog();
 
     posts = posts.filter((p: any) => p.id !== id);
-    writeLocalBlog(posts);
 
-    try { await saveCloudinaryBlog(posts); } catch {}
+    if (cloudName) {
+      try {
+        await saveCloudinaryBlog(posts);
+      } catch (err: any) {
+        console.error('Cloudinary blog delete failed:', err?.message || err);
+        return NextResponse.json(
+          { error: 'Could not delete the post from the durable store. Please retry.' },
+          { status: 502 }
+        );
+      }
+    }
+    writeLocalBlog(posts); // best-effort local mirror only
 
     return NextResponse.json({ message: 'Post deleted' });
   } catch (err: any) {

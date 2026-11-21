@@ -26,10 +26,14 @@ refunds — and save once. When the app moves hosts, only `FORWARD_TO` in `wrang
 | --- | --- | --- |
 | `GET` | `/health` | Health + service count + forwarding state |
 | `GET` | `/api/services` | Active service catalog from D1 (id, title, price, duration) |
-| `POST` | `/api/bookings` | Create a pending booking and PawaPay checkout session; returns `checkoutUrl` |
+| `GET` | `/api/availability?date=` | Booked times for a date (read-only UX hint; D1 is authoritative) |
+| `POST` | `/api/bookings` | Create a pending booking (amount from D1); returns `bookingId` + `depositId` |
+| `POST` | `/api/bookings/:id/pay` | Send the MTN/Airtel MoMo prompt; amount always from D1 |
 | `GET` | `/api/bookings/:id` | Poll booking status (`PENDING_PAYMENT` / `CONFIRMED` / `CANCELLED`) |
 | `POST` | `/api/bookings/:id/cancel` | Cancel a pending booking and free the slot |
-| `GET` | `/api/admin/bookings?status=&limit=` | Admin list of bookings (requires `Authorization: Bearer <ADMIN_API_TOKEN>`) |
+| `GET` | `/api/admin/bookings?status=&limit=` | Admin list incl. archive + refund to-dos (requires `Authorization: Bearer <ADMIN_API_TOKEN>`) |
+| `GET` | `/api/admin/refunds` | Manual refund to-do ledger (refunds are processed in person at the spa) |
+| `POST` | `/api/admin/refunds/:depositId/mark` | Mark a refund to-do as done after it is paid in person |
 | `POST` | `/api/admin/bookings/:id/cancel` | Admin cancel of a pending or confirmed booking (refund is manual) |
 | `GET` | `/return?booking=:id` | Post-payment page that polls the booking until confirmed |
 | `POST` | `/` (also `/checkout`, `/deposit`, `/deposits`, `/payouts`, `/refunds`, `/callback`) | PawaPay callbacks: store raw body in KV, verify with PawaPay, confirm booking |
@@ -48,12 +52,13 @@ refunds — and save once. When the app moves hosts, only `FORWARD_TO` in `wrang
 ```
 
 The amount is always looked up from D1 by `serviceId` — the browser never decides what to charge.
-The hosted payment page supports both **MTN MoMo** and **Airtel Money**. By default the full
+The booking page initiates **MTN MoMo** and **Airtel Money** prompts directly via `/pay`. By default the full
 service price is charged. To take a deposit instead, set `PAWAPAY_DEPOSIT_PERCENT` (e.g. `30`);
 amounts are rounded up to the next 1,000 UGX.
 
 `POST /api/bookings` is throttled: at most 5 attempts per client IP per 10-minute window, plus a
-global stop at 50 bookings created in the last hour. Excess requests get HTTP 429.
+global stop at 100 live holds/bookings created in the last hour. Excess requests get HTTP 429.
+Callbacks are throttled per IP (50 per 10 minutes) and capped at 64 KB to prevent quota/storage abuse.
 
 ## Deployment
 
@@ -69,7 +74,7 @@ Bindings (in `wrangler.toml`):
 - Secret `PAWAPAY_API_TOKEN` — set with `wrangler secret put PAWAPAY_API_TOKEN`; **never in files or git**
 - Secret `ADMIN_API_TOKEN` — set with `wrangler secret put ADMIN_API_TOKEN`; protects the admin
   bookings endpoints. Use the same value as the Next app's `ADMIN_API_TOKEN` env var.
-- Vars: `PAWAPAY_API_BASE_URL`, `PAWAPAY_COUNTRY=UGA`, `PAWAPAY_CURRENCY=UGX`, `FORWARD_TO`,
+- Vars: `PAWAPAY_API_BASE_URL`, `PAWAPAY_CURRENCY=UGX`, `FORWARD_TO`,
   `SITE_URL`, `PAWAPAY_DEPOSIT_PERCENT=100`
 
 Database schema and seed data are in `schema.sql` and `seed.sql`. Apply with:
@@ -86,7 +91,7 @@ wrangler d1 execute serenity-spa --remote --file seed.sql
 ```
 GET  /health                     -> 200 JSON, "db":"30 services"
 GET  /api/services               -> 200 JSON, 30 services
-POST /api/bookings               -> 201 with a sandbox checkoutUrl
+POST /api/bookings               -> 201 with bookingId + depositId
 GET  /api/bookings/<id>          -> 200, status PENDING_PAYMENT
 POST /api/bookings (same slot)   -> 409
 POST / with forged COMPLETED     -> 200 "unverified; booking unchanged"
@@ -101,8 +106,9 @@ Use the Cloudflare REST API to inspect stored callbacks instead.
 - The Worker calls `GET /v2/deposits/{depositId}` and requires `status: FOUND`, a matching
   `depositId`, and a matching amount before setting `CONFIRMED`.
 - Failed deposits delete the pending booking so the slot can be rebooked.
-- Pending bookings older than 20 minutes are expired on the next create request (payment pages
-  are valid for 15 minutes).
+- Pending holds expire 20 minutes after the payment prompt is sent (not at booking creation).
+  Expiry runs on availability checks, status checks and the next create request, so a customer
+  at the PIN prompt is never evicted. A late `FAILED` result never overturns a CONFIRMED booking.
 
 ## Sandbox test numbers (Uganda)
 
@@ -111,7 +117,8 @@ Use the Cloudflare REST API to inspect stored callbacks instead.
 
 ## Security notes
 
-- Signed callback headers (`Content-Digest`, `Signature`, `Signature-Input`) are forwarded
+- Callback bodies are rate-limited and size-capped. Signed headers (`Content-Digest`,
+  `Signature`, `Signature-Input`) are forwarded
   unchanged when `FORWARD_TO` is set.
 - Do not enable PawaPay IP allowlisting with Vercel serverless (no static egress IP).
 - The KV store holds raw callback bodies for 90 days — treat it as sensitive.

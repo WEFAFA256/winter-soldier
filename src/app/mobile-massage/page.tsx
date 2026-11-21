@@ -692,8 +692,6 @@ export default function MobileMassagePage() {
             <div>&copy; {new Date().getFullYear()} The Serenity Spa. All rights reserved.</div>
           </div>
         </footer>
-
-        <MobileDrawer isOpen={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} />
       </div>
     </>
   );

@@ -3,17 +3,22 @@ import "./globals.css";
 import FloatingContactButtons from "@/components/FloatingContactButtons";
 import AppShell from "@/components/AppShell";
 
+// Production origin is the safe fallback so canonical/OG URLs are correct even
+// if the platform env var is momentarily missing. Never emit localhost in HTML.
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://www.executiveserenityspa.com";
+
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"),
-  title: "The Serenity Spa || Luxury Massage & Wellness Center",
+  metadataBase: new URL(SITE_URL),
+  title: "The Serenity Spa | Luxury Massage & Wellness Center",
   description:
-    "The Serenity Spa is a premier luxury wellness center offering hydrotherapy, relaxing massages, and holistic treatments.",
+    "The Serenity Spa is a premier luxury wellness center in Kampala offering hydrotherapy, relaxing massages, and holistic treatments.",
   alternates: { canonical: "/" },
   openGraph: {
     type: "website",
     locale: "en_UG",
     siteName: "The Serenity Spa",
-    title: "The Serenity Spa || Luxury Massage & Wellness Center",
+    url: SITE_URL,
+    title: "The Serenity Spa | Luxury Massage & Wellness Center",
     description: "Luxury massage and wellness treatments in Kampala, Uganda.",
     // Search / social results show the actual site logo, not a placeholder.
     images: [

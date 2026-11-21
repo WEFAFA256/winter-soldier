@@ -3,14 +3,32 @@ import type { NextConfig } from "next";
 // Security headers. The template loads its own local vendor scripts and uses
 // inline styles, so script/style need 'unsafe-inline'; everything else is
 // locked down to the origins the site actually uses.
+const WORKER_ORIGIN = "https://serenity-pawapay-webhook.turyatembajohn905.workers.dev";
+
+function originOf(value: string | undefined): string | null {
+  if (!value) return null;
+  try {
+    return new URL(value).origin;
+  } catch {
+    return null;
+  }
+}
+
+// The browser talks to the Worker directly from /booking. Derive connect-src
+// from the same env var the client uses so a custom Worker host is never
+// silently blocked by a stale hardcoded CSP origin.
+const connectOrigins = new Set<string>([WORKER_ORIGIN]);
+const configured = originOf(process.env.NEXT_PUBLIC_PAY_API_URL);
+if (configured) connectOrigins.add(configured);
+
 const CSP = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+  "script-src 'self' 'unsafe-inline'",
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   "font-src 'self' https://fonts.gstatic.com data:",
   "img-src 'self' data: https:",
   "media-src 'self' https://res.cloudinary.com",
-  "connect-src 'self' https://serenity-pawapay-webhook.turyatembajohn905.workers.dev",
+  `connect-src 'self' ${[...connectOrigins].join(" ")}`,
   "frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com https://www.google.com",
   "frame-ancestors 'none'",
   "form-action 'self'",

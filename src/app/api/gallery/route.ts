@@ -13,6 +13,18 @@ cloudinary.config({
 
 const dataFilePath = path.join(process.cwd(), 'public', 'gallery.json');
 
+// Cloudinary context uses "key=value|key=value". A user-supplied alt containing
+// '|' or '=' would inject extra context keys (and could fake availability), so
+// sanitise every value before building the string.
+function safeContextValue(value: unknown, fallback = 'Serenity Spa Gallery'): string {
+  return String(value || '')
+    .replace(/[|=]/g, ' ')
+    .replace(/[\r\n]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, 200) || fallback;
+}
+
 const readLocalData = () => {
   try {
     if (!fs.existsSync(dataFilePath)) {
@@ -101,7 +113,7 @@ export async function POST(req: Request) {
 
     const formData = await req.formData();
     const file = formData.get('file') as Blob | null;
-    const alt = (formData.get('alt') as string) || 'Serenity Spa Gallery';
+    const alt = safeContextValue(formData.get('alt'));
 
     if (!file) {
       return NextResponse.json({ error: 'No file uploaded' }, { status: 400 });
@@ -122,7 +134,7 @@ export async function POST(req: Request) {
         {
           folder: 'serenity_gallery',
           resource_type: 'image',
-          context: `alt=${alt}|availability=available`,
+          context: `alt=${alt}|availability=available`, // alt sanitised above
         },
         (error, result) => {
           if (error) reject(error);
@@ -173,10 +185,12 @@ export async function PATCH(req: Request) {
     let alt = 'Serenity Spa Gallery';
     try {
       const resource: any = await cloudinary.api.resource(id);
-      alt = resource?.context?.custom?.alt || alt;
+      alt = safeContextValue(resource?.context?.custom?.alt);
     } catch (e) {
       console.error('Could not read Cloudinary context for', id, e);
     }
+    // Reject before writing when Cloudinary is unreachable: the local mirror
+    // cannot persist on Vercel, so a swallowed failure would silently revert.
     await cloudinary.api.update(id, {
       context: `alt=${alt}|availability=${availability}`,
     });
@@ -219,9 +233,22 @@ export async function DELETE(req: Request) {
     }
 
     try {
-      await cloudinary.uploader.destroy(id);
+      const result: any = await cloudinary.uploader.destroy(id);
+      // Only 'ok' and 'not found' mean the image is really gone. Any other
+      // result must not be reported as success (the admin would think the
+      // deletion stuck when it did not).
+      if (result?.result !== 'ok' && result?.result !== 'not found') {
+        return NextResponse.json(
+          { error: 'Cloudinary could not delete the image', result: result?.result || 'unknown' },
+          { status: 502 }
+        );
+      }
     } catch (cErr) {
       console.error('Cloudinary destroy error:', cErr);
+      return NextResponse.json(
+        { error: 'Could not delete the image from the durable store. Please retry.' },
+        { status: 502 }
+      );
     }
 
     try {
