@@ -76,6 +76,10 @@ const css = `
     .adm .svc-toolbar .btn-gold { width: 100% !important; }
     .adm .svc-toolbar input { width: 100% !important; max-width: none !important; flex: none !important; }
     .adm .upload-grid { grid-template-columns: 1fr !important; }
+    /* Gallery purge controls: stack cleanly instead of crowding 390px screens. */
+    .adm .gal-toolbar { flex-direction: column !important; align-items: stretch !important; }
+    .adm .gal-toolbar > div { width: 100% !important; }
+    .adm .gal-toolbar button { width: 100% !important; }
     .adm .svc-form-grid { grid-template-columns: 1fr !important; }
     .adm .blog-form-grid { grid-template-columns: 1fr !important; }
     .adm .settings-grid { grid-template-columns: 1fr !important; }
@@ -141,6 +145,8 @@ export default function AdminGalleryPage() {
   const [galPreview, setGalPreview] = useState<string|null>(null);
   const [galAlt, setGalAlt] = useState("");
   const [galUploading, setGalUploading] = useState(false);
+  const [selectedImages, setSelectedImages] = useState<string[]>([]);
+  const [purging, setPurging] = useState(false);
 
   /* Services */
   const [services, setServices] = useState<ServiceItem[]>([]);
@@ -298,7 +304,51 @@ export default function AdminGalleryPage() {
   const deleteGalleryImage = async (id: string) => {
     if (!confirm("Delete this photo?")) return;
     const res = await fetch(`/api/gallery?id=${encodeURIComponent(id)}`, { method:"DELETE", credentials:"same-origin" });
-    if (res.ok) setGallery(gallery.filter(i => i.id !== id));
+    if (res.ok) {
+      setGallery(gallery.filter(i => i.id !== id));
+      setSelectedImages(prev => prev.filter(x => x !== id));
+    }
+  };
+
+  const toggleImageSelection = (id: string) => {
+    setSelectedImages(prev =>
+      prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+    );
+  };
+
+  const availableImageIds = gallery
+    .filter(img => img.id && (img.availability || "available") === "available")
+    .map(img => img.id);
+
+  const purgeSelectedImages = async () => {
+    const ids = selectedImages.filter(id => gallery.some(img => img.id === id));
+    if (!ids.length) return alert("Select at least one profile image first.");
+    if (!confirm(`Permanently purge ${ids.length} selected profile image${ids.length === 1 ? "" : "s"} from Cloudinary? This cannot be undone.`)) return;
+
+    setPurging(true);
+    try {
+      const res = await fetch("/api/gallery/purge", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+        body: JSON.stringify({ ids }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        alert(data.error || "Could not purge the selected images.");
+        return;
+      }
+      const deleted: string[] = Array.isArray(data.deleted) ? data.deleted : ids;
+      const deletedSet = new Set(deleted);
+      setGallery(prev => prev.filter(img => !deletedSet.has(img.id)));
+      setSelectedImages(prev => prev.filter(id => !deletedSet.has(id)));
+      if (Array.isArray(data.failed) && data.failed.length) {
+        alert(`Purged ${deleted.length}. ${data.failed.length} could not be removed: ${data.failed.join(", ")}`);
+      }
+    } catch {
+      alert("Network error purging images");
+    }
+    setPurging(false);
   };
 
   const toggleAvailability = async (id: string, currentStatus?: string) => {
@@ -472,8 +522,8 @@ export default function AdminGalleryPage() {
                 </div>
 
                 {/* Gallery grid & availability controls */}
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16, flexWrap: "wrap", gap: 10 }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                <div className="gal-toolbar" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10, flexWrap: "wrap", gap: 10 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
                     <p style={{ fontSize: 11, color: C.muted, margin: 0, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em" }}>
                       All Therapists & Photos ({gallery.length})
                     </p>
@@ -484,23 +534,61 @@ export default function AdminGalleryPage() {
                       🔴 {gallery.filter(i => i.availability === "in-session").length} In Session
                     </span>
                   </div>
-                  <span style={{ fontSize: 11, color: C.muted }}>
-                    💡 Click status button on any therapist card to switch between Available and In Session.
-                  </span>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                    <BtnOutline
+                      onClick={() => setSelectedImages(availableImageIds)}
+                      disabled={!availableImageIds.length}
+                      title="Select every Available profile image for purging"
+                      style={{ opacity: availableImageIds.length ? 1 : 0.45 }}
+                    >
+                      Select All Available ({availableImageIds.length})
+                    </BtnOutline>
+                    <BtnOutline
+                      onClick={() => setSelectedImages([])}
+                      disabled={!selectedImages.length}
+                      style={{ opacity: selectedImages.length ? 1 : 0.45 }}
+                    >
+                      Clear ({selectedImages.length})
+                    </BtnOutline>
+                    <button
+                      className="btn-danger"
+                      onClick={purgeSelectedImages}
+                      disabled={purging || !selectedImages.length}
+                      title="Permanently delete the selected images from Cloudinary"
+                      style={{
+                        background: "rgba(218, 54, 51, 0.2)",
+                        border: "1px solid rgba(218, 54, 51, 0.5)",
+                        borderRadius: 6,
+                        color: C.danger,
+                        padding: "7px 14px",
+                        fontSize: 12,
+                        fontWeight: 700,
+                        cursor: "pointer",
+                        opacity: selectedImages.length && !purging ? 1 : 0.45,
+                      }}
+                    >
+                      {purging ? "Purging…" : `Purge Selected (${selectedImages.length})`}
+                    </button>
+                  </div>
                 </div>
+                <p style={{ fontSize: 11, color: C.muted, margin: "0 0 16px" }}>
+                  💡 Tick photos to purge. “Select All Available” preselects only Available profiles — In Session photos stay untouched unless you tick them individually. Click a status button to change availability.
+                </p>
 
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(175px, 1fr))", gap: 14 }}>
                   {gallery.map(img => {
                     const isAvail = (img.availability || "available") === "available";
+                    const isSelected = selectedImages.includes(img.id);
                     return (
                       <div
                         key={img.id || img.src}
-                        className="card"
+                        className={`card${isSelected ? " gal-card-selected" : ""}`}
                         style={{
                           borderRadius: 10,
                           overflow: "hidden",
                           background: C.surface,
-                          border: `1px solid ${isAvail ? "rgba(63, 185, 80, 0.3)" : "rgba(248, 81, 73, 0.3)"}`,
+                          border: `2px solid ${isSelected ? C.gold : (isAvail ? "rgba(63, 185, 80, 0.3)" : "rgba(248, 81, 73, 0.3)")}`,
+                          boxShadow: isSelected ? `0 0 0 2px ${C.gold}55` : "none",
                           display: "flex",
                           flexDirection: "column",
                           transition: "all 0.2s ease",
@@ -513,6 +601,38 @@ export default function AdminGalleryPage() {
                             alt={img.alt}
                             style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
                           />
+                          <label
+                            title={isSelected ? "Deselect this image" : "Select this image for purge"}
+                            style={{
+                              position: "absolute",
+                              top: 6,
+                              left: 6,
+                              width: 26,
+                              height: 26,
+                              borderRadius: 6,
+                              background: "rgba(13, 17, 23, 0.85)",
+                              border: `2px solid ${isSelected ? C.gold : "rgba(255,255,255,0.6)"}`,
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              cursor: "pointer",
+                              zIndex: 2,
+                            }}
+                          >
+                            <input
+                              type="checkbox"
+                              aria-label={`Select ${img.alt || "profile image"} for purge`}
+                              checked={isSelected}
+                              onChange={() => toggleImageSelection(img.id)}
+                              style={{
+                                width: 16,
+                                height: 16,
+                                margin: 0,
+                                accentColor: C.gold,
+                                cursor: "pointer",
+                              }}
+                            />
+                          </label>
                           <div
                             style={{
                               position: "absolute",
