@@ -31,6 +31,12 @@ const C = {
 };
 
 const css = `
+  /* Admin is a full-bleed dark app: kill the browser's default 8px white margin
+     and the site shell's white background. Without this the dark panel floats
+     inside an 8px white frame and controls appear to cross into "the white zone". */
+  html, body { margin: 0 !important; padding: 0 !important; background: ${C.bg} !important; }
+  /* Scope to the root wrapper only — nested cards/table also carry .adm. */
+  .adm-root { width: 100% !important; min-height: 100dvh !important; }
   .adm * { cursor: auto !important; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; }
   .adm input, .adm textarea, .adm select { cursor: text !important; }
   .adm button, .adm label[for], .adm a { cursor: pointer !important; }
@@ -64,13 +70,21 @@ const css = `
     .adm .tab-wrap { overflow-x: auto !important; -webkit-overflow-scrolling: touch !important; scrollbar-width: none !important; }
     .adm .tab-wrap::-webkit-scrollbar { display: none !important; }
     .adm .tab-btn { white-space: nowrap !important; flex-shrink: 0 !important; padding: 10px 12px !important; font-size: 11px !important; }
+    /* Services toolbar: stack the Add button and the search field so the
+       textbox cannot run into the edge of the screen. */
+    .adm .svc-toolbar { flex-direction: column !important; align-items: stretch !important; gap: 10px !important; }
+    .adm .svc-toolbar .btn-gold { width: 100% !important; }
+    .adm .svc-toolbar input { width: 100% !important; max-width: none !important; flex: none !important; }
     .adm .upload-grid { grid-template-columns: 1fr !important; }
     .adm .svc-form-grid { grid-template-columns: 1fr !important; }
     .adm .blog-form-grid { grid-template-columns: 1fr !important; }
     .adm .settings-grid { grid-template-columns: 1fr !important; }
     .adm .blog-card { flex-direction: column !important; align-items: flex-start !important; gap: 8px !important; }
     .adm .blog-card img { width: 100% !important; height: auto !important; max-height: 140px !important; flex-shrink: 0 !important; }
-    .adm .service-card { flex-direction: column !important; align-items: flex-start !important; gap: 10px !important; }
+    .adm .service-card { flex-direction: column !important; align-items: stretch !important; gap: 10px !important; }
+    .adm .service-card .svc-card-actions { width: 100% !important; justify-content: space-between !important; }
+    .adm .service-card .svc-card-actions > div { flex: 1 !important; }
+    .adm .service-card .svc-card-actions input { width: 100% !important; }
     .adm .bookings-table td, .adm .bookings-table th { white-space: normal !important; }
     .adm input, .adm select, .adm textarea { font-size: 16px !important; }
   }
@@ -352,7 +366,7 @@ export default function AdminGalleryPage() {
 
   /* ── LOGIN SCREEN ────────────────────────────────────────────── */
   if (!auth) return (
-    <div className="adm" style={{ minHeight:"100vh", background:C.bg, display:"flex", alignItems:"center", justifyContent:"center", padding:16 }}>
+    <div className="adm adm-root" style={{ minHeight:"100vh", background:C.bg, display:"flex", alignItems:"center", justifyContent:"center", padding:16 }}>
       <style>{css}</style>
       <div style={{ width:"100%", maxWidth:380, background:C.surface, border:`1px solid ${C.border}`, borderRadius:12, padding:36, boxShadow:"0 24px 64px rgba(0,0,0,0.6)" }}>
         {/* Logo area */}
@@ -392,7 +406,7 @@ export default function AdminGalleryPage() {
   ];
 
   return (
-    <div className="adm" style={{ minHeight:"100vh", background:C.bg, color:C.text }}>
+    <div className="adm adm-root" style={{ minHeight:"100vh", background:C.bg, color:C.text }}>
       <style>{css}</style>
 
       {/* ── TOP BAR ── */}
@@ -594,7 +608,7 @@ export default function AdminGalleryPage() {
               <div className="admin-pane">
                 <SectionHead title="Treatments & Pricing" sub="Edit service titles, descriptions, and prices. Click Save Changes when done." />
 
-                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:16, gap:12 }}>
+                <div className="svc-toolbar" style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:16, gap:12 }}>
                   <BtnGold onClick={()=>setShowAddSvc(!showAddSvc)}>{showAddSvc ? "✕ Cancel" : "+ Add Treatment"}</BtnGold>
                   <input placeholder="🔍  Search treatments…" value={svcSearch} onChange={e=>setSvcSearch(e.target.value)}
                     style={{ flex:1, maxWidth:260, background:C.surface, border:`1px solid ${C.border}`, borderRadius:6, padding:"7px 12px", color:C.text, fontSize:12 }} />
@@ -628,7 +642,7 @@ export default function AdminGalleryPage() {
                           style={{ width:"100%", background:"transparent", border:"none", color:C.muted, fontSize:11, padding:"2px 0", marginTop:3 }}
                           placeholder="Description…" />
                       </div>
-                      <div style={{ display:"flex", alignItems:"center", gap:8, flexShrink:0 }}>
+                      <div className="svc-card-actions" style={{ display:"flex", alignItems:"center", gap:8, flexShrink:0 }}>
                         <div>
                           <p style={{ margin:"0 0 2px", fontSize:9, color:C.muted, fontWeight:600, textTransform:"uppercase" }}>Price (UGX)</p>
                           <input type="number" value={typeof svc.price==="number"?svc.price:parseInt(String(svc.price))||0} onChange={e=>updateSvc(i,"price",+e.target.value)}
