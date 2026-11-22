@@ -472,6 +472,34 @@ img {
   animation: heroButtonIn 900ms ease 760ms both;
 }
 
+/* Last → first wrap: replay the exact same sequence on the incoming slide.
+   OWL's fade classes are left in place (so its animationend still clears the
+   transition) but shortened to 1ms; the marked slide is the only visible
+   animation owner during the wrap. */
+.main-slider-two.hero-wrap .owl-item.owl-animated-in,
+.main-slider-two.hero-wrap .owl-item.owl-animated-out {
+  animation-duration: 1ms !important;
+  animation-delay: 0ms !important;
+}
+.main-slider-two.hero-wrap .hero-wrap-slide .main-slider-two__bg img:nth-child(1) {
+  animation: heroImageIn 1100ms ease 100ms both !important;
+}
+.main-slider-two.hero-wrap .hero-wrap-slide .main-slider-two__bg img:nth-child(2) {
+  animation: heroImageOut 900ms ease 100ms both !important;
+}
+.main-slider-two.hero-wrap .hero-wrap-slide .main-slider-two__sub-title {
+  animation: heroSubtitleIn 900ms ease 120ms both !important;
+}
+.main-slider-two.hero-wrap .hero-wrap-slide .main-slider-two__title {
+  animation: heroTitleIn 1100ms ease 260ms both !important;
+}
+.main-slider-two.hero-wrap .hero-wrap-slide .main-slider-two__title::after {
+  animation: heroTitleWipe 900ms cubic-bezier(0.858, 0.01, 0.068, 0.99) 520ms both !important;
+}
+.main-slider-two.hero-wrap .hero-wrap-slide .main-slider-two__btn {
+  animation: heroButtonIn 900ms ease 760ms both !important;
+}
+
 /* OWL's AutoRefresh plugin can add this class when it briefly thinks the hero
    is hidden during hydration. The hero is always intended to be visible. */
 .main-slider-two__carousel.owl-hidden {

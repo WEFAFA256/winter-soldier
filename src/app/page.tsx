@@ -43,6 +43,55 @@ export default function Home() {
   const heroSliderInstance = useRef<any>(null);
   const introPlayed = useRef(false);
   const owlRetry = useRef(0);
+  const owlWrapBound = useRef(false);
+  const lastSlideRelative = useRef<number | null>(null);
+  const wrapPlaying = useRef(false);
+  const wrapTimeout = useRef(0);
+
+  // End the last→first intro as soon as its final keyframe finishes, and always
+  // resume autoplay so a missed animationend can never freeze the carousel.
+  const endWrapReplay = useCallback(() => {
+    if (!wrapPlaying.current) return;
+    wrapPlaying.current = false;
+    if (wrapTimeout.current) window.clearTimeout(wrapTimeout.current);
+    wrapTimeout.current = 0;
+
+    document.querySelector(".main-slider-two")?.classList.remove("hero-wrap");
+    document.querySelectorAll(".hero-wrap-slide").forEach((el) => {
+      el.classList.remove("hero-wrap-slide");
+    });
+
+    const node = heroSliderNode.current;
+    const $ = (window as any).jQuery;
+    if (node && $) $(node).trigger("play.owl.autoplay");
+  }, []);
+
+  // Replay the SAME intro keyframes on the incoming first slide when OWL wraps
+  // from the last slide. The target `.owl-item` is marked before OWL's fade
+  // swap so the keyframes and the slide change share one owner and one clock.
+  const startWrapReplay = useCallback((targetIndex: number) => {
+    if (wrapPlaying.current || !introPlayed.current) return;
+    const node = heroSliderNode.current;
+    const section = document.querySelector<HTMLElement>(".main-slider-two");
+    if (!node || !section) return;
+    const target = node.querySelectorAll<HTMLElement>(".owl-stage > .owl-item")[targetIndex];
+    if (!target) return;
+
+    wrapPlaying.current = true;
+    if (wrapTimeout.current) window.clearTimeout(wrapTimeout.current);
+
+    section.classList.add("hero-static");
+    section.classList.remove("hero-intro");
+    section.classList.add("hero-wrap");
+    node.querySelectorAll(".hero-wrap-slide").forEach((el) => {
+      el.classList.remove("hero-wrap-slide");
+    });
+    target.classList.add("hero-wrap-slide");
+
+    const $ = (window as any).jQuery;
+    if ($) $(node).trigger("stop.owl.autoplay");
+    wrapTimeout.current = window.setTimeout(endWrapReplay, 3200);
+  }, [endWrapReplay]);
 
   const initSlider = useCallback((force = false) => {
     const $ = (window as any).jQuery;
@@ -64,6 +113,11 @@ export default function Home() {
     }
 
     const $slider = $(node);
+    // Rebind on every (re)init; drawer-close recovery destroys and rebuilds OWL
+    // on the same node, and stale handlers would read a dead instance.
+    $slider.off(".heroWrap");
+    owlWrapBound.current = false;
+    lastSlideRelative.current = null;
     if (!$slider.hasClass("owl-loaded") || nodeChanged || force) {
       try {
         $slider.owlCarousel({
@@ -87,6 +141,26 @@ export default function Home() {
     heroSliderInstance.current = $slider;
     heroSliderNode.current = node;
 
+    if (!owlWrapBound.current) {
+      const instance = $slider.data("owl.carousel");
+      if (instance && Number.isFinite(instance.relative(instance.current()))) {
+        lastSlideRelative.current = instance.relative(instance.current());
+      }
+      $slider.on("changed.owl.carousel.heroWrap", (event: any) => {
+        const inst = $slider.data("owl.carousel");
+        const item = event?.item;
+        if (!inst || !item || !Number.isFinite(item.index) || !Number.isFinite(item.count)) return;
+        const targetRelative = inst.relative(item.index);
+        if (!Number.isFinite(targetRelative)) return;
+        const previousRelative = lastSlideRelative.current;
+        lastSlideRelative.current = targetRelative;
+        // Only a forward wrap from the last real slide to the first one.
+        if (previousRelative === null || previousRelative !== item.count - 1 || targetRelative !== 0) return;
+        startWrapReplay(item.index);
+      });
+      owlWrapBound.current = true;
+    }
+
     if ((window as any).soloxInitLoad && !(window as any).__serenitySoloxInit) {
       try {
         (window as any).soloxInitLoad();
@@ -106,7 +180,7 @@ export default function Home() {
       } catch (e) {}
     }
     return true;
-  }, []);
+  }, [startWrapReplay]);
 
   // OWL is allowed only after the intro's last keyframe. The retry loop waits
   // for the vendor script without touching React state.
@@ -188,8 +262,22 @@ export default function Home() {
     };
   }, [finishIntro]);
 
+  // The wrap replay uses the same final keyframe as its handoff. Scoping the
+  // listener to the marked slide stops OWL's own 1ms fade animationend from
+  // ending the reveal early.
+  useEffect(() => {
+    const onEnd = (event: AnimationEvent) => {
+      if (event.animationName !== "heroButtonIn") return;
+      const target = event.target as HTMLElement | null;
+      if (target?.closest?.(".hero-wrap-slide")) endWrapReplay();
+    };
+    document.addEventListener("animationend", onEnd, true);
+    return () => document.removeEventListener("animationend", onEnd, true);
+  }, [endWrapReplay]);
+
   useEffect(() => () => {
     if (owlRetry.current) window.clearTimeout(owlRetry.current);
+    if (wrapTimeout.current) window.clearTimeout(wrapTimeout.current);
   }, []);
 
   // Recover the hero slider whenever the mobile drawer closes. Opening a
