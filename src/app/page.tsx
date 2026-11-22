@@ -3,7 +3,38 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import CustomCursor from "@/components/CustomCursor";
 import MobileDrawer from "@/components/MobileDrawer";
-import { escapeHtml, useSiteContact } from "@/components/ContactProvider";
+import { useSiteContact } from "@/components/ContactProvider";
+
+// Contact data lives in its own component so Home never re-renders when
+// /api/content resolves. A Home re-render makes React re-inject the whole
+// dangerouslySetInnerHTML template, which restarts the hero keyframes.
+function HomeContactSlots() {
+  const { ready, phoneHref, phoneDisplay, whatsappLink, locationDisplay } = useSiteContact();
+
+  useEffect(() => {
+    if (!ready) return;
+    const root = document.querySelector<HTMLElement>(".page-wrapper");
+    if (!root) return;
+
+    const setText = (selector: string, value: string) => {
+      root.querySelectorAll<HTMLElement>(selector).forEach((el) => {
+        el.textContent = value;
+      });
+    };
+    const setHref = (selector: string, value: string) => {
+      root.querySelectorAll<HTMLElement>(selector).forEach((el) => {
+        if (el instanceof HTMLAnchorElement) el.setAttribute("href", value);
+      });
+    };
+
+    setText("[data-contact-phone]", phoneDisplay || "Call us");
+    setHref("[data-contact-phone]", phoneHref);
+    setText("[data-contact-location]", locationDisplay || "Kampala, Uganda");
+    setHref("[data-contact-whatsapp]", whatsappLink("Hello The Serenity Spa, I'd like to book an appointment."));
+  }, [ready, phoneHref, phoneDisplay, whatsappLink, locationDisplay]);
+
+  return null;
+}
 
 export default function Home() {
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -11,18 +42,7 @@ export default function Home() {
   const heroSliderNode = useRef<HTMLElement | null>(null);
   const heroSliderInstance = useRef<any>(null);
   const introPlayed = useRef(false);
-  const { contact, ready, phoneHref, phoneDisplay, whatsappLink, locationDisplay } = useSiteContact();
-
-  // Finish the one-off reveal by freezing the first slide in its final state.
-  // Keeping `hero-static` (instead of removing every helper class) prevents the
-  // vendor's delayed `.active` transitions from replaying the wipe later.
-  const finishIntro = useCallback(() => {
-    introPlayed.current = true;
-    document.querySelectorAll(".hero-intro").forEach((el) => {
-      el.classList.remove("hero-intro");
-      el.classList.add("hero-static");
-    });
-  }, []);
+  const owlRetry = useRef(0);
 
   const initSlider = useCallback((force = false) => {
     const $ = (window as any).jQuery;
@@ -38,7 +58,6 @@ export default function Home() {
     // for a repaint. Destroying on every effect run restarted the fade and
     // made the hero jump on load/refresh.
     if (previous && (force || nodeChanged)) {
-      if (force) finishIntro();
       try { previous.trigger("destroy.owl.carousel"); } catch (e) {}
       try { previous.removeClass("owl-loaded owl-hidden"); } catch (e) {}
       heroSliderInstance.current = null;
@@ -87,7 +106,41 @@ export default function Home() {
       } catch (e) {}
     }
     return true;
-  }, [finishIntro]);
+  }, []);
+
+  // OWL is allowed only after the intro's last keyframe. The retry loop waits
+  // for the vendor script without touching React state.
+  const startOwl = useCallback(() => {
+    if (owlRetry.current) window.clearTimeout(owlRetry.current);
+    let attempts = 0;
+    const tryInit = () => {
+      const node = document.querySelector<HTMLElement>(".main-slider-two__carousel");
+      if (!node) {
+        if (attempts++ < 50) owlRetry.current = window.setTimeout(tryInit, 100);
+        return;
+      }
+      const alreadyRunning = !!node
+        && heroSliderNode.current === node
+        && node.classList.contains("owl-loaded");
+      if (alreadyRunning) return;
+      if (initSlider()) return;
+      if (attempts++ < 50) owlRetry.current = window.setTimeout(tryInit, 100);
+    };
+    owlRetry.current = window.setTimeout(tryInit, 0);
+  }, [initSlider]);
+
+  // Finish the one-off reveal by freezing the first slide in its final state.
+  // Keeping `hero-static` (instead of removing every helper class) prevents the
+  // vendor's delayed `.active` transitions from replaying the wipe later.
+  const finishIntro = useCallback(() => {
+    if (introPlayed.current) return;
+    introPlayed.current = true;
+    document.querySelectorAll(".hero-intro").forEach((el) => {
+      el.classList.remove("hero-intro");
+      el.classList.add("hero-static");
+    });
+    startOwl();
+  }, [startOwl]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -104,42 +157,40 @@ export default function Home() {
     return () => document.removeEventListener("click", handleTogglerClick, true);
   }, []);
 
-  // First paint stays visible and static while the heavy template/contact data
-  // loads. When that data settles React renders the first slide with the intro
-  // class; the keyframes then run once and this timer freezes the finished
-  // frame before OWL's fade takes over. No late vendor delay is left in charge.
+  // The hero renders with `hero-intro` on the very first paint, so the whole
+  // keyframe sequence starts immediately. Freeze the finished frame when the
+  // LAST keyframe actually ends — not on a fixed clock that can fire while the
+  // browser is still parsing heavy vendor scripts.
   useEffect(() => {
-    if (!ready || introPlayed.current) return;
-    const timer = window.setTimeout(finishIntro, 1700);
-    return () => window.clearTimeout(timer);
-  }, [ready, finishIntro]);
-
-  // Wait until contact data has settled: the hero HTML string is re-injected
-  // when it arrives, so initializing earlier destroyed the slider mid-fade.
-  // After that, reinitialize only when React actually replaces the hero node.
-  useEffect(() => {
-    if (!ready) return;
-    let cancelled = false;
-    let attempts = 0;
-    let timer = 0;
-
-    const tryInit = () => {
-      if (cancelled) return;
-      const node = document.querySelector<HTMLElement>(".main-slider-two__carousel");
-      const alreadyRunning = !!node
-        && heroSliderNode.current === node
-        && node.classList.contains("owl-loaded");
-      if (alreadyRunning) return;
-      if (initSlider()) return;
-      if (attempts++ < 50) timer = window.setTimeout(tryInit, 100);
+    if (introPlayed.current) return;
+    const onEnd = (event: AnimationEvent) => {
+      if (event.animationName === "heroButtonIn") finishIntro();
     };
+    document.addEventListener("animationend", onEnd, true);
 
-    timer = window.setTimeout(tryInit, 0);
+    // If the sequence already finished before the listener attached,
+    // getAnimations() still reports a finished heroButtonIn animation.
+    const checkFinished = () => {
+      const endNode = document.querySelector<HTMLElement>("[data-hero-intro-end]");
+      const finished = endNode?.getAnimations?.().some((animation) => (
+        (animation as CSSAnimation).animationName === "heroButtonIn"
+        && animation.playState === "finished"
+      ));
+      if (finished) finishIntro();
+    };
+    checkFinished();
+
+    // Safety net for environments that never dispatch animationend.
+    const safety = window.setTimeout(finishIntro, 12000);
     return () => {
-      cancelled = true;
-      window.clearTimeout(timer);
+      document.removeEventListener("animationend", onEnd, true);
+      window.clearTimeout(safety);
     };
-  }, [ready, contact, locationDisplay, initSlider]);
+  }, [finishIntro]);
+
+  useEffect(() => () => {
+    if (owlRetry.current) window.clearTimeout(owlRetry.current);
+  }, []);
 
   // Recover the hero slider whenever the mobile drawer closes. Opening a
   // full-screen blurred backdrop over the carousel and then unmounting it can
@@ -148,13 +199,16 @@ export default function Home() {
   // repaint so the slideshow keeps animating after the sidebar closes.
   useEffect(() => {
     if (drawerWasOpen.current && !drawerOpen) {
+      finishIntro();
       requestAnimationFrame(() => initSlider(true));
     }
     drawerWasOpen.current = drawerOpen;
-  }, [drawerOpen, initSlider]);
+  }, [drawerOpen, finishIntro, initSlider]);
 
   return (
     <>
+      <HomeContactSlots />
+
       {/* --- LUXURY CUSTOM CURSOR ANIMATION --- */}
       <CustomCursor />
 
@@ -213,9 +267,9 @@ export default function Home() {
             </div><!-- /.container-fluid -->
         </header><!-- /.main-header -->
         <!-- main-slider-start -->
-        <section class="main-slider-two ${introPlayed.current ? "hero-static" : ready ? "hero-intro" : "hero-static"}">
+        <section class="main-slider-two hero-intro">
             <div
-                class="main-slider-two__carousel solox-owl__carousel owl-carousel" data-owl-options='{"loop":true,"animateOut":"fadeOut","animateIn":"fadeIn","items":1,"autoplay":true,"autoplayTimeout":7000,"smartSpeed":1000,"nav":false,"dots":true,"margin":0}'>
+                class="main-slider-two__carousel owl-carousel">
                 <div class="item hero-intro-slide">
                     <div class="main-slider-two__item">
                         <div class="main-slider-two__bg">
@@ -229,7 +283,7 @@ export default function Home() {
                                         <h5 class="main-slider-two__sub-title">Place of your beauty</h5>
                                         <!-- slider-sub-title -->
                                         <h2 class="main-slider-two__title">The Serenity Spa</h2><!-- slider-title -->
-                                        <div class="main-slider-two__btn">
+                                        <div class="main-slider-two__btn" data-hero-intro-end>
                                             <a href="/services" class="solox-btn solox-btn--base"><span>Discover more</span></a><!-- slider-btn -->
                                         </div>
                                     </div>
@@ -728,7 +782,7 @@ export default function Home() {
                                         <div class="contact-one__info__content">
                                             <p class="contact-one__info__text">Have any Question?</p>
                                             <!-- /.contact-one__info__text -->
-                                            <h4 class="contact-one__info__title"><a href="${escapeHtml(phoneHref)}">${escapeHtml(phoneDisplay || "Call us")}</a></h4><!-- /.contact-one__info__title -->
+                                            <h4 class="contact-one__info__title"><a data-contact-phone href="#">Call us</a></h4><!-- /.contact-one__info__title -->
                                         </div><!-- /.contact-one__info__content -->
                                     </li>
                                     <li class="contact-one__info__item">
@@ -748,7 +802,7 @@ export default function Home() {
                                         </div><!-- /.contact-one__info__icon -->
                                         <div class="contact-one__info__content">
                                             <p class="contact-one__info__text">Visit Now </p> <!-- /.contact-one__info__text -->
-                                            <h4 class="contact-one__info__title"><a href="https://www.google.com/maps">${escapeHtml(locationDisplay)}</a></h4><!-- /.contact-one__info__title -->
+                                            <h4 class="contact-one__info__title"><a data-contact-location href="https://www.google.com/maps">Sir Apollo Kaggwa Rd &amp; Mengo, Kampala, Uganda</a></h4><!-- /.contact-one__info__title -->
                                         </div><!-- /.contact-one__info__content -->
                                     </li>
                                 </ul><!-- /.list-unstyled -->
@@ -768,7 +822,7 @@ export default function Home() {
                                 <p class="contact-one__text">Book a treatment or ask us anything — we reply quickly on WhatsApp.</p>
                                 <div class="form-one__group">
                                     <div class="form-one__control form-one__control--full">
-                                        <a href="${escapeHtml(whatsappLink("Hello The Serenity Spa, I'd like to book an appointment."))}" class="solox-btn" target="_blank" rel="noopener noreferrer"><span>Chat on WhatsApp</span></a>
+                                        <a data-contact-whatsapp href="#" class="solox-btn" target="_blank" rel="noopener noreferrer"><span>Chat on WhatsApp</span></a>
                                     </div><!-- /.form-one__control form-one__control--full -->
                                     <div class="form-one__control form-one__control--full">
                                         <a href="mailto:theserenitybookings@gmail.com?subject=Appointment%20enquiry" class="solox-btn"><span>Email us</span></a>
@@ -813,9 +867,9 @@ export default function Home() {
                             <div class="footer-widget footer-widget--contact">
                                 <h2 class="footer-widget__title">Contact</h2><!-- /.footer-widget__title -->
                                 <ul class="list-unstyled footer-widget__info">
-                                    <li> <a href="${escapeHtml(phoneHref)}">${escapeHtml(phoneDisplay || "Call us")}</a></li>
+                                    <li> <a data-contact-phone href="#">Call us</a></li>
                                     <li> <a href="mailto:theserenitybookings@gmail.com">theserenitybookings@gmail.com</a></li>
-                                    <li> <a href="https://www.google.com/maps">${escapeHtml(locationDisplay)}</a></li>
+                                    <li> <a data-contact-location href="https://www.google.com/maps">Sir Apollo Kaggwa Rd &amp; Mengo, Kampala, Uganda</a></li>
                                 </ul><!-- /.list-unstyled -->
                             </div><!-- /.footer-widget -->
                         </div><!-- /.col-md-6 -->

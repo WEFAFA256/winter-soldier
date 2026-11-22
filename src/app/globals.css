@@ -401,10 +401,10 @@ img {
 }
 
 /* Homepage hero: ONE sequenced reveal, not competing animation systems.
-   `hero-static` is the safe first paint (and the state after the intro has
-   played): the first slide is already fully visible while jQuery/OWL load.
-   When contact data settles React swaps in `hero-intro`; only that first slide
-   runs the keyframes below. OWL's fade handles every later slide change. */
+   `hero-intro` is on the very first paint so the complete sequence starts
+   immediately. The keyframes below run once on the first slide; the last
+   keyframe's `animationend` swaps to `hero-static` before OWL's fade takes
+   over later slides. */
 @keyframes heroImageIn {
   from { transform: translateX(50%) scaleX(2); opacity: 0; filter: blur(10px); }
   to { transform: translateX(0) scaleX(1); opacity: 1; filter: blur(0); }
