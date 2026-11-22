@@ -43,6 +43,34 @@ export default function Home() {
   const heroSliderInstance = useRef<any>(null);
   const introPlayed = useRef(false);
   const owlRetry = useRef(0);
+  const lastSlideRelative = useRef<number | null>(null);
+  const textRevealTimeout = useRef(0);
+
+  // The loop step keeps OWL's image fade. Only the text is re-revealed, so the
+  // wrap still feels like the other slides instead of replaying the full intro.
+  const cleanupTextReveal = useCallback(() => {
+    if (textRevealTimeout.current) {
+      window.clearTimeout(textRevealTimeout.current);
+      textRevealTimeout.current = 0;
+    }
+    document.querySelectorAll(".hero-text-reveal").forEach((el) => {
+      el.classList.remove("hero-text-reveal");
+    });
+  }, []);
+
+  const startTextReveal = useCallback((targetIndex: number) => {
+    if (!introPlayed.current) return;
+    const node = heroSliderNode.current;
+    if (!node) return;
+    const target = node.querySelectorAll<HTMLElement>(".owl-stage > .owl-item")[targetIndex];
+    if (!target) return;
+
+    cleanupTextReveal();
+    // Restart the keyframes even when OWL reuses the same DOM node.
+    void target.offsetWidth;
+    target.classList.add("hero-text-reveal");
+    textRevealTimeout.current = window.setTimeout(cleanupTextReveal, 1900);
+  }, [cleanupTextReveal]);
 
   const initSlider = useCallback((force = false) => {
     const $ = (window as any).jQuery;
@@ -87,6 +115,29 @@ export default function Home() {
     heroSliderInstance.current = $slider;
     heroSliderNode.current = node;
 
+    // One generic observer per OWL instance. It only marks the incoming slide
+    // when the carousel wraps from the last real slide back to the first; it
+    // never stops autoplay or shortens OWL's own fade.
+    $slider.off(".heroText");
+    lastSlideRelative.current = null;
+    const owlInstance = $slider.data("owl.carousel");
+    if (owlInstance && Number.isFinite(owlInstance.relative(owlInstance.current()))) {
+      lastSlideRelative.current = owlInstance.relative(owlInstance.current());
+    }
+    $slider.on("changed.owl.carousel.heroText", (event: any) => {
+      const instance = $slider.data("owl.carousel");
+      const item = event?.item;
+      if (!instance || !item || !Number.isFinite(item.index) || !Number.isFinite(item.count)) return;
+      const targetRelative = instance.relative(item.index);
+      if (!Number.isFinite(targetRelative)) return;
+      const previousRelative = lastSlideRelative.current;
+      lastSlideRelative.current = targetRelative;
+      if (previousRelative === null || !introPlayed.current) return;
+      if (previousRelative === item.count - 1 && targetRelative === 0) {
+        startTextReveal(item.index);
+      }
+    });
+
     if ((window as any).soloxInitLoad && !(window as any).__serenitySoloxInit) {
       try {
         (window as any).soloxInitLoad();
@@ -106,7 +157,7 @@ export default function Home() {
       } catch (e) {}
     }
     return true;
-  }, []);
+  }, [startTextReveal]);
 
   // OWL is allowed only after the intro's last keyframe. The retry loop waits
   // for the vendor script without touching React state.
@@ -188,9 +239,22 @@ export default function Home() {
     };
   }, [finishIntro]);
 
+  // Clear the temporary text class when its last keyframe finishes. The
+  // fallback timeout in startTextReveal covers missed animationend events.
+  useEffect(() => {
+    const onEnd = (event: AnimationEvent) => {
+      if (event.animationName !== "heroButtonIn") return;
+      const target = event.target as HTMLElement | null;
+      if (target?.closest?.(".hero-text-reveal")) cleanupTextReveal();
+    };
+    document.addEventListener("animationend", onEnd, true);
+    return () => document.removeEventListener("animationend", onEnd, true);
+  }, [cleanupTextReveal]);
+
   useEffect(() => () => {
     if (owlRetry.current) window.clearTimeout(owlRetry.current);
-  }, []);
+    cleanupTextReveal();
+  }, [cleanupTextReveal]);
 
   // Recover the hero slider whenever the mobile drawer closes. Opening a
   // full-screen blurred backdrop over the carousel and then unmounting it can
