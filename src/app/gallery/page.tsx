@@ -39,7 +39,10 @@ function isImageAvailable(img: GalleryImage, index: number): boolean {
 // real custom name — generic placeholder values must not produce a fabricated label.
 function getCustomName(img: GalleryImage): string {
   const alt = (img.alt || "").trim();
-  if (!alt || alt.toLowerCase() === "the serenity spa" || alt.includes("Serenity Spa -")) return "";
+  const lowered = alt.toLowerCase();
+  // "Serenity Spa Gallery" is the API fallback for images with no admin-set name.
+  // It must never be presented as a therapist name (caption or booking button).
+  if (!alt || lowered === "the serenity spa" || lowered === "serenity spa gallery" || alt.includes("Serenity Spa -")) return "";
   return alt;
 }
 
@@ -445,7 +448,7 @@ const SPA_VIDEOS: SpaVideo[] = [
   },
 ];
 
-// ── Specialist Profile Card with Availability Badge & Book Therapist Button ──
+// ── Specialist Profile Card with Availability Badge & named Booking Button ──
 function GalleryCard({
   img,
   index,
@@ -508,7 +511,7 @@ function GalleryCard({
         tabIndex={0}
         aria-label={`View full-size photos of ${specialistName}`}
         onKeyDown={(e) => {
-          // Ignore keys pressed on the nested "Book Therapist" button so it keeps its own action.
+          // Ignore keys pressed on the nested booking button so it keeps its own action.
           if (e.target !== e.currentTarget) return;
           if (e.key === "Enter" || e.key === " " || e.key === "Spacebar") {
             e.preventDefault();
@@ -591,36 +594,6 @@ function GalleryCard({
           </span>
         </div>
 
-        {/* Name caption — the exact value entered in the admin "Name" field */}
-        {customName && (
-          <div
-            className="gallery-name-caption"
-            style={{
-              position: "absolute",
-              top: "12px",
-              left: "12px",
-              zIndex: 6,
-              maxWidth: "calc(100% - 110px)",
-              padding: "5px 11px",
-              borderRadius: "20px",
-              backgroundColor: "rgba(10, 14, 18, 0.88)",
-              backdropFilter: "blur(6px)",
-              border: "1px solid rgba(194, 167, 78, 0.5)",
-              boxShadow: "0 4px 12px rgba(0, 0, 0, 0.45)",
-              color: "#ffffff",
-              fontSize: "12px",
-              fontWeight: 700,
-              lineHeight: 1.2,
-              whiteSpace: "nowrap",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-            }}
-            title={customName}
-          >
-            {customName}
-          </div>
-        )}
-
         {/* Image Container */}
         <div style={{ position: "relative", width: "100%", height: "100%", overflow: "hidden" }}>
           <img
@@ -683,7 +656,7 @@ function GalleryCard({
             </div>
           </div>
 
-          {/* Bottom Action: Book Therapist Button */}
+          {/* Bottom Action: booking button labelled with the admin-set therapist name */}
           <div
             style={{
               position: "absolute",
@@ -734,7 +707,7 @@ function GalleryCard({
               }}
             >
               <i className="fas fa-calendar-check" style={{ fontSize: "11px" }}></i>
-              <span>Book Therapist</span>
+              <span>{customName ? `Book ${customName}` : "Book Now"}</span>
             </button>
           </div>
         </div>
@@ -1765,8 +1738,8 @@ export default function GalleryPage() {
           // Read the SAME admin-controlled record field the gallery card uses - never derive
           // availability from the lightbox position.
           const isLightboxAvailable = isImageAvailable(selectedImage, selectedIndex);
-          const specialistName =
-            getCustomName(selectedImage) || `Specialist #${selectedIndex + 1}`;
+          const lightboxCustomName = getCustomName(selectedImage);
+          const specialistName = lightboxCustomName || `Specialist #${selectedIndex + 1}`;
 
           return (
             <div
@@ -1973,7 +1946,7 @@ export default function GalleryPage() {
                   }}
                 >
                   <i className="fas fa-calendar-check"></i>
-                  <span>Book This Therapist</span>
+                  <span>{lightboxCustomName ? `Book ${lightboxCustomName}` : "Book Now"}</span>
                 </button>
               </div>
             </div>
