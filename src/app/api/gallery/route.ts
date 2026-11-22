@@ -25,6 +25,19 @@ function safeContextValue(value: unknown, fallback = 'Serenity Spa Gallery'): st
     .slice(0, 200) || fallback;
 }
 
+// Cloudinary's Search API returns context as a flat object (context.alt), while
+// the Admin API wraps it (context.custom.alt). Normalise both so admin-entered
+// names and availability are read from either endpoint.
+function readContextValues(resource: any): Record<string, unknown> {
+  const context = resource?.context;
+  if (!context || typeof context !== 'object') return {};
+  const custom = (context as any).custom;
+  if (custom && typeof custom === 'object') {
+    return { ...(context as Record<string, unknown>), ...(custom as Record<string, unknown>) };
+  }
+  return context as Record<string, unknown>;
+}
+
 const readLocalData = () => {
   try {
     if (!fs.existsSync(dataFilePath)) {
@@ -38,10 +51,10 @@ const readLocalData = () => {
   }
 };
 
-export async function GET(req: Request) {
+export async function GET() {
   try {
     // Cloudinary's Search API omits contextual metadata unless it is explicitly
-    // requested. The admin-entered therapist Name is stored in `context.custom.alt`,
+    // requested. The admin-entered therapist Name is stored in context.alt here,
     // so without this the read path silently falls back to "Serenity Spa Gallery"
     // even though the name exists on the asset.
     const cloudinaryRes = await cloudinary.search
@@ -50,15 +63,6 @@ export async function GET(req: Request) {
       .sort_by('created_at', 'desc')
       .max_results(100)
       .execute();
-
-    if (new URL(req.url).searchParams.get('debugRaw') === '1') {
-      return NextResponse.json((cloudinaryRes.resources || []).map((r: any) => ({
-        public_id: r.public_id,
-        context: r.context,
-        tags: r.tags,
-        metadata: r.metadata,
-      })));
-    }
 
     const localImages = readLocalData();
     const localMap = new Map();
@@ -71,7 +75,7 @@ export async function GET(req: Request) {
       const id = resource.public_id;
       const src = resource.secure_url;
       const matched = localMap.get(id) || localMap.get(src);
-      const custom = resource.context?.custom || {};
+      const custom = readContextValues(resource);
       // Cloudinary context is the durable source of truth. A stale local mirror
       // must never override an admin-set Name (or availability) saved there.
       return {
@@ -200,7 +204,7 @@ export async function PATCH(req: Request) {
     let alt = 'Serenity Spa Gallery';
     try {
       const resource: any = await cloudinary.api.resource(id);
-      alt = safeContextValue(resource?.context?.custom?.alt);
+      alt = safeContextValue(readContextValues(resource).alt);
     } catch (e) {
       console.error('Could not read Cloudinary context for', id, e);
     }
