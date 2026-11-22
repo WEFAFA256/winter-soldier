@@ -2,10 +2,11 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import CustomCursor from "@/components/CustomCursor";
 import MobileDrawer from "@/components/MobileDrawer";
 import { useSiteContact } from "@/components/ContactProvider";
-import { Companion, DEFAULT_COMPANIONS } from "@/lib/escorts";
+import { Companion, DEFAULT_COMPANIONS, escortSlug } from "@/lib/escorts";
 
 const SCRIPT = '"Alex Brush", cursive';
 const SERIF = '"Cormorant", serif';
@@ -116,6 +117,7 @@ function Reveal({
 }
 
 export default function EscortsPage() {
+  const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [filter, setFilter] = useState<"all" | "available" | "engaged">("all");
   const [companions, setCompanions] = useState<Companion[]>([]);
@@ -225,6 +227,12 @@ export default function EscortsPage() {
         }
         .escort-filter-pill { transition: all 0.25s ease; }
         .escort-filter-pill:hover { border-color: rgba(194,167,78,0.8) !important; color: #f5e199 !important; }
+        .escort-companion-card:focus-visible { outline: 2px solid #c2a74e; outline-offset: 3px; }
+        /* Mobile only: two companion profiles per row, side by side. */
+        @media (max-width: 575px) {
+          .escort-companion-photo { height: 230px !important; }
+          .escort-companion-card h3 { font-size: 1.3rem !important; }
+        }
         @media (max-width: 991px) {
           .escort-timeline-line { display: none !important; }
         }
@@ -362,10 +370,21 @@ export default function EscortsPage() {
               {shownCompanions.map((c, i) => {
                 const isAvailable = c.availability === "available";
                 return (
-                  <div key={c.name} className="col-xl-3 col-lg-4 col-md-6 col-12">
+                  <div key={c.name} className="col-xl-3 col-lg-4 col-md-6 col-6">
                     <Reveal delay={(i % 4) * 90} offset={70} style={{ height: "100%" }}>
                       <div
                         className="escort-companion-card"
+                        role="link"
+                        tabIndex={0}
+                        aria-label={`View ${c.name}'s profile`}
+                        onClick={() => router.push(`/escorts/${escortSlug(c.name)}`)}
+                        onKeyDown={(e) => {
+                          if (e.target !== e.currentTarget) return;
+                          if (e.key === "Enter" || e.key === " " || e.key === "Spacebar") {
+                            e.preventDefault();
+                            router.push(`/escorts/${escortSlug(c.name)}`);
+                          }
+                        }}
                         style={{
                           background: "linear-gradient(160deg, #161c22 0%, #1a2130 100%)",
                           border: "1px solid rgba(194,167,78,0.22)", borderRadius: "14px",
@@ -373,7 +392,7 @@ export default function EscortsPage() {
                           boxShadow: "0 10px 34px rgba(0,0,0,0.5)",
                         }}
                       >
-                        <div style={{ position: "relative", height: "330px", overflow: "hidden" }}>
+                        <div className="escort-companion-photo" style={{ position: "relative", height: "330px", overflow: "hidden" }}>
                           <img
                             src={c.image}
                             alt={c.name}
@@ -384,7 +403,7 @@ export default function EscortsPage() {
                           />
                           <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(0,0,0,0.28) 0%, rgba(0,0,0,0) 38%, rgba(14,19,23,0.96) 100%)" }} />
                           <div className="companion-hover" style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(14,19,23,0.45)", opacity: 0 }}>
-                            <span style={{ fontFamily: SCRIPT, fontSize: "2rem", color: "#f5e199" }}>Enquire</span>
+                            <span style={{ fontFamily: SCRIPT, fontSize: "2rem", color: "#f5e199" }}>View Profile</span>
                           </div>
                           <span style={{ position: "absolute", top: "14px", left: "16px", fontFamily: SERIF, fontSize: "1.1rem", fontWeight: 700, color: "rgba(232,217,176,0.55)" }}>
                             {String(companions.indexOf(c) + 1).padStart(2, "0")}
@@ -423,6 +442,7 @@ export default function EscortsPage() {
                             {c.description}
                           </p>
                           <a
+                            onClick={(e) => e.stopPropagation()}
                             href={whatsappLink(
                               isAvailable
                                 ? `Hello, I'm interested in booking ${c.name} for escort companionship services at The Serenity Spa.`

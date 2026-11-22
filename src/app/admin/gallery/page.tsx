@@ -210,6 +210,7 @@ export default function AdminGalleryPage() {
   const [newEscort, setNewEscort] = useState<Partial<Companion>>({
     name: "", title: "Elite Companion", specialty: "",
     availability: "available", image: "/assets/service1.jpg", description: "",
+    gallery: [], videos: [],
   });
   const [escortUploadIdx, setEscortUploadIdx] = useState<number | null>(null);
   const [escortNewUploading, setEscortNewUploading] = useState(false);
@@ -564,6 +565,17 @@ export default function AdminGalleryPage() {
   };
 
   /* Escort card handlers */
+  const parseLines = (value: string) => value.split("\n").map((x) => x.trim()).filter(Boolean);
+  const parseEscortVideos = (value: string) =>
+    parseLines(value)
+      .map((line) => {
+        const [title, youtubeId] = line.split("|").map((x) => x.trim());
+        return youtubeId ? { title: title || "Video", youtubeId } : null;
+      })
+      .filter(Boolean) as { title: string; youtubeId: string }[];
+  const videoLines = (videos?: { title: string; youtubeId: string }[]) =>
+    (videos || []).map((v) => `${v.title}|${v.youtubeId}`).join("\n");
+
   const updateEscort = (i: number, k: keyof Companion, v: any) => {
     const u = [...escorts]; u[i] = { ...u[i], [k]: v }; setEscorts(u);
   };
@@ -574,7 +586,7 @@ export default function AdminGalleryPage() {
   const addEscort = () => {
     if (!newEscort.name) return alert("Enter a name");
     setEscorts([newEscort as Companion, ...escorts]);
-    setNewEscort({ name: "", title: "Elite Companion", specialty: "", availability: "available", image: "/assets/service1.jpg", description: "" });
+    setNewEscort({ name: "", title: "Elite Companion", specialty: "", availability: "available", image: "/assets/service1.jpg", description: "", gallery: [], videos: [] });
     setShowAddEscort(false);
   };
   const changeEscortImage = async (i: number, file: File | undefined) => {
@@ -1190,7 +1202,7 @@ export default function AdminGalleryPage() {
             {/* ══ ESCORTS TAB ══ */}
             {tab === "escorts" && (
               <div className="admin-pane">
-                <SectionHead title="Escort Profile Cards" sub="Add, edit and reorder the companion cards shown on /escorts. Upload a photo or paste an image URL, then click Save Changes." />
+                <SectionHead title="Escort Profile Cards" sub="Add, edit and reorder companions shown on /escorts. Each profile page uses her own gallery/video URLs when set; leave them blank to use the curated spa set. Click Save Changes." />
 
                 <div className="escort-toolbar" style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:16, gap:12 }}>
                   <BtnGold onClick={()=>setShowAddEscort(!showAddEscort)}>{showAddEscort ? "✕ Cancel" : "+ Add Companion"}</BtnGold>
@@ -1222,6 +1234,9 @@ export default function AdminGalleryPage() {
                       </div>
                     </div>
                     <Textarea label="Description" rows={2} placeholder="Describe this companion…" value={newEscort.description||""} onChange={(e:any)=>setNewEscort({...newEscort,description:e.target.value})} />
+                    <Textarea label="Gallery image URLs (one per line)" rows={2} placeholder="https://res.cloudinary.com/.../photo.jpg" value={(newEscort.gallery||[]).join("\n")} onChange={(e:any)=>setNewEscort({...newEscort,gallery:parseLines(e.target.value)})} />
+                    <Textarea label="Videos — Title | YouTube ID (one per line)" rows={2} placeholder="Private dinner tour | abc123xyz" value={videoLines(newEscort.videos)} onChange={(e:any)=>setNewEscort({...newEscort,videos:parseEscortVideos(e.target.value)})} />
+                    <p style={{ fontSize: 10, color: C.muted, margin: "-6px 0 12px" }}>Leave media blank to use the curated spa gallery and reels on her profile page.</p>
                     <BtnGold onClick={addEscort}>Save Companion</BtnGold>
                   </div>
                 )}
@@ -1255,6 +1270,12 @@ export default function AdminGalleryPage() {
                           <input value={c.image||""} onChange={e=>updateEscort(i,"image",e.target.value)} placeholder="/assets/service1.jpg" aria-label={`Image URL for ${c.name}`}
                             style={{ flex:1, minWidth:0, background:C.bg, border:`1px solid ${C.border}`, borderRadius:5, padding:"4px 7px", color:C.muted, fontSize:10 }} />
                         </div>
+                        <textarea rows={2} value={(c.gallery||[]).join("\n")} onChange={e=>updateEscort(i,"gallery",parseLines(e.target.value))}
+                          aria-label={`Gallery image URLs for ${c.name}`} placeholder="Gallery URLs, one per line (blank = curated spa set)"
+                          style={{ width:"100%", minWidth:0, boxSizing:"border-box", background:C.bg, border:`1px solid ${C.border}`, borderRadius:5, padding:"5px 7px", color:C.muted, fontSize:10, marginTop:5, resize:"vertical" }} />
+                        <textarea rows={2} value={videoLines(c.videos)} onChange={e=>updateEscort(i,"videos",parseEscortVideos(e.target.value))}
+                          aria-label={`Videos for ${c.name}`} placeholder="Videos: Title | YouTube ID, one per line"
+                          style={{ width:"100%", minWidth:0, boxSizing:"border-box", background:C.bg, border:`1px solid ${C.border}`, borderRadius:5, padding:"5px 7px", color:C.muted, fontSize:10, marginTop:5, resize:"vertical" }} />
                       </div>
                       <div className="escort-card-actions" style={{ display:"flex", flexDirection:"column", gap:8, flexShrink:0 }}>
                         <select value={c.availability} onChange={e=>updateEscort(i,"availability",e.target.value as Companion["availability"])} aria-label={`Status for ${c.name}`}

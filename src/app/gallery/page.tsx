@@ -491,7 +491,7 @@ function GalleryCard({
   return (
     <div
       ref={ref}
-      className="col-xl-3 col-lg-4 col-md-6 col-12"
+      className="col-xl-3 col-lg-4 col-md-6 col-6"
       style={{
         opacity: visible ? 1 : 0,
         transform: visible ? "translateY(0px) scale(1)" : "translateY(40px) scale(0.96)",
@@ -890,6 +890,23 @@ export default function GalleryPage() {
         .gallery-book-session-btn:focus-visible {
           outline: 2px solid #c2a74e;
           outline-offset: 3px;
+        }
+        /* Tapping any photo opens a genuine full-viewport image, not a small modal. */
+        .gallery-lightbox { padding: 0 !important; }
+        .gallery-lightbox-stage,
+        .gallery-lightbox-img {
+          max-width: 100vw !important;
+          max-height: 100dvh !important;
+          width: 100vw !important;
+          height: 100dvh !important;
+          border-radius: 0 !important;
+          border: none !important;
+        }
+        .gallery-lightbox-img { object-fit: contain !important; }
+        /* Mobile only: two compact profiles per row. */
+        @media (max-width: 575px) {
+          .gallery-card-inner { height: 210px !important; }
+          .gallery-lightbox-nav { width: 40px !important; height: 40px !important; }
         }
       `}</style>
 
@@ -1751,6 +1768,7 @@ export default function GalleryPage() {
 
           return (
             <div
+              className="gallery-lightbox"
               style={{
                 position: "fixed",
                 inset: 0,
@@ -1786,6 +1804,7 @@ export default function GalleryPage() {
 
               {/* Prev Button */}
               <button
+                className="gallery-lightbox-nav"
                 onClick={(e) => {
                   e.stopPropagation();
                   setSelectedIndex((selectedIndex - 1 + images.length) % images.length);
@@ -1815,6 +1834,7 @@ export default function GalleryPage() {
 
               {/* Image */}
               <div
+                className="gallery-lightbox-stage"
                 style={{
                   maxWidth: "85vw",
                   maxHeight: "72vh",
@@ -1825,6 +1845,7 @@ export default function GalleryPage() {
                 onClick={(e) => e.stopPropagation()}
               >
                 <img
+                  className="gallery-lightbox-img"
                   src={selectedImage.src}
                   alt={selectedImage.alt || "The Serenity Spa"}
                   style={{
@@ -1840,6 +1861,7 @@ export default function GalleryPage() {
 
               {/* Next Button */}
               <button
+                className="gallery-lightbox-nav"
                 onClick={(e) => {
                   e.stopPropagation();
                   setSelectedIndex((selectedIndex + 1) % images.length);
@@ -1916,6 +1938,16 @@ export default function GalleryPage() {
                     {selectedIndex + 1} / {images.length}
                   </span>
                 </div>
+
+                <a
+                  href={selectedImage.src}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={(e) => e.stopPropagation()}
+                  style={{ color: "#c2a74e", fontSize: "12px", textDecoration: "underline" }}
+                >
+                  Open full image ↗
+                </a>
 
                 <button
                   onClick={() => {
