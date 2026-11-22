@@ -69,7 +69,7 @@ img {
   opacity: 1;
 }
 
-.main-slider-two .active .main-slider-two__bg img:nth-child(1) {
+.main-slider-two:not(.hero-intro) .active .main-slider-two__bg img:nth-child(1) {
   transform: scale(1) !important;
   opacity: 1 !important;
   filter: none !important;
@@ -385,9 +385,9 @@ img {
 .main-slider-two__carousel:not(.owl-loaded) > .item:not(:first-child) {
   display: none !important;
 }
-.main-slider-two__carousel:not(.owl-loaded) .main-slider-two__sub-title,
-.main-slider-two__carousel:not(.owl-loaded) .main-slider-two__title,
-.main-slider-two__carousel:not(.owl-loaded) .main-slider-two__btn {
+.main-slider-two:not(.hero-intro) .main-slider-two__carousel:not(.owl-loaded) .main-slider-two__sub-title,
+.main-slider-two:not(.hero-intro) .main-slider-two__carousel:not(.owl-loaded) .main-slider-two__title,
+.main-slider-two:not(.hero-intro) .main-slider-two__carousel:not(.owl-loaded) .main-slider-two__btn {
   opacity: 1 !important;
   transform: none !important;
 }
@@ -400,49 +400,76 @@ img {
   opacity: 1 !important;
 }
 
-/* Homepage hero: one clean crossfade.
-   The vendor stylesheet is emitted after this file, so equal-specificity rules
-   here lose. These !important guards stop OWL's fade and the vendor image
-   transform/opacity/blur transition from fighting each other (which made the
-   background snap 0.39 -> 0.00 -> 0.89 -> 1) and remove the late white text
-   wipe that covered the title for several seconds. */
-.main-slider-two .main-slider-two__carousel .item .main-slider-two__bg img,
-.main-slider-two .main-slider-two__carousel .owl-item .main-slider-two__bg img,
-.main-slider-two .active .main-slider-two__bg img:nth-child(1),
-.main-slider-two .active .main-slider-two__bg img:nth-child(2) {
-  transform: none !important;
-  opacity: 1 !important;
-  filter: none !important;
-  transition: none !important;
-  animation: none !important;
+/* Homepage hero: ONE sequenced reveal, not competing animation systems.
+   `hero-static` is the safe first paint (and the state after the intro has
+   played): the first slide is already fully visible while jQuery/OWL load.
+   When contact data settles React swaps in `hero-intro`; only that first slide
+   runs the keyframes below. OWL's fade handles every later slide change. */
+@keyframes heroImageIn {
+  from { transform: translateX(50%) scaleX(2); opacity: 0; filter: blur(10px); }
+  to { transform: translateX(0) scaleX(1); opacity: 1; filter: blur(0); }
+}
+@keyframes heroImageOut {
+  from { transform: translateX(0) scaleX(1); opacity: 1; filter: blur(0); }
+  to { transform: translateX(-50%) scaleX(2); opacity: 0; filter: blur(10px); }
+}
+@keyframes heroSubtitleIn {
+  from { opacity: 0; transform: translateY(-200px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes heroTitleIn {
+  from { opacity: 0; transform: translateY(200px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes heroTitleWipe {
+  0%, 35% { transform: translateX(-100%); }
+  100% { transform: translateY(1%); }
+}
+@keyframes heroButtonIn {
+  from { opacity: 0; transform: perspective(400px) rotateY(0deg) translateY(80px); }
+  to { opacity: 1; transform: perspective(400px) rotateY(0deg) translateY(0); }
 }
 
-.main-slider-two .main-slider-two__bg img:nth-child(2) {
-  display: none !important;
+.main-slider-two.hero-static .hero-intro-slide .main-slider-two__bg img:nth-child(1),
+.main-slider-two.hero-static .hero-intro-slide .main-slider-two__sub-title,
+.main-slider-two.hero-static .hero-intro-slide .main-slider-two__title,
+.main-slider-two.hero-static .hero-intro-slide .main-slider-two__btn {
+  opacity: 1;
+  transform: none;
+  filter: none;
+  animation: none;
+  transition: none;
+}
+.main-slider-two.hero-static .hero-intro-slide .main-slider-two__bg img:nth-child(2) {
+  opacity: 0;
+  transform: translateX(-50%) scaleX(2);
+  filter: blur(10px);
+  animation: none;
+  transition: none;
+}
+.main-slider-two.hero-static .hero-intro-slide .main-slider-two__title::after {
+  transform: translateY(1%);
+  animation: none;
+  transition: none;
 }
 
-.main-slider-two__sub-title,
-.main-slider-two__title,
-.main-slider-two__btn,
-.main-slider-two .active .main-slider-two__sub-title,
-.main-slider-two .active .main-slider-two__title,
-.main-slider-two .active .main-slider-two__btn {
-  opacity: 1 !important;
-  visibility: visible !important;
-  transform: none !important;
-  transition: opacity 350ms ease, transform 350ms ease !important;
-  transition-delay: 0ms !important;
-  animation: none !important;
+.main-slider-two.hero-intro .hero-intro-slide .main-slider-two__bg img:nth-child(1) {
+  animation: heroImageIn 1100ms ease 100ms both;
 }
-
-.main-slider-two__title::after,
-.main-slider-two .active .main-slider-two__title::after {
-  content: none !important;
-  display: none !important;
-  animation: none !important;
-  transition: none !important;
-  transform: none !important;
-  opacity: 0 !important;
+.main-slider-two.hero-intro .hero-intro-slide .main-slider-two__bg img:nth-child(2) {
+  animation: heroImageOut 900ms ease 100ms both;
+}
+.main-slider-two.hero-intro .hero-intro-slide .main-slider-two__sub-title {
+  animation: heroSubtitleIn 900ms ease 120ms both;
+}
+.main-slider-two.hero-intro .hero-intro-slide .main-slider-two__title {
+  animation: heroTitleIn 1100ms ease 260ms both;
+}
+.main-slider-two.hero-intro .hero-intro-slide .main-slider-two__title::after {
+  animation: heroTitleWipe 900ms cubic-bezier(0.858, 0.01, 0.068, 0.99) 520ms both;
+}
+.main-slider-two.hero-intro .hero-intro-slide .main-slider-two__btn {
+  animation: heroButtonIn 900ms ease 760ms both;
 }
 
 /* OWL's AutoRefresh plugin can add this class when it briefly thinks the hero

@@ -10,7 +10,19 @@ export default function Home() {
   const drawerWasOpen = useRef(false);
   const heroSliderNode = useRef<HTMLElement | null>(null);
   const heroSliderInstance = useRef<any>(null);
+  const introPlayed = useRef(false);
   const { contact, ready, phoneHref, phoneDisplay, whatsappLink, locationDisplay } = useSiteContact();
+
+  // Finish the one-off reveal by freezing the first slide in its final state.
+  // Keeping `hero-static` (instead of removing every helper class) prevents the
+  // vendor's delayed `.active` transitions from replaying the wipe later.
+  const finishIntro = useCallback(() => {
+    introPlayed.current = true;
+    document.querySelectorAll(".hero-intro").forEach((el) => {
+      el.classList.remove("hero-intro");
+      el.classList.add("hero-static");
+    });
+  }, []);
 
   const initSlider = useCallback((force = false) => {
     const $ = (window as any).jQuery;
@@ -26,6 +38,7 @@ export default function Home() {
     // for a repaint. Destroying on every effect run restarted the fade and
     // made the hero jump on load/refresh.
     if (previous && (force || nodeChanged)) {
+      if (force) finishIntro();
       try { previous.trigger("destroy.owl.carousel"); } catch (e) {}
       try { previous.removeClass("owl-loaded owl-hidden"); } catch (e) {}
       heroSliderInstance.current = null;
@@ -51,6 +64,7 @@ export default function Home() {
         });
       } catch (err) {}
     }
+
     heroSliderInstance.current = $slider;
     heroSliderNode.current = node;
 
@@ -73,7 +87,7 @@ export default function Home() {
       } catch (e) {}
     }
     return true;
-  }, []);
+  }, [finishIntro]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -89,6 +103,16 @@ export default function Home() {
     document.addEventListener("click", handleTogglerClick, true);
     return () => document.removeEventListener("click", handleTogglerClick, true);
   }, []);
+
+  // First paint stays visible and static while the heavy template/contact data
+  // loads. When that data settles React renders the first slide with the intro
+  // class; the keyframes then run once and this timer freezes the finished
+  // frame before OWL's fade takes over. No late vendor delay is left in charge.
+  useEffect(() => {
+    if (!ready || introPlayed.current) return;
+    const timer = window.setTimeout(finishIntro, 1700);
+    return () => window.clearTimeout(timer);
+  }, [ready, finishIntro]);
 
   // Wait until contact data has settled: the hero HTML string is re-injected
   // when it arrives, so initializing earlier destroyed the slider mid-fade.
@@ -189,10 +213,10 @@ export default function Home() {
             </div><!-- /.container-fluid -->
         </header><!-- /.main-header -->
         <!-- main-slider-start -->
-        <section class="main-slider-two">
+        <section class="main-slider-two ${introPlayed.current ? "hero-static" : ready ? "hero-intro" : "hero-static"}">
             <div
                 class="main-slider-two__carousel solox-owl__carousel owl-carousel" data-owl-options='{"loop":true,"animateOut":"fadeOut","animateIn":"fadeIn","items":1,"autoplay":true,"autoplayTimeout":7000,"smartSpeed":1000,"nav":false,"dots":true,"margin":0}'>
-                <div class="item">
+                <div class="item hero-intro-slide">
                     <div class="main-slider-two__item">
                         <div class="main-slider-two__bg">
                             <img src="/assets/images/backgrounds/slider-2-1.jpg" alt="solox" />
