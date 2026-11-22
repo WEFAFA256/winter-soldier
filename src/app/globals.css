@@ -400,6 +400,57 @@ img {
   opacity: 1 !important;
 }
 
+/* Homepage hero: one clean crossfade.
+   The vendor stylesheet is emitted after this file, so equal-specificity rules
+   here lose. These !important guards stop OWL's fade and the vendor image
+   transform/opacity/blur transition from fighting each other (which made the
+   background snap 0.39 -> 0.00 -> 0.89 -> 1) and remove the late white text
+   wipe that covered the title for several seconds. */
+.main-slider-two .main-slider-two__carousel .item .main-slider-two__bg img,
+.main-slider-two .main-slider-two__carousel .owl-item .main-slider-two__bg img,
+.main-slider-two .active .main-slider-two__bg img:nth-child(1),
+.main-slider-two .active .main-slider-two__bg img:nth-child(2) {
+  transform: none !important;
+  opacity: 1 !important;
+  filter: none !important;
+  transition: none !important;
+  animation: none !important;
+}
+
+.main-slider-two .main-slider-two__bg img:nth-child(2) {
+  display: none !important;
+}
+
+.main-slider-two__sub-title,
+.main-slider-two__title,
+.main-slider-two__btn,
+.main-slider-two .active .main-slider-two__sub-title,
+.main-slider-two .active .main-slider-two__title,
+.main-slider-two .active .main-slider-two__btn {
+  opacity: 1 !important;
+  visibility: visible !important;
+  transform: none !important;
+  transition: opacity 350ms ease, transform 350ms ease !important;
+  transition-delay: 0ms !important;
+  animation: none !important;
+}
+
+.main-slider-two__title::after,
+.main-slider-two .active .main-slider-two__title::after {
+  content: none !important;
+  display: none !important;
+  animation: none !important;
+  transition: none !important;
+  transform: none !important;
+  opacity: 0 !important;
+}
+
+/* OWL's AutoRefresh plugin can add this class when it briefly thinks the hero
+   is hidden during hydration. The hero is always intended to be visible. */
+.main-slider-two__carousel.owl-hidden {
+  opacity: 1 !important;
+}
+
 /* Reserve the height of one card row while a catalogue is being fetched so
    replacing the spinner with real cards does not move the visible page. */
 .card-loading-slot {

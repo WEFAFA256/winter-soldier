@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import CustomCursor from "@/components/CustomCursor";
 import MobileDrawer from "@/components/MobileDrawer";
 import { escapeHtml, useSiteContact } from "@/components/ContactProvider";
@@ -8,20 +8,31 @@ import { escapeHtml, useSiteContact } from "@/components/ContactProvider";
 export default function Home() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const drawerWasOpen = useRef(false);
-  const { contact, phoneHref, phoneDisplay, whatsappLink, locationDisplay } = useSiteContact();
+  const heroSliderNode = useRef<HTMLElement | null>(null);
+  const heroSliderInstance = useRef<any>(null);
+  const { contact, ready, phoneHref, phoneDisplay, whatsappLink, locationDisplay } = useSiteContact();
 
-  const initSlider = () => {
+  const initSlider = useCallback((force = false) => {
     const $ = (window as any).jQuery;
-    if (!$ || !$.fn || !$.fn.owlCarousel) return;
+    if (!$ || !$.fn || !$.fn.owlCarousel) return false;
 
-    const $slider = $(".main-slider-two__carousel");
-    if ($slider.length) {
-      if ($slider.hasClass("owl-loaded")) {
-        try {
-          $slider.trigger("destroy.owl.carousel");
-          $slider.removeClass("owl-loaded owl-hidden");
-        } catch (e) {}
-      }
+    const node = document.querySelector<HTMLElement>(".main-slider-two__carousel");
+    if (!node) return false;
+
+    const previous = heroSliderInstance.current;
+    const nodeChanged = !!previous && previous[0] !== node;
+
+    // Destroy only when React replaced the hero node or a drawer close asked
+    // for a repaint. Destroying on every effect run restarted the fade and
+    // made the hero jump on load/refresh.
+    if (previous && (force || nodeChanged)) {
+      try { previous.trigger("destroy.owl.carousel"); } catch (e) {}
+      try { previous.removeClass("owl-loaded owl-hidden"); } catch (e) {}
+      heroSliderInstance.current = null;
+    }
+
+    const $slider = $(node);
+    if (!$slider.hasClass("owl-loaded") || nodeChanged || force) {
       try {
         $slider.owlCarousel({
           loop: true,
@@ -34,17 +45,23 @@ export default function Home() {
           nav: false,
           dots: true,
           margin: 0,
+          // AutoRefresh briefly toggles `owl-hidden` during hydration and can
+          // blank the hero. This carousel is always visible by design.
+          checkVisibility: false,
         });
       } catch (err) {}
     }
+    heroSliderInstance.current = $slider;
+    heroSliderNode.current = node;
 
-    if ((window as any).soloxInitLoad) {
+    if ((window as any).soloxInitLoad && !(window as any).__serenitySoloxInit) {
       try {
         (window as any).soloxInitLoad();
+        (window as any).__serenitySoloxInit = true;
       } catch (e) {}
     }
 
-    if ((window as any).WOW) {
+    if ((window as any).WOW && !(window as any).__serenityWowInit) {
       try {
         new (window as any).WOW({
           boxClass: "wow",
@@ -52,9 +69,11 @@ export default function Home() {
           mobile: true,
           live: true,
         }).init();
+        (window as any).__serenityWowInit = true;
       } catch (e) {}
     }
-  };
+    return true;
+  }, []);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -68,15 +87,35 @@ export default function Home() {
       }
     };
     document.addEventListener("click", handleTogglerClick, true);
-
-    // Initialize once without jarring destroying/rebuilding cycles
-    const timer = setTimeout(initSlider, 100);
-
-    return () => {
-      clearTimeout(timer);
-      document.removeEventListener("click", handleTogglerClick, true);
-    };
+    return () => document.removeEventListener("click", handleTogglerClick, true);
   }, []);
+
+  // Wait until contact data has settled: the hero HTML string is re-injected
+  // when it arrives, so initializing earlier destroyed the slider mid-fade.
+  // After that, reinitialize only when React actually replaces the hero node.
+  useEffect(() => {
+    if (!ready) return;
+    let cancelled = false;
+    let attempts = 0;
+    let timer = 0;
+
+    const tryInit = () => {
+      if (cancelled) return;
+      const node = document.querySelector<HTMLElement>(".main-slider-two__carousel");
+      const alreadyRunning = !!node
+        && heroSliderNode.current === node
+        && node.classList.contains("owl-loaded");
+      if (alreadyRunning) return;
+      if (initSlider()) return;
+      if (attempts++ < 50) timer = window.setTimeout(tryInit, 100);
+    };
+
+    timer = window.setTimeout(tryInit, 0);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
+  }, [ready, contact, locationDisplay, initSlider]);
 
   // Recover the hero slider whenever the mobile drawer closes. Opening a
   // full-screen blurred backdrop over the carousel and then unmounting it can
@@ -85,18 +124,10 @@ export default function Home() {
   // repaint so the slideshow keeps animating after the sidebar closes.
   useEffect(() => {
     if (drawerWasOpen.current && !drawerOpen) {
-      requestAnimationFrame(() => initSlider());
+      requestAnimationFrame(() => initSlider(true));
     }
     drawerWasOpen.current = drawerOpen;
   }, [drawerOpen, initSlider]);
-
-  // Contact values arrive after hydration. Re-running the slider setup keeps
-  // the carousel intact if the HTML string is re-injected with the new numbers.
-  useEffect(() => {
-    if (!contact) return;
-    const timer = setTimeout(() => initSlider(), 180);
-    return () => clearTimeout(timer);
-  }, [contact]);
 
   return (
     <>
