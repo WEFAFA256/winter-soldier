@@ -7,6 +7,7 @@ import CustomCursor from "@/components/CustomCursor";
 import MobileDrawer from "@/components/MobileDrawer";
 import { useSiteContact } from "@/components/ContactProvider";
 import { Companion, DEFAULT_COMPANIONS, escortSlug } from "@/lib/escorts";
+import { usePageReveal } from "@/lib/use-page-reveal";
 
 const SCRIPT = '"Alex Brush", cursive';
 const SERIF = '"Cormorant", serif';
@@ -69,7 +70,8 @@ function SectionTitle({
   );
 }
 
-/* IntersectionObserver reveal — same timing as the VIP page (1000ms ease). */
+/* One-shot section reveal. Already-visible first-paint sections stay static;
+   offscreen sections animate once when scrolled into view and always end visible. */
 function Reveal({
   children,
   delay = 0,
@@ -81,35 +83,23 @@ function Reveal({
   offset?: number;
   style?: React.CSSProperties;
 }) {
-  const ref = React.useRef<HTMLDivElement>(null);
-  const [shown, setShown] = React.useState(true);
-
-  React.useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setShown(true);
-          observer.disconnect();
-        }
-      },
-      { threshold: 0.08, rootMargin: "0px 0px -40px 0px" }
-    );
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, []);
+  const { ref, className } = usePageReveal<HTMLDivElement>();
 
   return (
     <div
       ref={ref}
-      style={{
-        opacity: shown ? 1 : 0,
-        transform: shown ? "translate3d(0,0,0)" : `translate3d(0,${offset}px,0)`,
-        transition: `opacity 1000ms ease ${delay}ms, transform 1000ms ease ${delay}ms`,
-        willChange: "opacity, transform",
-        ...style,
-      }}
+      className={className}
+      style={
+        {
+          opacity: 1,
+          transform: "translate3d(0,0,0)",
+          "--page-motion-duration": "1000ms",
+          "--page-motion-delay": `${delay}ms`,
+          "--page-motion-offset": `${offset}px`,
+          willChange: "opacity, transform",
+          ...style,
+        } as React.CSSProperties
+      }
     >
       {children}
     </div>

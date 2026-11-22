@@ -5,6 +5,7 @@ import Link from "next/link";
 import CustomCursor from "@/components/CustomCursor";
 import MobileDrawer from "@/components/MobileDrawer";
 import { useSiteContact } from "@/components/ContactProvider";
+import { usePageReveal } from "@/lib/use-page-reveal";
 
 interface GalleryImage {
   id?: string;
@@ -146,22 +147,11 @@ function GalleryCard({
   fallbackImg: string;
   onClick: () => void;
 }) {
-  const ref = React.useRef<HTMLDivElement>(null);
-  const [visible, setVisible] = React.useState(true);
-
-  React.useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const obs = new IntersectionObserver(
-      ([entry]) => {
-        // Cards are visible immediately; the observer must never hide them.
-        if (entry.isIntersecting) setVisible(true);
-      },
-      { threshold: 0.06, rootMargin: "0px 0px -30px 0px" }
-    );
-    obs.observe(el);
-    return () => obs.disconnect();
-  }, []);
+  // Cards are rendered only after the admin /api/gallery response, so they can
+  // animate on mount; offscreen cards wait for the one-shot scroll reveal.
+  const { ref, className: revealClass } = usePageReveal<HTMLDivElement>({
+    animateOnMount: true,
+  });
 
   // Therapist availability status: controlled by admin / data (shared with the lightbox)
   const isAvailable = isImageAvailable(img, index);
@@ -171,15 +161,16 @@ function GalleryCard({
   return (
     <div
       ref={ref}
-      className="col-xl-3 col-lg-4 col-md-6 col-6"
+      className={`col-xl-3 col-lg-4 col-md-6 col-6 ${revealClass}`.trim()}
       style={{
-        opacity: visible ? 1 : 0,
-        transform: visible ? "translateY(0px) scale(1)" : "translateY(40px) scale(0.96)",
-        transition: visible
-          ? "opacity 0.6s cubic-bezier(0.16,1,0.3,1), transform 0.6s cubic-bezier(0.16,1,0.3,1)"
-          : "opacity 0.25s ease, transform 0.25s ease",
+        opacity: 1,
+        transform: "translateY(0px) scale(1)",
+        "--page-motion-duration": "600ms",
+        "--page-motion-delay": `${(index % 4) * 0.075}s`,
+        "--page-motion-offset": "40px",
+        "--page-motion-scale": "0.96",
         willChange: "opacity, transform",
-      }}
+      } as React.CSSProperties}
     >
       <div
         className="gallery-card-inner"
@@ -400,17 +391,11 @@ export default function GalleryPage() {
   const [loading, setLoading] = useState(true);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [heroVisible, setHeroVisible] = useState(true);
   const [selectedVideo, setSelectedVideo] = useState<SpaVideo | null>(null);
   const [activeVideoFilter, setActiveVideoFilter] = useState<string>("all");
   // The gallery opens on Images; the Videos tab reveals the demonstration reels.
   const [activeTab, setActiveTab] = useState<"images" | "videos">("images");
   const { phoneHref, phoneDisplay, whatsappLink } = useSiteContact();
-
-  useEffect(() => {
-    const t = setTimeout(() => setHeroVisible(true), 80);
-    return () => clearTimeout(t);
-  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -649,14 +634,14 @@ export default function GalleryPage() {
           }}
         >
           <div
+            className="page-motion-hero-media"
             style={{
               position: "absolute",
               inset: 0,
               backgroundImage: "url('https://res.cloudinary.com/njzctr4m/image/upload/v1784667206/serenity_gallery/u7wll8tto5yxjt4ptcbl.jpg')",
               backgroundSize: "cover",
               backgroundPosition: "center",
-              transform: heroVisible ? "scale(1)" : "scale(1.08)",
-              transition: "transform 1.4s cubic-bezier(0.16, 1, 0.3, 1)",
+              transform: "scale(1)",
               filter: "brightness(0.28)",
             }}
           />
@@ -668,14 +653,14 @@ export default function GalleryPage() {
             }}
           />
           <div
+            className="page-motion-hero-content"
             style={{
               position: "relative",
               zIndex: 2,
               textAlign: "center",
               padding: "0 20px",
-              opacity: heroVisible ? 1 : 0,
-              transform: heroVisible ? "translateY(0)" : "translateY(28px)",
-              transition: "opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.2s, transform 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.2s",
+              opacity: 1,
+              transform: "translateY(0)",
             }}
           >
             <span style={{ color: "#c2a74e", fontFamily: "'Great Vibes', cursive, Cormorant, serif", fontSize: "1.7rem", display: "block", marginBottom: "8px" }}>

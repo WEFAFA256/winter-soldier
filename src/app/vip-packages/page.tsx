@@ -10,6 +10,7 @@ import {
   orderServices,
   splitServiceCatalog,
 } from "@/lib/service-order";
+import { usePageReveal } from "@/lib/use-page-reveal";
 
 interface Service {
   title: string;
@@ -52,40 +53,26 @@ function ServiceCard({
   imgSrc: string;
   fallbackImg: string;
 }) {
-  const ref = React.useRef<HTMLDivElement>(null);
-  const [inView, setInView] = React.useState(true);
-
-  React.useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        // Visible from first paint; never re-hide on scroll or refresh.
-        if (entry.isIntersecting) setInView(true);
-      },
-      {
-        threshold: 0.08,
-        rootMargin: "0px 0px -20px 0px",
-      }
-    );
-
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, []);
+  // Catalogue cards appear only after the API resolves, so mount animation is
+  // safe; offscreen cards wait for the one-shot scroll reveal.
+  const { ref, className: revealClass } = usePageReveal<HTMLDivElement>({
+    animateOnMount: true,
+  });
 
   const staggerDelay = (index % 3) * 0.1 + 0.05;
 
   return (
     <div
       ref={ref}
-      className="col-lg-4 col-md-6 col-12"
+      className={`col-lg-4 col-md-6 col-12 ${revealClass}`.trim()}
       style={{
-        opacity: inView ? 1 : 0,
-        transform: inView ? "translate3d(0, 0, 0)" : "translate3d(0, 60px, 0)",
-        transition: `opacity 1000ms ease ${staggerDelay}s, transform 1000ms ease ${staggerDelay}s`,
+        opacity: 1,
+        transform: "translate3d(0, 0, 0)",
+        "--page-motion-duration": "1000ms",
+        "--page-motion-delay": `${staggerDelay}s`,
+        "--page-motion-offset": "60px",
         willChange: "transform, opacity",
-      }}
+      } as React.CSSProperties}
     >
       <div
         className="service-theme-card"
@@ -267,13 +254,6 @@ export default function VipPackagesPage() {
   const [packages, setPackages] = useState<Service[]>([]);
   const [loading, setLoading] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [heroVisible, setHeroVisible] = useState(true);
-
-  useEffect(() => {
-    const t = setTimeout(() => setHeroVisible(true), 80);
-    return () => clearTimeout(t);
-  }, []);
-
   useEffect(() => {
     const loadPackages = async () => {
       try {
@@ -413,14 +393,14 @@ export default function VipPackagesPage() {
           }}
         >
           <div
+            className="page-motion-hero-media"
             style={{
               position: "absolute",
               inset: 0,
               backgroundImage: "url('/assets/images/backgrounds/services-header-bg.jpg')",
               backgroundSize: "cover",
               backgroundPosition: "center",
-              transform: heroVisible ? "scale(1)" : "scale(1.08)",
-              transition: "transform 1.4s cubic-bezier(0.16, 1, 0.3, 1)",
+              transform: "scale(1)",
               filter: "brightness(0.35)",
             }}
           />
@@ -432,14 +412,14 @@ export default function VipPackagesPage() {
             }}
           />
           <div
+            className="page-motion-hero-content"
             style={{
               position: "relative",
               zIndex: 2,
               textAlign: "center",
               padding: "0 20px",
-              opacity: heroVisible ? 1 : 0,
-              transform: heroVisible ? "translateY(0)" : "translateY(28px)",
-              transition: "opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.2s, transform 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.2s",
+              opacity: 1,
+              transform: "translateY(0)",
             }}
           >
             <span style={{ color: "#c2a74e", fontFamily: "'Great Vibes', cursive, Cormorant, serif", fontSize: "1.5rem", display: "block", marginBottom: "10px", letterSpacing: "2px" }}>

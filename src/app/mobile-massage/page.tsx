@@ -11,6 +11,7 @@ import {
   isRealServiceTitle,
   parseServicePrice,
 } from "@/lib/service-order";
+import { usePageReveal } from "@/lib/use-page-reveal";
 
 interface MobileService {
   title: string;
@@ -113,28 +114,10 @@ function MobileServiceCard({
   service: MobileService;
   index: number;
 }) {
-  const ref = React.useRef<HTMLDivElement>(null);
-  const [inView, setInView] = React.useState(true);
+  const { ref, className: revealClass } = usePageReveal<HTMLDivElement>({
+    animateOnMount: true,
+  });
   const { whatsappLink } = useSiteContact();
-
-  React.useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        // Visible from first paint; never re-hide on scroll or refresh.
-        if (entry.isIntersecting) setInView(true);
-      },
-      {
-        threshold: 0.08,
-        rootMargin: "0px 0px -20px 0px",
-      }
-    );
-
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, []);
 
   const staggerDelay = (index % 3) * 0.08;
   const displayPrice = formatServicePrice(service.price);
@@ -143,13 +126,15 @@ function MobileServiceCard({
   return (
     <div
       ref={ref}
-      className="col-lg-4 col-md-6 col-12"
+      className={`col-lg-4 col-md-6 col-12 ${revealClass}`.trim()}
       style={{
-        opacity: inView ? 1 : 0,
-        transform: inView ? "translate3d(0, 0, 0)" : "translate3d(0, 32px, 0)",
-        transition: `opacity 0.75s cubic-bezier(0.25, 1, 0.5, 1) ${staggerDelay}s, transform 0.75s cubic-bezier(0.25, 1, 0.5, 1) ${staggerDelay}s`,
+        opacity: 1,
+        transform: "translate3d(0, 0, 0)",
+        "--page-motion-duration": "750ms",
+        "--page-motion-delay": `${staggerDelay}s`,
+        "--page-motion-offset": "32px",
         willChange: "transform, opacity",
-      }}
+      } as React.CSSProperties}
     >
       <div
         className="service-theme-card"
@@ -417,14 +402,8 @@ function MobileServiceCard({
 
 export default function MobileMassagePage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [heroVisible, setHeroVisible] = useState(true);
   const [mobileServices, setMobileServices] = useState<MobileService[]>([]);
   const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const t = setTimeout(() => setHeroVisible(true), 80);
-    return () => clearTimeout(t);
-  }, []);
 
   useEffect(() => {
     const loadMobileCards = async () => {
@@ -549,14 +528,14 @@ export default function MobileMassagePage() {
           <div style={{ position: "absolute", inset: 0, backgroundColor: "rgba(0, 0, 0, 0.75)" }} />
 
           <div
+            className="page-motion-hero-content"
             style={{
               position: "relative",
               zIndex: 2,
               maxWidth: "840px",
               margin: "0 auto",
-              opacity: heroVisible ? 1 : 0,
-              transform: heroVisible ? "translateY(0)" : "translateY(28px)",
-              transition: "opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.2s, transform 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.2s",
+              opacity: 1,
+              transform: "translateY(0)",
             }}
           >
             <span style={{ color: "#c2a74e", fontFamily: "'Great Vibes', cursive, Cormorant, serif", fontSize: "1.6rem", display: "block", marginBottom: "10px", letterSpacing: "2px" }}>

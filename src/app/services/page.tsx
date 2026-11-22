@@ -11,6 +11,7 @@ import {
   orderServices,
   splitServiceCatalog,
 } from "@/lib/service-order";
+import { usePageReveal } from "@/lib/use-page-reveal";
 
 interface Service {
   title: string;
@@ -311,28 +312,11 @@ function ServiceCard({
   imgSrc: string;
   fallbackImg: string;
 }) {
-  const ref = React.useRef<HTMLDivElement>(null);
-  const [inView, setInView] = React.useState(true);
-
-  React.useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        // Cards are visible from first paint; the observer only keeps state
-        // consistent. Never hide a card again (that caused refresh flashes).
-        if (entry.isIntersecting) setInView(true);
-      },
-      {
-        threshold: 0.08,
-        rootMargin: '0px 0px -20px 0px',
-      }
-    );
-
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, []);
+  // These cards only exist after the catalogue fetch, so they can safely
+  // animate on mount; offscreen cards wait for the one-shot scroll reveal.
+  const { ref, className: revealClass } = usePageReveal<HTMLDivElement>({
+    animateOnMount: true,
+  });
 
   // Delay calculation for column stagger: 0.08s per column
   const staggerDelay = (index % 3) * 0.08;
@@ -340,13 +324,15 @@ function ServiceCard({
   return (
     <div
       ref={ref}
-      className="col-lg-4 col-md-6 col-12"
+      className={`col-lg-4 col-md-6 col-12 ${revealClass}`.trim()}
       style={{
-        opacity: inView ? 1 : 0,
-        transform: inView ? 'translate3d(0, 0, 0)' : 'translate3d(0, 32px, 0)',
-        transition: `opacity 0.75s cubic-bezier(0.25, 1, 0.5, 1) ${staggerDelay}s, transform 0.75s cubic-bezier(0.25, 1, 0.5, 1) ${staggerDelay}s`,
+        opacity: 1,
+        transform: 'translate3d(0, 0, 0)',
+        '--page-motion-duration': '750ms',
+        '--page-motion-delay': `${staggerDelay}s`,
+        '--page-motion-offset': '32px',
         willChange: 'transform, opacity',
-      }}
+      } as React.CSSProperties}
     >
       <div
         className="service-theme-card"
@@ -550,15 +536,6 @@ export default function ServicesPage() {
   const [activeCategory, setActiveCategory] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const heroRef = useRef<HTMLDivElement>(null);
-  const [heroVisible, setHeroVisible] = useState(true);
-
-  // Hero reveal on mount (slight delay so it feels intentional not glitchy)
-  useEffect(() => {
-    const t = setTimeout(() => setHeroVisible(true), 80);
-    return () => clearTimeout(t);
-  }, []);
-
   useEffect(() => {
     const loadServices = async () => {
       try {
@@ -712,7 +689,6 @@ export default function ServicesPage() {
 
         {/* ─── LUXURY HERO BANNER ─── */}
         <div
-          ref={heroRef}
           style={{
             position: "relative",
             height: "465px",
@@ -725,14 +701,14 @@ export default function ServicesPage() {
         >
           {/* Background image */}
           <div
+            className="page-motion-hero-media"
             style={{
               position: "absolute",
               inset: 0,
               backgroundImage: "url('/assets/images/backgrounds/services-header-bg.jpg')",
               backgroundSize: "cover",
               backgroundPosition: "center",
-              transform: heroVisible ? "scale(1)" : "scale(1.08)",
-              transition: "transform 1.4s cubic-bezier(0.16, 1, 0.3, 1)",
+              transform: "scale(1)",
               filter: "brightness(0.35)",
             }}
           />
@@ -746,14 +722,14 @@ export default function ServicesPage() {
           />
           {/* Text content */}
           <div
+            className="page-motion-hero-content"
             style={{
               position: "relative",
               zIndex: 2,
               textAlign: "center",
               padding: "0 20px",
-              opacity: heroVisible ? 1 : 0,
-              transform: heroVisible ? "translateY(0)" : "translateY(28px)",
-              transition: "opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.2s, transform 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.2s",
+              opacity: 1,
+              transform: "translateY(0)",
             }}
           >
             <span style={{ color: "#c2a74e", fontFamily: "'Great Vibes', cursive, Cormorant, serif", fontSize: "1.5rem", display: "block", marginBottom: "10px", letterSpacing: "2px" }}>
