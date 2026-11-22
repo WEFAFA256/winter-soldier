@@ -129,7 +129,11 @@ function BookingFormInner() {
   const { whatsappLink } = useSiteContact();
 
   const [drawerOpen, setDrawerOpen] = useState(false);
+  // `submitted` means the payment is CONFIRMED and the QR pass may be shown.
+  // `paymentStarted` only means the prompt was sent; the form stays visible
+  // until the Worker reports a confirmed payment.
   const [submitted, setSubmitted] = useState(false);
+  const [paymentStarted, setPaymentStarted] = useState(false);
   const [bookingSummary, setBookingSummary] = useState<{
     id: string;
     name: string;
@@ -203,14 +207,14 @@ function BookingFormInner() {
   // Show which slots are already booked BEFORE the customer enters wallet
   // details. D1 remains authoritative; the server still returns 409 on a race.
   useEffect(() => {
-    if (!form.date || submitted) { setTakenSlots([]); return; }
+    if (!form.date || submitted || paymentStarted) { setTakenSlots([]); return; }
     let active = true;
     fetch(`${PAY_API}/api/availability?date=${encodeURIComponent(form.date)}`, { cache: "no-store" })
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error("unavailable"))))
       .then((d) => { if (active) setTakenSlots(Array.isArray(d.taken) ? d.taken : []); })
       .catch(() => { if (active) setTakenSlots([]); });
     return () => { active = false; };
-  }, [form.date, submitted]);
+  }, [form.date, submitted, paymentStarted]);
 
   // Sync service from URL if provided
   useEffect(() => {
@@ -352,7 +356,8 @@ function BookingFormInner() {
       setPaymentNotice(
         paid.message || "Check your phone for the payment prompt and approve it."
       );
-      setSubmitted(true);
+      // Stay on the booking form until payment is actually confirmed.
+      setPaymentStarted(true);
     } catch (err) {
       // If the booking was created but the prompt failed, release our own slot
       // so the customer's retry does not collide with their own pending row.
@@ -373,7 +378,7 @@ function BookingFormInner() {
   // check only — it never starts or re-sends a payment prompt. It stops on a
   // final state or after ~2 minutes, then waits for an explicit user action.
   useEffect(() => {
-    if (!submitted || !bookingSummary || pollStopped) return;
+    if (!paymentStarted || !bookingSummary || pollStopped || submitted) return;
     let active = true;
     let timer: ReturnType<typeof setTimeout>;
     let tries = 0;
@@ -391,6 +396,7 @@ function BookingFormInner() {
           setPaymentStatus(data.booking.status);
           if (data.booking.status === "CONFIRMED") {
             setPaymentNotice("Payment received. Your booking is confirmed.");
+            setSubmitted(true);
             setPollStopped(true);
             return;
           }
@@ -420,7 +426,7 @@ function BookingFormInner() {
       active = false;
       clearTimeout(timer);
     };
-  }, [submitted, bookingSummary?.id, pollStopped]);
+  }, [paymentStarted, bookingSummary?.id, pollStopped, submitted]);
 
   // Single, user-triggered status check. Never initiates a new deposit.
   async function checkStatusOnce() {
@@ -435,6 +441,8 @@ function BookingFormInner() {
         setPaymentStatus(data.booking.status);
         if (data.booking.status === "CONFIRMED") {
           setPaymentNotice("Payment received. Your booking is confirmed.");
+          setSubmitted(true);
+          setPollStopped(true);
         } else if (data.booking.status !== "PENDING_PAYMENT") {
           setPaymentNotice("This payment is no longer pending. Please make a new booking if you still need it.");
         } else {
@@ -514,6 +522,7 @@ function BookingFormInner() {
 
   function resetBooking() {
     setSubmitted(false);
+    setPaymentStarted(false);
     setBookingSummary(null);
     setPollStopped(false);
     setPaymentNotice("");
@@ -633,7 +642,9 @@ function BookingFormInner() {
           <p style={{ color: "#9ca3af", fontSize: "14px", maxWidth: "560px", margin: "8px auto 0", lineHeight: 1.6 }}>
             {submitted
               ? "Your reservation pass is generated below with your verification QR code."
-              : "Complete the reservation form below to receive your QR verification pass to present on arrival."}
+              : paymentStarted
+                ? "Payment prompt sent — your QR pass will appear here as soon as payment is confirmed."
+                : "Complete the reservation form below to receive your QR verification pass to present on arrival."}
           </p>
         </div>
 
@@ -859,9 +870,12 @@ function BookingFormInner() {
                           type="button"
                           onClick={() => setProvider("MTN")}
                           aria-pressed={provider === "MTN"}
+                          disabled={paymentStarted}
                           style={{
                             display: "flex", alignItems: "center", justifyContent: "center", gap: "10px",
-                            padding: "14px 10px", borderRadius: "10px", cursor: "pointer",
+                            padding: "14px 10px", borderRadius: "10px",
+                            cursor: paymentStarted ? "not-allowed" : "pointer",
+                            opacity: paymentStarted ? 0.6 : 1,
                             border: provider === "MTN" ? "2px solid #FFCC00" : "1px solid rgba(255,255,255,0.15)",
                             backgroundColor: provider === "MTN" ? "rgba(255,204,0,0.12)" : "rgba(255,255,255,0.03)",
                             boxShadow: provider === "MTN" ? "0 0 0 3px rgba(255,204,0,0.12)" : "none",
@@ -879,9 +893,12 @@ function BookingFormInner() {
                           type="button"
                           onClick={() => setProvider("AIRTEL")}
                           aria-pressed={provider === "AIRTEL"}
+                          disabled={paymentStarted}
                           style={{
                             display: "flex", alignItems: "center", justifyContent: "center", gap: "10px",
-                            padding: "14px 10px", borderRadius: "10px", cursor: "pointer",
+                            padding: "14px 10px", borderRadius: "10px",
+                            cursor: paymentStarted ? "not-allowed" : "pointer",
+                            opacity: paymentStarted ? 0.6 : 1,
                             border: provider === "AIRTEL" ? "2px solid #E4002B" : "1px solid rgba(255,255,255,0.15)",
                             backgroundColor: provider === "AIRTEL" ? "rgba(228,0,43,0.12)" : "rgba(255,255,255,0.03)",
                             boxShadow: provider === "AIRTEL" ? "0 0 0 3px rgba(228,0,43,0.12)" : "none",
@@ -906,7 +923,8 @@ function BookingFormInner() {
                       <label htmlFor="pay-phone" style={labelStyle}>2. Number to withdraw from</label>
                       <input
                         id="pay-phone"
-                        style={inputStyle}
+                        style={{ ...inputStyle, opacity: paymentStarted ? 0.6 : 1 }}
+                        disabled={paymentStarted}
                         type="tel"
                         inputMode="tel"
                         autoComplete="tel"
@@ -935,15 +953,20 @@ function BookingFormInner() {
                       <button
                         type="button"
                         onClick={handlePay}
-                        disabled={paying}
+                        disabled={paying || paymentStarted}
                         className="serenity-gold-btn"
                         style={{
                           width: "100%", padding: "15px", borderRadius: "8px", fontSize: "13px",
                           fontWeight: 800, letterSpacing: "1px", textTransform: "uppercase", border: "none",
-                          cursor: paying ? "wait" : "pointer", opacity: paying ? 0.7 : 1,
+                          cursor: paying || paymentStarted ? "wait" : "pointer",
+                          opacity: paying || paymentStarted ? 0.7 : 1,
                         }}
                       >
-                        {paying ? "Sending payment prompt…" : "Confirm & Pay"}
+                        {paying
+                          ? "Sending payment prompt…"
+                          : paymentStarted
+                            ? "Waiting for payment confirmation…"
+                            : "Confirm & Pay"}
                       </button>
                       <p style={{ fontSize: "11px", color: "#6b7280", textAlign: "center", margin: "10px 0 0" }}>
                         A prompt will appear on your phone — approve it to complete payment.
@@ -968,15 +991,15 @@ function BookingFormInner() {
                     </div>
                   )}
 
-                  {/* Declined payments (insufficient funds / limit reached) get a
-                      prominent red banner with a clear next step, on either network. */}
-                  {paymentNotice && declined && (
+                  {/* Keep the customer on this page until the Worker confirms
+                      payment. The QR pass is only rendered once submitted=true. */}
+                  {paymentStarted && !submitted && (paymentNotice || pollStopped) && (
                     <div
-                      role="alert"
+                      role={declined ? "alert" : "status"}
                       style={{
-                        backgroundColor: "rgba(239,68,68,0.12)",
-                        border: "1px solid rgba(239,68,68,0.45)",
-                        color: "#fca5a5",
+                        backgroundColor: declined ? "rgba(239,68,68,0.12)" : "rgba(194,167,78,0.10)",
+                        border: `1px solid ${declined ? "rgba(239,68,68,0.45)" : "rgba(194,167,78,0.40)"}`,
+                        color: declined ? "#fca5a5" : "#c2a74e",
                         borderRadius: "8px",
                         padding: "14px 16px",
                         fontSize: "13px",
@@ -986,18 +1009,48 @@ function BookingFormInner() {
                       }}
                     >
                       <strong style={{ display: "block", marginBottom: "4px", fontSize: "14px" }}>
-                        Payment declined — insufficient funds
+                        {declined
+                          ? "Payment declined — insufficient funds"
+                          : pollStopped && paymentStatus !== "CONFIRMED"
+                            ? "Payment not completed"
+                            : "Waiting for payment confirmation"}
                       </strong>
-                      {paymentNotice}
+                      {paymentNotice || "Check your phone for the payment prompt and approve it."}
                       <span style={{ display: "block", marginTop: "6px", opacity: 0.85 }}>
-                        Top up that wallet or choose the other network, then make a new booking.
+                        {declined
+                          ? "Top up that wallet or choose the other network, then start a new booking."
+                          : "Your QR pass will appear here only after payment is confirmed."}
                       </span>
+                      <div style={{ display: "flex", justifyContent: "center", gap: "10px", flexWrap: "wrap", marginTop: "12px" }}>
+                        {pollStopped && paymentStatus !== "CONFIRMED" && (
+                          <button
+                            type="button"
+                            onClick={checkStatusOnce}
+                            className="serenity-gold-btn"
+                            style={{ padding: "9px 14px", borderRadius: "8px", fontSize: "12px", fontWeight: 700, cursor: "pointer" }}
+                          >
+                            Check payment status once
+                          </button>
+                        )}
+                        <button
+                          type="button"
+                          onClick={resetBooking}
+                          style={{
+                            padding: "9px 14px", borderRadius: "8px", fontSize: "12px", fontWeight: 700,
+                            background: "transparent", color: "inherit",
+                            border: `1px solid ${declined ? "rgba(239,68,68,0.45)" : "rgba(194,167,78,0.45)"}`,
+                            cursor: "pointer",
+                          }}
+                        >
+                          Start a new booking
+                        </button>
+                      </div>
                     </div>
                   )}
                   <button
                     type="submit"
                     className="serenity-gold-btn"
-                    disabled={paying}
+                    disabled={paying || paymentStarted}
                     style={{
                       width: "100%",
                       padding: "16px",
@@ -1006,16 +1059,20 @@ function BookingFormInner() {
                       fontWeight: 800,
                       letterSpacing: "1.5px",
                       textTransform: "uppercase",
-                      cursor: paying ? "wait" : "pointer",
+                      cursor: paying || paymentStarted ? "wait" : "pointer",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
                       gap: "10px",
-                      opacity: paying ? 0.7 : 1,
+                      opacity: paying || paymentStarted ? 0.7 : 1,
                     }}
                   >
                     <i className={paymentOpen ? "fas fa-chevron-up" : "fas fa-mobile-alt"} style={{ fontSize: "16px" }}></i>
-                    {paymentOpen ? "Hide payment options" : "Pay with MTN / Airtel Money"}
+                    {paymentStarted
+                      ? "Waiting for payment confirmation…"
+                      : paymentOpen
+                        ? "Hide payment options"
+                        : "Pay with MTN / Airtel Money"}
                   </button>
 
                   <p style={{ fontSize: "12px", color: "#6b7280", textAlign: "center", margin: "12px 0 0" }}>
