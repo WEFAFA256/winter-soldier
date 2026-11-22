@@ -40,8 +40,13 @@ const readLocalData = () => {
 
 export async function GET() {
   try {
+    // Cloudinary's Search API omits contextual metadata unless it is explicitly
+    // requested. The admin-entered therapist Name is stored in `context.custom.alt`,
+    // so without this the read path silently falls back to "Serenity Spa Gallery"
+    // even though the name exists on the asset.
     const cloudinaryRes = await cloudinary.search
       .expression('folder:serenity_gallery')
+      .with_field('context')
       .sort_by('created_at', 'desc')
       .max_results(100)
       .execute();
@@ -57,16 +62,17 @@ export async function GET() {
       const id = resource.public_id;
       const src = resource.secure_url;
       const matched = localMap.get(id) || localMap.get(src);
+      const custom = resource.context?.custom || {};
+      // Cloudinary context is the durable source of truth. A stale local mirror
+      // must never override an admin-set Name (or availability) saved there.
       return {
         id,
         src,
-        alt: matched?.alt || resource.context?.custom?.alt || 'Serenity Spa Gallery',
+        alt: safeContextValue(custom.alt, matched?.alt || 'Serenity Spa Gallery'),
         delay: 'delay-100',
-        // Cloudinary context is the source of truth — Vercel's filesystem is
-        // read-only, so a local JSON write can never persist availability.
-        availability: resource.context?.custom?.availability === 'in-session'
+        availability: custom.availability === 'in-session'
           ? 'in-session'
-          : resource.context?.custom?.availability === 'available'
+          : custom.availability === 'available'
             ? 'available'
             : matched?.availability || 'available',
       };

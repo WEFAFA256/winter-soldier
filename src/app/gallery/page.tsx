@@ -46,6 +46,13 @@ function getCustomName(img: GalleryImage): string {
   return alt;
 }
 
+// One shared label for every gallery booking surface. The admin-set Name wins;
+// the generic wording is only for records where no real name exists.
+function getBookingLabel(img: GalleryImage): string {
+  const name = getCustomName(img);
+  return name ? `Book ${name}` : "Book Therapist";
+}
+
 const INITIAL_IMAGES: GalleryImage[] = [
   {
     "id": "serenity_gallery/u7wll8tto5yxjt4ptcbl",
@@ -707,7 +714,7 @@ function GalleryCard({
               }}
             >
               <i className="fas fa-calendar-check" style={{ fontSize: "11px" }}></i>
-              <span>{customName ? `Book ${customName}` : "Book Now"}</span>
+              <span>{getBookingLabel(img)}</span>
             </button>
           </div>
         </div>
@@ -1946,7 +1953,7 @@ export default function GalleryPage() {
                   }}
                 >
                   <i className="fas fa-calendar-check"></i>
-                  <span>{lightboxCustomName ? `Book ${lightboxCustomName}` : "Book Now"}</span>
+                  <span>{getBookingLabel(selectedImage)}</span>
                 </button>
               </div>
             </div>
