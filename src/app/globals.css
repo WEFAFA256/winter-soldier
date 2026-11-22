@@ -5,7 +5,8 @@
 
 /* ─── Ultra-Smooth Global Scrolling & Visual Rendering ─── */
 html {
-  scroll-behavior: smooth;
+  /* Auto by default: browser scroll restoration on refresh must not animate. */
+  scroll-behavior: auto;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
@@ -296,10 +297,13 @@ img {
 }
 
 /* ─── Luxury Custom Cursor (Strictly & Uniformly Small Everywhere) ─── */
+/* Keep the native cursor until the custom one has actually received a pointer
+   position. Otherwise a fresh load hides the cursor for a second or more. */
 @media (pointer: fine) {
-  *,
-  *::before,
-  *::after {
+  body.cursor-ready,
+  body.cursor-ready *,
+  body.cursor-ready *::before,
+  body.cursor-ready *::after {
     cursor: none !important;
   }
 }
@@ -367,5 +371,47 @@ img {
   z-index: 2;
   pointer-events: none;
   opacity: 0.35;
+}
+
+/* ─── Load-smoothing guards ─────────────────────────────────────────────── */
+
+/* OWL CSS hides `.owl-carousel` until its JS runs. On this asset-heavy site
+   that can leave the hero empty for seconds. Show the first slide as static
+   HTML immediately, and stop the other raw slides stacking (which caused the
+   huge load-time layout shift) until OWL takes over. */
+.main-slider-two__carousel {
+  display: block !important;
+}
+.main-slider-two__carousel:not(.owl-loaded) > .item:not(:first-child) {
+  display: none !important;
+}
+.main-slider-two__carousel:not(.owl-loaded) .main-slider-two__sub-title,
+.main-slider-two__carousel:not(.owl-loaded) .main-slider-two__title,
+.main-slider-two__carousel:not(.owl-loaded) .main-slider-two__btn {
+  opacity: 1 !important;
+  transform: none !important;
+}
+
+/* WOW.js sets inline `visibility:hidden; animation-name:none` and does not
+   always reveal its boxes after React re-renders. Never let a block stay
+   invisible because a scroll observer missed it. */
+.wow {
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* Reserve the height of one card row while a catalogue is being fetched so
+   replacing the spinner with real cards does not move the visible page. */
+.card-loading-slot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 420px;
+}
+@media (max-width: 767px) {
+  .card-loading-slot {
+    min-height: 620px;
+  }
 }
 

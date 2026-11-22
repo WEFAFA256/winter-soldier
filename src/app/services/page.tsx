@@ -312,7 +312,7 @@ function ServiceCard({
   fallbackImg: string;
 }) {
   const ref = React.useRef<HTMLDivElement>(null);
-  const [inView, setInView] = React.useState(false);
+  const [inView, setInView] = React.useState(true);
 
   React.useEffect(() => {
     const el = ref.current;
@@ -320,12 +320,9 @@ function ServiceCard({
 
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting) {
-          setInView(true);
-        } else if (entry.boundingClientRect.top > 0) {
-          // Only reset when scrolled back ABOVE viewport, preventing jarring resets
-          setInView(false);
-        }
+        // Cards are visible from first paint; the observer only keeps state
+        // consistent. Never hide a card again (that caused refresh flashes).
+        if (entry.isIntersecting) setInView(true);
       },
       {
         threshold: 0.08,
@@ -554,7 +551,7 @@ export default function ServicesPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const heroRef = useRef<HTMLDivElement>(null);
-  const [heroVisible, setHeroVisible] = useState(false);
+  const [heroVisible, setHeroVisible] = useState(true);
 
   // Hero reveal on mount (slight delay so it feels intentional not glitchy)
   useEffect(() => {
@@ -780,7 +777,7 @@ export default function ServicesPage() {
         <section style={{ padding: "60px 0 90px 0" }}>
           <div className="container">
             {loading ? (
-              <div style={{ textAlign: "center", padding: "80px 0" }}>
+              <div className="card-loading-slot" style={{ textAlign: "center", padding: "80px 0" }}>
                 <div className="spinner-border text-warning" role="status" style={{ width: "3rem", height: "3rem" }}>
                   <span className="visually-hidden">Loading therapies...</span>
                 </div>
@@ -1036,7 +1033,7 @@ export default function ServicesPage() {
         }
 
         html {
-          scroll-behavior: smooth;
+          scroll-behavior: auto;
         }
       `}</style>
   

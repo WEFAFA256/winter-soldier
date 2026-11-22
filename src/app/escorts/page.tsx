@@ -82,7 +82,7 @@ function Reveal({
   style?: React.CSSProperties;
 }) {
   const ref = React.useRef<HTMLDivElement>(null);
-  const [shown, setShown] = React.useState(false);
+  const [shown, setShown] = React.useState(true);
 
   React.useEffect(() => {
     const el = ref.current;
@@ -356,7 +356,7 @@ export default function EscortsPage() {
             </Reveal>
 
             {loading ? (
-              <div style={{ textAlign: "center", padding: "80px 0" }}>
+              <div className="card-loading-slot" style={{ textAlign: "center", padding: "80px 0" }}>
                 <div className="spinner-border text-warning" role="status" style={{ width: "3rem", height: "3rem" }}>
                   <span className="visually-hidden">Loading companions...</span>
                 </div>

@@ -46,6 +46,8 @@ export default function CustomCursor() {
 
       if (!isVisible) {
         isVisible = true;
+        // Only hide the native cursor once we know where the custom one is.
+        document.body.classList.add("cursor-ready");
         ring.style.opacity = "1";
         dot.style.opacity = "1";
         // Initialize position on first move to prevent flying in from corner
@@ -72,6 +74,7 @@ export default function CustomCursor() {
 
     const onMouseEnter = () => {
       isVisible = true;
+      document.body.classList.add("cursor-ready");
       ring.style.opacity = "1";
       dot.style.opacity = "1";
     };
@@ -91,6 +94,7 @@ export default function CustomCursor() {
       window.removeEventListener("mouseup", onMouseUp);
       document.documentElement.removeEventListener("mouseleave", onMouseLeave);
       document.documentElement.removeEventListener("mouseenter", onMouseEnter);
+      document.body.classList.remove("cursor-ready");
     };
   }, []);
 

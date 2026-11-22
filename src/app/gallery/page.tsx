@@ -468,30 +468,21 @@ function GalleryCard({
   onClick: () => void;
 }) {
   const ref = React.useRef<HTMLDivElement>(null);
-  const [visible, setVisible] = React.useState(false);
-  const timerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [visible, setVisible] = React.useState(true);
 
   React.useEffect(() => {
     const el = ref.current;
     if (!el) return;
-    const colDelay = (index % 4) * 75;
     const obs = new IntersectionObserver(
       ([entry]) => {
-        if (timerRef.current) clearTimeout(timerRef.current);
-        if (entry.isIntersecting) {
-          timerRef.current = setTimeout(() => setVisible(true), colDelay);
-        } else {
-          setVisible(false);
-        }
+        // Cards are visible immediately; the observer must never hide them.
+        if (entry.isIntersecting) setVisible(true);
       },
       { threshold: 0.06, rootMargin: "0px 0px -30px 0px" }
     );
     obs.observe(el);
-    return () => {
-      obs.disconnect();
-      if (timerRef.current) clearTimeout(timerRef.current);
-    };
-  }, [index]);
+    return () => obs.disconnect();
+  }, []);
 
   // Therapist availability status: controlled by admin / data (shared with the lightbox)
   const isAvailable = isImageAvailable(img, index);
@@ -728,7 +719,7 @@ export default function GalleryPage() {
   const [loading, setLoading] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [heroVisible, setHeroVisible] = useState(false);
+  const [heroVisible, setHeroVisible] = useState(true);
   const [selectedVideo, setSelectedVideo] = useState<SpaVideo | null>(null);
   const [activeVideoFilter, setActiveVideoFilter] = useState<string>("all");
   // The gallery opens on Images; the Videos tab reveals the demonstration reels.

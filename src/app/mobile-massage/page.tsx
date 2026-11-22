@@ -114,7 +114,7 @@ function MobileServiceCard({
   index: number;
 }) {
   const ref = React.useRef<HTMLDivElement>(null);
-  const [inView, setInView] = React.useState(false);
+  const [inView, setInView] = React.useState(true);
   const { whatsappLink } = useSiteContact();
 
   React.useEffect(() => {
@@ -123,11 +123,8 @@ function MobileServiceCard({
 
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting) {
-          setInView(true);
-        } else if (entry.boundingClientRect.top > 0) {
-          setInView(false);
-        }
+        // Visible from first paint; never re-hide on scroll or refresh.
+        if (entry.isIntersecting) setInView(true);
       },
       {
         threshold: 0.08,
@@ -420,7 +417,7 @@ function MobileServiceCard({
 
 export default function MobileMassagePage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [heroVisible, setHeroVisible] = useState(false);
+  const [heroVisible, setHeroVisible] = useState(true);
   const [mobileServices, setMobileServices] = useState<MobileService[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -583,7 +580,7 @@ export default function MobileMassagePage() {
         <section style={{ padding: "56px 0 90px 0" }}>
           <div className="container">
             {loading ? (
-              <div style={{ textAlign: "center", padding: "60px 0" }}>
+              <div className="card-loading-slot" style={{ textAlign: "center", padding: "60px 0" }}>
                 <div className="spinner-border text-warning" role="status" style={{ width: "3rem", height: "3rem" }}>
                   <span className="visually-hidden">Loading mobile therapies...</span>
                 </div>

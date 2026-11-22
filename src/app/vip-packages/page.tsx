@@ -53,7 +53,7 @@ function ServiceCard({
   fallbackImg: string;
 }) {
   const ref = React.useRef<HTMLDivElement>(null);
-  const [inView, setInView] = React.useState(false);
+  const [inView, setInView] = React.useState(true);
 
   React.useEffect(() => {
     const el = ref.current;
@@ -61,11 +61,8 @@ function ServiceCard({
 
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting) {
-          setInView(true);
-        } else if (entry.boundingClientRect.top > 0) {
-          setInView(false);
-        }
+        // Visible from first paint; never re-hide on scroll or refresh.
+        if (entry.isIntersecting) setInView(true);
       },
       {
         threshold: 0.08,
@@ -270,7 +267,7 @@ export default function VipPackagesPage() {
   const [packages, setPackages] = useState<Service[]>([]);
   const [loading, setLoading] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [heroVisible, setHeroVisible] = useState(false);
+  const [heroVisible, setHeroVisible] = useState(true);
 
   useEffect(() => {
     const t = setTimeout(() => setHeroVisible(true), 80);
@@ -467,7 +464,7 @@ export default function VipPackagesPage() {
           <div className="container">
             {/* VIP cards start immediately below the hero. */}
             {loading ? (
-              <div style={{ textAlign: "center", padding: "80px 0" }}>
+              <div className="card-loading-slot" style={{ textAlign: "center", padding: "80px 0" }}>
                 <div className="spinner-border text-warning" role="status" style={{ width: "3rem", height: "3rem" }}>
                   <span className="visually-hidden">Loading VIP packages...</span>
                 </div>
