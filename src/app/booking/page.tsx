@@ -6,6 +6,7 @@ import { useSearchParams } from "next/navigation";
 import CustomCursor from "@/components/CustomCursor";
 import MobileDrawer from "@/components/MobileDrawer";
 import { useSiteContact } from "@/components/ContactProvider";
+import { fetchSiteContent } from "@/lib/service-order";
 import QRCode from "qrcode";
 
 /* ─── Real Services Catalog ───────────────────────────────────────────── */
@@ -100,6 +101,55 @@ function detectProvider(phone: string): "MTN" | "AIRTEL" | null {
 
 const PROVIDER_LABEL = { MTN: "MTN MoMo", AIRTEL: "Airtel Money" } as const;
 
+/* ── Service-aware booking backdrop ────────────────────────────────────── */
+const BOOKING_FALLBACK_IMAGE = "/assets/spa-hero-bg-2.jpg";
+
+function serviceImageKey(title: unknown) {
+  return String(title || "")
+    .toLowerCase()
+    .replace(/&/g, " and ")
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim()
+    .replace(/\s+/g, "");
+}
+
+// The live catalogue has old naming variants for a few Worker service titles.
+// These map them onto the nearest admin-editable card image instead of falling
+// back to the same generic photo for every missing match.
+const SERVICE_IMAGE_ALIASES: Record<string, string> = {
+  womenspackages: "bodycarepackage",
+  turkishbathpackages: "bodycarepackage",
+  bodycarepackages: "bodycarepackage",
+  kamasutrasession: "6handskamasutra",
+  premiumbodycarepack: "bodycarepackage",
+  classicalbodycarepack: "bodycarepackage",
+  affluentbodycarepack: "bodycarepackage",
+  couplesduopackages: "couplesmassage",
+  "4handsfullservice": "fullservicepack",
+};
+
+function validImageUrl(value: unknown) {
+  const url = String(value || "").trim();
+  return /^(https?:\/\/|\/)/i.test(url) ? url.replace(/["'\\]/g, "") : "";
+}
+
+function buildServiceImageMap(data: any): Record<string, string> {
+  const map: Record<string, string> = {};
+  for (const group of ["services", "vipServices", "mobileMassage"]) {
+    for (const item of Array.isArray(data?.[group]) ? data[group] : []) {
+      const key = serviceImageKey(item?.title);
+      const image = validImageUrl(item?.image || item?.img);
+      if (key && image) map[key] = image;
+    }
+  }
+  return map;
+}
+
+function resolveServiceImage(title: unknown, images: Record<string, string>) {
+  const key = serviceImageKey(title);
+  return images[key] || images[SERVICE_IMAGE_ALIASES[key]] || BOOKING_FALLBACK_IMAGE;
+}
+
 const inputStyle: React.CSSProperties = {
   width: "100%",
   background: "rgba(255,255,255,0.04)",
@@ -166,6 +216,8 @@ function BookingFormInner() {
     id: string; title: string; price_ugx: number; duration_minutes: number;
   }[]>([]);
   const [servicesError, setServicesError] = useState("");
+  // Admin-edited card images from /api/content drive the booking backdrop.
+  const [serviceImages, setServiceImages] = useState<Record<string, string>>({});
   const [takenSlots, setTakenSlots] = useState<string[]>([]);
   const [paying, setPaying] = useState(false);
   const [payError, setPayError] = useState("");
@@ -216,6 +268,32 @@ function BookingFormInner() {
 
   useEffect(() => { loadServices(); }, []);
 
+  // The same admin-edited card images used on Services/VIP become this page's
+  // backdrop. Refresh on focus/visibility so an open booking tab follows an
+  // admin save without a reload.
+  useEffect(() => {
+    let active = true;
+    const loadImages = async () => {
+      try {
+        const data = await fetchSiteContent();
+        if (active && data) setServiceImages(buildServiceImageMap(data));
+      } catch {
+        // Keep the previous image map if the catalogue is temporarily offline.
+      }
+    };
+    loadImages();
+    const refresh = () => {
+      if (document.visibilityState === "visible") loadImages();
+    };
+    window.addEventListener("focus", refresh);
+    document.addEventListener("visibilitychange", refresh);
+    return () => {
+      active = false;
+      window.removeEventListener("focus", refresh);
+      document.removeEventListener("visibilitychange", refresh);
+    };
+  }, []);
+
   // Show which slots are already booked BEFORE the customer enters wallet
   // details. D1 remains authoritative; the server still returns 409 on a race.
   useEffect(() => {
@@ -242,6 +320,7 @@ function BookingFormInner() {
   const selectedService = serviceOptions.find(
     (s) => s.name.toLowerCase() === form.service.toLowerCase()
   );
+  const bookingBackgroundImage = resolveServiceImage(selectedService?.name, serviceImages);
 
   const nowEAT = kampalaNow();
   const timeOptions = TIME_SLOTS.filter((t) =>
@@ -621,13 +700,29 @@ function BookingFormInner() {
 
       {/* ── MAIN CONTENT ── */}
       <main
+        className="booking-page-main"
         style={{
           minHeight: "100vh",
           background: "linear-gradient(175deg, #0a0e12 0%, #0e1317 40%, #111820 100%)",
           paddingTop: "120px",
           paddingBottom: "80px",
+          position: "relative",
+          overflow: "hidden",
+          isolation: "isolate",
         }}
       >
+        {/* Service-aware backdrop. The key restarts the short fade on change. */}
+        <div
+          key={bookingBackgroundImage}
+          className="booking-background-image"
+          data-booking-background
+          data-service={selectedService?.name || ""}
+          style={{ backgroundImage: `url("${bookingBackgroundImage}")` }}
+          aria-hidden="true"
+        />
+        <div className="booking-background-overlay" aria-hidden="true" />
+
+        <div className="booking-page-content">
         {/* Compact Title Section */}
         <div
           style={{
@@ -1493,6 +1588,7 @@ function BookingFormInner() {
             )
           )}
         </div>
+        </div>
       </main>
 
       {/* ── FOOTER ── */}
@@ -1521,6 +1617,38 @@ function BookingFormInner() {
             transform: translateY(0) scale(1);
           }
         }
+        @keyframes bookingBgFade {
+          from { opacity: 0; transform: scale(1.02); }
+          to { opacity: 1; transform: scale(1); }
+        }
+        .booking-background-image {
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          height: 620px;
+          z-index: 0;
+          pointer-events: none;
+          background-size: cover;
+          background-position: center 32%;
+          background-repeat: no-repeat;
+          opacity: 0.82;
+          animation: bookingBgFade 0.55s ease both;
+        }
+        .booking-background-overlay {
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          height: 620px;
+          z-index: 0;
+          pointer-events: none;
+          background:
+            linear-gradient(180deg, rgba(10,14,18,0.62) 0%, rgba(10,14,18,0.86) 62%, #0e1317 100%),
+            linear-gradient(90deg, rgba(10,14,18,0.52) 0%, rgba(10,14,18,0.18) 55%, rgba(10,14,18,0.46) 100%);
+        }
+        .booking-page-content { position: relative; z-index: 1; }
+
         input::placeholder, textarea::placeholder { color: #525f70; }
         input:focus, select:focus, textarea:focus {
           border-color: rgba(194, 167, 78, 0.65) !important;
@@ -1541,6 +1669,8 @@ function BookingFormInner() {
           }
         }
         @media (max-width: 600px) {
+          .booking-background-image,
+          .booking-background-overlay { height: 560px; }
           .form-row {
             grid-template-columns: 1fr !important;
           }
