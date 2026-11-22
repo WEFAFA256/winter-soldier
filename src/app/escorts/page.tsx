@@ -171,8 +171,9 @@ export default function EscortsPage() {
         : c.availability !== "available"
   );
 
-  // Keep the hero tied to the second companion card, including admin reordering.
-  const heroImage = companions[1]?.image || DEFAULT_COMPANIONS[1]?.image;
+  // Keep the hero tied to the second admin-ordered companion. While the content
+  // store is loading there is NO hero photo at all — never the stale default.
+  const heroImage = companions[1]?.image;
 
   const navItems = [
     { label: "Home", href: "/" },
@@ -299,10 +300,13 @@ export default function EscortsPage() {
             style={{
               position: "absolute",
               inset: 0,
-              backgroundImage: `url("${heroImage}")`,
+              backgroundImage: heroImage ? `url("${heroImage}")` : "none",
+              backgroundColor: "#141a20",
               backgroundSize: "cover",
               backgroundPosition: "center",
               filter: "brightness(0.35)",
+              opacity: heroImage ? 1 : 0,
+              transition: "opacity 350ms ease",
             }}
           />
           <div
