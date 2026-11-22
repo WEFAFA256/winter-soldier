@@ -228,9 +228,11 @@ export default function EscortsPage() {
         .escort-filter-pill { transition: all 0.25s ease; }
         .escort-filter-pill:hover { border-color: rgba(194,167,78,0.8) !important; color: #f5e199 !important; }
         .escort-companion-card:focus-visible { outline: 2px solid #c2a74e; outline-offset: 3px; }
-        /* Mobile only: two companion profiles per row, side by side. */
+        /* The template's .row rule overrides Bootstrap gutter utilities; scope this grid. */
+        .escort-profile-grid { --bs-gutter-x: 8px !important; --bs-gutter-y: 8px !important; }
+        /* Mobile only: two slightly larger companion profiles per row, side by side. */
         @media (max-width: 575px) {
-          .escort-companion-photo { height: 230px !important; }
+          .escort-companion-photo { height: 270px !important; }
           .escort-companion-card h3 { font-size: 1.3rem !important; }
         }
         @media (max-width: 991px) {
@@ -366,7 +368,7 @@ export default function EscortsPage() {
                 <p style={{ color: "#9ca3af" }}>Please check back soon.</p>
               </div>
             ) : (
-            <div className="row g-4">
+            <div className="row g-2 escort-profile-grid">
               {shownCompanions.map((c, i) => {
                 const isAvailable = c.availability === "available";
                 return (
@@ -392,7 +394,7 @@ export default function EscortsPage() {
                           boxShadow: "0 10px 34px rgba(0,0,0,0.5)",
                         }}
                       >
-                        <div className="escort-companion-photo" style={{ position: "relative", height: "330px", overflow: "hidden" }}>
+                        <div className="escort-companion-photo" style={{ position: "relative", height: "360px", overflow: "hidden" }}>
                           <img
                             src={c.image}
                             alt={c.name}

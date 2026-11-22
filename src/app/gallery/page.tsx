@@ -516,7 +516,7 @@ function GalleryCard({
           }
         }}
         style={{
-          height: "300px",
+          height: "330px",
           borderRadius: "12px",
           overflow: "hidden",
           position: "relative",
@@ -903,9 +903,11 @@ export default function GalleryPage() {
           border: none !important;
         }
         .gallery-lightbox-img { object-fit: contain !important; }
-        /* Mobile only: two compact profiles per row. */
+        /* The template's .row rule overrides Bootstrap gutter utilities; scope this grid. */
+        .gallery-profile-grid { --bs-gutter-x: 8px !important; --bs-gutter-y: 8px !important; }
+        /* Mobile only: two slightly larger profiles per row. */
         @media (max-width: 575px) {
-          .gallery-card-inner { height: 210px !important; }
+          .gallery-card-inner { height: 250px !important; }
           .gallery-lightbox-nav { width: 40px !important; height: 40px !important; }
         }
       `}</style>
@@ -1118,7 +1120,7 @@ export default function GalleryPage() {
                 <p style={{ color: "#9ca3af" }}>Check back soon as we update our luxury suite gallery.</p>
               </div>
             ) : (
-              <div className="row g-4">
+              <div className="row g-2 gallery-profile-grid">
                 {images.map((img, index) => {
                   const fallbackImg = `/assets/images/instagram/instagram-2-${(index % 5) + 1}.jpg`;
                   return (
