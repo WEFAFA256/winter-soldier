@@ -1632,7 +1632,8 @@ function BookingFormInner() {
           background-size: cover;
           background-position: center 32%;
           background-repeat: no-repeat;
-          opacity: 0.82;
+          opacity: 0.96;
+          filter: brightness(1.16) saturate(1.06);
           animation: bookingBgFade 0.55s ease both;
         }
         .booking-background-overlay {
@@ -1644,8 +1645,8 @@ function BookingFormInner() {
           z-index: 0;
           pointer-events: none;
           background:
-            linear-gradient(180deg, rgba(10,14,18,0.62) 0%, rgba(10,14,18,0.86) 62%, #0e1317 100%),
-            linear-gradient(90deg, rgba(10,14,18,0.52) 0%, rgba(10,14,18,0.18) 55%, rgba(10,14,18,0.46) 100%);
+            linear-gradient(180deg, rgba(10,14,18,0.45) 0%, rgba(10,14,18,0.70) 62%, #0e1317 100%),
+            linear-gradient(90deg, rgba(10,14,18,0.35) 0%, rgba(10,14,18,0.08) 55%, rgba(10,14,18,0.30) 100%);
         }
         .booking-page-content { position: relative; z-index: 1; }
 
@@ -1669,7 +1670,11 @@ function BookingFormInner() {
           }
         }
         @media (max-width: 600px) {
-          .booking-background-image,
+          .booking-background-image {
+            height: 560px;
+            background-size: 170% auto;
+            background-position: center 24%;
+          }
           .booking-background-overlay { height: 560px; }
           .form-row {
             grid-template-columns: 1fr !important;
