@@ -157,6 +157,7 @@ function BookingFormInner() {
   });
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const paymentAlertRef = useRef<HTMLDivElement | null>(null);
 
   // Live services from the payment API keep prices/IDs in sync with what
   // PawaPay will actually charge. Falls back to the hardcoded list if the
@@ -186,6 +187,17 @@ function BookingFormInner() {
   const isDecline = (text: string) =>
     /insufficient|declin|not enough|transaction limit|reached its limit/i.test(text);
   const declined = isDecline(paymentNotice) || isDecline(payError);
+
+  // A declined payment must not look like a dead button. Bring the in-panel
+  // alert into view as soon as the Worker reports a terminal decline.
+  useEffect(() => {
+    if (!paymentOpen || !paymentAlertRef.current) return;
+    const hasAlert = Boolean(payError) ||
+      (paymentStarted && !submitted && Boolean(paymentNotice || pollStopped));
+    if (hasAlert && (declined || pollStopped)) {
+      paymentAlertRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  }, [paymentOpen, payError, paymentNotice, paymentStarted, submitted, pollStopped, declined]);
 
   const loadServices = () => {
     setServicesError("");
@@ -864,6 +876,69 @@ function BookingFormInner() {
                         )}
                       </div>
 
+                      {/* Payment errors are shown at the TOP of the open panel so a
+                          declined wallet never looks like a dead Confirm button. */}
+                      {(payError || (paymentStarted && !submitted && (paymentNotice || pollStopped))) && (
+                        <div
+                          id="payment-status-alert"
+                          ref={paymentAlertRef}
+                          role={declined ? "alert" : "status"}
+                          aria-live="assertive"
+                          style={{
+                            backgroundColor: declined ? "rgba(239,68,68,0.14)" : "rgba(194,167,78,0.10)",
+                            border: `1px solid ${declined ? "rgba(239,68,68,0.55)" : "rgba(194,167,78,0.40)"}`,
+                            borderRadius: "10px",
+                            padding: "16px",
+                            marginBottom: "18px",
+                            textAlign: "center",
+                            color: declined ? "#fca5a5" : "#c2a74e",
+                            boxShadow: declined ? "0 0 0 3px rgba(239,68,68,0.08)" : "none",
+                          }}
+                        >
+                          <strong style={{ display: "block", marginBottom: "6px", fontSize: "14px" }}>
+                            {declined
+                              ? "Insufficient balance / payment limit reached"
+                              : payError
+                                ? "Payment could not be started"
+                                : pollStopped && paymentStatus !== "CONFIRMED"
+                                  ? "Payment not completed"
+                                  : "Waiting for payment confirmation"}
+                          </strong>
+                          <span style={{ display: "block", fontSize: "13px", lineHeight: 1.6 }}>
+                            {payError || paymentNotice || "Check your phone for the payment prompt and approve it."}
+                          </span>
+                          <span style={{ display: "block", marginTop: "6px", fontSize: "12px", opacity: 0.9 }}>
+                            {declined
+                              ? "Top up that wallet or use another MTN/Airtel number, then tap Confirm & Pay again."
+                              : "Your QR pass will appear here only after payment is confirmed."}
+                          </span>
+                          {pollStopped && paymentStatus !== "CONFIRMED" && (
+                            <div style={{ display: "flex", justifyContent: "center", gap: "10px", flexWrap: "wrap", marginTop: "12px" }}>
+                              <button
+                                type="button"
+                                onClick={checkStatusOnce}
+                                className="serenity-gold-btn"
+                                style={{ padding: "9px 14px", borderRadius: "8px", fontSize: "12px", fontWeight: 700, cursor: "pointer" }}
+                              >
+                                Check payment status once
+                              </button>
+                              <button
+                                type="button"
+                                onClick={resetBooking}
+                                style={{
+                                  padding: "9px 14px", borderRadius: "8px", fontSize: "12px", fontWeight: 700,
+                                  background: "transparent", color: "inherit",
+                                  border: `1px solid ${declined ? "rgba(239,68,68,0.45)" : "rgba(194,167,78,0.45)"}`,
+                                  cursor: "pointer",
+                                }}
+                              >
+                                Start a new booking
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
                       <div role="group" aria-label="1. Choose your network" style={labelStyle}>1. Choose your network</div>
                       <div className="pay-networks" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginBottom: "20px" }}>
                         <button
@@ -974,7 +1049,7 @@ function BookingFormInner() {
                     </div>
                   )}
 
-                  {payError && (
+                  {payError && !paymentOpen && (
                     <div
                       role="alert"
                       style={{
@@ -993,7 +1068,7 @@ function BookingFormInner() {
 
                   {/* Keep the customer on this page until the Worker confirms
                       payment. The QR pass is only rendered once submitted=true. */}
-                  {paymentStarted && !submitted && (paymentNotice || pollStopped) && (
+                  {!paymentOpen && paymentStarted && !submitted && (paymentNotice || pollStopped) && (
                     <div
                       role={declined ? "alert" : "status"}
                       style={{
