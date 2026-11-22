@@ -169,6 +169,9 @@ export default function EscortsPage() {
         : c.availability !== "available"
   );
 
+  // Keep the hero tied to the second companion card, including admin reordering.
+  const heroImage = companions[1]?.image || DEFAULT_COMPANIONS[1]?.image;
+
   const navItems = [
     { label: "Home", href: "/" },
     { label: "Services", href: "/services" },
@@ -269,13 +272,52 @@ export default function EscortsPage() {
           <MobileDrawer isOpen={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} />
         </header>
 
-        {/* ─── COMPANIONS GRID + FILTER ─── */}
-        <section id="companions" style={{ padding: "150px 0 110px", background: "#0e1317" }}>
-          <div className="container">
-            <Reveal offset={50}>
-              <SectionTitle tagline="Our Companions" title="Meet the Elite" />
-            </Reveal>
+        {/* ─── COMPANION HERO BANNER ─── */}
+        <div
+          className="escort-hero"
+          style={{
+            position: "relative",
+            height: "465px",
+            paddingTop: "125px",
+            overflow: "hidden",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              backgroundImage: `url("${heroImage}")`,
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+              filter: "brightness(0.35)",
+            }}
+          />
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              background: "linear-gradient(135deg, rgba(194,167,78,0.08) 0%, rgba(14,19,23,0.75) 100%)",
+            }}
+          />
+          <div style={{ position: "relative", zIndex: 2, textAlign: "center", padding: "0 20px" }}>
+            <SectionTitle tagline="Our Companions" title="Meet the Elite" style={{ marginBottom: 0 }} />
+            <p style={{ color: "rgba(255,255,255,0.78)", fontSize: "clamp(0.85rem, 2vw, 1rem)", maxWidth: "620px", margin: "0 auto 18px auto", lineHeight: 1.6 }}>
+              Refined company for dining, events, travel, and private evenings — chosen for warmth, discretion, and effortless conversation.
+            </p>
+            <nav style={{ fontSize: "12px", color: "rgba(255,255,255,0.5)", letterSpacing: "1.5px", textTransform: "uppercase" }}>
+              <Link href="/" style={{ color: "rgba(255,255,255,0.5)", textDecoration: "none" }}>Home</Link>
+              <span style={{ margin: "0 8px", color: GOLD }}>/</span>
+              <span style={{ color: GOLD }}>Escorts</span>
+            </nav>
+          </div>
+        </div>
 
+        {/* ─── COMPANIONS GRID + FILTER ─── */}
+        <section id="companions" style={{ padding: "70px 0 110px", background: "#0e1317" }}>
+          <div className="container">
             <Reveal delay={80} offset={30}>
               <div style={{ display: "flex", justifyContent: "center", gap: "10px", marginBottom: "46px", flexWrap: "wrap" }}>
                 {([

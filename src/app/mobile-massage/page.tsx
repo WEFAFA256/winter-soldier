@@ -569,7 +569,7 @@ export default function MobileMassagePage() {
               Luxury Mobile Massage in Kampala
             </h1>
             <p style={{ color: "rgba(255,255,255,0.85)", fontSize: "clamp(0.9rem, 2vw, 1.05rem)", maxWidth: "680px", margin: "0 auto 22px auto", lineHeight: 1.6 }}>
-              Enjoy our full five-star spa experience without leaving the comfort of your hotel room, apartment, or private residence. Our certified therapists bring luxury tables, fresh linens, organic oils, and soothing ambience directly to you.
+              Choose from our signature therapies delivered at your hotel, home, or private residence with a full professional setup and complete discretion.
             </p>
             <nav style={{ fontSize: "12px", color: "rgba(255,255,255,0.5)", letterSpacing: "1.5px", textTransform: "uppercase" }}>
               <Link href="/" style={{ color: "rgba(255,255,255,0.5)", textDecoration: "none" }}>Home</Link>
@@ -579,18 +579,9 @@ export default function MobileMassagePage() {
           </div>
         </div>
 
-        {/* --- MOBILE SERVICES LIST --- */}
-        <section style={{ padding: "70px 0 90px 0" }}>
+        {/* --- MOBILE SERVICE CARDS START IMMEDIATELY BELOW HERO --- */}
+        <section style={{ padding: "56px 0 90px 0" }}>
           <div className="container">
-            <div style={{ textAlign: "center", marginBottom: "50px" }}>
-              <span style={{ color: "#c2a74e", textTransform: "uppercase", letterSpacing: "2px", fontSize: "12px", fontWeight: 700 }}>
-                Popular Out-Call Therapies
-              </span>
-              <h2 style={{ fontFamily: "Cormorant, serif", fontSize: "2.4rem", fontWeight: 700, color: "#fff", margin: "8px 0 0 0" }}>
-                Therapies Available for Out-Call
-              </h2>
-            </div>
-
             {loading ? (
               <div style={{ textAlign: "center", padding: "60px 0" }}>
                 <div className="spinner-border text-warning" role="status" style={{ width: "3rem", height: "3rem" }}>

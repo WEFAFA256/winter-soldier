@@ -1081,21 +1081,12 @@ export default function GalleryPage() {
         {/* ─── SECTION 1: SPECIALIST PROFILES & SANCTUARY GALLERY ─── */}
         <section
           style={{
-            padding: "70px 0 60px 0",
+            padding: "46px 0 60px 0",
             borderBottom: "1px solid rgba(194, 167, 78, 0.15)",
             display: activeTab === "images" ? "block" : "none",
           }}
         >
           <div className="container">
-            <div style={{ textAlign: "center", maxWidth: "760px", margin: "0 auto 36px auto" }}>
-              <span style={{ color: "#c2a74e", fontFamily: "'Great Vibes', cursive, Cormorant, serif", fontSize: "1.7rem", display: "block", marginBottom: "6px" }}>
-                Our Specialists &amp; Suites
-              </span>
-              <h2 style={{ fontFamily: "Cormorant, serif", fontSize: "clamp(2rem, 4vw, 3rem)", fontWeight: 700, color: "#ffffff", margin: "0 0 12px 0" }}>
-                Therapist Profiles &amp; Sanctuary Gallery
-              </h2>
-            </div>
-
             {loading ? (
               <div style={{ textAlign: "center", padding: "80px 0" }}>
                 <div className="spinner-border text-warning" role="status" style={{ width: "3rem", height: "3rem" }}>
@@ -1231,21 +1222,12 @@ export default function GalleryPage() {
         {/* ─── SECTION 2: THERAPIES IN MOTION (VIDEO DEMONSTRATIONS) ─── */}
         <section
           style={{
-            padding: "70px 0 90px 0",
+            padding: "46px 0 90px 0",
             backgroundColor: "#0a0e12",
             display: activeTab === "videos" ? "block" : "none",
           }}
         >
           <div className="container">
-            <div style={{ textAlign: "center", maxWidth: "780px", margin: "0 auto 36px auto" }}>
-              <span style={{ color: "#c2a74e", fontFamily: "'Great Vibes', cursive, Cormorant, serif", fontSize: "1.7rem", display: "block", marginBottom: "6px", letterSpacing: "1px" }}>
-                Therapies In Motion
-              </span>
-              <h2 style={{ fontFamily: "Cormorant, serif", fontSize: "clamp(2rem, 4vw, 3.1rem)", fontWeight: 700, color: "#ffffff", margin: "0 0 14px 0", lineHeight: 1.2 }}>
-                Watch Our Specialists At Work
-              </h2>
-            </div>
-
             {/* Video Category Filter Tabs */}
             <div style={{ display: "flex", justifyContent: "center", gap: "10px", flexWrap: "wrap", marginBottom: "40px" }}>
               {[
