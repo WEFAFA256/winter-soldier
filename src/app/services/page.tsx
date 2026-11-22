@@ -841,28 +841,22 @@ export default function ServicesPage() {
                 </p>
               </div>
               <div className="col-lg-4 text-lg-end">
-                <a
-                  href={whatsappLink("Hello The Serenity Spa, I would like to inquire about bespoke VIP packages and private suite bookings.")}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="serenity-gold-btn"
-                  style={{
-                    backgroundColor: "#c2a74e",
-                    color: "#0e1317",
-                    padding: "14px 30px",
-                    borderRadius: "4px",
-                    fontWeight: 700,
-                    fontSize: "14px",
-                    letterSpacing: "1px",
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: "8px",
-                    textDecoration: "none",
-                  }}
-                >
-                  <i className="fab fa-whatsapp" style={{ fontSize: "18px" }}></i>
-                  <span>Inquire VIP Ritual</span>
-                </a>
+                <div className="vip-cta-wrap">
+                  <Link href="/vip-packages" className="vip-explore-btn">
+                    <i className="fas fa-crown" style={{ fontSize: "17px" }}></i>
+                    <span>Explore VIP Packages</span>
+                    <i className="fas fa-arrow-right" style={{ fontSize: "15px" }}></i>
+                  </Link>
+                  <a
+                    href={whatsappLink("Hello The Serenity Spa, I would like to inquire about bespoke VIP packages and private suite bookings.")}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="vip-concierge-link"
+                  >
+                    <i className="fab fa-whatsapp" style={{ marginRight: "6px" }}></i>
+                    Or chat with our concierge
+                  </a>
+                </div>
               </div>
             </div>
           </div>
