@@ -1,10 +1,9 @@
 "use client";
 
-import React, { useState, useEffect, useMemo, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import CustomCursor from "@/components/CustomCursor";
 import MobileDrawer from "@/components/MobileDrawer";
-import { useSiteContact } from "@/components/ContactProvider";
 import {
   fetchSiteContent,
   isRealServiceTitle,
@@ -23,115 +22,6 @@ interface Service {
   imageOnly?: boolean;
 }
 
-const INITIAL_VIP_PACKAGES: Service[] = [
-  {
-    "title": "Body Care Packages",
-    "image": "/assets/service7.jpg",
-    "fullImage": "/assets/body-care-full.jpg",
-    "description": "Got the time for Pure Relaxation & Stress Off? Out for a 120mins | 180mins Session as a Package for the Spa Day. We've got you covered! - Try these Massage sessions!",
-    "delay": "delay-100",
-    "price": 400000
-  },
-  {
-    "title": "Kamasutra Session",
-    "image": "/assets/kamasutra-session.jpg",
-    "fullImage": "/assets/kamasutra-session.jpg",
-    "description": "Pure intimacy and control. A distinctive session involving deep body contact, warm oils, and inverse B2B techniques. (400K)",
-    "delay": "delay-200",
-    "needsCrop": true,
-    "price": 400000
-  },
-  {
-    "title": "Premium Body Care Pack",
-    "image": "/assets/premium-collage.jpg",
-    "fullImage": "/assets/premium-pack.jpg",
-    "description": "Aromatherapy, Body Waxing, Steam Bath, Jacuzzi, Wines & Drinks, Ped & Manicure. (400K)",
-    "delay": "delay-200",
-    "imageOnly": true,
-    "price": 400000
-  },
-  {
-    "title": "Couples | Duo Packages",
-    "image": "/assets/service8.jpg",
-    "fullImage": "/assets/couples-duo-full.jpg",
-    "description": "Got the time for Pure Relaxation & Stress Off? Out for a 90mins | 120mins Session as a Package for the Spa Day. We've got you covered! - Try these Massage sessions!",
-    "delay": "delay-200",
-    "price": 450000
-  },
-  {
-    "title": "4hands Nuru | B2b",
-    "image": "/assets/4hands-nuru-b2b.jpg",
-    "fullImage": "/assets/4hands-nuru-b2b.jpg",
-    "description": "Experience pure arousal with two therapists. Sensual slides, sticky oils, and extreme body contact at its best. (450K)",
-    "delay": "delay-300",
-    "needsCrop": true,
-    "price": 450000
-  },
-  {
-    "title": "6hands Erotic",
-    "image": "/assets/6hands-erotic.jpg",
-    "fullImage": "/assets/6hands-erotic.jpg",
-    "description": "Soothing beyond normal Erotic Sessions. Stimulate all sexual pleasures through intimate, romantic & teasing touches by three therapists. (450K)",
-    "delay": "delay-200",
-    "needsCrop": true,
-    "price": 450000
-  },
-  {
-    "title": "Classical Body Care Pack",
-    "image": "/assets/classical-collage.jpg",
-    "fullImage": "/assets/classical-pack.jpg",
-    "description": "Nuru Full Pack, Waxing & Scrubs, Turkish Hammam, Foam Massage, Steam Facials, Ped & Manicure. (500K)",
-    "delay": "delay-300",
-    "imageOnly": true,
-    "price": 500000
-  },
-  {
-    "title": "Affluent Body Care Pack",
-    "image": "/assets/affluent-collage.jpg",
-    "fullImage": "/assets/affluent-pack.jpg",
-    "description": "Tantra Full Pack, Scrubs & Waxing, Turkish Hammam, Jacuzzi & Steam, Ped & Manicure. (600K)",
-    "delay": "delay-100",
-    "imageOnly": true,
-    "price": 600000
-  },
-  {
-    "title": "4hands Full Service",
-    "image": "/assets/4hands-full-service.jpg",
-    "fullImage": "/assets/4hands-full-service.jpg",
-    "description": "Intense duo intimacy. Thighs, curves, and extreme contact with warm scented oils. Pure sensation. (650K)",
-    "delay": "delay-100",
-    "needsCrop": true,
-    "price": 650000
-  },
-  {
-    "title": "4hands Tantra | Yoni",
-    "image": "/assets/4hands-tantra-yoni.jpg",
-    "fullImage": "/assets/4hands-tantra-yoni.jpg",
-    "description": "Deep tantric soothing and arousal. Two therapists focus on intimate detail and pure sensation for ultimate release. (750K)",
-    "delay": "delay-200",
-    "needsCrop": true,
-    "price": 750000
-  },
-  {
-    "title": "6hands Full Service",
-    "image": "/assets/6hands-full-service.jpg",
-    "fullImage": "/assets/6hands-full-service.jpg",
-    "description": "Combining B2b, Erotic & Aromatherapy. Unique pleasure using thighs, breasts, lips with extra body contact from three therapists. (900K)",
-    "delay": "delay-300",
-    "needsCrop": true,
-    "price": 900000
-  },
-  {
-    "title": "6hands Kamasutra",
-    "image": "/assets/6hands-kamasutra.jpg",
-    "fullImage": "/assets/6hands-kamasutra.jpg",
-    "description": "Pure Romance, Erotic, and Tantric practices. Maximise the session with three therapists using extra full body contact. (1.2M)",
-    "delay": "delay-100",
-    "needsCrop": true,
-    "price": 1200000
-  }
-];
-
 function formatPrice(price: number | string): string {
   if (typeof price === "number") {
     return "UGX " + price.toLocaleString();
@@ -143,118 +33,12 @@ function formatPrice(price: number | string): string {
   return "UGX " + price;
 }
 
-/* Homepage section heading: exactly the .sec-title markup used on `/`
-   (decorative shape, Alex Brush tagline, uppercase Cormorant title). */
-function SectionTitle({
-  tagline,
-  title,
-  shape = "/assets/images/shapes/sec-title-s-1.png",
-  style,
-}: {
-  tagline: string;
-  title: string;
-  shape?: string;
-  style?: React.CSSProperties;
-}) {
-  return (
-    <div className="sec-title text-center" style={style}>
-      <img src={shape} alt="" aria-hidden="true" className="sec-title__img" />
-      <h6 className="sec-title__tagline" style={{ color: "#c2a74e" }}>
-        {tagline}
-      </h6>
-      <h3 className="sec-title__title" style={{ color: "#ffffff" }}>
-        {title}
-      </h3>
-    </div>
-  );
-}
-
-/* Homepage scroll transition (WOW `fadeInUp`: 1000ms ease, upward slide) driven by
-   IntersectionObserver so it also fires for cards that mount after page load. */
-function Reveal({
-  children,
-  delay = 0,
-  offset = 100,
-  style,
-}: {
-  children: React.ReactNode;
-  delay?: number;
-  offset?: number;
-  style?: React.CSSProperties;
-}) {
-  const ref = React.useRef<HTMLDivElement>(null);
-  const [shown, setShown] = React.useState(false);
-
-  React.useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setShown(true);
-          observer.disconnect();
-        }
-      },
-      { threshold: 0.08, rootMargin: "0px 0px -40px 0px" }
-    );
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, []);
-
-  return (
-    <div
-      ref={ref}
-      style={{
-        opacity: shown ? 1 : 0,
-        transform: shown ? "translate3d(0, 0, 0)" : `translate3d(0, ${offset}px, 0)`,
-        transition: `opacity 1000ms ease ${delay}ms, transform 1000ms ease ${delay}ms`,
-        willChange: "opacity, transform",
-        ...style,
-      }}
-    >
-      {children}
-    </div>
-  );
-}
-
-/* The homepage hero animation, lifted from the real `.main-slider-two__*` rules in solox.css:
-   - sub-title  : translateY(-200px) -> 0, 1000ms ease, delay 1100ms (drops in from above)
-   - title      : opacity 0 + translateY(200px) -> 0, 1200ms ease, delay 1300ms
-   - title::after is a solid curtain that sweeps out sideways in 1000ms,
-     cubic-bezier(0.858, 0.01, 0.068, 0.99)
-   - btn        : opacity 0 + translateY(80px) -> 0, 1500ms ease, delay 1800ms
-   Everything is clipped by `.main-slider-two__content { overflow: hidden }`, reproduced by
-   the `overflow: hidden` wrapper in the hero. `direction={-1}` gives the sub-title entry. */
-function HeroLine({
-  children,
-  shown,
-  delay,
-  duration,
-  offset,
-  direction = 1,
-  style,
-}: {
-  children: React.ReactNode;
-  shown: boolean;
-  delay: number;
-  duration: number;
-  offset: number;
-  direction?: 1 | -1;
-  style?: React.CSSProperties;
-}) {
-  return (
-    <div
-      style={{
-        opacity: shown ? 1 : 0,
-        transform: shown ? "translate3d(0, 0, 0)" : `translate3d(0, ${offset * direction}px, 0)`,
-        transition: `transform ${duration}ms ease ${delay}ms, opacity ${duration}ms ease ${delay}ms`,
-        willChange: "transform, opacity",
-        ...style,
-      }}
-    >
-      {children}
-    </div>
-  );
+// Package descriptions are about the experience; the price already has its own badge.
+function cleanDescription(description: string): string {
+  return String(description || "")
+    .replace(/\s*\((?:UGX\s*)?\d[\d,.]*\s*(?:K|M)?\)/gi, "")
+    .replace(/\s+/g, " ")
+    .trim() || "An exclusive luxury package designed for total relaxation.";
 }
 
 function ServiceCard({
@@ -427,7 +211,7 @@ function ServiceCard({
               minHeight: "4.2em",
             }}
           >
-            {service.description || "An exclusive luxury package designed for total relaxation."}
+            {cleanDescription(service.description)}
           </p>
 
           <div
@@ -482,10 +266,8 @@ function ServiceCard({
 }
 
 export default function VipPackagesPage() {
-  // Never render the hardcoded INITIAL_VIP_PACKAGES array: it contains old
-  // image paths and caused a brief stale-image flash before content resolved.
+  // Start empty so no stale package cards flash before the live catalogue loads.
   const [packages, setPackages] = useState<Service[]>([]);
-  const { whatsappLink } = useSiteContact();
   const [loading, setLoading] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [heroVisible, setHeroVisible] = useState(false);
@@ -550,78 +332,9 @@ export default function VipPackagesPage() {
     };
   }, []);
 
-  /* Exact `.main-slider-two__title::after` geometry from solox.css: parked at left:100%
-     with translateX(-100%) covering the title, then translated back off to the right.
-     Height 85% / top 6px keeps the bar slim like the homepage's. */
-  const curtain = (delay: number): React.CSSProperties => ({
-    position: "absolute",
-    top: 6,
-    left: "100%",
-    width: "101%",
-    height: "85%",
-    background: "#ffffff",
-    transform: heroVisible ? "translateY(1%)" : "translateX(-100%)",
-    transition: "transform 1000ms cubic-bezier(0.858, 0.01, 0.068, 0.99)",
-    transitionDelay: `${delay}ms`,
-    pointerEvents: "none",
-    zIndex: 3,
-  });
-
   return (
     <>
       <CustomCursor />
-      <style jsx global>{`
-        @keyframes vipGoldShimmer {
-          0% {
-            background-position: -200% 0;
-          }
-          100% {
-            background-position: 200% 0;
-          }
-        }
-        @keyframes vipGlowPulse {
-          0%, 100% {
-            filter: drop-shadow(0 0 14px rgba(255, 215, 0, 0.75)) drop-shadow(0 0 30px rgba(212, 175, 55, 0.55));
-          }
-          50% {
-            filter: drop-shadow(0 0 28px rgba(255, 215, 0, 1)) drop-shadow(0 0 55px rgba(218, 165, 32, 0.85)) drop-shadow(0 0 80px rgba(184, 134, 11, 0.5));
-          }
-        }
-        .vip-shimmer-text {
-          background: linear-gradient(
-            90deg,
-            #996515 0%,
-            #d4af37 15%,
-            #ffd700 28%,
-            #fff9d6 44%,
-            #ffffff 50%,
-            #fff4b8 56%,
-            #ffd700 70%,
-            #c59b27 85%,
-            #996515 100%
-          );
-          background-size: 260% 100%;
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          animation: vipGoldShimmer 2.8s linear infinite, vipGlowPulse 2.4s ease-in-out infinite;
-          display: inline-block;
-          font-weight: 900;
-          letter-spacing: 3.5px;
-          -webkit-text-stroke: 1.2px rgba(255, 235, 140, 0.85);
-          filter: drop-shadow(0 0 16px rgba(255, 215, 0, 0.8));
-        }
-        .vip-badge-shimmer {
-          display: inline-flex;
-          align-items: center;
-          gap: 10px;
-          padding: 8px 22px;
-          border-radius: 30px;
-          background: rgba(14, 19, 23, 0.88);
-          border: 1.5px solid rgba(255, 215, 0, 0.75);
-          box-shadow: 0 0 25px rgba(212, 175, 55, 0.45), inset 0 0 16px rgba(255, 215, 0, 0.2);
-          margin-bottom: 16px;
-        }
-      `}</style>
 
       <div className="page-wrapper" style={{ backgroundColor: "#0e1317", color: "#c4cfde", minHeight: "100vh" }}>
         {/* --- NATIVE SOLOX LUXURY HEADER --- */}
@@ -690,114 +403,69 @@ export default function VipPackagesPage() {
           <MobileDrawer isOpen={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} />
         </header>
 
-        {/* --- HERO BANNER --- */}
+        {/* --- LUXURY HERO BANNER --- */}
         <div
           style={{
             position: "relative",
-            minHeight: "480px",
+            height: "465px",
+            paddingTop: "125px",
+            overflow: "hidden",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            backgroundImage: "url(/assets/images/backgrounds/services-header-bg.jpg)",
-            backgroundColor: "#000000",
-            backgroundSize: "cover",
-            backgroundPosition: "center center",
-            textAlign: "center",
-            padding: "170px 20px 80px",
-            borderBottom: "1px solid rgba(194, 167, 78,0.2)",
           }}
         >
-          <div style={{ position: "absolute", inset: 0, backgroundColor: "rgba(0, 0, 0, 0.72)" }} />
-
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              backgroundImage: "url('/assets/images/backgrounds/services-header-bg.jpg')",
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+              transform: heroVisible ? "scale(1)" : "scale(1.08)",
+              transition: "transform 1.4s cubic-bezier(0.16, 1, 0.3, 1)",
+              filter: "brightness(0.35)",
+            }}
+          />
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              background: "linear-gradient(135deg, rgba(194, 167, 78,0.08) 0%, rgba(14,19,23,0.75) 100%)",
+            }}
+          />
           <div
             style={{
               position: "relative",
               zIndex: 2,
-              maxWidth: "800px",
-              margin: "0 auto",
+              textAlign: "center",
+              padding: "0 20px",
+              opacity: heroVisible ? 1 : 0,
+              transform: heroVisible ? "translateY(0)" : "translateY(28px)",
+              transition: "opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.2s, transform 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.2s",
             }}
           >
-            {/* `.main-slider-two__content` mask: every line below enters from outside this box */}
-            <div style={{ overflow: "hidden", paddingBottom: "6px" }}>
-              <HeroLine shown={heroVisible} delay={120} duration={1000} offset={120} direction={-1}>
-                <span
-                  style={{
-                    color: "#c2a74e",
-                    fontFamily: '"Alex Brush", cursive',
-                    fontSize: "clamp(2rem, 4vw, 2.5rem)",
-                    lineHeight: 1.2,
-                    display: "block",
-                    marginBottom: "2px",
-                  }}
-                >
-                  Exclusive &amp; Bespoke
-                </span>
-              </HeroLine>
-              <HeroLine shown={heroVisible} delay={260} duration={1000} offset={120} direction={-1}>
-                <div className="vip-badge-shimmer">
-                  <i className="fas fa-crown" style={{ color: "#c2a74e", fontSize: "14px" }}></i>
-                  <span className="vip-shimmer-text" style={{ fontSize: "13px", letterSpacing: "2.5px" }}>
-                    EXECUTIVE SUITE PRIVILEGE
-                  </span>
-                </div>
-              </HeroLine>
-              <div style={{ position: "relative", display: "inline-block", maxWidth: "100%" }}>
-                <HeroLine shown={heroVisible} delay={420} duration={1200} offset={200}>
-                  <h1
-                    style={{
-                      position: "relative",
-                      overflow: "hidden",
-                      fontFamily: "Cormorant, serif",
-                      fontSize: "clamp(2.2rem, 5vw, 3.8rem)",
-                      fontWeight: 700,
-                      color: "#ffffff",
-                      margin: "0 0 14px 0",
-                      lineHeight: 1.2,
-                      letterSpacing: "normal",
-                    }}
-                  >
-                    <span className="vip-shimmer-text" style={{ fontSize: "1.25em", marginRight: "6px", verticalAlign: "middle" }}>VIP</span> Luxury Packages
-                    <span aria-hidden="true" style={curtain(720)} />
-                  </h1>
-                </HeroLine>
-              </div>
-              <HeroLine shown={heroVisible} delay={1500} duration={1500} offset={80}>
-                <p
-                  style={{
-                    color: "rgba(255,255,255,0.85)",
-                    fontSize: "clamp(0.9rem, 2vw, 1.05rem)",
-                    maxWidth: "660px",
-                    margin: "0 auto 20px auto",
-                    lineHeight: 1.6,
-                  }}
-                >
-                  Curated exclusively for discerning clients seeking therapies of 400,000 UGX and above in Kampala — from synchronized 4-hand and 6-hand sessions to full-day Turkish hammam and royal body care rituals.
-                </p>
-              </HeroLine>
-              <HeroLine shown={heroVisible} delay={1750} duration={1500} offset={80}>
-                <nav
-                  style={{
-                    fontSize: "12px",
-                    color: "rgba(255,255,255,0.5)",
-                    letterSpacing: "1.5px",
-                    textTransform: "uppercase",
-                  }}
-                >
-                  <Link href="/" style={{ color: "rgba(255,255,255,0.5)", textDecoration: "none" }}>Home</Link>
-                  <span style={{ margin: "0 8px", color: "#c2a74e" }}>/</span>
-                  <span style={{ color: "#c2a74e" }}>VIP Packages</span>
-                </nav>
-              </HeroLine>
-            </div>
+            <span style={{ color: "#c2a74e", fontFamily: "'Great Vibes', cursive, Cormorant, serif", fontSize: "1.5rem", display: "block", marginBottom: "10px", letterSpacing: "2px" }}>
+              Elevate Your Ritual
+            </span>
+            <h1 style={{ fontFamily: "Cormorant, serif", fontSize: "clamp(2rem, 5vw, 3.2rem)", fontWeight: 700, color: "#ffffff", margin: "0 0 12px 0", lineHeight: 1.15 }}>
+              VIP Packages &amp; Exclusive Rituals
+            </h1>
+            <p style={{ color: "rgba(255,255,255,0.75)", fontSize: "clamp(0.85rem, 2vw, 1rem)", maxWidth: "600px", margin: "0 auto 18px auto", lineHeight: 1.6 }}>
+              Discover our most indulgent experiences — synchronized multi-hand sessions, private suite rituals, and full-day hammam journeys created for guests who want more time, privacy, and care.
+            </p>
+            <nav style={{ fontSize: "12px", color: "rgba(255,255,255,0.5)", letterSpacing: "1.5px", textTransform: "uppercase" }}>
+              <Link href="/" style={{ color: "rgba(255,255,255,0.5)", textDecoration: "none" }}>Home</Link>
+              <span style={{ margin: "0 8px", color: "#c2a74e" }}>/</span>
+              <span style={{ color: "#c2a74e" }}>VIP Packages</span>
+            </nav>
           </div>
         </div>
 
         {/* --- VIP PACKAGES GRID --- */}
         <section style={{ padding: "60px 0 90px 0" }}>
           <div className="container">
-            <Reveal offset={80}>
-              <SectionTitle tagline="Signature collection" title="Choose your VIP ritual" />
-            </Reveal>
+            {/* VIP cards start immediately below the hero. */}
             {loading ? (
               <div style={{ textAlign: "center", padding: "80px 0" }}>
                 <div className="spinner-border text-warning" role="status" style={{ width: "3rem", height: "3rem" }}>
@@ -823,65 +491,6 @@ export default function VipPackagesPage() {
                 })}
               </div>
             )}
-          </div>
-        </section>
-
-        {/* --- VIP CONCIERGE BANNER --- */}
-        <section style={{ padding: "60px 0", backgroundColor: "#12171c", borderTop: "1px solid rgba(194, 167, 78,0.2)", borderBottom: "1px solid rgba(194, 167, 78,0.2)" }}>
-          <div className="container" style={{ textAlign: "center", maxWidth: "800px" }}>
-            <Reveal offset={80}>
-              <SectionTitle tagline="Custom tailored experiences" title="Require a custom VIP reservation?" />
-            </Reveal>
-            <Reveal delay={150} offset={60}>
-              <p style={{ color: "#9ca3af", fontSize: "1rem", lineHeight: 1.6, marginBottom: "26px" }}>
-                Our dedicated executive concierge handles bespoke requests, private suite bookings, champagne setups, and confidential appointments with absolute discretion.
-              </p>
-            </Reveal>
-            <Reveal delay={250} offset={40}>
-            <div style={{ display: "flex", gap: "14px", justifyContent: "center", flexWrap: "wrap" }}>
-              <a
-                href={whatsappLink("Hello, I would like to inquire about a custom VIP package at The Serenity Spa.")}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: "8px",
-                  padding: "13px 28px",
-                  backgroundColor: "#25D366",
-                  color: "#ffffff",
-                  borderRadius: "4px",
-                  fontWeight: 700,
-                  fontSize: "13px",
-                  textDecoration: "none",
-                  letterSpacing: "0.5px",
-                }}
-              >
-                <i className="fab fa-whatsapp" style={{ fontSize: "16px" }}></i>
-                WhatsApp Concierge
-              </a>
-              <Link
-                href="/booking"
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: "8px",
-                  padding: "13px 28px",
-                  backgroundColor: "transparent",
-                  border: "2px solid #c2a74e",
-                  color: "#c2a74e",
-                  borderRadius: "4px",
-                  fontWeight: 700,
-                  fontSize: "13px",
-                  textDecoration: "none",
-                  letterSpacing: "0.5px",
-                }}
-              >
-                <i className="fas fa-calendar-alt"></i>
-                Book Appointment
-              </Link>
-            </div>
-            </Reveal>
           </div>
         </section>
 
