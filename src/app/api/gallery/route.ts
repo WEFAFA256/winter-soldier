@@ -38,7 +38,7 @@ const readLocalData = () => {
   }
 };
 
-export async function GET() {
+export async function GET(req: Request) {
   try {
     // Cloudinary's Search API omits contextual metadata unless it is explicitly
     // requested. The admin-entered therapist Name is stored in `context.custom.alt`,
@@ -50,6 +50,15 @@ export async function GET() {
       .sort_by('created_at', 'desc')
       .max_results(100)
       .execute();
+
+    if (new URL(req.url).searchParams.get('debugRaw') === '1') {
+      return NextResponse.json((cloudinaryRes.resources || []).map((r: any) => ({
+        public_id: r.public_id,
+        context: r.context,
+        tags: r.tags,
+        metadata: r.metadata,
+      })));
+    }
 
     const localImages = readLocalData();
     const localMap = new Map();
