@@ -1,6 +1,6 @@
 const DEFAULT_WORKER_URL = "https://serenity-pawapay-webhook.turyatembajohn905.workers.dev";
 
-function workerBase(): string {
+export function workerBase(): string {
   return (
     process.env.PAY_API_URL ||
     process.env.NEXT_PUBLIC_PAY_API_URL ||

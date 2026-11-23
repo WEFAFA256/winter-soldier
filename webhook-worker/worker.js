@@ -34,6 +34,7 @@ const GALLERY_KEY = "gallery/index.json";
 const TICKET_TTL_MS = 10 * 60 * 1000;
 const MAX_IMAGE_BYTES = 10 * 1024 * 1024;
 const MAX_VIDEO_BYTES = 50 * 1024 * 1024;
+const MEDIA_KEY_RE = /^media\/(image|video)\/(\d{4}\/\d{2}|migrated)\/[0-9a-f-]{32,64}\.[a-z0-9]{2,5}$/i;
 const IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/gif", "image/avif"]);
 const VIDEO_TYPES = new Set([
   "video/mp4", "video/webm", "video/quicktime", "video/x-matroska",
@@ -335,7 +336,7 @@ async function verifyUploadTicket(env, token) {
     if (!data || typeof data !== "object") return null;
     if (!Number.isFinite(data.exp) || Date.now() > Number(data.exp)) return null;
     if (!Number.isFinite(data.sz) || Number(data.sz) <= 0) return null;
-    if (!/^media\/(image|video)\/\d{4}\/\d{2}\/[0-9a-f-]{32,36}\.[a-z0-9]{2,5}$/i.test(data.k || "")) return null;
+    if (!MEDIA_KEY_RE.test(data.k || "")) return null;
     if ((data.t === "image" && !IMAGE_TYPES.has(data.ct)) ||
         (data.t === "video" && !VIDEO_TYPES.has(data.ct))) return null;
     return {
@@ -1055,7 +1056,18 @@ const handler = {
         "video/mp4": "mp4", "video/webm": "webm", "video/quicktime": "mov",
         "video/x-matroska": "mkv", "video/matroska": "mkv", "video/ogg": "ogv", "video/x-msvideo": "avi",
       }[contentType] || "bin";
-      const key = `media/${kind}/${ymd}/${(crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`).replace(/-/g, "").slice(0, 36)}.${ext}`;
+      // Server-side one-time migrations may request a deterministic key so a
+      // retry overwrites the same object instead of creating duplicates.
+      const requestedKey = String(body?.key || "");
+      let key;
+      if (requestedKey) {
+        if (!requestedKey.startsWith(`media/${kind}/`) || !MEDIA_KEY_RE.test(requestedKey)) {
+          return fail("Invalid media key", 400);
+        }
+        key = requestedKey;
+      } else {
+        key = `media/${kind}/${ymd}/${(crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`).replace(/-/g, "").slice(0, 36)}.${ext}`;
+      }
       const ticket = await createUploadTicket(env, { key, contentType, size, kind });
       return json({ ok: true, ticket, key, uploadPath: "/media/upload", maxBytes: max });
     }
