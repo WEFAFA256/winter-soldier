@@ -9,30 +9,38 @@ import { useSiteContact } from "@/components/ContactProvider";
 import { fetchSiteContent } from "@/lib/service-order";
 import QRCode from "qrcode";
 
-/* ─── Real Services Catalog ───────────────────────────────────────────── */
+/* ─── Real Services Catalog (Mirrored from active R2 catalog) ───────────── */
 const SERVICES = [
   { name: "Swedish Massage", price: 150000 },
   { name: "Body Scrubs", price: 150000 },
   { name: "Sports Massage", price: 150000 },
   { name: "Signature Massage", price: 150000 },
-  { name: "Deep Tissue Massage", price: 180000 },
+  { name: "Deeptissue Massage", price: 180000 },
   { name: "Aromatherapy", price: 200000 },
   { name: "Hotstone Massage", price: 200000 },
-  { name: "B2B Nuru Massage", price: 200000 },
+  { name: "B2b Nuru Massage", price: 200000 },
   { name: "Body Care Package", price: 200000 },
   { name: "Erotic & Body to Body", price: 250000 },
-  { name: "Women's Packages", price: 250000 },
+  { name: "Womens' Packages", price: 250000 },
   { name: "Couples Massage", price: 250000 },
-  { name: "Full Body Massage 90 Mins", price: 250000 },
-  { name: "Lomi Lomi Massage", price: 250000 },
-  { name: "Four-Hand Massage", price: 300000 },
-  { name: "Four-Hand Nuru Massage", price: 350000 },
-  { name: "Four-Hand Body to Body", price: 400000 },
-  { name: "Four-Hand Full Package", price: 450000 },
-  { name: "VIP Four-Hand Full Body", price: 450000 },
-  { name: "VIP Body to Body Package", price: 500000 },
-  { name: "VIP Full Package", price: 500000 },
-  { name: "Executive VIP Session", price: 600000 },
+  { name: "4hands Essential Oils", price: 300000 },
+  { name: "6hands Swedish", price: 300000 },
+  { name: "Full Service Pack", price: 300000 },
+  { name: "Xclusive Sessions", price: 300000 },
+  { name: "Tantra Massage", price: 350000 },
+  { name: "Turkish Bath Packages", price: 350000 },
+  { name: "Body Care Packages", price: 400000 },
+  { name: "Kamasutra Session", price: 400000 },
+  { name: "Premium Body Care Pack", price: 400000 },
+  { name: "4hands Nuru | B2b", price: 450000 },
+  { name: "6hands Erotic", price: 450000 },
+  { name: "Couples | Duo Packages", price: 450000 },
+  { name: "Classical Body Care Pack", price: 500000 },
+  { name: "Affluent Body Care Pack", price: 600000 },
+  { name: "4hands Full Service", price: 650000 },
+  { name: "4hands Tantra | Yoni", price: 750000 },
+  { name: "6hands Full Service", price: 900000 },
+  { name: "6hands Kamasutra", price: 1200000 },
 ];
 
 const TIME_SLOTS = [
@@ -101,8 +109,41 @@ function detectProvider(phone: string): "MTN" | "AIRTEL" | null {
 
 const PROVIDER_LABEL = { MTN: "MTN MoMo", AIRTEL: "Airtel Money" } as const;
 
-/* ── Service-aware booking backdrop ────────────────────────────────────── */
-const BOOKING_FALLBACK_IMAGE = "/assets/spa-hero-bg-2.jpg";
+/* ── Service-aware booking backdrop (Current R2 Service Card Images) ─────── */
+const DEFAULT_SERVICE_IMAGES: Record<string, string> = {
+  swedishmassage: "https://serenity-pawapay-webhook.turyatembajohn905.workers.dev/media/image/2026/11/27ebf3bad7a048059646f41800777eb3.jpg",
+  bodyscrubs: "https://serenity-pawapay-webhook.turyatembajohn905.workers.dev/media/image/2026/11/a4202e3dba3f45a5adc609d73d826b52.jpg",
+  sportsmassage: "https://serenity-pawapay-webhook.turyatembajohn905.workers.dev/media/image/2026/11/ef2a0f99592c468faf41f9d2bcf82724.jpg",
+  signaturemassage: "https://serenity-pawapay-webhook.turyatembajohn905.workers.dev/media/image/2026/11/855693080da1488c8c6df52d99a89899.jpg",
+  deeptissuemassage: "https://serenity-pawapay-webhook.turyatembajohn905.workers.dev/media/image/2026/11/eab8a1b1a3084ce3aab8e3cbc4af3d38.jpg",
+  aromatherapy: "https://serenity-pawapay-webhook.turyatembajohn905.workers.dev/media/image/2026/11/63c5e661ef434046858deeeca8c7b6c1.jpg",
+  hotstonemassage: "https://serenity-pawapay-webhook.turyatembajohn905.workers.dev/media/image/2026/11/ffb4f235c4ad491484fe238488450159.jpg",
+  b2bnurumassage: "https://serenity-pawapay-webhook.turyatembajohn905.workers.dev/media/image/2026/11/f7a55b43277a4ef7a41171fbec3f87c7.jpg",
+  bodycarepackage: "https://serenity-pawapay-webhook.turyatembajohn905.workers.dev/media/image/2026/11/2685b0d96a444b9983b2c80e57beb5b1.jpg",
+  eroticandbodytobody: "https://serenity-pawapay-webhook.turyatembajohn905.workers.dev/media/image/2026/11/611c06b7c82e44bba50d3c234d0d3dae.jpg",
+  womenspackages: "https://serenity-pawapay-webhook.turyatembajohn905.workers.dev/media/image/2026/11/77ca840fad26468dbfb3bcdf8cb2ed1f.jpg",
+  couplesmassage: "https://serenity-pawapay-webhook.turyatembajohn905.workers.dev/media/image/2026/11/454275185d6542b9ba21c4d05c15d3ca.jpg",
+  xclusivesessions: "https://serenity-pawapay-webhook.turyatembajohn905.workers.dev/media/image/2026/11/5970ec8c035c4cbcbb09ae059dae419b.jpg",
+  "4handsessentialoils": "https://serenity-pawapay-webhook.turyatembajohn905.workers.dev/media/image/2026/11/1ca61031c6c24b20bbc209c3803a0c92.jpg",
+  "6handsswedish": "https://serenity-pawapay-webhook.turyatembajohn905.workers.dev/media/image/2026/11/53e19ce0e3f64298a887ab591d44fdd8.jpg",
+  fullservicepack: "https://serenity-pawapay-webhook.turyatembajohn905.workers.dev/media/image/2026/11/054971eef38c4d4fbffd6902470959e4.jpg",
+  turkishbathpackages: "https://serenity-pawapay-webhook.turyatembajohn905.workers.dev/media/image/2026/11/48df454ae21443a5a0715566dc67335f.jpg",
+  tantramassage: "https://serenity-pawapay-webhook.turyatembajohn905.workers.dev/media/image/2026/11/c9a5fe71766342d8a3e35f25f5fa1aab.jpg",
+  bodycarepackages: "https://serenity-pawapay-webhook.turyatembajohn905.workers.dev/media/image/2026/11/64700756945f48d58f9c52095678a6d3.jpg",
+  kamasutrasession: "https://serenity-pawapay-webhook.turyatembajohn905.workers.dev/media/image/2026/11/a20440f0e12a44cbb448461ce498c822.jpg",
+  premiumbodycarepack: "https://serenity-pawapay-webhook.turyatembajohn905.workers.dev/media/image/2026/11/e6bcea39a9c941af9fef9928e4e4d501.jpg",
+  couplesduopackages: "https://serenity-pawapay-webhook.turyatembajohn905.workers.dev/media/image/2026/11/8af83a2289e54b40bf04a097c913b3d9.jpg",
+  "4handsnurub2b": "https://serenity-pawapay-webhook.turyatembajohn905.workers.dev/media/image/2026/11/223a117ff63247178e1c7fe7cf1cb65c.jpg",
+  "6handserotic": "https://serenity-pawapay-webhook.turyatembajohn905.workers.dev/media/image/2026/11/ab0f142da190494f8a5a8b2eb91b57c5.jpg",
+  classicalbodycarepack: "https://serenity-pawapay-webhook.turyatembajohn905.workers.dev/media/image/2026/11/1fc4ceed670f44b0aed17a32d0dd6830.jpg",
+  affluentbodycarepack: "https://serenity-pawapay-webhook.turyatembajohn905.workers.dev/media/image/2026/11/0cef2801727a47f1a23c887359c42593.jpg",
+  "4handsfullservice": "https://serenity-pawapay-webhook.turyatembajohn905.workers.dev/media/image/2026/11/63a618e3561a4d1185a999600ea7b373.jpg",
+  "4handstantrayoni": "https://serenity-pawapay-webhook.turyatembajohn905.workers.dev/media/image/2026/11/a741a9a1dcb44b47a93e23156d080106.jpg",
+  "6handsfullservice": "https://serenity-pawapay-webhook.turyatembajohn905.workers.dev/media/image/2026/11/98a02d66f2854284b2b35127b82384a1.jpg",
+  "6handskamasutra": "https://serenity-pawapay-webhook.turyatembajohn905.workers.dev/media/image/2026/11/4e454fa677c243e88fe983e4f6f256e3.jpg",
+};
+
+const BOOKING_FALLBACK_IMAGE = DEFAULT_SERVICE_IMAGES.swedishmassage;
 
 function serviceImageKey(title: unknown) {
   return String(title || "")
@@ -113,19 +154,24 @@ function serviceImageKey(title: unknown) {
     .replace(/\s+/g, "");
 }
 
-// The live catalogue has old naming variants for a few Worker service titles.
-// These map them onto the nearest admin-editable card image instead of falling
-// back to the same generic photo for every missing match.
 const SERVICE_IMAGE_ALIASES: Record<string, string> = {
-  womenspackages: "bodycarepackage",
-  turkishbathpackages: "bodycarepackage",
-  bodycarepackages: "bodycarepackage",
-  kamasutrasession: "6handskamasutra",
-  premiumbodycarepack: "bodycarepackage",
-  classicalbodycarepack: "bodycarepackage",
-  affluentbodycarepack: "bodycarepackage",
-  couplesduopackages: "couplesmassage",
-  "4handsfullservice": "fullservicepack",
+  deeptissue: "deeptissuemassage",
+  fourhandsessentialoils: "4handsessentialoils",
+  sixhandsswedish: "6handsswedish",
+  fourhandsnurub2b: "4handsnurub2b",
+  fourhandsnuru: "4handsnurub2b",
+  sixhandserotic: "6handserotic",
+  fourhandsfullservice: "4handsfullservice",
+  fourhandstantrayoni: "4handstantrayoni",
+  sixhandsfullservice: "6handsfullservice",
+  sixhandskamasutra: "6handskamasutra",
+  b2bnuru: "b2bnurumassage",
+  nurub2b: "b2bnurumassage",
+  eroticmassage: "eroticandbodytobody",
+  bodytobodymassage: "eroticandbodytobody",
+  bodyscrub: "bodyscrubs",
+  hotstone: "hotstonemassage",
+  swedish: "swedishmassage",
 };
 
 function validImageUrl(value: unknown) {
@@ -134,7 +180,7 @@ function validImageUrl(value: unknown) {
 }
 
 function buildServiceImageMap(data: any): Record<string, string> {
-  const map: Record<string, string> = {};
+  const map: Record<string, string> = { ...DEFAULT_SERVICE_IMAGES };
   for (const group of ["services", "vipServices", "mobileMassage"]) {
     for (const item of Array.isArray(data?.[group]) ? data[group] : []) {
       const key = serviceImageKey(item?.title);
@@ -145,9 +191,31 @@ function buildServiceImageMap(data: any): Record<string, string> {
   return map;
 }
 
-function resolveServiceImage(title: unknown, images: Record<string, string>) {
+function resolveServiceImage(
+  title: unknown,
+  images: Record<string, string>,
+  queryImage?: string | null
+): string {
+  if (queryImage && validImageUrl(queryImage)) {
+    return queryImage;
+  }
   const key = serviceImageKey(title);
-  return images[key] || images[SERVICE_IMAGE_ALIASES[key]] || BOOKING_FALLBACK_IMAGE;
+  if (!key) return BOOKING_FALLBACK_IMAGE;
+
+  const currentMap = { ...DEFAULT_SERVICE_IMAGES, ...images };
+
+  if (currentMap[key]) return currentMap[key];
+  if (SERVICE_IMAGE_ALIASES[key] && currentMap[SERVICE_IMAGE_ALIASES[key]]) {
+    return currentMap[SERVICE_IMAGE_ALIASES[key]];
+  }
+
+  for (const [k, url] of Object.entries(currentMap)) {
+    if (k.includes(key) || key.includes(k)) {
+      return url;
+    }
+  }
+
+  return BOOKING_FALLBACK_IMAGE;
 }
 
 const inputStyle: React.CSSProperties = {
@@ -176,8 +244,10 @@ const labelStyle: React.CSSProperties = {
 function BookingFormInner() {
   const searchParams = useSearchParams();
   const initialService = searchParams.get("service") || searchParams.get("serviceName") || "";
+  const initialImage = searchParams.get("image") || searchParams.get("img") || "";
   const { whatsappLink } = useSiteContact();
 
+  const [passedImage, setPassedImage] = useState(initialImage);
   const [drawerOpen, setDrawerOpen] = useState(false);
   // `submitted` means the payment is CONFIRMED and the QR pass may be shown.
   // `paymentStarted` only means the prompt was sent; the form stays visible
@@ -217,7 +287,8 @@ function BookingFormInner() {
   }[]>([]);
   const [servicesError, setServicesError] = useState("");
   // Admin-edited card images from /api/content drive the booking backdrop.
-  const [serviceImages, setServiceImages] = useState<Record<string, string>>({});
+  // Pre-seeded with DEFAULT_SERVICE_IMAGES so the page never flashes an old generic fallback.
+  const [serviceImages, setServiceImages] = useState<Record<string, string>>(DEFAULT_SERVICE_IMAGES);
   const [takenSlots, setTakenSlots] = useState<string[]>([]);
   const [paying, setPaying] = useState(false);
   const [payError, setPayError] = useState("");
@@ -306,12 +377,15 @@ function BookingFormInner() {
     return () => { active = false; };
   }, [form.date, submitted, paymentStarted]);
 
-  // Sync service from URL if provided
+  // Sync service and image from URL if provided
   useEffect(() => {
     if (initialService) {
       setForm((prev) => ({ ...prev, service: initialService }));
     }
-  }, [initialService]);
+    if (initialImage) {
+      setPassedImage(initialImage);
+    }
+  }, [initialService, initialImage]);
 
   const serviceOptions = apiServices.length
     ? apiServices.map((s) => ({ name: s.title, price: s.price_ugx, id: s.id }))
@@ -320,7 +394,11 @@ function BookingFormInner() {
   const selectedService = serviceOptions.find(
     (s) => s.name.toLowerCase() === form.service.toLowerCase()
   );
-  const bookingBackgroundImage = resolveServiceImage(selectedService?.name, serviceImages);
+  const bookingBackgroundImage = resolveServiceImage(
+    selectedService?.name || form.service,
+    serviceImages,
+    passedImage
+  );
 
   const nowEAT = kampalaNow();
   const timeOptions = TIME_SLOTS.filter((t) =>
@@ -332,7 +410,11 @@ function BookingFormInner() {
   function handleChange(
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ) {
-    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+    const { name, value } = e.target;
+    if (name === "service") {
+      setPassedImage("");
+    }
+    setForm((prev) => ({ ...prev, [name]: value }));
   }
 
   // First tap only reveals the payment controls on this page. No booking and

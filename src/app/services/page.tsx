@@ -219,7 +219,7 @@ function ServiceCard({
             }}
           >
             <Link
-              href={'/booking?service=' + encodeURIComponent(service.title) + '&price=' + encodeURIComponent(String(service.price))}
+              href={'/booking?service=' + encodeURIComponent(service.title) + '&price=' + encodeURIComponent(String(service.price)) + (imgSrc ? '&image=' + encodeURIComponent(imgSrc) : '')}
               style={{
                 flex: 1.3,
                 padding: '11px 14px',

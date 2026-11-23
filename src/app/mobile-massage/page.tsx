@@ -327,7 +327,7 @@ function MobileServiceCard({
             <Link
               href={`/booking?service=${encodeURIComponent(service.title)}&price=${encodeURIComponent(
                 Number.isNaN(bookingPrice) ? String(service.price) : String(bookingPrice)
-              )}`}
+              )}${imgSrc ? `&image=${encodeURIComponent(imgSrc)}` : ""}`}
               style={{
                 flex: 1.3,
                 padding: "11px 14px",
