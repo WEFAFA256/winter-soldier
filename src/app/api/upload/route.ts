@@ -1,54 +1,52 @@
 import { NextResponse } from 'next/server';
-import { v2 as cloudinary } from 'cloudinary';
 import { isAdmin } from '@/lib/admin-auth';
-import { validateImage } from '@/lib/image-validation';
+import { ALLOWED_IMAGE_TYPES, MAX_UPLOAD_BYTES } from '@/lib/image-validation';
+import { workerApi } from '@/lib/r2-media';
 
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME || process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-});
-
+/**
+ * Issue a short-lived R2 upload ticket. The browser sends the image bytes
+ * directly to the Worker (/media/upload); Vercel never handles the file body
+ * and the browser never sees ADMIN_API_TOKEN.
+ */
 export async function POST(req: Request) {
   try {
     if (!isAdmin(req)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const formData = await req.formData();
-    const file = formData.get('file') as Blob | null;
-
-    if (!file) {
-      return NextResponse.json({ error: 'No file uploaded' }, { status: 400 });
+    const ctype = (req.headers.get('content-type') || '').toLowerCase();
+    if (!ctype.includes('application/json')) {
+      return NextResponse.json({ error: 'Expected application/json' }, { status: 415 });
     }
-    if (file.size > 10 * 1024 * 1024) {
+
+    const body = await req.json().catch(() => null);
+    const contentType = String(body?.contentType || '').toLowerCase();
+    const size = Number(body?.size);
+
+    if (!ALLOWED_IMAGE_TYPES.has(contentType)) {
+      return NextResponse.json(
+        { error: 'Only JPG, PNG, WebP, GIF or AVIF images are allowed' },
+        { status: 415 }
+      );
+    }
+    if (!Number.isFinite(size) || size <= 0 || size > MAX_UPLOAD_BYTES) {
       return NextResponse.json({ error: 'Image is too large (max 10 MB)' }, { status: 413 });
     }
 
-    const arrayBuffer = await file.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
-    const invalid = validateImage({ type: file.type, size: file.size }, buffer);
-    if (invalid) {
-      return NextResponse.json({ error: invalid }, { status: 415 });
+    const { response, data } = await workerApi('/api/media/ticket', {
+      method: 'POST',
+      body: JSON.stringify({ kind: 'image', contentType, size }),
+    });
+    if (!response.ok) {
+      return NextResponse.json(
+        { error: data?.error || 'Could not create an upload ticket' },
+        { status: 502 }
+      );
     }
 
-    const uploadResult: any = await new Promise((resolve, reject) => {
-      const stream = cloudinary.uploader.upload_stream(
-        {
-          folder: 'serenity_site_assets',
-          resource_type: 'image',
-        },
-        (error, result) => {
-          if (error) reject(error);
-          else resolve(result);
-        }
-      );
-      stream.end(buffer);
-    });
-
-    return NextResponse.json({ secure_url: uploadResult.secure_url }, { status: 201 });
+    return NextResponse.json(data);
   } catch (error: any) {
-    console.error('Error in POST upload to Cloudinary:', error);
-    return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 });
+    console.error('Image ticket error:', error?.message || error);
+    return NextResponse.json({ error: 'Could not start the upload' }, { status: 500 });
   }
 }

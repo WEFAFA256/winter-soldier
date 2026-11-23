@@ -1,4 +1,4 @@
-const ALLOWED_VIDEO_TYPES = new Set([
+export const ALLOWED_VIDEO_TYPES = new Set([
   "video/mp4",
   "video/webm",
   "video/quicktime",
@@ -8,17 +8,21 @@ const ALLOWED_VIDEO_TYPES = new Set([
   "video/x-msvideo",
 ]);
 
-export const MAX_VIDEO_BYTES = 100 * 1024 * 1024;
+// Must match MAX_VIDEO_BYTES in webhook-worker/worker.js (R2 upload limit).
+export const MAX_VIDEO_BYTES = 50 * 1024 * 1024;
 
-function ascii(bytes: Buffer, offset: number, length: number): string {
-  return bytes.subarray(offset, offset + length).toString("latin1");
+function ascii(bytes: Uint8Array, offset: number, length: number): string {
+  let text = "";
+  const end = Math.min(offset + length, bytes.length);
+  for (let i = offset; i < end; i += 1) text += String.fromCharCode(bytes[i]);
+  return text;
 }
 
-function hasRecognisedSignature(buffer: Buffer): boolean {
+function hasRecognisedSignature(buffer: Uint8Array): boolean {
   if (buffer.length < 12) return false;
 
-  const ftyp = ascii(buffer, 4, 4) === "ftyp";
-  if (ftyp || ascii(buffer, 4, 4) === "moov") return true; // MP4 / MOV
+  const at4 = ascii(buffer, 4, 4);
+  if (at4 === "ftyp" || at4 === "moov") return true; // MP4 / MOV
 
   if (buffer[0] === 0x1a && buffer[1] === 0x45 && buffer[2] === 0xdf && buffer[3] === 0xa3) return true; // WebM / MKV
   if (ascii(buffer, 0, 4) === "OggS") return true;
@@ -28,16 +32,17 @@ function hasRecognisedSignature(buffer: Buffer): boolean {
 }
 
 /**
- * Validate BEFORE sending a file to Cloudinary. The browser's declared MIME
- * type is advisory, so a recognised file signature is required; an empty MIME
- * type is accepted because some phone browsers omit it for recorded video.
+ * Validate BEFORE uploading. This runs in both the browser (direct upload)
+ * and the API route, so it accepts Uint8Array — Buffer is a subclass.
+ * Some phone browsers omit the MIME type, so an empty type is allowed while a
+ * recognised file signature is always required.
  */
 export function validateVideo(
   file: { type?: string; size: number },
-  buffer: Buffer
+  buffer: Uint8Array
 ): string | null {
   if (!file.size) return "The video file is empty.";
-  if (file.size > MAX_VIDEO_BYTES) return "Video is too large (max 100 MB).";
+  if (file.size > MAX_VIDEO_BYTES) return "Video is too large (max 50 MB).";
 
   const declaredType = (file.type || "").trim().toLowerCase();
   if (declaredType && !ALLOWED_VIDEO_TYPES.has(declaredType)) {

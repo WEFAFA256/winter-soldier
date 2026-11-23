@@ -3,7 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import { v2 as cloudinary } from 'cloudinary';
 import { isAdmin } from '@/lib/admin-auth';
-import { validateImage } from '@/lib/image-validation';
+import { workerApi } from '@/lib/r2-media';
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME || process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
@@ -13,9 +13,6 @@ cloudinary.config({
 
 const dataFilePath = path.join(process.cwd(), 'public', 'gallery.json');
 
-// Cloudinary context uses "key=value|key=value". A user-supplied alt containing
-// '|' or '=' would inject extra context keys (and could fake availability), so
-// sanitise every value before building the string.
 function safeContextValue(value: unknown, fallback = 'Serenity Spa Gallery'): string {
   return String(value || '')
     .replace(/[|=]/g, ' ')
@@ -25,9 +22,6 @@ function safeContextValue(value: unknown, fallback = 'Serenity Spa Gallery'): st
     .slice(0, 200) || fallback;
 }
 
-// Cloudinary's Search API returns context as a flat object (context.alt), while
-// the Admin API wraps it (context.custom.alt). Normalise both so admin-entered
-// names and availability are read from either endpoint.
 function readContextValues(resource: any): Record<string, unknown> {
   const context = resource?.context;
   if (!context || typeof context !== 'object') return {};
@@ -38,46 +32,37 @@ function readContextValues(resource: any): Record<string, unknown> {
   return context as Record<string, unknown>;
 }
 
-const readLocalData = () => {
+const readLocalData = (): any[] => {
   try {
-    if (!fs.existsSync(dataFilePath)) {
-      return [];
-    }
-    const data = fs.readFileSync(dataFilePath, 'utf8');
-    return JSON.parse(data);
+    if (!fs.existsSync(dataFilePath)) return [];
+    const parsed = JSON.parse(fs.readFileSync(dataFilePath, 'utf8'));
+    return Array.isArray(parsed) ? parsed : [];
   } catch (error) {
     console.error('Error reading local gallery data:', error);
     return [];
   }
 };
 
-export async function GET() {
+async function readCloudinaryGallery(): Promise<any[] | null> {
   try {
-    // Cloudinary's Search API omits contextual metadata unless it is explicitly
-    // requested. The admin-entered therapist Name is stored in context.alt here,
-    // so without this the read path silently falls back to "Serenity Spa Gallery"
-    // even though the name exists on the asset.
-    const cloudinaryRes = await cloudinary.search
+    const result: any = await cloudinary.search
       .expression('folder:serenity_gallery')
       .with_field('context')
       .sort_by('created_at', 'desc')
       .max_results(100)
       .execute();
 
-    const localImages = readLocalData();
-    const localMap = new Map();
-    localImages.forEach((img: any) => {
+    const localMap = new Map<string, any>();
+    readLocalData().forEach((img: any) => {
       if (img.id) localMap.set(img.id, img);
       if (img.src) localMap.set(img.src, img);
     });
 
-    const cloudinaryImages = (cloudinaryRes.resources || []).map((resource: any) => {
-      const id = resource.public_id;
-      const src = resource.secure_url;
+    return (result.resources || []).map((resource: any) => {
+      const id = String(resource.public_id);
+      const src = String(resource.secure_url);
       const matched = localMap.get(id) || localMap.get(src);
       const custom = readContextValues(resource);
-      // Cloudinary context is the durable source of truth. A stale local mirror
-      // must never override an admin-set Name (or availability) saved there.
       return {
         id,
         src,
@@ -90,38 +75,49 @@ export async function GET() {
             : matched?.availability || 'available',
       };
     });
-
-    // Only keep genuinely local images; stale local copies of Cloudinary images
-    // would otherwise resurrect deleted photos on every read.
-    const localOnly = localImages.filter((img: any) =>
-      !String(img.id || '').startsWith('serenity_gallery/') &&
-      !String(img.src || '').includes('res.cloudinary.com')
-    );
-    const combined = [...cloudinaryImages, ...localOnly];
-
-    // Deduplicate by src / id
-    const seen = new Set();
-    const unique = combined
-      .filter((item: any) => {
-        const key = item.id || item.src;
-        if (seen.has(key)) return false;
-        seen.add(key);
-        return true;
-      })
-      .map((item: any) => ({
-        ...item,
-        availability: item.availability || 'available',
-      }));
-
-    return NextResponse.json(unique);
-  } catch (error) {
-    console.error('Error fetching from Cloudinary, falling back to local JSON:', error);
-    const local = readLocalData().map((item: any) => ({
-      ...item,
-      availability: item.availability || 'available',
-    }));
-    return NextResponse.json(local);
+  } catch (error: any) {
+    console.error('Cloudinary gallery fallback failed:', error?.message || error);
+    return null;
   }
+}
+
+async function seedR2Gallery(images: any[]): Promise<void> {
+  try {
+    const { response } = await workerApi('/api/gallery', {
+      method: 'POST',
+      body: JSON.stringify({ images }),
+    });
+    if (!response.ok) console.error('Could not seed R2 gallery:', response.status);
+  } catch (error: any) {
+    console.error('Could not seed R2 gallery:', error?.message || error);
+  }
+}
+
+export async function GET() {
+  try {
+    const { response, data } = await workerApi<{ ok?: boolean; images?: any[] }>(
+      '/api/gallery',
+      {},
+      { admin: false }
+    );
+    if (response.ok && Array.isArray(data?.images) && data.images.length) {
+      return NextResponse.json(data.images, { headers: { 'cache-control': 'no-store' } });
+    }
+  } catch (error: any) {
+    console.error('R2 gallery read failed:', error?.message || error);
+  }
+
+  // One-time migration read. Cloudinary is no longer trusted for writes.
+  const cloudImages = await readCloudinaryGallery();
+  if (cloudImages && cloudImages.length) {
+    await seedR2Gallery(cloudImages);
+    return NextResponse.json(cloudImages, { headers: { 'cache-control': 'no-store' } });
+  }
+
+  return NextResponse.json(
+    readLocalData().map((item) => ({ ...item, availability: item.availability || 'available' })),
+    { headers: { 'cache-control': 'no-store' } }
+  );
 }
 
 export async function POST(req: Request) {
@@ -130,60 +126,35 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const formData = await req.formData();
-    const file = formData.get('file') as Blob | null;
-    const alt = safeContextValue(formData.get('alt'));
-
-    if (!file) {
-      return NextResponse.json({ error: 'No file uploaded' }, { status: 400 });
-    }
-    if (file.size > 10 * 1024 * 1024) {
-      return NextResponse.json({ error: 'Image is too large (max 10 MB)' }, { status: 413 });
+    const body = await req.json().catch(() => null);
+    const image = body?.image || body;
+    if (!image || typeof image.id !== 'string' || !image.id.startsWith('serenity_gallery/') ||
+        typeof image.src !== 'string' || !image.src) {
+      return NextResponse.json({ error: 'A valid gallery image is required' }, { status: 400 });
     }
 
-    const arrayBuffer = await file.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
-    const invalid = validateImage({ type: file.type, size: file.size }, buffer);
-    if (invalid) {
-      return NextResponse.json({ error: invalid }, { status: 415 });
-    }
-
-    const uploadResult: any = await new Promise((resolve, reject) => {
-      const stream = cloudinary.uploader.upload_stream(
-        {
-          folder: 'serenity_gallery',
-          resource_type: 'image',
-          context: `alt=${alt}|availability=available`, // alt sanitised above
-        },
-        (error, result) => {
-          if (error) reject(error);
-          else resolve(result);
-        }
-      );
-      stream.end(buffer);
+    const { response, data } = await workerApi('/api/gallery', {
+      method: 'POST',
+      body: JSON.stringify({ image }),
     });
-
-    const newImage = {
-      id: uploadResult.public_id,
-      src: uploadResult.secure_url,
-      alt,
-      delay: 'delay-100',
-      availability: 'available',
-    };
+    if (!response.ok) {
+      return NextResponse.json(
+        { error: data?.error || 'Could not save the image to the media store' },
+        { status: 502 }
+      );
+    }
 
     try {
-      const local = readLocalData();
-      local.unshift(newImage);
-      fs.writeFileSync(dataFilePath, JSON.stringify(local, null, 2), 'utf8');
-    } catch (e) {}
+      const local = readLocalData().filter((item: any) => item?.id !== image.id);
+      fs.writeFileSync(dataFilePath, JSON.stringify([image, ...local], null, 2), 'utf8');
+    } catch {
+      // best-effort local mirror only
+    }
 
-    return NextResponse.json(
-      { message: 'Image uploaded successfully to Cloudinary', image: newImage },
-      { status: 201 }
-    );
+    return NextResponse.json({ message: 'Image added to R2 gallery', image: data?.image || image }, { status: 201 });
   } catch (error: any) {
-    console.error('Error in POST to Cloudinary:', error);
-    return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 });
+    console.error('Gallery add error:', error?.message || error);
+    return NextResponse.json({ error: error?.message || 'Internal Server Error' }, { status: 500 });
   }
 }
 
@@ -193,48 +164,37 @@ export async function PATCH(req: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { id, availability } = await req.json();
+    const body = await req.json().catch(() => null);
+    const { id, availability, alt } = body || {};
     if (!id || typeof id !== 'string' || !id.startsWith('serenity_gallery/') ||
         !['available', 'in-session'].includes(availability)) {
       return NextResponse.json({ error: 'A valid gallery id and availability are required' }, { status: 400 });
     }
 
-    // Cloudinary context is the durable store — Vercel's filesystem is
-    // read-only, so writing gallery.json alone never survives a redeploy.
-    let alt = 'Serenity Spa Gallery';
-    try {
-      const resource: any = await cloudinary.api.resource(id);
-      alt = safeContextValue(readContextValues(resource).alt);
-    } catch (e) {
-      console.error('Could not read Cloudinary context for', id, e);
-    }
-    // Reject before writing when Cloudinary is unreachable: the local mirror
-    // cannot persist on Vercel, so a swallowed failure would silently revert.
-    await cloudinary.api.update(id, {
-      context: `alt=${alt}|availability=${availability}`,
+    const { response, data } = await workerApi('/api/gallery', {
+      method: 'PATCH',
+      body: JSON.stringify({ id, availability, alt }),
     });
+    if (!response.ok) {
+      return NextResponse.json(
+        { error: data?.error || 'Could not update availability in the media store' },
+        { status: 502 }
+      );
+    }
 
-    // Best-effort mirror for local development.
     try {
-      const local = readLocalData();
-      let updated = false;
-      const newLocal = local.map((img: any) => {
-        if (img.id === id) {
-          updated = true;
-          return { ...img, availability };
-        }
-        return img;
-      });
-      if (!updated) newLocal.push({ id, availability });
-      fs.writeFileSync(dataFilePath, JSON.stringify(newLocal, null, 2), 'utf8');
-    } catch (e) {
-      console.error('Error writing gallery.json (non-fatal):', e);
+      const local = readLocalData().map((img: any) =>
+        img.id === id ? { ...img, availability } : img
+      );
+      fs.writeFileSync(dataFilePath, JSON.stringify(local, null, 2), 'utf8');
+    } catch {
+      // best-effort
     }
 
     return NextResponse.json({ message: 'Availability updated', id, availability });
   } catch (error: any) {
-    console.error('Error in PATCH:', error);
-    return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 });
+    console.error('Gallery PATCH error:', error?.message || error);
+    return NextResponse.json({ error: error?.message || 'Internal Server Error' }, { status: 500 });
   }
 }
 
@@ -244,41 +204,34 @@ export async function DELETE(req: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { searchParams } = new URL(req.url);
-    const id = searchParams.get('id');
-
+    const id = new URL(req.url).searchParams.get('id');
     if (!id || !id.startsWith('serenity_gallery/')) {
       return NextResponse.json({ error: 'A valid gallery image ID is required' }, { status: 400 });
     }
 
-    try {
-      const result: any = await cloudinary.uploader.destroy(id);
-      // Only 'ok' and 'not found' mean the image is really gone. Any other
-      // result must not be reported as success (the admin would think the
-      // deletion stuck when it did not).
-      if (result?.result !== 'ok' && result?.result !== 'not found') {
-        return NextResponse.json(
-          { error: 'Cloudinary could not delete the image', result: result?.result || 'unknown' },
-          { status: 502 }
-        );
-      }
-    } catch (cErr) {
-      console.error('Cloudinary destroy error:', cErr);
+    const { response, data } = await workerApi(`/api/gallery?id=${encodeURIComponent(id)}`, {
+      method: 'DELETE',
+    });
+    if (!response.ok) {
       return NextResponse.json(
-        { error: 'Could not delete the image from the durable store. Please retry.' },
+        { error: data?.error || 'Could not delete the image from the media store' },
         { status: 502 }
       );
     }
 
     try {
-      let local = readLocalData();
-      local = local.filter((img: any) => img.id !== id);
-      fs.writeFileSync(dataFilePath, JSON.stringify(local, null, 2), 'utf8');
-    } catch (e) {}
+      fs.writeFileSync(
+        dataFilePath,
+        JSON.stringify(readLocalData().filter((img: any) => img.id !== id), null, 2),
+        'utf8'
+      );
+    } catch {
+      // best-effort
+    }
 
-    return NextResponse.json({ message: 'Image removed successfully' }, { status: 200 });
-  } catch (error) {
-    console.error('Error in DELETE:', error);
+    return NextResponse.json({ message: 'Image removed successfully' });
+  } catch (error: any) {
+    console.error('Gallery DELETE error:', error?.message || error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }

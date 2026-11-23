@@ -15,6 +15,10 @@ binding = "SERENITY_DB"
 database_name = "serenity-spa"
 database_id = "e347be07-91a9-486c-b03a-415c42b906c3"
 
+[[r2_buckets]]
+bucket_name = "serenity-media"
+binding = "SERENITY_MEDIA"
+
 [vars]
 PAWAPAY_API_BASE_URL = "https://api.pawapay.io"
 PAWAPAY_CURRENCY = "UGX"

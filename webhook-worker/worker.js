@@ -27,6 +27,19 @@ const CALLBACK_LOOKUP_TTL_MS = 30 * 1000;
 const HOLD_TTL_MS = 20 * 60 * 1000;
 const PAY_CLAIM_MS = 2 * 60 * 1000;
 
+// R2 is the durable media + content store. Cloudinary is no longer trusted for
+// uploads: its policy rejected the site's adult-media library.
+const CONTENT_KEY = "content/site-content.json";
+const GALLERY_KEY = "gallery/index.json";
+const TICKET_TTL_MS = 10 * 60 * 1000;
+const MAX_IMAGE_BYTES = 10 * 1024 * 1024;
+const MAX_VIDEO_BYTES = 50 * 1024 * 1024;
+const IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/gif", "image/avif"]);
+const VIDEO_TYPES = new Set([
+  "video/mp4", "video/webm", "video/quicktime", "video/x-matroska",
+  "video/matroska", "video/ogg", "video/x-msvideo",
+]);
+
 // Wildcard CORS allowed any site to drive the booking/payment API from a
 // visitor's browser. Only the real site origins are allowed now.
 const ALLOWED_ORIGINS = new Set([
@@ -36,8 +49,9 @@ const ALLOWED_ORIGINS = new Set([
 ]);
 
 const CORS = {
-  "access-control-allow-methods": "GET, POST, OPTIONS",
-  "access-control-allow-headers": "content-type, authorization",
+  "access-control-allow-methods": "GET, POST, PATCH, DELETE, OPTIONS",
+  "access-control-allow-headers": "content-type, authorization, x-upload-ticket",
+  "access-control-expose-headers": "location",
   "access-control-max-age": "600",
 };
 
@@ -270,6 +284,117 @@ function rejectPublicMutation(request, env) {
 function isAdmin(request, env) {
   const header = request.headers.get("authorization") || "";
   return Boolean(env.ADMIN_API_TOKEN) && constantTimeEqual(header, `Bearer ${env.ADMIN_API_TOKEN}`);
+}
+
+// Browser uploads use a short-lived HMAC ticket. The browser NEVER sees the
+// ADMIN_API_TOKEN: only the signed, single-purpose ticket is sent to /media/upload.
+function base64urlEncode(input) {
+  const bytes = typeof input === "string" ? new TextEncoder().encode(input) : input;
+  let binary = "";
+  for (const byte of bytes) binary += String.fromCharCode(byte);
+  return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+
+function base64urlDecode(text) {
+  const padded = String(text).replace(/-/g, "+").replace(/_/g, "/") + "===".slice((String(text).length + 3) % 4);
+  return Uint8Array.from(atob(padded), (char) => char.charCodeAt(0));
+}
+
+async function mediaSignature(env, payload) {
+  const key = await crypto.subtle.importKey(
+    "raw",
+    new TextEncoder().encode(String(env.ADMIN_API_TOKEN || "")),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"]
+  );
+  const sig = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(payload));
+  return base64urlEncode(new Uint8Array(sig));
+}
+
+async function createUploadTicket(env, details) {
+  const payload = base64urlEncode(JSON.stringify({
+    k: details.key,
+    ct: details.contentType,
+    sz: details.size,
+    exp: Date.now() + TICKET_TTL_MS,
+    n: crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`,
+    t: details.kind,
+  }));
+  const signature = await mediaSignature(env, payload);
+  return `${payload}.${signature}`;
+}
+
+async function verifyUploadTicket(env, token) {
+  const parts = String(token || "").split(".");
+  if (parts.length !== 2 || !parts[0] || !parts[1]) return null;
+  const expected = await mediaSignature(env, parts[0]);
+  if (!constantTimeEqual(parts[1], expected)) return null;
+  try {
+    const data = JSON.parse(new TextDecoder().decode(base64urlDecode(parts[0])));
+    if (!data || typeof data !== "object") return null;
+    if (!Number.isFinite(data.exp) || Date.now() > Number(data.exp)) return null;
+    if (!Number.isFinite(data.sz) || Number(data.sz) <= 0) return null;
+    if (!/^media\/(image|video)\/\d{4}\/\d{2}\/[0-9a-f-]{32,36}\.[a-z0-9]{2,5}$/i.test(data.k || "")) return null;
+    if ((data.t === "image" && !IMAGE_TYPES.has(data.ct)) ||
+        (data.t === "video" && !VIDEO_TYPES.has(data.ct))) return null;
+    return {
+      key: data.k,
+      contentType: data.ct,
+      size: Number(data.sz),
+      kind: data.t,
+    };
+  } catch {
+    return null;
+  }
+}
+
+function mediaMagicOk(kind, contentType, bytes) {
+  const starts = (offset, value) => {
+    const list = Array.from(value);
+    return list.every((byte, i) => bytes[offset + i] === byte);
+  };
+  if (kind === "image") {
+    if (contentType === "image/jpeg") return bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff;
+    if (contentType === "image/png") return starts(0, [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
+    if (contentType === "image/gif") return starts(0, [0x47, 0x49, 0x46, 0x38]);
+    if (contentType === "image/webp") return starts(0, [0x52, 0x49, 0x46, 0x46]) && starts(8, [0x57, 0x45, 0x42, 0x50]);
+    if (contentType === "image/avif") return starts(4, [0x66, 0x74, 0x79, 0x70]) && starts(8, [0x61, 0x76, 0x69, 0x66]);
+    return false;
+  }
+  if (contentType === "video/mp4" || contentType === "video/quicktime") {
+    return starts(4, [0x66, 0x74, 0x79, 0x70]) || starts(4, [0x6d, 0x6f, 0x6f, 0x76]);
+  }
+  if (contentType === "video/webm" || contentType === "video/x-matroska" || contentType === "video/matroska") {
+    return starts(0, [0x1a, 0x45, 0xdf, 0xa3]);
+  }
+  if (contentType === "video/ogg") return starts(0, [0x4f, 0x67, 0x67, 0x53]);
+  if (contentType === "video/x-msvideo") return starts(0, [0x52, 0x49, 0x46, 0x46]) && starts(8, [0x41, 0x56, 0x49, 0x20]);
+  return false;
+}
+
+async function readR2Json(env, key) {
+  try {
+    const object = await env.SERENITY_MEDIA.get(key);
+    if (!object) return null;
+    return await object.json();
+  } catch (error) {
+    console.error("R2 read failed", key, error);
+    return null;
+  }
+}
+
+async function writeR2Json(env, key, value) {
+  await env.SERENITY_MEDIA.put(key, JSON.stringify(value, null, 2), {
+    httpMetadata: { contentType: "application/json; charset=utf-8" },
+    customMetadata: { updatedAt: new Date().toISOString() },
+  });
+}
+
+function validGalleryImage(item) {
+  return item && typeof item === "object" &&
+    typeof item.id === "string" && item.id.startsWith("serenity_gallery/") &&
+    typeof item.src === "string" && item.src.length > 0;
 }
 
 async function pawapay(env, path, options = {}) {
@@ -902,8 +1027,209 @@ const handler = {
         service: "serenity-pawapay-webhook",
         time: new Date().toISOString(),
         db,
+        media: env.SERENITY_MEDIA ? "ready" : "unavailable",
         forwarding: env.FORWARD_TO ? "enabled" : "disabled",
       });
+    }
+
+    // ---------- R2-backed content + media ----------
+    if (method === "POST" && path === "/api/media/ticket") {
+      if (!isAdmin(request, env)) return fail("Unauthorized", 401);
+      let body;
+      try { body = await request.json(); }
+      catch { return fail("Expected application/json", 400); }
+      const kind = String(body?.kind || "");
+      const contentType = String(body?.contentType || "");
+      const size = Number(body?.size);
+      if (!["image", "video"].includes(kind)) return fail("Invalid media kind", 400);
+      const allowed = kind === "image" ? IMAGE_TYPES : VIDEO_TYPES;
+      if (!allowed.has(contentType)) return fail("Unsupported media type", 415);
+      const max = kind === "image" ? MAX_IMAGE_BYTES : MAX_VIDEO_BYTES;
+      if (!Number.isFinite(size) || size <= 0 || size > max) {
+        return fail(`File must be between 1 byte and ${max} bytes`, 413);
+      }
+      const now = new Date();
+      const ymd = `${now.getUTCFullYear()}/${String(now.getUTCMonth() + 1).padStart(2, "0")}`;
+      const ext = {
+        "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp", "image/gif": "gif", "image/avif": "avif",
+        "video/mp4": "mp4", "video/webm": "webm", "video/quicktime": "mov",
+        "video/x-matroska": "mkv", "video/matroska": "mkv", "video/ogg": "ogv", "video/x-msvideo": "avi",
+      }[contentType] || "bin";
+      const key = `media/${kind}/${ymd}/${(crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`).replace(/-/g, "").slice(0, 36)}.${ext}`;
+      const ticket = await createUploadTicket(env, { key, contentType, size, kind });
+      return json({ ok: true, ticket, key, uploadPath: "/media/upload", maxBytes: max });
+    }
+
+    if (method === "POST" && path === "/media/upload") {
+      // The signed ticket is the capability; the origin check blocks drive-by
+      // cross-site uploads even if a ticket is briefly exposed.
+      const origin = request.headers.get("origin");
+      if (origin) {
+        const siteUrl = (env.SITE_URL || "").replace(/\/$/, "");
+        const allowed = new Set(ALLOWED_ORIGINS);
+        if (siteUrl) allowed.add(siteUrl);
+        if (!allowed.has(origin)) return fail("Origin not allowed", 403);
+      }
+      const ticket = await verifyUploadTicket(env, request.headers.get("x-upload-ticket"));
+      if (!ticket) return fail("Upload ticket is invalid or expired", 403);
+      const type = (request.headers.get("content-type") || "").toLowerCase();
+      if (type !== ticket.contentType) return fail("Content type does not match the upload ticket", 415);
+
+      const bytes = new Uint8Array(await request.arrayBuffer());
+      if (bytes.byteLength !== ticket.size) {
+        return fail(`Upload size must match the ticket (${ticket.size} bytes)`, 413);
+      }
+      const max = ticket.kind === "image" ? MAX_IMAGE_BYTES : MAX_VIDEO_BYTES;
+      if (bytes.byteLength > max) return fail("File is too large", 413);
+      if (!mediaMagicOk(ticket.kind, ticket.contentType, bytes)) {
+        return fail("File contents do not match its media type", 415);
+      }
+
+      await env.SERENITY_MEDIA.put(ticket.key, bytes, {
+        httpMetadata: { contentType: ticket.contentType },
+        customMetadata: { kind: ticket.kind, uploadedAt: new Date().toISOString() },
+      });
+      const url = new URL(`/${ticket.key}`, request.url).toString();
+      return json({
+        ok: true,
+        url,
+        secure_url: url,
+        key: ticket.key,
+        public_id: ticket.key,
+        contentType: ticket.contentType,
+        bytes: bytes.byteLength,
+        duration: 0,
+      }, 201);
+    }
+
+    if (method === "GET" && path.startsWith("/media/")) {
+      let key;
+      try { key = decodeURIComponent(path.slice(1)); }
+      catch { return fail("Invalid media path", 400); }
+      if (!/^media\/(image|video)\//.test(key)) return fail("Not found", 404);
+      const object = await env.SERENITY_MEDIA.get(key);
+      if (!object) return fail("Not found", 404);
+      const headers = new Headers({
+        "content-type": object.httpMetadata?.contentType || "application/octet-stream",
+        "cache-control": "public, max-age=31536000, immutable",
+      });
+      return new Response(object.body, { status: 200, headers });
+    }
+
+    if (method === "GET" && path === "/api/content") {
+      const content = await readR2Json(env, CONTENT_KEY);
+      return json({ ok: true, content });
+    }
+
+    if (method === "POST" && path === "/api/content") {
+      if (!isAdmin(request, env)) return fail("Unauthorized", 401);
+      const body = await request.json().catch(() => null);
+      const content = body && body.content !== undefined ? body.content : body;
+      if (!content || typeof content !== "object" || Array.isArray(content)) {
+        return fail("A content object is required", 400);
+      }
+      await writeR2Json(env, CONTENT_KEY, content);
+      return json({ ok: true, content });
+    }
+
+    if (method === "GET" && path === "/api/gallery") {
+      const stored = await readR2Json(env, GALLERY_KEY);
+      const images = Array.isArray(stored) ? stored : [];
+      return json({ ok: true, images });
+    }
+
+    if (method === "POST" && path === "/api/gallery") {
+      if (!isAdmin(request, env)) return fail("Unauthorized", 401);
+      const body = await request.json().catch(() => null);
+      const normalize = (image) => ({
+        id: image.id,
+        src: image.src,
+        alt: String(image.alt || "Serenity Spa Gallery").slice(0, 200),
+        delay: image.delay || "delay-100",
+        availability: image.availability === "in-session" ? "in-session" : "available",
+        ...(image.key ? { key: String(image.key) } : {}),
+      });
+
+      // Bulk form is used once to seed R2 from the temporary Cloudinary fallback.
+      if (Array.isArray(body?.images)) {
+        if (!body.images.every(validGalleryImage)) return fail("Every gallery image must be valid", 400);
+        const records = body.images.map(normalize);
+        await writeR2Json(env, GALLERY_KEY, records);
+        return json({ ok: true, images: records }, 201);
+      }
+
+      const image = body && body.image !== undefined ? body.image : body;
+      if (!validGalleryImage(image)) return fail("A valid gallery image is required", 400);
+      const stored = await readR2Json(env, GALLERY_KEY);
+      const images = Array.isArray(stored) ? stored : [];
+      const rest = images.filter((item) => item?.id !== image.id);
+      const record = normalize(image);
+      await writeR2Json(env, GALLERY_KEY, [record, ...rest]);
+      return json({ ok: true, image: record }, 201);
+    }
+
+    if (method === "PATCH" && path === "/api/gallery") {
+      if (!isAdmin(request, env)) return fail("Unauthorized", 401);
+      const body = await request.json().catch(() => null);
+      const id = String(body?.id || "");
+      const availability = String(body?.availability || "");
+      if (!id.startsWith("serenity_gallery/") || !["available", "in-session"].includes(availability)) {
+        return fail("A valid gallery id and availability are required", 400);
+      }
+      const stored = await readR2Json(env, GALLERY_KEY);
+      const images = Array.isArray(stored) ? stored : [];
+      let updated = null;
+      const next = images.map((item) => {
+        if (item?.id !== id) return item;
+        updated = {
+          ...item,
+          availability,
+          ...(body.alt !== undefined ? { alt: String(body.alt).slice(0, 200) } : {}),
+        };
+        return updated;
+      });
+      if (!updated) return fail("Gallery image not found", 404);
+      await writeR2Json(env, GALLERY_KEY, next);
+      return json({ ok: true, image: updated });
+    }
+
+    if (method === "DELETE" && path === "/api/gallery") {
+      if (!isAdmin(request, env)) return fail("Unauthorized", 401);
+      const id = String(url.searchParams.get("id") || "");
+      if (!id.startsWith("serenity_gallery/")) return fail("A valid gallery image ID is required", 400);
+      const stored = await readR2Json(env, GALLERY_KEY);
+      const images = Array.isArray(stored) ? stored : [];
+      const target = images.find((item) => item?.id === id);
+      const key = target?.key || (String(target?.src || "").match(/\/media\/([^?#]+)/)?.[1] || "");
+      if (key && /^media\//.test(key)) {
+        try { await env.SERENITY_MEDIA.delete(key); }
+        catch (error) { console.error("R2 delete failed", key, error); }
+      }
+      await writeR2Json(env, GALLERY_KEY, images.filter((item) => item?.id !== id));
+      return json({ ok: true });
+    }
+
+    if (method === "POST" && path === "/api/gallery/purge") {
+      if (!isAdmin(request, env)) return fail("Unauthorized", 401);
+      const body = await request.json().catch(() => null);
+      const ids = Array.isArray(body?.ids) ? body.ids.filter((id) => typeof id === "string") : [];
+      if (!ids.length || ids.length > 200) return fail("Provide between 1 and 200 gallery image IDs", 400);
+      const invalid = ids.filter((id) => !id.startsWith("serenity_gallery/"));
+      if (invalid.length) return fail("Every ID must be a serenity_gallery image", 400);
+      const unique = [...new Set(ids)];
+      const set = new Set(unique);
+      const stored = await readR2Json(env, GALLERY_KEY);
+      const images = Array.isArray(stored) ? stored : [];
+      const doomed = images.filter((item) => item && set.has(item.id));
+      for (const item of doomed) {
+        const key = item.key || (String(item.src || "").match(/\/media\/([^?#]+)/)?.[1] || "");
+        if (key && /^media\//.test(key)) {
+          try { await env.SERENITY_MEDIA.delete(key); }
+          catch (error) { console.error("R2 purge delete failed", key, error); }
+        }
+      }
+      await writeR2Json(env, GALLERY_KEY, images.filter((item) => !item || !set.has(item.id)));
+      return json({ ok: true, deleted: unique, failed: [] });
     }
 
     // PawaPay callback paths (the four dashboard boxes all point to the root URL).

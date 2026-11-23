@@ -609,11 +609,13 @@ export default function GalleryPage() {
             style={{
               position: "absolute",
               inset: 0,
-              backgroundImage: "url('https://res.cloudinary.com/njzctr4m/image/upload/v1784667206/serenity_gallery/u7wll8tto5yxjt4ptcbl.jpg')",
+              backgroundImage: images[0]?.src ? `url("${images[0].src}")` : "none",
               backgroundSize: "cover",
               backgroundPosition: "center",
               transform: "scale(1)",
               filter: "brightness(0.28)",
+              opacity: images[0]?.src ? 1 : 0,
+              transition: "opacity 350ms ease",
             }}
           />
           <div

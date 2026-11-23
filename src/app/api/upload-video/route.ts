@@ -1,58 +1,51 @@
-import { NextResponse } from "next/server";
-import { v2 as cloudinary } from "cloudinary";
-import { isAdmin } from "@/lib/admin-auth";
-import { validateVideo } from "@/lib/video-validation";
+import { NextResponse } from 'next/server';
+import { isAdmin } from '@/lib/admin-auth';
+import { ALLOWED_VIDEO_TYPES, MAX_VIDEO_BYTES } from '@/lib/video-validation';
+import { workerApi } from '@/lib/r2-media';
 
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME || process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-});
-
+/**
+ * Issue a short-lived R2 upload ticket for a reel. The actual MP4/WebM bytes go
+ * straight from the browser to the Worker, bypassing Vercel's 4.5 MB body cap.
+ */
 export async function POST(req: Request) {
   try {
     if (!isAdmin(req)) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const formData = await req.formData();
-    const file = formData.get("file") as Blob | null;
-    if (!file || typeof file.arrayBuffer !== "function") {
-      return NextResponse.json({ error: "No video uploaded" }, { status: 400 });
+    const ctype = (req.headers.get('content-type') || '').toLowerCase();
+    if (!ctype.includes('application/json')) {
+      return NextResponse.json({ error: 'Expected application/json' }, { status: 415 });
     }
 
-    const buffer = Buffer.from(await file.arrayBuffer());
-    const invalid = validateVideo({ type: file.type, size: file.size }, buffer);
-    if (invalid) {
-      return NextResponse.json({ error: invalid }, { status: 415 });
-    }
+    const body = await req.json().catch(() => null);
+    const contentType = String(body?.contentType || '').toLowerCase();
+    const size = Number(body?.size);
 
-    const result: any = await new Promise((resolve, reject) => {
-      const stream = cloudinary.uploader.upload_stream(
-        {
-          folder: "serenity_site_assets/videos",
-          resource_type: "video",
-        },
-        (error, uploadResult) => {
-          if (error) reject(error);
-          else resolve(uploadResult);
-        }
+    if (!ALLOWED_VIDEO_TYPES.has(contentType)) {
+      return NextResponse.json(
+        { error: 'Unsupported video format. Upload an MP4, WebM, MOV, MKV, OGV or AVI file.' },
+        { status: 415 }
       );
-      stream.end(buffer);
-    });
+    }
+    if (!Number.isFinite(size) || size <= 0 || size > MAX_VIDEO_BYTES) {
+      return NextResponse.json({ error: 'Video is too large (max 50 MB)' }, { status: 413 });
+    }
 
-    return NextResponse.json(
-      {
-        secure_url: result.secure_url,
-        public_id: result.public_id,
-        duration: result.duration || 0,
-        format: result.format || "",
-        bytes: result.bytes || buffer.length,
-      },
-      { status: 201 }
-    );
+    const { response, data } = await workerApi('/api/media/ticket', {
+      method: 'POST',
+      body: JSON.stringify({ kind: 'video', contentType, size }),
+    });
+    if (!response.ok) {
+      return NextResponse.json(
+        { error: data?.error || 'Could not create a video upload ticket' },
+        { status: 502 }
+      );
+    }
+
+    return NextResponse.json(data);
   } catch (error: any) {
-    console.error("Error uploading video to Cloudinary:", error?.message || error);
-    return NextResponse.json({ error: error?.message || "Internal Server Error" }, { status: 500 });
+    console.error('Video ticket error:', error?.message || error);
+    return NextResponse.json({ error: 'Could not start the video upload' }, { status: 500 });
   }
 }

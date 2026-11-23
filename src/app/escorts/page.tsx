@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import CustomCursor from "@/components/CustomCursor";
 import MobileDrawer from "@/components/MobileDrawer";
 import { useSiteContact } from "@/components/ContactProvider";
-import { Companion, DEFAULT_COMPANIONS, escortSlug } from "@/lib/escorts";
+import { Companion, escortSlug } from "@/lib/escorts";
 import { usePageReveal } from "@/lib/use-page-reveal";
 
 const SCRIPT = '"Alex Brush", cursive';
@@ -114,8 +114,8 @@ export default function EscortsPage() {
   const [loading, setLoading] = useState(true);
   const { whatsappLink } = useSiteContact();
 
-  // Admin edits live in the durable content store. Never paint the fallback
-  // cards first — that would flash old images before the saved cards arrive.
+  // Admin edits live in the R2-backed content store. First paint is empty and
+  // only records returned by that store are rendered — no seeded defaults.
   useEffect(() => {
     let cancelled = false;
     const load = async () => {
@@ -132,21 +132,11 @@ export default function EscortsPage() {
           }
         }
       } catch {
-        // fall through to the local mirror / defaults
+        // fall through to the empty state
       }
-      try {
-        const res = await fetch("/site-content.json", { cache: "no-store" });
-        if (res.ok) {
-          const data = await res.json();
-          if (Array.isArray(data.escorts) && !cancelled) setCompanions(data.escorts);
-          else if (!cancelled) setCompanions(DEFAULT_COMPANIONS);
-        }
-        if (!cancelled) setLoading(false);
-      } catch {
-        if (!cancelled) {
-          setCompanions(DEFAULT_COMPANIONS);
-          setLoading(false);
-        }
+      if (!cancelled) {
+        setCompanions([]);
+        setLoading(false);
       }
     };
     load();
@@ -395,7 +385,6 @@ export default function EscortsPage() {
                             className="companion-img"
                             loading="lazy"
                             style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center 20%" }}
-                            onError={(e) => { (e.target as HTMLImageElement).src = "/assets/service1.jpg"; }}
                           />
                           <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(0,0,0,0.28) 0%, rgba(0,0,0,0) 38%, rgba(14,19,23,0.96) 100%)" }} />
                           <div className="companion-hover" style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(14,19,23,0.45)", opacity: 0 }}>
@@ -543,7 +532,7 @@ export default function EscortsPage() {
         <section
           style={{
             position: "relative", padding: "120px 24px", textAlign: "center", overflow: "hidden",
-            backgroundImage: "url('https://res.cloudinary.com/njzctr4m/image/upload/v1784667087/serenity_gallery/cnl0pcncguetzsg6ms5v.jpg')",
+            backgroundImage: heroImage ? `url("${heroImage}")` : "none",
             backgroundSize: "cover", backgroundPosition: "center 30%",
           }}
         >

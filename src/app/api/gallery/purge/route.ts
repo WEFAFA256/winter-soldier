@@ -1,14 +1,8 @@
 import { NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
-import { v2 as cloudinary } from 'cloudinary';
 import { isAdmin } from '@/lib/admin-auth';
-
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME || process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-});
+import { workerApi } from '@/lib/r2-media';
 
 const dataFilePath = path.join(process.cwd(), 'public', 'gallery.json');
 const GALLERY_PREFIX = 'serenity_gallery/';
@@ -24,9 +18,7 @@ const readLocalData = (): any[] => {
   }
 };
 
-// Bulk-delete selected gallery/profile images from the durable Cloudinary store.
-// The admin UI only preselects "available" profiles, but authorization is checked
-// here too so a direct POST cannot bypass the dashboard login.
+/** Bulk-delete selected gallery images from the R2-backed durable store. */
 export async function POST(req: Request) {
   try {
     if (!isAdmin(req)) {
@@ -45,7 +37,7 @@ export async function POST(req: Request) {
       );
     }
 
-    const invalid = ids.filter((id: string) => !id.startsWith(GALLERY_PREFIX));
+    const invalid = ids.filter((id) => !id.startsWith(GALLERY_PREFIX));
     if (invalid.length) {
       return NextResponse.json(
         { error: 'Every ID must be a serenity_gallery image' },
@@ -54,24 +46,29 @@ export async function POST(req: Request) {
     }
 
     const uniqueIds = [...new Set(ids)];
-    const result: any = await cloudinary.api.delete_resources(uniqueIds, {
-      resource_type: 'image',
-      type: 'upload',
+    const { response, data } = await workerApi('/api/gallery/purge', {
+      method: 'POST',
+      body: JSON.stringify({ ids: uniqueIds }),
     });
+    if (!response.ok) {
+      return NextResponse.json(
+        { error: data?.error || 'Could not purge images from the media store.' },
+        { status: 502 }
+      );
+    }
 
-    const statuses = result?.deleted || {};
-    const deleted = uniqueIds.filter(
-      (id) => statuses[id] === 'deleted' || statuses[id] === 'not_found'
-    );
-    const failed = uniqueIds.filter((id) => !deleted.includes(id));
+    const deleted: string[] = Array.isArray(data?.deleted) ? data.deleted : uniqueIds;
+    const failed: string[] = Array.isArray(data?.failed) ? data.failed : [];
     const deletedSet = new Set(deleted);
 
-    // Best-effort local mirror for development; Cloudinary is the source of truth.
     try {
-      const local = readLocalData().filter((img: any) => !deletedSet.has(img.id));
-      fs.writeFileSync(dataFilePath, JSON.stringify(local, null, 2), 'utf8');
-    } catch (e) {
-      console.error('Error updating local gallery mirror after purge:', e);
+      fs.writeFileSync(
+        dataFilePath,
+        JSON.stringify(readLocalData().filter((img: any) => !deletedSet.has(img.id)), null, 2),
+        'utf8'
+      );
+    } catch (error) {
+      console.error('Error updating local gallery mirror after purge:', error);
     }
 
     return NextResponse.json({
@@ -80,7 +77,7 @@ export async function POST(req: Request) {
       failed,
     }, { status: failed.length ? 207 : 200 });
   } catch (error: any) {
-    console.error('Error in gallery purge:', error);
+    console.error('Error in gallery purge:', error?.message || error);
     return NextResponse.json(
       { error: 'Could not purge images from the durable store. Please retry.' },
       { status: 502 }

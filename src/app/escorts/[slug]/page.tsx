@@ -8,7 +8,6 @@ import MobileDrawer from "@/components/MobileDrawer";
 import { useSiteContact } from "@/components/ContactProvider";
 import {
   Companion,
-  DEFAULT_COMPANIONS,
   EscortVideo,
   companionGallery,
   companionVideos,
@@ -19,13 +18,6 @@ const SCRIPT = '"Alex Brush", cursive';
 const SERIF = '"Cormorant", serif';
 const GOLD = "#c2a74e";
 const CREAM = "#e8d9b0";
-
-const FALLBACK_PHOTOS = [
-  "https://res.cloudinary.com/njzctr4m/image/upload/v1784667206/serenity_gallery/u7wll8tto5yxjt4ptcbl.jpg",
-  "https://res.cloudinary.com/njzctr4m/image/upload/v1784667142/serenity_gallery/afxgagluqzhsoe03mqk9.jpg",
-  "https://res.cloudinary.com/njzctr4m/image/upload/v1784667087/serenity_gallery/cnl0pcncguetzsg6ms5v.jpg",
-  "https://res.cloudinary.com/njzctr4m/image/upload/v1784667018/serenity_gallery/kxvbybo5fbghkfomnavv.jpg",
-];
 
 const NAV_ITEMS = [
   { label: "Home", href: "/" },
@@ -56,7 +48,7 @@ export default function EscortProfilePage() {
   const slug = Array.isArray(rawSlug) ? rawSlug[0] : rawSlug || "";
 
   const [companions, setCompanions] = useState<Companion[]>([]);
-  const [photos, setPhotos] = useState<string[]>(FALLBACK_PHOTOS);
+  const [photos, setPhotos] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [selectedPhoto, setSelectedPhoto] = useState<number | null>(null);
@@ -70,16 +62,10 @@ export default function EscortProfilePage() {
         const res = await fetch(`/api/content?cb=${Date.now()}`, { cache: "no-store" });
         if (res.ok) {
           const data = await res.json();
-          if (Array.isArray(data.escorts) && data.escorts.length) {
-            if (!cancelled) setCompanions(data.escorts);
-          } else if (!cancelled) {
-            setCompanions(DEFAULT_COMPANIONS);
-          }
-        } else if (!cancelled) {
-          setCompanions(DEFAULT_COMPANIONS);
+          if (Array.isArray(data.escorts) && !cancelled) setCompanions(data.escorts);
         }
       } catch {
-        if (!cancelled) setCompanions(DEFAULT_COMPANIONS);
+        // R2-backed store unavailable; keep the empty state.
       }
 
       try {
@@ -92,7 +78,7 @@ export default function EscortProfilePage() {
           if (urls.length && !cancelled) setPhotos(urls);
         }
       } catch {
-        // keep the curated fallback photos
+        // keep photos empty
       } finally {
         if (!cancelled) setLoading(false);
       }

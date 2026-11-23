@@ -3,6 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import { v2 as cloudinary } from 'cloudinary';
 import { isAdmin } from '@/lib/admin-auth';
+import { workerApi } from '@/lib/r2-media';
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME || process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
@@ -11,39 +12,81 @@ cloudinary.config({
 });
 
 const cloudName = process.env.CLOUDINARY_CLOUD_NAME || process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
-
 const contentFilePath = path.join(process.cwd(), 'public', 'site-content.json');
+const CLOUD_CONTENT_ID = 'site-content.json';
 
 const readLocalContent = () => {
   try {
-    if (!fs.existsSync(contentFilePath)) {
-      return {};
-    }
-    const data = fs.readFileSync(contentFilePath, 'utf8');
-    return JSON.parse(data);
+    if (!fs.existsSync(contentFilePath)) return {};
+    return JSON.parse(fs.readFileSync(contentFilePath, 'utf8'));
   } catch (error) {
     console.error('Error reading local site-content data:', error);
     return {};
   }
 };
 
-export async function GET() {
+const looksLikeContent = (data: any) =>
+  Boolean(data && (data.services || data.spaContent || data.homepage));
+
+/**
+ * Temporary migration fallback only. R2 is authoritative; if it is empty, a
+ * signed Cloudinary raw read can seed it once. Only the signed server-side URL
+ * is used — no unsigned public asset URL is relied upon.
+ */
+async function readCloudContent(): Promise<any | null> {
+  if (!cloudName) return null;
+
   try {
-    // Read from Cloudinary raw upload using a cache buster
-    if (!cloudName) return NextResponse.json(readLocalContent());
-    const cloudUrl = `https://res.cloudinary.com/${encodeURIComponent(cloudName)}/raw/upload/site-content.json?cb=${Date.now()}`;
-    const res = await fetch(cloudUrl, { cache: 'no-store' });
+    const signedUrl = cloudinary.utils.private_download_url(CLOUD_CONTENT_ID, 'json', {
+      resource_type: 'raw',
+    });
+    const res = await fetch(signedUrl, { cache: 'no-store' });
     if (res.ok) {
       const data = await res.json();
-      if (data && (data.services || data.spaContent || data.homepage)) {
-        return NextResponse.json(data);
-      }
+      if (looksLikeContent(data)) return data;
     }
-    return NextResponse.json(readLocalContent());
   } catch (error: any) {
-    console.error('Error fetching content from Cloudinary, falling back to local JSON:', error.message);
-    return NextResponse.json(readLocalContent());
+    console.error('Signed Cloudinary content read failed:', error?.message || error);
   }
+
+  return null;
+}
+
+async function seedR2Content(content: any): Promise<void> {
+  try {
+    const { response } = await workerApi('/api/content', {
+      method: 'POST',
+      body: JSON.stringify({ content }),
+    });
+    if (!response.ok) {
+      console.error('Could not seed R2 content:', response.status);
+    }
+  } catch (error: any) {
+    console.error('Could not seed R2 content:', error?.message || error);
+  }
+}
+
+export async function GET() {
+  try {
+    const { response, data } = await workerApi<{ ok?: boolean; content?: any }>(
+      '/api/content',
+      {},
+      { admin: false }
+    );
+    if (response.ok && looksLikeContent(data?.content)) {
+      return NextResponse.json(data?.content, { headers: { 'cache-control': 'no-store' } });
+    }
+  } catch (error: any) {
+    console.error('R2 content read failed:', error?.message || error);
+  }
+
+  const cloudContent = await readCloudContent();
+  if (cloudContent) {
+    await seedR2Content(cloudContent);
+    return NextResponse.json(cloudContent, { headers: { 'cache-control': 'no-store' } });
+  }
+
+  return NextResponse.json(readLocalContent(), { headers: { 'cache-control': 'no-store' } });
 }
 
 export async function POST(req: Request) {
@@ -53,37 +96,34 @@ export async function POST(req: Request) {
     }
 
     const newContent = await req.json();
-    const jsonStr = JSON.stringify(newContent, null, 2);
-
-    // Upload to Cloudinary as raw json asset
-    await new Promise((resolve, reject) => {
-      cloudinary.uploader.upload(
-        'data:text/plain;base64,' + Buffer.from(jsonStr).toString('base64'),
-        {
-          public_id: 'site-content.json',
-          resource_type: 'raw',
-          invalidate: true,
-        },
-        (error, result) => {
-          if (error) reject(error);
-          else resolve(result);
-        }
-      );
-    });
-
-    // Also update local copy in public/ if writable
-    try {
-      fs.writeFileSync(contentFilePath, jsonStr, 'utf8');
-    } catch (e) {
-      // Ignored in read-only serverless environments
+    if (!newContent || typeof newContent !== 'object' || Array.isArray(newContent)) {
+      return NextResponse.json({ error: 'A content object is required' }, { status: 400 });
     }
 
-    return NextResponse.json(
-      { message: 'Content updated successfully in Cloudinary', content: newContent },
-      { status: 200 }
-    );
+    const { response, data } = await workerApi('/api/content', {
+      method: 'POST',
+      body: JSON.stringify({ content: newContent }),
+    });
+    if (!response.ok) {
+      return NextResponse.json(
+        { error: data?.error || 'Could not save content to the media store' },
+        { status: 502 }
+      );
+    }
+
+    // Best-effort development mirror only; Vercel's filesystem is read-only.
+    try {
+      fs.writeFileSync(contentFilePath, JSON.stringify(newContent, null, 2), 'utf8');
+    } catch {
+      // ignored
+    }
+
+    return NextResponse.json({
+      message: 'Content updated successfully in R2',
+      content: newContent,
+    });
   } catch (error: any) {
-    console.error('Error in POST content:', error.message);
-    return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 });
+    console.error('Error in POST content:', error?.message || error);
+    return NextResponse.json({ error: error?.message || 'Internal Server Error' }, { status: 500 });
   }
 }

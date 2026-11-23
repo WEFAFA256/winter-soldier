@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { Companion, DEFAULT_COMPANIONS } from "@/lib/escorts";
+import { Companion } from "@/lib/escorts";
 import { parseServicePrice, splitServiceCatalog } from "@/lib/service-order";
 import {
   SiteVideo,
@@ -11,6 +11,8 @@ import {
   formatVideoDuration,
   normalizeSiteVideos,
 } from "@/lib/site-videos";
+import { validateImage } from "@/lib/image-validation";
+import { validateVideo } from "@/lib/video-validation";
 
 /* ─── Types ─────────────────────────────────────────────────── */
 interface ServiceItem {
@@ -235,7 +237,7 @@ function VideoFields({
           />
         </label>
         <span style={{ fontSize: 10, color: C.muted }}>
-          Uploads go straight to Cloudinary; click Save Changes to publish the reel.
+          Uploads go straight to the media store; click Save Changes to publish the reel.
         </span>
       </div>
 
@@ -257,9 +259,9 @@ function VideoFields({
         </div>
         <Input label="Duration" aria-label={`Duration for ${idPrefix}`} placeholder="4:15 HD" value={value.duration} onChange={(e: any) => onChange({ duration: e.target.value })} />
         <Input label="YouTube ID (optional)" aria-label={`YouTube ID for ${idPrefix}`} placeholder="abc123xyz" value={value.youtubeId} onChange={(e: any) => onChange({ youtubeId: e.target.value })} />
-        <Input label="Uploaded Video URL (optional)" aria-label={`Video URL for ${idPrefix}`} placeholder="https://res.cloudinary.com/.../video.mp4" value={value.videoUrl} onChange={(e: any) => onChange({ videoUrl: e.target.value })} />
+        <Input label="Uploaded Video URL (optional)" aria-label={`Video URL for ${idPrefix}`} placeholder="https://.../media/video/.../clip.mp4" value={value.videoUrl} onChange={(e: any) => onChange({ videoUrl: e.target.value })} />
         <Input label="Booking Service" aria-label={`Booking service for ${idPrefix}`} placeholder="Deep Tissue Massage" value={value.bookingService} onChange={(e: any) => onChange({ bookingService: e.target.value })} />
-        <Input label="Poster Image URL" aria-label={`Poster URL for ${idPrefix}`} placeholder="https://res.cloudinary.com/.../poster.jpg" value={value.poster} onChange={(e: any) => onChange({ poster: e.target.value })} />
+        <Input label="Poster Image URL" aria-label={`Poster URL for ${idPrefix}`} placeholder="https://.../media/image/.../poster.jpg" value={value.poster} onChange={(e: any) => onChange({ poster: e.target.value })} />
       </div>
       <Textarea label="Description" aria-label={`Description for ${idPrefix}`} rows={2} placeholder="What the visitor will see in this reel…" value={value.description} onChange={(e: any) => onChange({ description: e.target.value })} />
     </div>
@@ -455,21 +457,77 @@ export default function AdminGalleryPage() {
         setServices(catalog.services);
         setVipServices(catalog.vipServices);
         setMobileMassage(Array.isArray(c.mobileMassage) ? c.mobileMassage : []);
-        setEscorts(Array.isArray(c.escorts) ? c.escorts : DEFAULT_COMPANIONS);
+        setEscorts(Array.isArray(c.escorts) ? c.escorts : []);
         setVideos(normalizeSiteVideos(c.videos));
       }
       if (bRes.ok) setBlogs(await bRes.json());
     } catch {
-      if (escorts.length === 0) setEscorts(DEFAULT_COMPANIONS);
+      // Keep the loaded lists; the R2-backed store is the only escort source.
     }
     setLoading(false);
   };
 
-  const uploadFile = async (file: File): Promise<string|null> => {
-    const fd = new FormData(); fd.append("file", file);
-    const res = await fetch("/api/upload", { method:"POST", body:fd, credentials:"same-origin" });
-    if (res.ok) return (await res.json()).secure_url;
-    return null;
+  /* One upload path for every admin image/reel: request a short-lived R2 ticket,
+     then send the bytes directly to the Worker. Vercel never sees the file body. */
+  const inferMediaType = (file: File, kind: "image" | "video"): string => {
+    if (file.type) return file.type.toLowerCase();
+    const ext = file.name.split(".").pop()?.toLowerCase() || "";
+    if (kind === "image") {
+      return ({ jpg: "image/jpeg", jpeg: "image/jpeg", png: "image/png", webp: "image/webp", gif: "image/gif", avif: "image/avif" } as Record<string, string>)[ext] || "image/jpeg";
+    }
+    return ({ mp4: "video/mp4", webm: "video/webm", mov: "video/quicktime", mkv: "video/x-matroska", ogv: "video/ogg", avi: "video/x-msvideo" } as Record<string, string>)[ext] || "video/mp4";
+  };
+
+  const uploadToR2 = async (
+    file: File,
+    kind: "image" | "video"
+  ): Promise<{ url: string; key: string; public_id: string; bytes: number; contentType: string; duration: number } | null> => {
+    const contentType = inferMediaType(file, kind);
+    const header = new Uint8Array(await file.slice(0, 32).arrayBuffer());
+    const invalid = kind === "image"
+      ? validateImage({ type: contentType, size: file.size }, header)
+      : validateVideo({ type: contentType, size: file.size }, header);
+    if (invalid) {
+      alert(invalid);
+      return null;
+    }
+
+    const ticketEndpoint = kind === "image" ? "/api/upload" : "/api/upload-video";
+    const ticketRes = await fetch(ticketEndpoint, {
+      method: "POST",
+      credentials: "same-origin",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ contentType, size: file.size }),
+    });
+    const ticketData = await ticketRes.json().catch(() => ({}));
+    if (!ticketRes.ok || !ticketData.ticket || !ticketData.uploadPath) {
+      alert(ticketData.error || "Could not start the upload. Please try again.");
+      return null;
+    }
+
+    const uploadRes = await fetch(ticketData.uploadPath, {
+      method: "POST",
+      headers: { "Content-Type": contentType, "x-upload-ticket": ticketData.ticket },
+      body: file,
+    });
+    const data = await uploadRes.json().catch(() => ({}));
+    if (!uploadRes.ok || !data.url) {
+      alert(data.error || "Upload failed. Please try again.");
+      return null;
+    }
+    return {
+      url: data.url,
+      key: data.key || ticketData.key || "",
+      public_id: data.public_id || data.key || ticketData.key || "",
+      bytes: data.bytes || file.size,
+      contentType,
+      duration: data.duration || 0,
+    };
+  };
+
+  const uploadFile = async (file: File): Promise<string | null> => {
+    const result = await uploadToR2(file, "image");
+    return result?.url || null;
   };
 
   /* Gallery handlers */
@@ -490,10 +548,32 @@ export default function AdminGalleryPage() {
     e.preventDefault();
     if (!galFile) return alert("Choose an image first");
     setGalUploading(true);
-    const fd = new FormData(); fd.append("file", galFile); fd.append("alt", galAlt.trim()||"The Serenity Spa");
-    const res = await fetch("/api/gallery", { method:"POST", body:fd, credentials:"same-origin" });
-    if (res.ok) { const d = await res.json(); setGallery([d.image, ...gallery]); resetGalleryForm(); }
-    else alert((await res.json()).error || "Upload failed");
+    try {
+      const uploaded = await uploadToR2(galFile, "image");
+      if (!uploaded) {
+        setGalUploading(false);
+        return;
+      }
+      const id = `serenity_gallery/${crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}`}`;
+      const image: GalleryItem = {
+        id,
+        src: uploaded.url,
+        alt: galAlt.trim() || "The Serenity Spa",
+        delay: "delay-100",
+        availability: "available",
+      };
+      const res = await fetch("/api/gallery", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+        body: JSON.stringify({ image: { ...image, key: uploaded.key } }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) { setGallery([data.image || image, ...gallery]); resetGalleryForm(); }
+      else alert(data.error || "Could not save the image");
+    } catch {
+      alert("Upload failed. Please try again.");
+    }
     setGalUploading(false);
   };
 
@@ -519,7 +599,7 @@ export default function AdminGalleryPage() {
   const purgeSelectedImages = async () => {
     const ids = selectedImages.filter(id => gallery.some(img => img.id === id));
     if (!ids.length) return alert("Select at least one profile image first.");
-    if (!confirm(`Permanently purge ${ids.length} selected profile image${ids.length === 1 ? "" : "s"} from Cloudinary? This cannot be undone.`)) return;
+    if (!confirm(`Permanently purge ${ids.length} selected profile image${ids.length === 1 ? "" : "s"} from the media store? This cannot be undone.`)) return;
 
     setPurging(true);
     try {
@@ -583,7 +663,7 @@ export default function AdminGalleryPage() {
   const addSvc = () => { if (!newSvc.title) return alert("Enter a service title"); setServices([newSvc as ServiceItem, ...services]); setNewSvc({ title:"", price:150000, description:"", image:"/assets/service1.jpg" }); setShowAddSvc(false); };
 
   // Upload a replacement image for an existing service card. Images go to the
-  // same Cloudinary store as gallery/blog images; the returned secure URL is
+  // same R2-backed media store as gallery/blog images; the returned URL is
   // written into the service record and persists when "Save All Changes" runs.
   const changeSvcImage = async (i: number, file: File | undefined) => {
     if (!file) return;
@@ -652,13 +732,15 @@ export default function AdminGalleryPage() {
 
   /* Gallery video handlers — the same durable `videos` array drives /gallery. */
   const uploadVideoFile = async (file: File): Promise<any | null> => {
-    const fd = new FormData();
-    fd.append("file", file);
-    const res = await fetch("/api/upload-video", { method: "POST", body: fd, credentials: "same-origin" });
-    if (res.ok) return res.json();
-    const data = await res.json().catch(() => ({}));
-    alert(data.error || "Video upload failed. Please try again.");
-    return null;
+    const uploaded = await uploadToR2(file, "video");
+    if (!uploaded) return null;
+    return {
+      secure_url: uploaded.url,
+      public_id: uploaded.public_id,
+      duration: uploaded.duration,
+      format: uploaded.contentType,
+      bytes: uploaded.bytes,
+    };
   };
 
   const uploadNewVideoFile = async (file: File | undefined) => {
@@ -843,7 +925,7 @@ export default function AdminGalleryPage() {
         window.dispatchEvent(new Event("serenity-content-updated"));
         localStorage.setItem("serenity-content-version", String(Date.now()));
       } catch {}
-      alert("Saved to Cloudinary ✓");
+      alert("Saved to the media store ✓");
     }
     else alert("Save failed");
     setSaving(false);
@@ -959,7 +1041,7 @@ export default function AdminGalleryPage() {
             {/* ══ GALLERY TAB ══ */}
             {tab === "gallery" && (
               <div className="admin-pane">
-                <SectionHead title="Spa Gallery" sub="Upload photos directly to Cloudinary — they appear on the gallery page instantly." />
+                <SectionHead title="Spa Gallery" sub="Upload photos directly to the media store — they appear on the gallery page instantly." />
 
                 {/* Add Image — small preview box + Upload Image button, Name + Save */}
                 <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:10, padding:20, marginBottom:24 }}>
@@ -1037,7 +1119,7 @@ export default function AdminGalleryPage() {
                       className="btn-danger"
                       onClick={purgeSelectedImages}
                       disabled={purging || !selectedImages.length}
-                      title="Permanently delete the selected images from Cloudinary"
+                      title="Permanently delete the selected images from the media store"
                       style={{
                         background: "rgba(218, 54, 51, 0.2)",
                         border: "1px solid rgba(218, 54, 51, 0.5)",
@@ -1252,7 +1334,7 @@ export default function AdminGalleryPage() {
                             )}
                             <div style={{ minWidth:0 }}>
                               <p style={{ margin:0, color:C.text, fontSize:13, fontWeight:700, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{video.title || "Untitled reel"}</p>
-                              <p style={{ margin:"3px 0 0", color:C.muted, fontSize:11 }}>{video.videoUrl ? "Cloudinary video" : video.youtubeId ? "YouTube film" : "No playable source"}</p>
+                              <p style={{ margin:"3px 0 0", color:C.muted, fontSize:11 }}>{video.videoUrl ? "Hosted video" : video.youtubeId ? "YouTube film" : "No playable source"}</p>
                             </div>
                           </div>
                           <BtnOutline onClick={()=>deleteVideo(i)} style={{ color:C.danger }}>🗑 Delete</BtnOutline>
@@ -1524,7 +1606,7 @@ export default function AdminGalleryPage() {
                       </div>
                     </div>
                     <Textarea label="Description" rows={2} placeholder="Describe this companion…" value={newEscort.description||""} onChange={(e:any)=>setNewEscort({...newEscort,description:e.target.value})} />
-                    <Textarea label="Gallery image URLs (one per line)" rows={2} placeholder="https://res.cloudinary.com/.../photo.jpg" value={(newEscort.gallery||[]).join("\n")} onChange={(e:any)=>setNewEscort({...newEscort,gallery:parseLines(e.target.value)})} />
+                    <Textarea label="Gallery image URLs (one per line)" rows={2} placeholder="https://.../media/image/.../photo.jpg" value={(newEscort.gallery||[]).join("\n")} onChange={(e:any)=>setNewEscort({...newEscort,gallery:parseLines(e.target.value)})} />
                     <Textarea label="Videos — Title | YouTube ID (one per line)" rows={2} placeholder="Private dinner tour | abc123xyz" value={videoLines(newEscort.videos)} onChange={(e:any)=>setNewEscort({...newEscort,videos:parseEscortVideos(e.target.value)})} />
                     <p style={{ fontSize: 10, color: C.muted, margin: "-6px 0 12px" }}>Leave media blank to use the curated spa gallery and reels on her profile page.</p>
                     <BtnGold onClick={addEscort}>Save Companion</BtnGold>
