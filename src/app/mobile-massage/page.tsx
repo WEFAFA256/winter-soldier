@@ -549,13 +549,13 @@ export default function MobileMassagePage() {
               transform: "translateY(0)",
             }}
           >
-            <span style={{ color: "#c2a74e", fontFamily: "'Great Vibes', cursive, Cormorant, serif", fontSize: "1.6rem", display: "block", marginBottom: "10px", letterSpacing: "2px" }}>
+            <span style={{ color: "#c2a74e", fontFamily: "'Great Vibes', cursive, Cormorant, serif", fontSize: "clamp(1.15rem, 2.4vw, 1.45rem)", display: "block", marginBottom: "8px", letterSpacing: "1.5px" }}>
               At Your Doorstep · Hotel &amp; Home Out-Calls
             </span>
-            <h1 style={{ fontFamily: "Cormorant, serif", fontSize: "clamp(2.2rem, 5vw, 3.6rem)", fontWeight: 700, color: "#ffffff", margin: "0 0 14px 0", lineHeight: 1.15 }}>
+            <h1 style={{ fontFamily: "Cormorant, serif", fontSize: "clamp(2rem, 4.6vw, 3.2rem)", fontWeight: 700, color: "#ffffff", margin: "0 0 12px 0", lineHeight: 1.15 }}>
               Luxury Mobile Massage in Kampala
             </h1>
-            <p style={{ color: "rgba(255,255,255,0.85)", fontSize: "clamp(0.9rem, 2vw, 1.05rem)", maxWidth: "680px", margin: "0 auto 22px auto", lineHeight: 1.6 }}>
+            <p style={{ color: "rgba(255,255,255,0.82)", fontSize: "clamp(0.8rem, 1.5vw, 0.92rem)", maxWidth: "620px", margin: "0 auto 18px auto", lineHeight: 1.6 }}>
               Choose from our signature therapies delivered at your hotel, home, or private residence with a full professional setup and complete discretion.
             </p>
             <nav style={{ fontSize: "12px", color: "rgba(255,255,255,0.5)", letterSpacing: "1.5px", textTransform: "uppercase" }}>

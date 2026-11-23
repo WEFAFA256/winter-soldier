@@ -56,6 +56,41 @@ export default function BlogPage() {
       .finally(() => setLoading(false));
   }, []);
 
+  useEffect(() => {
+    const root = pageRef.current;
+    if (!root) return;
+    const cards = Array.from(root.querySelectorAll<HTMLElement>(".serenity-blog__card"));
+    if (cards.length === 0) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const el = entry.target as HTMLElement;
+            el.classList.add("page-motion-in");
+            observer.unobserve(el);
+          }
+        });
+      },
+      { threshold: 0.08, rootMargin: "0px 0px -30px 0px" }
+    );
+
+    cards.forEach((card, index) => {
+      const rect = card.getBoundingClientRect();
+      const alreadyVisible = rect.top < window.innerHeight - 40 && rect.bottom > 0;
+      card.style.setProperty("--page-motion-duration", "750ms");
+      card.style.setProperty("--page-motion-offset", "28px");
+      card.style.setProperty("--page-motion-delay", `${(index % 3) * 0.08}s`);
+      if (alreadyVisible) {
+        card.classList.add("page-motion-in");
+      } else {
+        observer.observe(card);
+      }
+    });
+
+    return () => observer.disconnect();
+  }, [loading, posts.length]);
+
   const blogSection = (() => {
     const wrap = (inner: string) => `
         <style>
