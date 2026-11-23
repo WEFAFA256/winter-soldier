@@ -1069,7 +1069,16 @@ const handler = {
         key = `media/${kind}/${ymd}/${(crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`).replace(/-/g, "").slice(0, 36)}.${ext}`;
       }
       const ticket = await createUploadTicket(env, { key, contentType, size, kind });
-      return json({ ok: true, ticket, key, uploadPath: "/media/upload", maxBytes: max });
+      // The browser posts the file bytes directly to the Worker, so the ticket
+      // must carry an ABSOLUTE URL. A relative path would resolve against the
+      // Next.js site domain and hit a non-existent /media/upload route.
+      return json({
+        ok: true,
+        ticket,
+        key,
+        uploadPath: new URL("/media/upload", request.url).toString(),
+        maxBytes: max,
+      });
     }
 
     if (method === "POST" && path === "/media/upload") {
