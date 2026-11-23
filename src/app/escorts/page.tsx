@@ -277,7 +277,10 @@ export default function EscortsPage() {
             justifyContent: "center",
           }}
         >
+          {/* Keyed on the admin image so the shared hero zoom replays when it arrives. */}
           <div
+            key={heroImage || "no-hero"}
+            className="page-motion-hero-media"
             style={{
               position: "absolute",
               inset: 0,
@@ -285,6 +288,7 @@ export default function EscortsPage() {
               backgroundColor: "#141a20",
               backgroundSize: "cover",
               backgroundPosition: "center",
+              transform: "scale(1)",
               filter: "brightness(0.35)",
               opacity: heroImage ? 1 : 0,
               transition: "opacity 350ms ease",
@@ -297,7 +301,17 @@ export default function EscortsPage() {
               background: "linear-gradient(135deg, rgba(194,167,78,0.08) 0%, rgba(14,19,23,0.75) 100%)",
             }}
           />
-          <div style={{ position: "relative", zIndex: 2, textAlign: "center", padding: "0 20px" }}>
+          <div
+            className="page-motion-hero-content"
+            style={{
+              position: "relative",
+              zIndex: 2,
+              textAlign: "center",
+              padding: "0 20px",
+              opacity: 1,
+              transform: "translateY(0)",
+            }}
+          >
             <SectionTitle tagline="Our Companions" title="Meet the Elite" style={{ marginBottom: 0 }} />
             <p style={{ color: "rgba(255,255,255,0.78)", fontSize: "clamp(0.85rem, 2vw, 1rem)", maxWidth: "620px", margin: "0 auto 18px auto", lineHeight: 1.6 }}>
               Refined company for dining, events, travel, and private evenings — chosen for warmth, discretion, and effortless conversation.
