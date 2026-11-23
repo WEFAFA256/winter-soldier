@@ -290,7 +290,7 @@ export default function AdminGalleryPage() {
   const [siteContent, setSiteContent] = useState<any>(null);
   const [svcSearch, setSvcSearch] = useState("");
   const [showAddSvc, setShowAddSvc] = useState(false);
-  const [newSvc, setNewSvc] = useState<Partial<ServiceItem>>({ title:"", price:150000, description:"", image:"/assets/service1.jpg" });
+  const [newSvc, setNewSvc] = useState<Partial<ServiceItem>>({ title:"", price:150000, description:"", image:"https://serenity-pawapay-webhook.turyatembajohn905.workers.dev/media/image/2026/11/27ebf3bad7a048059646f41800777eb3.jpg" });
   const [svcUploadIdx, setSvcUploadIdx] = useState<number | null>(null);
   const [svcNewUploading, setSvcNewUploading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -299,7 +299,7 @@ export default function AdminGalleryPage() {
   const [vipServices, setVipServices] = useState<ServiceItem[]>([]);
   const [vipSearch, setVipSearch] = useState("");
   const [showAddVip, setShowAddVip] = useState(false);
-  const [newVip, setNewVip] = useState<Partial<ServiceItem>>({ title:"", price:300000, description:"", image:"/assets/service1.jpg" });
+  const [newVip, setNewVip] = useState<Partial<ServiceItem>>({ title:"", price:300000, description:"", image:"https://serenity-pawapay-webhook.turyatembajohn905.workers.dev/media/image/2026/11/27ebf3bad7a048059646f41800777eb3.jpg" });
   const [vipUploadIdx, setVipUploadIdx] = useState<number | null>(null);
   const [vipNewUploading, setVipNewUploading] = useState(false);
 
@@ -313,7 +313,7 @@ export default function AdminGalleryPage() {
   const [showAddEscort, setShowAddEscort] = useState(false);
   const [newEscort, setNewEscort] = useState<Partial<Companion>>({
     name: "", title: "Elite Companion", specialty: "",
-    availability: "available", image: "/assets/service1.jpg", description: "",
+    availability: "available", image: "https://serenity-pawapay-webhook.turyatembajohn905.workers.dev/media/image/2026/11/27ebf3bad7a048059646f41800777eb3.jpg", description: "",
     gallery: [], videos: [],
   });
   const [escortUploadIdx, setEscortUploadIdx] = useState<number | null>(null);
@@ -660,7 +660,7 @@ export default function AdminGalleryPage() {
     const u = [...services]; u[i] = { ...u[i], [k]: v }; setServices(u);
   };
   const deleteSvc = (i: number) => { if (!confirm(`Delete "${services[i].title}"?`)) return; setServices(services.filter((_,j)=>j!==i)); };
-  const addSvc = () => { if (!newSvc.title) return alert("Enter a service title"); setServices([newSvc as ServiceItem, ...services]); setNewSvc({ title:"", price:150000, description:"", image:"/assets/service1.jpg" }); setShowAddSvc(false); };
+  const addSvc = () => { if (!newSvc.title) return alert("Enter a service title"); setServices([newSvc as ServiceItem, ...services]); setNewSvc({ title:"", price:150000, description:"", image:"https://serenity-pawapay-webhook.turyatembajohn905.workers.dev/media/image/2026/11/27ebf3bad7a048059646f41800777eb3.jpg" }); setShowAddSvc(false); };
 
   // Upload a replacement image for an existing service card. Images go to the
   // same R2-backed media store as gallery/blog images; the returned URL is
@@ -702,7 +702,7 @@ export default function AdminGalleryPage() {
   const addVip = () => {
     if (!newVip.title) return alert("Enter a VIP package title");
     setVipServices([newVip as ServiceItem, ...vipServices]);
-    setNewVip({ title:"", price:300000, description:"", image:"/assets/service1.jpg" });
+    setNewVip({ title:"", price:300000, description:"", image:"https://serenity-pawapay-webhook.turyatembajohn905.workers.dev/media/image/2026/11/27ebf3bad7a048059646f41800777eb3.jpg" });
     setShowAddVip(false);
   };
   const changeVipImage = async (i: number, file: File | undefined) => {
@@ -885,7 +885,7 @@ export default function AdminGalleryPage() {
   const addEscort = () => {
     if (!newEscort.name) return alert("Enter a name");
     setEscorts([newEscort as Companion, ...escorts]);
-    setNewEscort({ name: "", title: "Elite Companion", specialty: "", availability: "available", image: "/assets/service1.jpg", description: "", gallery: [], videos: [] });
+    setNewEscort({ name: "", title: "Elite Companion", specialty: "", availability: "available", image: "https://serenity-pawapay-webhook.turyatembajohn905.workers.dev/media/image/2026/11/27ebf3bad7a048059646f41800777eb3.jpg", description: "", gallery: [], videos: [] });
     setShowAddEscort(false);
   };
   const changeEscortImage = async (i: number, file: File | undefined) => {
@@ -1379,7 +1379,7 @@ export default function AdminGalleryPage() {
                       <Input label="Title" placeholder="e.g. Hot Stone Massage" value={newSvc.title||""} onChange={(e:any)=>setNewSvc({...newSvc,title:e.target.value})} />
                       <Input label="Price (UGX)" type="number" value={newSvc.price||""} onChange={(e:any)=>setNewSvc({...newSvc,price:+e.target.value})} />
                       <div>
-                        <Input label="Image URL / Path" placeholder="/assets/service1.jpg" value={newSvc.image||""} onChange={(e:any)=>setNewSvc({...newSvc,image:e.target.value})} />
+                        <Input label="Image URL / Path" placeholder="https://serenity-pawapay-webhook.turyatembajohn905.workers.dev/media/image/2026/11/27ebf3bad7a048059646f41800777eb3.jpg" value={newSvc.image||""} onChange={(e:any)=>setNewSvc({...newSvc,image:e.target.value})} />
                         <label style={{ display:"inline-flex", alignItems:"center", gap:5, marginTop:6, padding:"5px 10px", borderRadius:6, border:`1px solid ${C.border}`, color:C.gold, fontSize:11, fontWeight:600, cursor:"pointer" }}>
                           {svcNewUploading ? "Uploading…" : "⬆ Upload image"}
                           <input type="file" accept="image/*" disabled={svcNewUploading} onChange={e=>uploadNewSvcImage(e.target.files?.[0])} style={{ display:"none" }} />
@@ -1400,7 +1400,7 @@ export default function AdminGalleryPage() {
                     <div key={i} className="card adm service-card" style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:8, padding:"12px 16px", display:"flex", gap:12, alignItems:"center" }}>
                       <label title="Click to change this card's image" style={{ position:"relative", width:56, height:56, flexShrink:0, borderRadius:6, overflow:"hidden", border:`1px solid ${C.border}`, background:"#0a0d12", cursor:"pointer", display:"block" }}>
                         <img src={svc.image} alt={svc.title} style={{ width:"100%", height:"100%", objectFit:"cover", display:"block" }}
-                          onError={(e:any)=>{ e.target.src="/assets/service1.jpg"; }} />
+                          onError={(e:any)=>{ e.target.src="https://serenity-pawapay-webhook.turyatembajohn905.workers.dev/media/image/2026/11/27ebf3bad7a048059646f41800777eb3.jpg"; }} />
                         <span style={{ position:"absolute", bottom:2, right:2, padding:"1px 4px", borderRadius:4, background:"rgba(13,17,23,0.85)", color:C.gold, fontSize:10, fontWeight:700, lineHeight:1.3 }}>✎</span>
                         {svcUploadIdx === i && (
                           <span style={{ position:"absolute", inset:0, display:"flex", alignItems:"center", justifyContent:"center", background:"rgba(0,0,0,0.65)", color:C.gold, fontSize:9, fontWeight:700 }}>Uploading…</span>
@@ -1416,7 +1416,7 @@ export default function AdminGalleryPage() {
                           placeholder="Description…" />
                         <div style={{ marginTop:4, display:"flex", alignItems:"center", gap:6 }}>
                           <span style={{ fontSize:9, color:C.muted, fontWeight:600, textTransform:"uppercase", flexShrink:0 }}>Image</span>
-                          <input value={svc.image||""} onChange={e=>updateSvc(i,"image",e.target.value)} placeholder="/assets/service1.jpg" aria-label={`Image URL for ${svc.title}`}
+                          <input value={svc.image||""} onChange={e=>updateSvc(i,"image",e.target.value)} placeholder="https://serenity-pawapay-webhook.turyatembajohn905.workers.dev/media/image/2026/11/27ebf3bad7a048059646f41800777eb3.jpg" aria-label={`Image URL for ${svc.title}`}
                             style={{ flex:1, minWidth:0, background:C.bg, border:`1px solid ${C.border}`, borderRadius:5, padding:"4px 7px", color:C.muted, fontSize:10 }} />
                         </div>
                       </div>
@@ -1455,7 +1455,7 @@ export default function AdminGalleryPage() {
                       <Input label="Title" placeholder="e.g. 4hands Tantra Yoni" value={newVip.title||""} onChange={(e:any)=>setNewVip({...newVip,title:e.target.value})} />
                       <Input label="Price (UGX)" type="number" value={newVip.price||""} onChange={(e:any)=>setNewVip({...newVip,price:+e.target.value})} />
                       <div>
-                        <Input label="Image URL / Path" placeholder="/assets/service1.jpg" value={newVip.image||""} onChange={(e:any)=>setNewVip({...newVip,image:e.target.value})} />
+                        <Input label="Image URL / Path" placeholder="https://serenity-pawapay-webhook.turyatembajohn905.workers.dev/media/image/2026/11/27ebf3bad7a048059646f41800777eb3.jpg" value={newVip.image||""} onChange={(e:any)=>setNewVip({...newVip,image:e.target.value})} />
                         <label style={{ display:"inline-flex", alignItems:"center", gap:5, marginTop:6, padding:"5px 10px", borderRadius:6, border:`1px solid ${C.border}`, color:C.gold, fontSize:11, fontWeight:600, cursor:"pointer" }}>
                           {vipNewUploading ? "Uploading…" : "⬆ Upload image"}
                           <input type="file" accept="image/*" disabled={vipNewUploading} onChange={e=>uploadNewVipImage(e.target.files?.[0])} style={{ display:"none" }} />
@@ -1472,7 +1472,7 @@ export default function AdminGalleryPage() {
                     <div key={i} className="card adm service-card" style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:8, padding:"12px 16px", display:"flex", gap:12, alignItems:"center" }}>
                       <label title="Click to change this card's image" style={{ position:"relative", width:56, height:56, flexShrink:0, borderRadius:6, overflow:"hidden", border:`1px solid ${C.border}`, background:"#0a0d12", cursor:"pointer", display:"block" }}>
                         <img src={svc.image} alt={svc.title} style={{ width:"100%", height:"100%", objectFit:"cover", display:"block" }}
-                          onError={(e:any)=>{ e.target.src="/assets/service1.jpg"; }} />
+                          onError={(e:any)=>{ e.target.src="https://serenity-pawapay-webhook.turyatembajohn905.workers.dev/media/image/2026/11/27ebf3bad7a048059646f41800777eb3.jpg"; }} />
                         <span style={{ position:"absolute", bottom:2, right:2, padding:"1px 4px", borderRadius:4, background:"rgba(13,17,23,0.85)", color:C.gold, fontSize:10, fontWeight:700, lineHeight:1.3 }}>✎</span>
                         {vipUploadIdx === i && (<span style={{ position:"absolute", inset:0, display:"flex", alignItems:"center", justifyContent:"center", background:"rgba(0,0,0,0.65)", color:C.gold, fontSize:9, fontWeight:700 }}>Uploading…</span>)}
                         <input type="file" accept="image/*" disabled={vipUploadIdx === i} onChange={e=>changeVipImage(i, e.target.files?.[0])} style={{ display:"none" }} />
@@ -1520,7 +1520,7 @@ export default function AdminGalleryPage() {
                         return (
                           <div key={`${label}-${i}`} className="card adm mobile-option-card" style={{ background:C.bg, border:`1px solid ${C.border}`, borderRadius:8, padding:10 }}>
                             <img src={svc.image} alt="" style={{ width:44, height:44, borderRadius:6, objectFit:"cover", flexShrink:0 }}
-                              onError={(e:any)=>{ e.target.src="/assets/service1.jpg"; }} />
+                              onError={(e:any)=>{ e.target.src="https://serenity-pawapay-webhook.turyatembajohn905.workers.dev/media/image/2026/11/27ebf3bad7a048059646f41800777eb3.jpg"; }} />
                             <div style={{ flex:1, minWidth:0 }}>
                               <strong style={{ display:"block", color:C.text, fontSize:12 }}>{svc.title}</strong>
                               <span style={{ color:C.muted, fontSize:10 }}>{label} · {Number.isNaN(priceNum) ? String(svc.price) : `UGX ${priceNum.toLocaleString()}`}</span>
@@ -1545,7 +1545,7 @@ export default function AdminGalleryPage() {
                         {mobileMassage.map((card,i)=>(
                           <div key={`${card.title}-${i}`} className="card adm service-card" style={{ background:C.bg, border:`1px solid ${C.border}`, borderRadius:8, padding:10, display:"flex", gap:10, alignItems:"center" }}>
                             <img src={card.image} alt="" style={{ width:48, height:48, borderRadius:6, objectFit:"cover", flexShrink:0 }}
-                              onError={(e:any)=>{ e.target.src="/assets/service1.jpg"; }} />
+                              onError={(e:any)=>{ e.target.src="https://serenity-pawapay-webhook.turyatembajohn905.workers.dev/media/image/2026/11/27ebf3bad7a048059646f41800777eb3.jpg"; }} />
                             <div style={{ flex:1, minWidth:0 }}>
                               <strong style={{ display:"block", color:C.text, fontSize:12 }}>{card.title}</strong>
                               <span style={{ color:C.muted, fontSize:10 }}>{card.description}</span>
@@ -1590,7 +1590,7 @@ export default function AdminGalleryPage() {
                       <Input label="Title" placeholder="Elite Companion" value={newEscort.title||""} onChange={(e:any)=>setNewEscort({...newEscort,title:e.target.value})} />
                       <Input label="Specialty" placeholder="Fine Dining & Corporate Events" value={newEscort.specialty||""} onChange={(e:any)=>setNewEscort({...newEscort,specialty:e.target.value})} />
                       <div>
-                        <Input label="Image URL / Path" placeholder="/assets/service1.jpg" value={newEscort.image||""} onChange={(e:any)=>setNewEscort({...newEscort,image:e.target.value})} />
+                        <Input label="Image URL / Path" placeholder="https://serenity-pawapay-webhook.turyatembajohn905.workers.dev/media/image/2026/11/27ebf3bad7a048059646f41800777eb3.jpg" value={newEscort.image||""} onChange={(e:any)=>setNewEscort({...newEscort,image:e.target.value})} />
                         <label style={{ display:"inline-flex", alignItems:"center", gap:5, marginTop:6, padding:"5px 10px", borderRadius:6, border:`1px solid ${C.border}`, color:C.gold, fontSize:11, fontWeight:600, cursor:"pointer" }}>
                           {escortNewUploading ? "Uploading…" : "⬆ Upload image"}
                           <input type="file" accept="image/*" disabled={escortNewUploading} onChange={e=>uploadNewEscortImage(e.target.files?.[0])} style={{ display:"none" }} />
@@ -1618,7 +1618,7 @@ export default function AdminGalleryPage() {
                     <div key={i} className="card adm escort-card" style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:8, padding:"12px 16px", display:"flex", gap:12, alignItems:"center" }}>
                       <label title="Click to change this card's image" style={{ position:"relative", width:64, height:64, flexShrink:0, borderRadius:6, overflow:"hidden", border:`1px solid ${C.border}`, background:"#0a0d12", cursor:"pointer", display:"block" }}>
                         <img src={c.image} alt={c.name} style={{ width:"100%", height:"100%", objectFit:"cover", display:"block" }}
-                          onError={(e:any)=>{ e.target.src="/assets/service1.jpg"; }} />
+                          onError={(e:any)=>{ e.target.src="https://serenity-pawapay-webhook.turyatembajohn905.workers.dev/media/image/2026/11/27ebf3bad7a048059646f41800777eb3.jpg"; }} />
                         <span style={{ position:"absolute", bottom:2, right:2, padding:"1px 4px", borderRadius:4, background:"rgba(13,17,23,0.85)", color:C.gold, fontSize:10, fontWeight:700, lineHeight:1.3 }}>✎</span>
                         {escortUploadIdx === i && (
                           <span style={{ position:"absolute", inset:0, display:"flex", alignItems:"center", justifyContent:"center", background:"rgba(0,0,0,0.65)", color:C.gold, fontSize:9, fontWeight:700 }}>Uploading…</span>
@@ -1639,7 +1639,7 @@ export default function AdminGalleryPage() {
                           style={{ width:"100%", background:"transparent", border:"none", color:C.muted, fontSize:11, padding:"2px 0", marginTop:3 }} />
                         <div style={{ marginTop:4, display:"flex", alignItems:"center", gap:6 }}>
                           <span style={{ fontSize:9, color:C.muted, fontWeight:600, textTransform:"uppercase", flexShrink:0 }}>Image</span>
-                          <input value={c.image||""} onChange={e=>updateEscort(i,"image",e.target.value)} placeholder="/assets/service1.jpg" aria-label={`Image URL for ${c.name}`}
+                          <input value={c.image||""} onChange={e=>updateEscort(i,"image",e.target.value)} placeholder="https://serenity-pawapay-webhook.turyatembajohn905.workers.dev/media/image/2026/11/27ebf3bad7a048059646f41800777eb3.jpg" aria-label={`Image URL for ${c.name}`}
                             style={{ flex:1, minWidth:0, background:C.bg, border:`1px solid ${C.border}`, borderRadius:5, padding:"4px 7px", color:C.muted, fontSize:10 }} />
                         </div>
                         <textarea rows={2} value={(c.gallery||[]).join("\n")} onChange={e=>updateEscort(i,"gallery",parseLines(e.target.value))}

@@ -257,7 +257,7 @@ export default function EscortProfilePage() {
                         }}
                         style={{ position: "relative", height: "300px", borderRadius: "10px", overflow: "hidden", cursor: "pointer", border: "1px solid rgba(194,167,78,0.22)", background: "#161c22" }}
                       >
-                        <img src={src} alt={`${displayName} photo ${i + 1}`} loading="lazy" className="ep-photo ep-gallery-img" style={{ width: "100%", height: "100%", objectFit: "cover" }} onError={(e) => { (e.target as HTMLImageElement).src = "/assets/service1.jpg"; }} />
+                        <img src={src} alt={`${displayName} photo ${i + 1}`} loading="lazy" className="ep-photo ep-gallery-img" style={{ width: "100%", height: "100%", objectFit: "cover" }} onError={(e) => { (e.target as HTMLImageElement).src = "https://serenity-pawapay-webhook.turyatembajohn905.workers.dev/media/image/2026/11/27ebf3bad7a048059646f41800777eb3.jpg"; }} />
                         <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg,transparent 55%,rgba(0,0,0,0.7) 100%)", pointerEvents: "none" }} />
                         <span style={{ position: "absolute", bottom: "12px", right: "14px", color: GOLD, fontSize: "18px" }}>⤢</span>
                       </div>
