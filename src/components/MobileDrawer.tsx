@@ -61,7 +61,7 @@ export default function MobileDrawer({ isOpen, onClose }: MobileDrawerProps) {
           bottom: 0,
           width: '280px',
           maxWidth: '85vw',
-          backgroundColor: 'rgba(18, 23, 28, 0.85)',
+          backgroundColor: 'rgba(18, 23, 28, 0.7)',
           backdropFilter: 'blur(12px)',
           WebkitBackdropFilter: 'blur(12px)',
           borderLeft: '1px solid rgba(194, 167, 78, 0.25)',
