@@ -58,6 +58,12 @@ function ServiceCard({
   // Delay calculation for column stagger: 0.08s per column
   const staggerDelay = (index % 3) * 0.08;
 
+  // Summarize description: take first sentence or limit to ~60 chars
+  const desc = service.description
+    ?.split('.')[0]
+    .substring(0, 60)
+    .trim() + (service.description?.split('.')[0].length > 60 ? '…' : '');
+
   return (
     <div
       ref={ref}
@@ -103,7 +109,7 @@ function ServiceCard({
         </div>
 
         {/* Card Content */}
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '16px', position: 'relative', zIndex: 2 }}>
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '12px', position: 'relative', zIndex: 2 }}>
           <h3
             style={{
               fontFamily: 'Cormorant, serif',
@@ -124,39 +130,40 @@ function ServiceCard({
           <p
             style={{
               fontFamily: 'Cormorant, serif',
-              fontSize: '1.05rem',
-              fontWeight: 500,
+              fontSize: '0.95rem',
+              fontWeight: 400,
               color: '#60351A',
               textShadow: 'none',
-              lineHeight: 1.7,
+              lineHeight: 1.5,
               margin: 0,
+              fontStyle: 'italic',
             }}
           >
-            {service.description || 'A soothing treatment designed to revitalize mind, body, and senses.'}
+            {desc || 'Premium massage therapy.'}
           </p>
 
-          {/* Action Button */}
+          {/* Action Buttons */}
           <div
             style={{
-              width: '100%',
+              display: 'flex',
+              gap: '12px',
+              justifyContent: 'center',
               marginTop: 'auto',
-              padding: '10px 0',
-              textAlign: 'center',
+              paddingTop: '12px',
             }}
           >
             <Link
               href={'/booking?service=' + encodeURIComponent(service.title) + '&price=' + encodeURIComponent(String(service.price))}
               style={{
-                width: '100%',
-                maxWidth: '280px',
-                margin: '0 auto',
-                padding: '12px 24px',
+                flex: 1,
+                maxWidth: '200px',
+                padding: '10px 16px',
                 backgroundColor: '#60351A',
                 border: 'none',
                 color: '#FDF3E6',
                 borderRadius: '4px',
                 fontFamily: 'Cormorant, serif',
-                fontSize: '1rem',
+                fontSize: '0.875rem',
                 fontWeight: 700,
                 letterSpacing: '1px',
                 textTransform: 'uppercase',
@@ -165,6 +172,30 @@ function ServiceCard({
             >
               Book Now
             </Link>
+
+            <a
+              href={whatsappLink(`Hello, I'd like to book ${service.title} (${service.price}). Please send details and availability.`)}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                flex: 1,
+                maxWidth: '200px',
+                padding: '10px 16px',
+                backgroundColor: '#25D366',
+                border: 'none',
+                color: '#FDF3E6',
+                borderRadius: '4px',
+                fontFamily: 'Cormorant, serif',
+                fontSize: '0.875rem',
+                fontWeight: 700,
+                letterSpacing: '1px',
+                textTransform: 'uppercase',
+                textDecoration: 'none',
+              }}
+            >
+              <i className="fab fa-whatsapp" style={{ marginRight: '6px', fontSize: '1rem' }}></i>
+              WhatsApp
+            </a>
           </div>
         </div>
       </div>

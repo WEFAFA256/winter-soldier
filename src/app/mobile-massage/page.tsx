@@ -19,6 +19,142 @@ const COVERAGE_AREAS = [
   "All Greater Kampala Residences",
 ];
 
+function ServiceCard({
+  service,
+  imgSrc,
+  fallbackImg,
+}: {
+  service: { title: string; price: number | string; description?: string; image?: string };
+  imgSrc: string;
+  fallbackImg: string;
+}) {
+  // Summarize description: take first sentence or limit to ~60 chars
+  const desc = service.description
+    ?.split('.')[0]
+    .substring(0, 60)
+    .trim() + (service.description?.split('.')[0].length > 60 ? '…' : '');
+
+  return (
+    <div style={{
+      backgroundColor: '#FDF3E6',
+      borderRadius: '24px',
+      overflow: 'hidden',
+      display: 'flex',
+      flexDirection: 'column',
+      height: '100%',
+      position: 'relative',
+      padding: '24px 20px',
+    }}>
+      <div
+        style={{ height: '180px', overflow: 'hidden', position: 'relative' }}
+      >
+        <img
+          src={imgSrc}
+          alt={service.title}
+          loading="lazy"
+          style={{
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+          }}
+          onError={(e) => {
+            (e.target as HTMLImageElement).src = fallbackImg;
+          }}
+        />
+      </div>
+
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '10px', position: 'relative', zIndex: 2 }}>
+        <h3
+          style={{
+            fontFamily: 'Cormorant, serif',
+            fontSize: '1.75rem',
+            fontWeight: 800,
+            color: '#60351A',
+            textShadow: 'none',
+            margin: 0,
+            lineHeight: 1.3,
+            letterSpacing: '1px',
+            textAlign: 'center',
+            textTransform: 'none',
+          }}
+        >
+          {service.title}
+        </h3>
+
+        <p
+          style={{
+            fontFamily: 'Cormorant, serif',
+            fontSize: '0.9rem',
+            fontWeight: 400,
+            color: '#60351A',
+            textShadow: 'none',
+            lineHeight: 1.5,
+            margin: 0,
+            fontStyle: 'italic',
+          }}
+        >
+          {desc || 'Premium massage therapy.'}
+        </p>
+
+        <div
+          style={{
+            display: 'flex',
+            gap: '8px',
+            justifyContent: 'center',
+            marginTop: 'auto',
+            paddingTop: '8px',
+          }}
+        >
+          <Link
+            href={'/booking?service=' + encodeURIComponent(service.title) + '&price=' + encodeURIComponent(String(service.price))}
+            style={{
+              flex: 1,
+              maxWidth: '180px',
+              padding: '8px 12px',
+              backgroundColor: '#60351A',
+              border: 'none',
+              color: '#FDF3E6',
+              borderRadius: '4px',
+              fontFamily: 'Cormorant, serif',
+              fontSize: '0.8rem',
+              fontWeight: 700,
+              letterSpacing: '1px',
+              textTransform: 'uppercase',
+              textDecoration: 'none',
+            }}
+          >
+            Book Now
+          </Link>
+
+          <a
+            href={whatsappLink(`Hello, I'd like to book ${service.title}. Please send details and availability.`)}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              flex: 1,
+              maxWidth: '180px',
+              padding: '8px 12px',
+              backgroundColor: '#25D366',
+              border: 'none',
+              color: '#FDF3E6',
+              borderRadius: '4px',
+              fontFamily: 'Cormorant, serif',
+              fontSize: '0.8rem',
+              fontWeight: 700,
+              letterSpacing: '1px',
+              textTransform: 'uppercase',
+              textDecoration: 'none',
+            }}
+          >
+            <i className="fab fa-whatsapp" style={{ marginRight: '4px', fontSize: '0.85rem' }}></i>
+            WhatsApp
+          </a>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function MobileMassagePage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -140,8 +276,38 @@ export default function MobileMassagePage() {
           </div>
         </div>
 
+        {/* --- SERVICES CARDS --- */}
+        <section style={{ padding: "60px 0 30px 0", backgroundColor: "#FDF3E6" }}>
+          <div className="container">
+            <div style={{ textAlign: "center", marginBottom: "40px" }}>
+              <span style={{ color: "#60351A", textTransform: "uppercase", letterSpacing: "2px", fontSize: "12px", fontWeight: 700 }}>
+                Our Services
+              </span>
+              <h2 style={{ fontFamily: "Cormorant, serif", fontSize: "2.2rem", fontWeight: 700, color: "#60351A", margin: "8px 0 0 0" }}>
+                Treatments Designed for You
+              </h2>
+            </div>
+
+            <div className="row g-4">
+              {[1, 2, 3, 4, 5].map((_, i) => (
+                <div key={i} className="col-12 col-md-6 col-lg-4">
+                  <ServiceCard
+                    service={{
+                      title: `Signature Massage Treatment ${i + 1}`,
+                      price: 250000 + i * 30000,
+                      image: `/assets/images/resources/service-1-${(i % 5) + 1}.jpg`,
+                      description: `A comprehensive ${i === 0 ? 'Swedish' : i === 1 ? 'Deep Tissue' : i === 2 ? 'Aromatherapy' : i === 3 ? 'Hot Stone' : 'Couples'} massage combining traditional and modern techniques for deep relaxation and restoration.`,
+                    }}
+                    imgSrc={`/assets/images/resources/service-1-${(i % 5) + 1}.jpg`}
+                    fallbackImg="/assets/images/resources/service-1-1.jpg"
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
         {/* --- HOW IT WORKS (3 STEPS) --- */}
-        <section style={{ padding: "60px 0 50px 0", backgroundColor: "#12171c" }}>
           <div className="container">
             <div style={{ textAlign: "center", marginBottom: "40px" }}>
               <span style={{ color: "#c2a74e", textTransform: "uppercase", letterSpacing: "2px", fontSize: "12px", fontWeight: 700 }}>
