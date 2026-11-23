@@ -151,9 +151,10 @@ export default function EscortsPage() {
         : c.availability !== "available"
   );
 
-  // Keep the hero tied to the second admin-ordered companion. While the content
-  // store is loading there is NO hero photo at all — never the stale default.
-  const heroImage = companions[1]?.image;
+  // Prefer the second admin-ordered companion (the established hero choice),
+  // but fall back to the first when only one escort has been uploaded. While
+  // the content store is loading there is NO hero photo — never a stale default.
+  const heroImage = companions[1]?.image || companions[0]?.image;
 
   const navItems = [
     { label: "Home", href: "/" },
