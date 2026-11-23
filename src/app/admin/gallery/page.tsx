@@ -4,6 +4,13 @@ import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { Companion, DEFAULT_COMPANIONS } from "@/lib/escorts";
 import { parseServicePrice, splitServiceCatalog } from "@/lib/service-order";
+import {
+  SiteVideo,
+  VIDEO_CATEGORY_OPTIONS,
+  blankSiteVideo,
+  formatVideoDuration,
+  normalizeSiteVideos,
+} from "@/lib/site-videos";
 
 /* ─── Types ─────────────────────────────────────────────────── */
 interface ServiceItem {
@@ -71,7 +78,15 @@ const css = `
   .adm .gal-save-area { display: flex !important; flex: 1 1 260px !important; align-items: flex-end !important; gap: 10px !important; min-width: 0 !important; }
   .adm .gal-save-area .gal-name-wrap { flex: 1 1 auto !important; min-width: 0 !important; margin-bottom: 0 !important; }
   .adm .gal-upload-btn, .adm .gal-save-btn { min-height: 44px !important; white-space: nowrap !important; }
-  
+
+  /* Admin-managed gallery reels. The form and list collapse to one column on
+     small screens so no URL field is squeezed off the edge of a 390px viewport. */
+  .adm .video-form-grid { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 12px !important; }
+  .adm .video-toolbar { display: flex !important; align-items: center !important; justify-content: space-between !important; gap: 10px !important; flex-wrap: wrap !important; }
+  .adm .video-card { display: flex !important; flex-direction: column !important; gap: 12px !important; }
+  .adm .video-upload-label { display: inline-flex !important; align-items: center !important; justify-content: center !important; min-height: 44px !important; padding: 8px 14px !important; border: 1px solid ${C.border} !important; border-radius: 6px !important; color: ${C.gold} !important; font-size: 12px !important; font-weight: 600 !important; cursor: pointer !important; }
+  .adm .video-upload-label:hover { border-color: ${C.gold} !important; background: ${C.goldDim} !important; }
+
    /* fixed: removed orphaned keyframe fragment */
   .adm .line-clamp2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
   .adm .mobile-panel-grid { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 16px !important; }
@@ -104,6 +119,10 @@ const css = `
     .adm .escort-form-grid { grid-template-columns: 1fr !important; }
     .adm .blog-form-grid { grid-template-columns: 1fr !important; }
     .adm .vip-form-grid { grid-template-columns: 1fr !important; }
+    .adm .video-form-grid { grid-template-columns: 1fr !important; }
+    .adm .video-toolbar { flex-direction: column !important; align-items: stretch !important; }
+    .adm .video-toolbar > * { width: 100% !important; }
+    .adm .video-upload-label { width: 100% !important; }
     .adm .mobile-panel-grid { grid-template-columns: 1fr !important; }
     .adm .mobile-option-card { flex-direction: column !important; align-items: stretch !important; }
     .adm .settings-grid { grid-template-columns: 1fr !important; }
@@ -164,9 +183,92 @@ const SectionHead = ({ title, sub }: any) => (
   </div>
 );
 
+/* Shared editor for a gallery reel. Used for both the add form and each saved
+   record so their fields, validation and upload controls cannot drift apart. */
+function VideoFields({
+  value,
+  onChange,
+  onVideoFile,
+  onPosterFile,
+  videoBusy = false,
+  posterBusy = false,
+  resetKey = "",
+  idPrefix,
+}: {
+  value: SiteVideo;
+  onChange: (patch: Partial<SiteVideo>) => void;
+  onVideoFile: (file: File | undefined) => void;
+  onPosterFile: (file: File | undefined) => void;
+  videoBusy?: boolean;
+  posterBusy?: boolean;
+  resetKey?: string;
+  idPrefix: string;
+}) {
+  const categories = VIDEO_CATEGORY_OPTIONS.filter((option) => option.value !== "all");
+  const sourceLabel = value.videoUrl ? "Uploaded video" : value.youtubeId ? "YouTube" : "No source yet";
+  const sourceColor = value.videoUrl ? C.success : value.youtubeId ? C.gold : C.muted;
+
+  return (
+    <div>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginBottom: 14 }}>
+        <Badge color={sourceColor}>{sourceLabel}</Badge>
+        <label className="video-upload-label" aria-label={`Upload video for ${idPrefix}`}>
+          {videoBusy ? "Uploading video…" : "⬆ Upload Video"}
+          <input
+            key={`video-file-${resetKey}`}
+            type="file"
+            accept="video/*"
+            disabled={videoBusy}
+            onChange={(e) => onVideoFile(e.target.files?.[0])}
+            style={{ display: "none" }}
+          />
+        </label>
+        <label className="video-upload-label" aria-label={`Upload poster for ${idPrefix}`}>
+          {posterBusy ? "Uploading poster…" : "⬆ Upload Poster"}
+          <input
+            key={`poster-file-${resetKey}`}
+            type="file"
+            accept="image/*"
+            disabled={posterBusy}
+            onChange={(e) => onPosterFile(e.target.files?.[0])}
+            style={{ display: "none" }}
+          />
+        </label>
+        <span style={{ fontSize: 10, color: C.muted }}>
+          Uploads go straight to Cloudinary; click Save Changes to publish the reel.
+        </span>
+      </div>
+
+      <div className="adm video-form-grid">
+        <Input label="Title *" aria-label={`Title for ${idPrefix}`} placeholder="Deep Tissue & Muscular Release Flow" value={value.title} onChange={(e: any) => onChange({ title: e.target.value })} />
+        <Input label="Specialist" aria-label={`Specialist for ${idPrefix}`} placeholder="Specialist Brenda" value={value.specialist} onChange={(e: any) => onChange({ specialist: e.target.value })} />
+        <Input label="Role" aria-label={`Role for ${idPrefix}`} placeholder="Master Deep Bodywork" value={value.role} onChange={(e: any) => onChange({ role: e.target.value })} />
+        <Input label="Category Label" aria-label={`Category label for ${idPrefix}`} placeholder="Deep Tissue" value={value.categoryLabel} onChange={(e: any) => onChange({ categoryLabel: e.target.value })} />
+        <div style={{ marginBottom: 12 }}>
+          <label style={{ display: "block", fontSize: 11, fontWeight: 600, color: C.muted, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 5 }}>Filter Category</label>
+          <select
+            aria-label={`Filter category for ${idPrefix}`}
+            value={value.category}
+            onChange={(e: any) => onChange({ category: e.target.value as SiteVideo["category"] })}
+            style={{ width: "100%", background: C.bg, border: `1px solid ${C.border}`, borderRadius: 6, padding: "8px 12px", color: C.text, fontSize: 13 }}
+          >
+            {categories.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+          </select>
+        </div>
+        <Input label="Duration" aria-label={`Duration for ${idPrefix}`} placeholder="4:15 HD" value={value.duration} onChange={(e: any) => onChange({ duration: e.target.value })} />
+        <Input label="YouTube ID (optional)" aria-label={`YouTube ID for ${idPrefix}`} placeholder="abc123xyz" value={value.youtubeId} onChange={(e: any) => onChange({ youtubeId: e.target.value })} />
+        <Input label="Uploaded Video URL (optional)" aria-label={`Video URL for ${idPrefix}`} placeholder="https://res.cloudinary.com/.../video.mp4" value={value.videoUrl} onChange={(e: any) => onChange({ videoUrl: e.target.value })} />
+        <Input label="Booking Service" aria-label={`Booking service for ${idPrefix}`} placeholder="Deep Tissue Massage" value={value.bookingService} onChange={(e: any) => onChange({ bookingService: e.target.value })} />
+        <Input label="Poster Image URL" aria-label={`Poster URL for ${idPrefix}`} placeholder="https://res.cloudinary.com/.../poster.jpg" value={value.poster} onChange={(e: any) => onChange({ poster: e.target.value })} />
+      </div>
+      <Textarea label="Description" aria-label={`Description for ${idPrefix}`} rows={2} placeholder="What the visitor will see in this reel…" value={value.description} onChange={(e: any) => onChange({ description: e.target.value })} />
+    </div>
+  );
+}
+
 /* ─── Main Component ─────────────────────────────────────────── */
 export default function AdminGalleryPage() {
-  const [tab, setTab] = useState<"gallery"|"services"|"vip"|"mobile"|"escorts"|"blog"|"bookings"|"info">("gallery");
+  const [tab, setTab] = useState<"gallery"|"videos"|"services"|"vip"|"mobile"|"escorts"|"blog"|"bookings"|"info">("gallery");
   const [auth, setAuth] = useState(false);
   const [pw, setPw] = useState("");
   const [pwErr, setPwErr] = useState("");
@@ -214,6 +316,16 @@ export default function AdminGalleryPage() {
   });
   const [escortUploadIdx, setEscortUploadIdx] = useState<number | null>(null);
   const [escortNewUploading, setEscortNewUploading] = useState(false);
+
+  /* Admin-managed gallery videos */
+  const [videos, setVideos] = useState<SiteVideo[]>([]);
+  const [showAddVideo, setShowAddVideo] = useState(false);
+  const [newVideo, setNewVideo] = useState<SiteVideo>(blankSiteVideo());
+  const [videoFormKey, setVideoFormKey] = useState(0);
+  const [newVideoUploading, setNewVideoUploading] = useState(false);
+  const [newPosterUploading, setNewPosterUploading] = useState(false);
+  const [videoUploadIdx, setVideoUploadIdx] = useState<number | null>(null);
+  const [posterUploadIdx, setPosterUploadIdx] = useState<number | null>(null);
 
   /* Blog */
   const [blogs, setBlogs] = useState<BlogPost[]>([]);
@@ -344,6 +456,7 @@ export default function AdminGalleryPage() {
         setVipServices(catalog.vipServices);
         setMobileMassage(Array.isArray(c.mobileMassage) ? c.mobileMassage : []);
         setEscorts(Array.isArray(c.escorts) ? c.escorts : DEFAULT_COMPANIONS);
+        setVideos(normalizeSiteVideos(c.videos));
       }
       if (bRes.ok) setBlogs(await bRes.json());
     } catch {
@@ -537,6 +650,110 @@ export default function AdminGalleryPage() {
     setVipNewUploading(false);
   };
 
+  /* Gallery video handlers — the same durable `videos` array drives /gallery. */
+  const uploadVideoFile = async (file: File): Promise<any | null> => {
+    const fd = new FormData();
+    fd.append("file", file);
+    const res = await fetch("/api/upload-video", { method: "POST", body: fd, credentials: "same-origin" });
+    if (res.ok) return res.json();
+    const data = await res.json().catch(() => ({}));
+    alert(data.error || "Video upload failed. Please try again.");
+    return null;
+  };
+
+  const uploadNewVideoFile = async (file: File | undefined) => {
+    if (!file) return;
+    setNewVideoUploading(true);
+    try {
+      const result = await uploadVideoFile(file);
+      if (result?.secure_url) {
+        setNewVideo((current) => ({
+          ...current,
+          videoUrl: result.secure_url,
+          duration: current.duration || formatVideoDuration(result.duration),
+        }));
+      }
+    } catch {
+      alert("Video upload failed. Please try again.");
+    }
+    setNewVideoUploading(false);
+  };
+
+  const uploadNewPosterFile = async (file: File | undefined) => {
+    if (!file) return;
+    setNewPosterUploading(true);
+    try {
+      const url = await uploadFile(file);
+      if (url) setNewVideo((current) => ({ ...current, poster: url }));
+      else alert("Poster upload failed. Please try again.");
+    } catch {
+      alert("Poster upload failed. Please try again.");
+    }
+    setNewPosterUploading(false);
+  };
+
+  const resetVideoForm = () => {
+    setNewVideo(blankSiteVideo());
+    setVideoFormKey((key) => key + 1);
+  };
+
+  const addVideo = () => {
+    if (!newVideo.title.trim()) return alert("Enter a video title");
+    if (!newVideo.videoUrl && !newVideo.youtubeId) return alert("Upload a video or enter a YouTube ID");
+    const categoryLabel =
+      newVideo.categoryLabel.trim() ||
+      VIDEO_CATEGORY_OPTIONS.find((option) => option.value === newVideo.category)?.label ||
+      "Spa Film";
+    const record: SiteVideo = {
+      ...newVideo,
+      id: newVideo.id || `video-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+      title: newVideo.title.trim(),
+      categoryLabel,
+    };
+    setVideos([record, ...videos]);
+    resetVideoForm();
+    setShowAddVideo(false);
+  };
+
+  const updateVideo = (index: number, patch: Partial<SiteVideo>) => {
+    setVideos((current) => current.map((video, i) => (i === index ? { ...video, ...patch } : video)));
+  };
+
+  const deleteVideo = (index: number) => {
+    if (!confirm(`Delete "${videos[index].title}" from the gallery reels?`)) return;
+    setVideos((current) => current.filter((_, i) => i !== index));
+  };
+
+  const changeVideoFile = async (index: number, file: File | undefined) => {
+    if (!file) return;
+    setVideoUploadIdx(index);
+    try {
+      const result = await uploadVideoFile(file);
+      if (result?.secure_url) {
+        updateVideo(index, {
+          videoUrl: result.secure_url,
+          duration: videos[index].duration || formatVideoDuration(result.duration),
+        });
+      }
+    } catch {
+      alert("Video upload failed. Please try again.");
+    }
+    setVideoUploadIdx(null);
+  };
+
+  const changeVideoPoster = async (index: number, file: File | undefined) => {
+    if (!file) return;
+    setPosterUploadIdx(index);
+    try {
+      const url = await uploadFile(file);
+      if (url) updateVideo(index, { poster: url });
+      else alert("Poster upload failed. Please try again.");
+    } catch {
+      alert("Poster upload failed. Please try again.");
+    }
+    setPosterUploadIdx(null);
+  };
+
   /* Mobile Massage handlers — prices here are a copy for /mobile-massage only. */
   const titleKey = (value: string) => String(value || "").toLowerCase().replace(/[^a-z0-9]/g, "");
   const addToMobile = (source: ServiceItem) => {
@@ -616,7 +833,7 @@ export default function AdminGalleryPage() {
 
   const saveAll = async () => {
     setSaving(true);
-    const body = { ...siteContent, services, vipServices, mobileMassage, escorts };
+    const body = { ...siteContent, services, vipServices, mobileMassage, escorts, videos };
     const res = await fetch("/api/content", { method:"POST", headers:{ "Content-Type":"application/json" }, credentials:"same-origin", body: JSON.stringify(body) });
     if (res.ok) {
       setSiteContent(body);
@@ -691,6 +908,7 @@ export default function AdminGalleryPage() {
 
   const tabs = [
     { id:"gallery", label:"Gallery", icon:"📸", count:gallery.length },
+    { id:"videos", label:"Videos", icon:"🎬", count:videos.length },
     { id:"services", label:"Services", icon:"💅", count:services.length },
     { id:"vip", label:"VIP", icon:"👑", count:vipServices.length },
     { id:"mobile", label:"Mobile Massage", icon:"🚗", count:mobileMassage.length },
@@ -984,6 +1202,78 @@ export default function AdminGalleryPage() {
                       </div>
                     );
                   })}
+                </div>
+              </div>
+            )}
+
+            {/* ══ VIDEOS TAB ══ */}
+            {tab === "videos" && (
+              <div className="admin-pane">
+                <SectionHead title="Gallery Videos" sub="Upload reels or link YouTube films here. These records are the only source of the Videos tab on /gallery — click Save Changes to publish." />
+
+                <div className="video-toolbar" style={{ marginBottom: 16 }}>
+                  <BtnGold onClick={()=>setShowAddVideo(!showAddVideo)}>{showAddVideo ? "✕ Cancel" : "+ Add Video"}</BtnGold>
+                  <span style={{ fontSize: 11, color: C.muted }}>{videos.length} reel{videos.length === 1 ? "" : "s"} in the gallery</span>
+                </div>
+
+                {showAddVideo && (
+                  <div className="admin-pane" style={{ background:C.surface, border:`1px solid ${C.gold}44`, borderRadius:10, padding:20, marginBottom:16 }}>
+                    <p style={{ margin:"0 0 14px", fontSize:12, fontWeight:700, color:C.gold, textTransform:"uppercase" }}>New Video Reel</p>
+                    <VideoFields
+                      value={newVideo}
+                      onChange={(patch)=>setNewVideo((current)=>({ ...current, ...patch }))}
+                      onVideoFile={uploadNewVideoFile}
+                      onPosterFile={uploadNewPosterFile}
+                      videoBusy={newVideoUploading}
+                      posterBusy={newPosterUploading}
+                      resetKey={String(videoFormKey)}
+                      idPrefix="new reel"
+                    />
+                    <BtnGold onClick={addVideo} disabled={newVideoUploading || newPosterUploading}>
+                      {newVideoUploading || newPosterUploading ? "Uploading…" : "Save Reel"}
+                    </BtnGold>
+                  </div>
+                )}
+
+                {videos.length === 0 ? (
+                  <div style={{ textAlign:"center", padding:"60px 20px", color:C.muted }}>
+                    <p style={{ fontSize:32, margin:"0 0 8px" }}>🎬</p>
+                    <p style={{ fontSize:13 }}>No videos yet. Click “+ Add Video” to upload the first reel.</p>
+                  </div>
+                ) : (
+                  <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
+                    {videos.map((video, i) => (
+                      <div key={video.id} className="card adm video-card" style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:8, padding:16 }}>
+                        <div className="video-toolbar">
+                          <div style={{ display:"flex", alignItems:"center", gap:12, minWidth:0 }}>
+                            {video.poster && (
+                              <img src={video.poster} alt="" style={{ width:96, height:54, objectFit:"cover", borderRadius:6, border:`1px solid ${C.border}`, flexShrink:0 }}
+                                onError={(e:any)=>{ e.target.style.display="none"; }} />
+                            )}
+                            <div style={{ minWidth:0 }}>
+                              <p style={{ margin:0, color:C.text, fontSize:13, fontWeight:700, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{video.title || "Untitled reel"}</p>
+                              <p style={{ margin:"3px 0 0", color:C.muted, fontSize:11 }}>{video.videoUrl ? "Cloudinary video" : video.youtubeId ? "YouTube film" : "No playable source"}</p>
+                            </div>
+                          </div>
+                          <BtnOutline onClick={()=>deleteVideo(i)} style={{ color:C.danger }}>🗑 Delete</BtnOutline>
+                        </div>
+                        <VideoFields
+                          value={video}
+                          onChange={(patch)=>updateVideo(i, patch)}
+                          onVideoFile={(file)=>changeVideoFile(i, file)}
+                          onPosterFile={(file)=>changeVideoPoster(i, file)}
+                          videoBusy={videoUploadIdx === i}
+                          posterBusy={posterUploadIdx === i}
+                          resetKey={`${video.id}-${videoUploadIdx === i ? "busy" : "idle"}`}
+                          idPrefix={video.title || `reel ${i + 1}`}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                <div style={{ marginTop:20 }}>
+                  <BtnGold onClick={saveAll} disabled={saving}>{saving ? "Saving…" : "💾 Save All Changes"}</BtnGold>
                 </div>
               </div>
             )}

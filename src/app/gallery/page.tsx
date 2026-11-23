@@ -6,6 +6,11 @@ import CustomCursor from "@/components/CustomCursor";
 import MobileDrawer from "@/components/MobileDrawer";
 import { useSiteContact } from "@/components/ContactProvider";
 import { usePageReveal } from "@/lib/use-page-reveal";
+import {
+  SiteVideo,
+  VIDEO_CATEGORY_OPTIONS,
+  normalizeSiteVideos,
+} from "@/lib/site-videos";
 
 interface GalleryImage {
   id?: string;
@@ -13,20 +18,6 @@ interface GalleryImage {
   alt?: string;
   delay?: string;
   availability?: "available" | "in-session" | string;
-}
-
-interface SpaVideo {
-  id: string;
-  title: string;
-  specialist: string;
-  role: string;
-  category: "all" | "tantra" | "hammam" | "deep";
-  categoryLabel: string;
-  duration: string;
-  youtubeId: string;
-  poster: string;
-  description: string;
-  bookingService: string;
 }
 
 // Single source of truth for specialist availability. The admin-controlled record field is
@@ -54,86 +45,14 @@ function getBookingLabel(img: GalleryImage): string {
   return name ? `Book ${name}` : "Book Therapist";
 }
 
-const SPA_VIDEOS: SpaVideo[] = [
-  {
-    id: "video-1",
-    title: "Deep Tissue & Muscular Release Flow",
-    specialist: "Specialist Brenda",
-    role: "Master Deep Bodywork & Fascia Release",
-    category: "deep",
-    categoryLabel: "Deep Tissue",
-    duration: "4:15 HD",
-    youtubeId: "5j3x5qliPEw",
-    poster: "/assets/images/backgrounds/services-header-bg.jpg",
-    description: "Firm rhythmic pressure strokes targeting deeper muscular layers and connective tissue to eliminate neck, shoulder, and lumbar tension.",
-    bookingService: "Deep Tissue Massage",
-  },
-  {
-    id: "video-2",
-    title: "Authentic Turkish Hammam & Foam Cloud",
-    specialist: "Specialist Maya",
-    role: "Head of Hydrotherapy & Thermal Spa",
-    category: "hammam",
-    categoryLabel: "Turkish Hammam",
-    duration: "5:30 HD",
-    youtubeId: "uClVl1keyBk",
-    poster: "/assets/service6.jpg",
-    description: "An Ottoman bathing ritual on heated marble stone — authentic kese glove exfoliation followed by clouds of warm olive soap foam and a soothing rinse.",
-    bookingService: "Turkish Bath Packages",
-  },
-  {
-    id: "video-3",
-    title: "Royal 4-Hands Synchronized Tantra Flow",
-    specialist: "Chloe & Sarah",
-    role: "VIP Tantric Tandem Specialists",
-    category: "tantra",
-    categoryLabel: "VIP 4-Hands",
-    duration: "3:45 HD",
-    youtubeId: "rLOFIo4c1E0",
-    poster: "/assets/4hands-tantra-yoni.jpg",
-    description: "Two skilled therapists working in unbroken symmetry, weaving warm aromatic oils with sensual touch for profound sensory immersion.",
-    bookingService: "4hands Tantra | Yoni",
-  },
-  {
-    id: "video-4",
-    title: "Japanese Scalp Elixir & Head Spa",
-    specialist: "Specialist Faith",
-    role: "Aromatherapy & Scalp Acupressure Lead",
-    category: "deep",
-    categoryLabel: "Head Spa",
-    duration: "3:10 HD",
-    youtubeId: "Ver7IMBBOO8",
-    poster: "/assets/service7.jpg",
-    description: "Cranial acupressure points, warm herbal rinse flow, and aromatic essential oils designed to clear mental fatigue and calm the nervous system.",
-    bookingService: "Aromatherapy Massage",
-  },
-  {
-    id: "video-5",
-    title: "Holistic Swedish De-Stress & Essential Oils",
-    specialist: "Specialist Diana",
-    role: "Holistic Wellness & Relaxation Specialist",
-    category: "deep",
-    categoryLabel: "Swedish Flow",
-    duration: "4:20 HD",
-    youtubeId: "-qp89eeXMB0",
-    poster: "/assets/full-service-pack.jpg",
-    description: "Long flowing effleurage strokes, gentle kneading, and warm lavender and sweet almond oils to melt everyday stress and restore inner calm.",
-    bookingService: "Full Service Pack",
-  },
-  {
-    id: "video-6",
-    title: "Sensual Nuru & Hot Oil Gliding Ritual",
-    specialist: "Specialist Vanessa",
-    role: "Senior Nuru & Intimate Touch Lead",
-    category: "tantra",
-    categoryLabel: "Sensual Nuru",
-    duration: "4:50 HD",
-    youtubeId: "oJ8VDciScco",
-    poster: "/assets/4hands-nuru-b2b.jpg",
-    description: "Traditional slippery seaweed extract glide therapy performed over heated waterproof bedding for total body-to-body sensory bliss.",
-    bookingService: "Nuru Massage",
-  },
-];
+// Video cards are NOT seeded locally. The admin-controlled /api/content
+// `videos` array is the only source; first paint shows a loading state.
+// A neutral inline frame is used only when an admin record has no poster.
+const DEFAULT_VIDEO_POSTER =
+  "data:image/svg+xml;charset=UTF-8," +
+  encodeURIComponent(
+    '<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#13181e"/><stop offset="0.55" stop-color="#080b0e"/><stop offset="1" stop-color="#1d1710"/></linearGradient></defs><rect width="960" height="540" fill="url(#g)"/><circle cx="480" cy="270" r="58" fill="none" stroke="#c2a74e" stroke-width="3"/><path d="M463 242 L512 270 L463 298 Z" fill="#c2a74e"/><text x="480" y="378" fill="#8b7355" font-family="Georgia,serif" font-size="24" text-anchor="middle">SERENITY SPA FILM</text></svg>'
+  );
 
 // ── Specialist Profile Card with Availability Badge & named Booking Button ──
 function GalleryCard({
@@ -391,7 +310,11 @@ export default function GalleryPage() {
   const [loading, setLoading] = useState(true);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [selectedVideo, setSelectedVideo] = useState<SpaVideo | null>(null);
+  const [selectedVideo, setSelectedVideo] = useState<SiteVideo | null>(null);
+  // Admin-controlled reels only. Never seed this from a local fallback array:
+  // an empty store must render an empty state, not old demonstration cards.
+  const [videos, setVideos] = useState<SiteVideo[]>([]);
+  const [videosLoading, setVideosLoading] = useState(true);
   const [activeVideoFilter, setActiveVideoFilter] = useState<string>("all");
   // The gallery opens on Images; the Videos tab reveals the demonstration reels.
   const [activeTab, setActiveTab] = useState<"images" | "videos">("images");
@@ -426,6 +349,45 @@ export default function GalleryPage() {
     return () => { cancelled = true; };
   }, []);
 
+  // Reels come from the same durable store as the admin Videos tab. Refetch on
+  // focus and after an admin save so an already-open gallery converges too.
+  useEffect(() => {
+    let cancelled = false;
+    let requestId = 0;
+
+    const loadVideos = async (showLoading = false) => {
+      const currentRequest = ++requestId;
+      if (showLoading) setVideosLoading(true);
+      try {
+        const res = await fetch(`/api/content?cb=${Date.now()}`, { cache: "no-store" });
+        if (!res.ok) throw new Error(`content status ${res.status}`);
+        const data = await res.json();
+        if (!cancelled && currentRequest === requestId) setVideos(normalizeSiteVideos(data?.videos));
+      } catch (err) {
+        console.error("Failed to load /api/content videos", err);
+        if (!cancelled && currentRequest === requestId) setVideos([]);
+      } finally {
+        if (!cancelled && currentRequest === requestId) setVideosLoading(false);
+      }
+    };
+
+    loadVideos(true);
+    const onRefresh = () => loadVideos();
+    const onVisibility = () => {
+      if (document.visibilityState === "visible") loadVideos();
+    };
+    window.addEventListener("focus", onRefresh);
+    window.addEventListener("serenity-content-updated", onRefresh);
+    document.addEventListener("visibilitychange", onVisibility);
+
+    return () => {
+      cancelled = true;
+      window.removeEventListener("focus", onRefresh);
+      window.removeEventListener("serenity-content-updated", onRefresh);
+      document.removeEventListener("visibilitychange", onVisibility);
+    };
+  }, []);
+
   // Keyboard navigation for lightbox & video modal
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -447,10 +409,19 @@ export default function GalleryPage() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [selectedIndex, images.length]);
 
+  const videoFilterButtons = VIDEO_CATEGORY_OPTIONS.map((option) => ({
+    key: option.value,
+    label: `${option.label} (${
+      option.value === "all"
+        ? videos.length
+        : videos.filter((video) => video.category === option.value).length
+    })`,
+  }));
+
   const filteredVideos =
     activeVideoFilter === "all"
-      ? SPA_VIDEOS
-      : SPA_VIDEOS.filter((v) => v.category === activeVideoFilter);
+      ? videos
+      : videos.filter((video) => video.category === activeVideoFilter);
 
   return (
     <>
@@ -881,12 +852,7 @@ export default function GalleryPage() {
           <div className="container">
             {/* Video Category Filter Tabs */}
             <div style={{ display: "flex", justifyContent: "center", gap: "10px", flexWrap: "wrap", marginBottom: "40px" }}>
-              {[
-                { key: "all", label: "All Demonstrations (6)" },
-                { key: "tantra", label: "VIP 4-Hands & Tantra" },
-                { key: "hammam", label: "Turkish Hammam" },
-                { key: "deep", label: "Deep Tissue & Relaxation" },
-              ].map((tab) => (
+              {videoFilterButtons.map((tab) => (
                 <button
                   key={tab.key}
                   onClick={() => setActiveVideoFilter(tab.key)}
@@ -909,7 +875,21 @@ export default function GalleryPage() {
               ))}
             </div>
 
-            {/* Video Cards Grid */}
+            {/* Video Cards Grid — loaded only from the admin store */}
+            {videosLoading ? (
+              <div className="video-state" style={{ padding: "70px 20px", textAlign: "center", color: "#9ca3af", fontSize: 14 }}>
+                Loading videos…
+              </div>
+            ) : videos.length === 0 ? (
+              <div className="video-state" style={{ padding: "70px 20px", textAlign: "center", color: "#9ca3af", fontSize: 14 }}>
+                <p style={{ fontSize: 34, margin: "0 0 10px" }}>🎬</p>
+                <p style={{ margin: 0 }}>No videos have been added yet. Please check back soon.</p>
+              </div>
+            ) : filteredVideos.length === 0 ? (
+              <div className="video-state" style={{ padding: "70px 20px", textAlign: "center", color: "#9ca3af", fontSize: 14 }}>
+                No videos in this category yet.
+              </div>
+            ) : (
             <div className="row g-4">
               {filteredVideos.map((video) => (
                 <div key={video.id} className="col-lg-4 col-md-6 col-12">
@@ -942,7 +922,7 @@ export default function GalleryPage() {
                     {/* 16:9 Thumbnail Reel with Glowing Play Button */}
                     <div style={{ position: "relative", width: "100%", paddingTop: "56.25%", overflow: "hidden", backgroundColor: "#080b0e" }}>
                       <img
-                        src={video.poster}
+                        src={video.poster || DEFAULT_VIDEO_POSTER}
                         alt={video.title}
                         className="video-card-poster"
                         style={{
@@ -1161,6 +1141,7 @@ export default function GalleryPage() {
                 </div>
               ))}
             </div>
+            )}
           </div>
         </section>
 
@@ -1284,22 +1265,44 @@ export default function GalleryPage() {
                 ✕
               </button>
 
-              {/* 16:9 Widescreen Responsive Video Player */}
+              {/* 16:9 Widescreen Responsive Player. Cloudinary uploads play in a
+                  native <video>; YouTube records keep the privacy-enhanced embed. */}
               <div style={{ position: "relative", width: "100%", paddingTop: "56.25%", backgroundColor: "#000" }}>
-                <iframe
-                  src={`https://www.youtube-nocookie.com/embed/${selectedVideo.youtubeId}?autoplay=1&rel=0&modestbranding=1`}
-                  title={selectedVideo.title}
-                  style={{
-                    position: "absolute",
-                    top: 0,
-                    left: 0,
-                    width: "100%",
-                    height: "100%",
-                    border: "none",
-                  }}
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                />
+                {selectedVideo.videoUrl ? (
+                  <video
+                    src={selectedVideo.videoUrl}
+                    poster={selectedVideo.poster || DEFAULT_VIDEO_POSTER}
+                    title={selectedVideo.title}
+                    controls
+                    autoPlay
+                    playsInline
+                    preload="metadata"
+                    style={{
+                      position: "absolute",
+                      top: 0,
+                      left: 0,
+                      width: "100%",
+                      height: "100%",
+                      backgroundColor: "#000",
+                      objectFit: "contain",
+                    }}
+                  />
+                ) : (
+                  <iframe
+                    src={`https://www.youtube-nocookie.com/embed/${selectedVideo.youtubeId}?autoplay=1&rel=0&modestbranding=1`}
+                    title={selectedVideo.title}
+                    style={{
+                      position: "absolute",
+                      top: 0,
+                      left: 0,
+                      width: "100%",
+                      height: "100%",
+                      border: "none",
+                    }}
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                  />
+                )}
               </div>
 
               {/* Video Info & Booking Bar */}
