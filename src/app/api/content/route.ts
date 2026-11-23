@@ -67,6 +67,7 @@ async function seedR2Content(content: any): Promise<void> {
 }
 
 export async function GET() {
+  let r2ReachableButEmpty = false;
   try {
     const { response, data } = await workerApi<{ ok?: boolean; content?: any }>(
       '/api/content',
@@ -76,25 +77,29 @@ export async function GET() {
     if (response.ok && looksLikeContent(data?.content)) {
       return NextResponse.json(data?.content, { headers: { 'cache-control': 'no-store' } });
     }
+    // Only seed from local when R2 is reachable and definitively empty.
+    // A failed/unreachable read must NOT overwrite R2 with a stale local snapshot.
+    r2ReachableButEmpty = response.ok && !looksLikeContent(data?.content);
   } catch (error: any) {
     console.error('R2 content read failed:', error?.message || error);
   }
 
-  // R2 is authoritative. When it is empty (for example just after a media
-  // migration), bootstrap it from the deployed snapshot so admin saves become
-  // visible immediately instead of being masked by this fallback forever.
   const localContent = readLocalContent();
-  if (looksLikeContent(localContent)) {
+  if (r2ReachableButEmpty && looksLikeContent(localContent)) {
     await seedR2Content(localContent);
     return NextResponse.json(localContent, { headers: { 'cache-control': 'no-store' } });
   }
 
-  const cloudContent = await readCloudContent();
-  if (cloudContent) {
-    await seedR2Content(cloudContent);
-    return NextResponse.json(cloudContent, { headers: { 'cache-control': 'no-store' } });
+  if (r2ReachableButEmpty) {
+    const cloudContent = await readCloudContent();
+    if (cloudContent) {
+      await seedR2Content(cloudContent);
+      return NextResponse.json(cloudContent, { headers: { 'cache-control': 'no-store' } });
+    }
   }
 
+  // R2 unavailable or seed sources unavailable: return the best local fallback
+  // without seeding, so a transient R2 failure cannot overwrite admin-set data.
   return NextResponse.json(localContent, { headers: { 'cache-control': 'no-store' } });
 }
 
