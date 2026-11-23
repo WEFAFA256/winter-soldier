@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, { useState } from "react";
 import Link from "next/link";
@@ -124,7 +124,7 @@ export default function MobileMassagePage() {
             }}
           >
             <span style={{ color: "#c2a74e", fontFamily: "'Great Vibes', cursive, Cormorant, serif", fontSize: "clamp(1.15rem, 2.4vw, 1.45rem)", display: "block", marginBottom: "8px", letterSpacing: "1.5px" }}>
-              At Your Doorstep · Hotel &amp; Home Out-Calls
+              At Your Doorstep Â· Hotel &amp; Home Out-Calls
             </span>
             <h1 style={{ fontFamily: "Cormorant, serif", fontSize: "clamp(2rem, 4.6vw, 3.2rem)", fontWeight: 700, color: "#ffffff", margin: "0 0 12px 0", lineHeight: 1.15 }}>
               Luxury Mobile Massage in Kampala
@@ -215,7 +215,7 @@ export default function MobileMassagePage() {
                   Serving All Kampala Hotels, Airbnbs &amp; Residences
                 </h2>
                 <p style={{ color: "#9ca3af", fontSize: "0.95rem", lineHeight: 1.6, marginBottom: "22px" }}>
-                  Whether you are staying at Sheraton, Serena, Mestil, Latitude 0°, Protea, or an executive Airbnb, our therapists arrive within 45 to 60 minutes of booking confirmation.
+                  Whether you are staying at Sheraton, Serena, Mestil, Latitude 0Â°, Protea, or an executive Airbnb, our therapists arrive within 45 to 60 minutes of booking confirmation.
                 </p>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "10px" }}>
                   {COVERAGE_AREAS.map((area, idx) => (

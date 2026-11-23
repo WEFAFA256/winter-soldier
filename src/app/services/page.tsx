@@ -72,64 +72,20 @@ function ServiceCard({
       } as React.CSSProperties}
     >
       <div
-        className="service-theme-card"
         style={{
-          backgroundColor: '#efe3c6',
-          backgroundImage: 'linear-gradient(160deg, #f3e9cf 0%, #e8d7b3 52%, #dcc48f 100%)',
-          borderRadius: '16px',
+          backgroundColor: '#FDF3E6',
+          borderRadius: '24px',
           overflow: 'hidden',
-          border: '1px solid rgba(176, 142, 52, 0.45)',
-          boxShadow: '0 12px 30px rgba(120, 90, 30, 0.16), 0 6px 16px rgba(40, 30, 12, 0.1)',
           display: 'flex',
           flexDirection: 'column',
           height: '100%',
           position: 'relative',
-          transition: 'transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s ease, border-color 0.35s ease',
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.transform = 'translateY(-10px)';
-          e.currentTarget.style.borderColor = 'rgba(176, 142, 52, 0.78)';
-          e.currentTarget.style.boxShadow = '0 22px 44px rgba(120, 90, 30, 0.24), 0 10px 22px rgba(40, 30, 12, 0.14)';
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.transform = 'translateY(0)';
-          e.currentTarget.style.borderColor = 'rgba(176, 142, 52, 0.45)';
-          e.currentTarget.style.boxShadow = '0 12px 30px rgba(120, 90, 30, 0.16), 0 6px 16px rgba(40, 30, 12, 0.1)';
+          padding: '32px 28px',
         }}
       >
-        <div
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            height: '5px',
-            background: 'linear-gradient(90deg, #b8922f 0%, #e7cc74 50%, #b8922f 100%)',
-            zIndex: 3,
-          }}
-        />
-        {/* Soft palm overlay for light luxury theme */}
-        <div
-          style={{
-            position: 'absolute',
-            left: 0,
-            bottom: 0,
-            width: '180px',
-            height: '180px',
-            backgroundImage: 'url(/assets/images/shapes/funfact-bg-2-shape.png)',
-            backgroundSize: 'contain',
-            backgroundRepeat: 'no-repeat',
-            backgroundPosition: 'left bottom',
-            pointerEvents: 'none',
-            opacity: 0.08,
-            filter: 'sepia(1) saturate(1.5) hue-rotate(5deg)',
-            zIndex: 1,
-          }}
-        />
-
         {/* Card Image — static, fills the entire image area with no empty edges */}
         <div
-          style={{ height: '220px', overflow: 'hidden', position: 'relative', backgroundColor: '#e4d4b0', zIndex: 2 }}
+          style={{ height: '200px', overflow: 'hidden', position: 'relative' }}
         >
           <img
             src={imgSrc}
@@ -139,13 +95,6 @@ function ServiceCard({
               width: '100%',
               height: '100%',
               objectFit: 'cover',
-              transition: 'transform 0.6s cubic-bezier(0.16, 1, 0.3, 1)',
-            }}
-            onMouseEnter={(e) => {
-              (e.target as HTMLElement).style.transform = 'scale(1.08)';
-            }}
-            onMouseLeave={(e) => {
-              (e.target as HTMLElement).style.transform = 'scale(1)';
             }}
             onError={(e) => {
               (e.target as HTMLImageElement).src = fallbackImg;
@@ -154,103 +103,67 @@ function ServiceCard({
         </div>
 
         {/* Card Content */}
-        <div style={{ padding: '24px 22px', display: 'flex', flexDirection: 'column', flex: 1, position: 'relative', zIndex: 2 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px', gap: '8px' }}>
-            <h3
-              style={{
-                fontFamily: 'Cormorant, serif',
-                fontSize: '1.45rem',
-                fontWeight: 800,
-                color: '#2a2115',
-                textShadow: 'none',
-                margin: 0,
-                lineHeight: 1.2,
-                letterSpacing: '0.5px',
-                textTransform: 'uppercase',
-              }}
-            >
-              {service.title}
-            </h3>
-            <span
-              style={{
-                backgroundColor: '#c2a74e',
-                color: '#1a1408',
-                padding: '5px 12px',
-                borderRadius: '999px',
-                fontWeight: 800,
-                fontSize: '0.82rem',
-                whiteSpace: 'nowrap',
-                boxShadow: '0 4px 12px rgba(194, 167, 78, 0.3)',
-                border: '1px solid rgba(168, 134, 42, 0.35)',
-              }}
-            >
-              {formatPrice(service.price)}
-            </span>
-          </div>
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '16px', position: 'relative', zIndex: 2 }}>
+          <h3
+            style={{
+              fontFamily: 'Cormorant, serif',
+              fontSize: '2rem',
+              fontWeight: 800,
+              color: '#60351A',
+              textShadow: 'none',
+              margin: 0,
+              lineHeight: 1.3,
+              letterSpacing: '1.2px',
+              textAlign: 'center',
+              textTransform: 'none',
+            }}
+          >
+            {service.title}
+          </h3>
 
           <p
             style={{
-              color: '#5a4e3a',
+              fontFamily: 'Cormorant, serif',
+              fontSize: '1.05rem',
+              fontWeight: 500,
+              color: '#60351A',
               textShadow: 'none',
-              fontSize: '0.93rem',
-              lineHeight: 1.65,
-              marginBottom: '20px',
-              flex: 1,
-              fontWeight: 400,
-              display: '-webkit-box',
-              WebkitLineClamp: 3,
-              WebkitBoxOrient: 'vertical',
-              overflow: 'hidden',
-              minHeight: '4.2em',
+              lineHeight: 1.7,
+              margin: 0,
             }}
           >
             {service.description || 'A soothing treatment designed to revitalize mind, body, and senses.'}
           </p>
 
-          {/* Action Buttons */}
+          {/* Action Button */}
           <div
             style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '12px',
+              width: '100%',
               marginTop: 'auto',
-              paddingTop: '16px',
-              borderTop: '1px solid rgba(168, 134, 42, 0.22)',
+              padding: '10px 0',
+              textAlign: 'center',
             }}
           >
             <Link
               href={'/booking?service=' + encodeURIComponent(service.title) + '&price=' + encodeURIComponent(String(service.price))}
               style={{
-                flex: 1.3,
-                padding: '11px 14px',
-                backgroundColor: '#c2a74e',
-                border: '1.5px solid #c2a74e',
-                color: '#0e1317',
-                borderRadius: '0px',
-                fontSize: '12px',
-                fontWeight: 800,
+                width: '100%',
+                maxWidth: '280px',
+                margin: '0 auto',
+                padding: '12px 24px',
+                backgroundColor: '#60351A',
+                border: 'none',
+                color: '#FDF3E6',
+                borderRadius: '4px',
+                fontFamily: 'Cormorant, serif',
+                fontSize: '1rem',
+                fontWeight: 700,
                 letterSpacing: '1px',
                 textTransform: 'uppercase',
                 textDecoration: 'none',
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '8px',
-                boxShadow: '0 4px 14px rgba(194, 167, 78, 0.3)',
-                transition: 'all 0.25s ease',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = '#dfc268';
-                e.currentTarget.style.borderColor = '#dfc268';
-                e.currentTarget.style.boxShadow = '0 6px 20px rgba(194, 167, 78, 0.5)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = '#c2a74e';
-                e.currentTarget.style.borderColor = '#c2a74e';
-                e.currentTarget.style.boxShadow = '0 4px 14px rgba(194, 167, 78, 0.3)';
               }}
             >
-              <i className="fas fa-calendar-check"></i> Book Now
+              Book Now
             </Link>
           </div>
         </div>
