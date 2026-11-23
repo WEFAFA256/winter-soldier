@@ -22,56 +22,7 @@ interface MobileService {
   image: string;
 }
 
-const MOBILE_SERVICES: MobileService[] = [
-  {
-    title: "Executive In-Room Swedish Massage",
-    price: "UGX 200,000",
-    duration: "60 - 90 mins",
-    description: "Full-body classic Swedish relaxation delivered directly to your hotel room or residence. Calming strokes, kneading, and organic oils to ease travel fatigue.",
-    features: ["Portable luxury massage bed", "Aromatherapy oils & fresh linens", "Relaxation background audio", "Available 7 days a week"],
-    image: "https://serenity-pawapay-webhook.turyatembajohn905.workers.dev/media/image/2026/11/27ebf3bad7a048059646f41800777eb3.jpg",
-  },
-  {
-    title: "Mobile Deep Tissue Therapy",
-    price: "UGX 230,000",
-    duration: "60 - 90 mins",
-    description: "Targeted intense pressure for chronic muscular tension, travel soreness, and stiff joints. Ideal after long flights or busy corporate schedules.",
-    features: ["Therapeutic firm pressure", "Focus on back, neck & shoulders", "Warming muscle balm", "Post-treatment stretching guidance"],
-    image: "https://serenity-pawapay-webhook.turyatembajohn905.workers.dev/media/image/2026/11/eab8a1b1a3084ce3aab8e3cbc4af3d38.jpg",
-  },
-  {
-    title: "In-Call Aromatherapy Ritual",
-    price: "UGX 250,000",
-    duration: "75 mins",
-    description: "A calming sensory journey combining gentle rhythmic massage with premium lavender, eucalyptus, and chamomile essential oils.",
-    features: ["Custom oil blend selection", "Stress & anxiety relief", "Hot towel application", "Deep sleep enhancement"],
-    image: "https://serenity-pawapay-webhook.turyatembajohn905.workers.dev/media/image/2026/11/63c5e661ef434046858deeeca8c7b6c1.jpg",
-  },
-  {
-    title: "VIP Couple's In-Suite Massage",
-    price: "UGX 450,000",
-    duration: "90 mins",
-    description: "Simultaneous side-by-side massage for two in your master suite or hotel room, conducted by two certified senior therapists.",
-    features: ["Dual massage table setup", "Two therapists arrive together", "Rose petal & candle ambient kit", "Complimentary scented oils"],
-    image: "https://serenity-pawapay-webhook.turyatembajohn905.workers.dev/media/image/2026/11/8af83a2289e54b40bf04a097c913b3d9.jpg",
-  },
-  {
-    title: "Private Sensual & Nuru Out-Call",
-    price: "UGX 350,000",
-    duration: "60 - 90 mins",
-    description: "Intimate and sensual full-body session in complete privacy. Performed with warm natural oils, soothing touch, and utmost discretion.",
-    features: ["100% confidential & discreet", "Waterproof sheets & supplies included", "Warm aromatic oils", "Strict hygiene guarantee"],
-    image: "https://serenity-pawapay-webhook.turyatembajohn905.workers.dev/media/image/2026/11/611c06b7c82e44bba50d3c234d0d3dae.jpg",
-  },
-  {
-    title: "4-Hands Duo In-Call Experience",
-    price: "UGX 550,000",
-    duration: "90 mins",
-    description: "Two therapists working in seamless synchrony over your body at your home or hotel. The ultimate luxury out-call package.",
-    features: ["Two senior therapists", "Harmonized strokes", "Maximum sensory stimulation", "Complete equipment provided"],
-    image: "https://serenity-pawapay-webhook.turyatembajohn905.workers.dev/media/image/2026/11/223a117ff63247178e1c7fe7cf1cb65c.jpg",
-  },
-];
+const MOBILE_SERVICES: MobileService[] = [];
 
 const COVERAGE_AREAS = [
   "Nakasero & Kololo",
