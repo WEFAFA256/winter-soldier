@@ -60,13 +60,22 @@ async function migrateOneGalleryImage(image: any, errors: string[]): Promise<any
   };
   try {
     const signedUrl = signedCloudinaryImageUrl(image);
-    if (!signedUrl) return fail('missing-signed-credentials');
+    if (!signedUrl) {
+      return fail(
+        `missing-signed-credentials cloud=${Boolean(cloudName)} key=${Boolean(process.env.CLOUDINARY_API_KEY)} secret=${Boolean(process.env.CLOUDINARY_API_SECRET)}`
+      );
+    }
 
     const source = await fetch(signedUrl, {
       cache: 'no-store',
       signal: AbortSignal.timeout(20_000),
     });
-    if (!source.ok) return fail(`signed-read-http-${source.status}`);
+    if (!source.ok) {
+      const snippet = (await source.text().catch(() => ''))
+        .replace(/\s+/g, ' ')
+        .slice(0, 120);
+      return fail(`signed-read-http-${source.status}:${encodeURIComponent(snippet)}`);
+    }
 
     const contentType = String(source.headers.get('content-type') || imageType(image?.src))
       .split(';')[0]
