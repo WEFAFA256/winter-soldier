@@ -35,15 +35,45 @@ function imageType(src: unknown, fallback = 'image/jpeg'): string {
   return (match && TYPE_BY_EXT[match[1].toLowerCase()]) || fallback;
 }
 
-function signedCloudinaryImageUrl(image: any): string | null {
+function signedCloudinaryImageUrls(image: any): Array<{ name: string; url: string }> {
   const publicId = String(image?.id || '').trim();
-  if (!cloudName || !publicId) return null;
+  if (!cloudName || !publicId) return [];
   const format = EXT_BY_TYPE[imageType(image?.src)] || 'jpg';
-  return cloudinary.utils.private_download_url(publicId, format, {
-    resource_type: 'image',
-    type: 'upload',
-    attachment: false,
-  });
+  const version = String(image?.src || '').match(/\/v(\d+)\//)?.[1];
+  const candidates: Array<{ name: string; url: string }> = [];
+
+  // Signed CDN delivery is preferred; the Admin API download action is kept as
+  // a fallback for accounts where signed delivery is not enabled.
+  try {
+    candidates.push({
+      name: 'delivery',
+      url: cloudinary.url(publicId, {
+        secure: true,
+        sign_url: true,
+        type: 'upload',
+        resource_type: 'image',
+        format,
+        ...(version ? { version } : {}),
+      }),
+    });
+  } catch (error: any) {
+    console.error('Signed Cloudinary delivery URL failed:', error?.message || error);
+  }
+
+  try {
+    candidates.push({
+      name: 'admin',
+      url: cloudinary.utils.private_download_url(publicId, format, {
+        resource_type: 'image',
+        type: 'upload',
+        attachment: false,
+      }),
+    });
+  } catch (error: any) {
+    console.error('Signed Cloudinary download URL failed:', error?.message || error);
+  }
+
+  return candidates;
 }
 
 function migrationKey(image: any, contentType: string): string {
@@ -59,23 +89,34 @@ async function migrateOneGalleryImage(image: any, errors: string[]): Promise<any
     return null;
   };
   try {
-    const signedUrl = signedCloudinaryImageUrl(image);
-    if (!signedUrl) {
+    const signedUrls = signedCloudinaryImageUrls(image);
+    if (!signedUrls.length) {
       return fail(
         `missing-signed-credentials cloud=${Boolean(cloudName)} key=${Boolean(process.env.CLOUDINARY_API_KEY)} secret=${Boolean(process.env.CLOUDINARY_API_SECRET)}`
       );
     }
 
-    const source = await fetch(signedUrl, {
-      cache: 'no-store',
-      signal: AbortSignal.timeout(20_000),
-    });
-    if (!source.ok) {
-      const snippet = (await source.text().catch(() => ''))
-        .replace(/\s+/g, ' ')
-        .slice(0, 120);
-      return fail(`signed-read-http-${source.status}:${encodeURIComponent(snippet)}`);
+    const readErrors: string[] = [];
+    let source: Response | null = null;
+    for (const candidate of signedUrls) {
+      try {
+        const response = await fetch(candidate.url, {
+          cache: 'no-store',
+          signal: AbortSignal.timeout(20_000),
+        });
+        if (response.ok) {
+          source = response;
+          break;
+        }
+        const snippet = (await response.text().catch(() => ''))
+          .replace(/\s+/g, ' ')
+          .slice(0, 120);
+        readErrors.push(`${candidate.name}-http-${response.status}:${encodeURIComponent(snippet)}`);
+      } catch (error: any) {
+        readErrors.push(`${candidate.name}-${error?.name || 'Error'}`);
+      }
     }
+    if (!source) return fail(readErrors.join(','));
 
     const contentType = String(source.headers.get('content-type') || imageType(image?.src))
       .split(';')[0]
