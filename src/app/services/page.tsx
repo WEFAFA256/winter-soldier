@@ -74,12 +74,12 @@ function ServiceCard({
       <div
         className="service-theme-card"
         style={{
-          backgroundColor: '#14191f',
-          backgroundImage: 'linear-gradient(165deg, #171d24 0%, #0e1216 100%)',
-          borderRadius: '12px',
+          backgroundColor: '#fffaf2',
+          backgroundImage: 'linear-gradient(160deg, #fffdf8 0%, #f8f0df 52%, #efe0c3 100%)',
+          borderRadius: '16px',
           overflow: 'hidden',
-          border: '1px solid rgba(194, 167, 78, 0.22)',
-          boxShadow: '0 10px 30px rgba(0, 0, 0, 0.55)',
+          border: '1px solid rgba(194, 167, 78, 0.35)',
+          boxShadow: '0 14px 34px rgba(194, 167, 78, 0.18), 0 6px 18px rgba(40, 30, 12, 0.08)',
           display: 'flex',
           flexDirection: 'column',
           height: '100%',
@@ -88,16 +88,27 @@ function ServiceCard({
         }}
         onMouseEnter={(e) => {
           e.currentTarget.style.transform = 'translateY(-10px)';
-          e.currentTarget.style.borderColor = 'rgba(194, 167, 78, 0.55)';
-          e.currentTarget.style.boxShadow = '0 20px 48px rgba(0, 0, 0, 0.75), 0 0 25px rgba(194, 167, 78, 0.12)';
+          e.currentTarget.style.borderColor = 'rgba(194, 167, 78, 0.75)';
+          e.currentTarget.style.boxShadow = '0 24px 50px rgba(194, 167, 78, 0.28), 0 10px 24px rgba(40, 30, 12, 0.12)';
         }}
         onMouseLeave={(e) => {
           e.currentTarget.style.transform = 'translateY(0)';
-          e.currentTarget.style.borderColor = 'rgba(194, 167, 78, 0.22)';
-          e.currentTarget.style.boxShadow = '0 10px 30px rgba(0, 0, 0, 0.55)';
+          e.currentTarget.style.borderColor = 'rgba(194, 167, 78, 0.35)';
+          e.currentTarget.style.boxShadow = '0 14px 34px rgba(194, 167, 78, 0.18), 0 6px 18px rgba(40, 30, 12, 0.08)';
         }}
       >
-        {/* Palm leaf line art overlay with subtle dark theme opacity */}
+        <div
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            height: '5px',
+            background: 'linear-gradient(90deg, #b8922f 0%, #e7cc74 50%, #b8922f 100%)',
+            zIndex: 3,
+          }}
+        />
+        {/* Soft palm overlay for light luxury theme */}
         <div
           style={{
             position: 'absolute',
@@ -110,15 +121,15 @@ function ServiceCard({
             backgroundRepeat: 'no-repeat',
             backgroundPosition: 'left bottom',
             pointerEvents: 'none',
-            opacity: 0.22,
-            filter: 'brightness(1.5)',
+            opacity: 0.08,
+            filter: 'sepia(1) saturate(1.5) hue-rotate(5deg)',
             zIndex: 1,
           }}
         />
 
         {/* Card Image — static, fills the entire image area with no empty edges */}
         <div
-          style={{ height: '220px', overflow: 'hidden', position: 'relative', backgroundColor: '#0e1317', zIndex: 2 }}
+          style={{ height: '220px', overflow: 'hidden', position: 'relative', backgroundColor: '#efe3c8', zIndex: 2 }}
         >
           <img
             src={imgSrc}
@@ -150,8 +161,8 @@ function ServiceCard({
                 fontFamily: 'Cormorant, serif',
                 fontSize: '1.45rem',
                 fontWeight: 800,
-                color: '#ffffff',
-                textShadow: '0 1px 3px rgba(0,0,0,0.5)',
+                color: '#2a2115',
+                textShadow: 'none',
                 margin: 0,
                 lineHeight: 1.2,
                 letterSpacing: '0.5px',
@@ -162,15 +173,15 @@ function ServiceCard({
             </h3>
             <span
               style={{
-                backgroundColor: 'rgba(194, 167, 78, 0.12)',
-                color: '#e5c970',
-                padding: '4px 12px',
-                borderRadius: '16px',
+                backgroundColor: '#c2a74e',
+                color: '#1a1408',
+                padding: '5px 12px',
+                borderRadius: '999px',
                 fontWeight: 800,
-                fontSize: '0.85rem',
+                fontSize: '0.82rem',
                 whiteSpace: 'nowrap',
-                boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
-                border: '1px solid rgba(194, 167, 78, 0.38)',
+                boxShadow: '0 4px 12px rgba(194, 167, 78, 0.3)',
+                border: '1px solid rgba(168, 134, 42, 0.35)',
               }}
             >
               {formatPrice(service.price)}
@@ -179,10 +190,10 @@ function ServiceCard({
 
           <p
             style={{
-              color: 'rgba(255, 255, 255, 0.78)',
-              textShadow: '0 1px 2px rgba(0,0,0,0.3)',
-              fontSize: '0.92rem',
-              lineHeight: 1.6,
+              color: '#5a4e3a',
+              textShadow: 'none',
+              fontSize: '0.93rem',
+              lineHeight: 1.65,
               marginBottom: '20px',
               flex: 1,
               fontWeight: 400,
@@ -204,7 +215,7 @@ function ServiceCard({
               gap: '12px',
               marginTop: 'auto',
               paddingTop: '16px',
-              borderTop: '1px solid rgba(194, 167, 78, 0.15)',
+              borderTop: '1px solid rgba(168, 134, 42, 0.22)',
             }}
           >
             <Link
