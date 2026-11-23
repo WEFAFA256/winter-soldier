@@ -77,28 +77,30 @@ function ServiceCard({
       <div
         className="service-theme-card"
         style={{
-          backgroundImage: "url(/assets/images/shapes/funfact-bg-2.jpg)",
-          backgroundColor: "#c2a74e",
+          backgroundImage: "linear-gradient(135deg, rgba(255, 236, 170, 0.28) 0%, rgba(255, 255, 255, 0.08) 35%, rgba(194, 167, 78, 0.12) 65%, rgba(255, 244, 200, 0.22) 100%), url(/assets/images/shapes/funfact-bg-2.jpg)",
+          backgroundColor: "#d4b85a",
           backgroundSize: "cover",
           backgroundPosition: "center center",
           backgroundRepeat: "no-repeat",
           borderRadius: "12px",
           overflow: "hidden",
-          border: "1px solid rgba(194, 167, 78, 0.4)",
-          boxShadow: "0 12px 30px rgba(0, 0, 0, 0.45)",
+          border: "1px solid rgba(255, 230, 150, 0.72)",
+          boxShadow: "0 14px 36px rgba(194, 167, 78, 0.35), 0 0 0 1px rgba(255, 244, 200, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.35)",
           display: "flex",
           flexDirection: "column",
           height: "100%",
           position: "relative",
-          transition: "transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s ease",
+          transition: "transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s ease, border-color 0.35s ease",
         }}
         onMouseEnter={(e) => {
           e.currentTarget.style.transform = "translateY(-10px)";
-          e.currentTarget.style.boxShadow = "0 22px 50px rgba(194, 167, 78, 0.3)";
+          e.currentTarget.style.borderColor = "rgba(255, 236, 170, 0.95)";
+          e.currentTarget.style.boxShadow = "0 24px 56px rgba(194, 167, 78, 0.5), 0 0 24px rgba(255, 230, 150, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.45)";
         }}
         onMouseLeave={(e) => {
           e.currentTarget.style.transform = "translateY(0)";
-          e.currentTarget.style.boxShadow = "0 12px 30px rgba(0, 0, 0, 0.45)";
+          e.currentTarget.style.borderColor = "rgba(255, 230, 150, 0.72)";
+          e.currentTarget.style.boxShadow = "0 14px 36px rgba(194, 167, 78, 0.35), 0 0 0 1px rgba(255, 244, 200, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.35)";
         }}
       >
         <div
@@ -114,6 +116,15 @@ function ServiceCard({
             backgroundPosition: "left bottom",
             pointerEvents: "none",
             opacity: 0.85,
+            zIndex: 1,
+          }}
+        />
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            background: "linear-gradient(120deg, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0.06) 28%, rgba(255,255,255,0) 45%, rgba(255,248,214,0.14) 72%, rgba(255,255,255,0.18) 100%)",
+            pointerEvents: "none",
             zIndex: 1,
           }}
         />

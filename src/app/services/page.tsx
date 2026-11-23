@@ -74,12 +74,12 @@ function ServiceCard({
       <div
         className="service-theme-card"
         style={{
-          backgroundColor: '#fffaf2',
-          backgroundImage: 'linear-gradient(160deg, #fffdf8 0%, #f8f0df 52%, #efe0c3 100%)',
+          backgroundColor: '#efe3c6',
+          backgroundImage: 'linear-gradient(160deg, #f3e9cf 0%, #e8d7b3 52%, #dcc48f 100%)',
           borderRadius: '16px',
           overflow: 'hidden',
-          border: '1px solid rgba(194, 167, 78, 0.35)',
-          boxShadow: '0 14px 34px rgba(194, 167, 78, 0.18), 0 6px 18px rgba(40, 30, 12, 0.08)',
+          border: '1px solid rgba(176, 142, 52, 0.45)',
+          boxShadow: '0 12px 30px rgba(120, 90, 30, 0.16), 0 6px 16px rgba(40, 30, 12, 0.1)',
           display: 'flex',
           flexDirection: 'column',
           height: '100%',
@@ -88,13 +88,13 @@ function ServiceCard({
         }}
         onMouseEnter={(e) => {
           e.currentTarget.style.transform = 'translateY(-10px)';
-          e.currentTarget.style.borderColor = 'rgba(194, 167, 78, 0.75)';
-          e.currentTarget.style.boxShadow = '0 24px 50px rgba(194, 167, 78, 0.28), 0 10px 24px rgba(40, 30, 12, 0.12)';
+          e.currentTarget.style.borderColor = 'rgba(176, 142, 52, 0.78)';
+          e.currentTarget.style.boxShadow = '0 22px 44px rgba(120, 90, 30, 0.24), 0 10px 22px rgba(40, 30, 12, 0.14)';
         }}
         onMouseLeave={(e) => {
           e.currentTarget.style.transform = 'translateY(0)';
-          e.currentTarget.style.borderColor = 'rgba(194, 167, 78, 0.35)';
-          e.currentTarget.style.boxShadow = '0 14px 34px rgba(194, 167, 78, 0.18), 0 6px 18px rgba(40, 30, 12, 0.08)';
+          e.currentTarget.style.borderColor = 'rgba(176, 142, 52, 0.45)';
+          e.currentTarget.style.boxShadow = '0 12px 30px rgba(120, 90, 30, 0.16), 0 6px 16px rgba(40, 30, 12, 0.1)';
         }}
       >
         <div
@@ -129,7 +129,7 @@ function ServiceCard({
 
         {/* Card Image — static, fills the entire image area with no empty edges */}
         <div
-          style={{ height: '220px', overflow: 'hidden', position: 'relative', backgroundColor: '#efe3c8', zIndex: 2 }}
+          style={{ height: '220px', overflow: 'hidden', position: 'relative', backgroundColor: '#e4d4b0', zIndex: 2 }}
         >
           <img
             src={imgSrc}
@@ -153,7 +153,7 @@ function ServiceCard({
           />
         </div>
 
-        {/* Card Content with Distinct Obsidian Dark Luxury Theme */}
+        {/* Card Content */}
         <div style={{ padding: '24px 22px', display: 'flex', flexDirection: 'column', flex: 1, position: 'relative', zIndex: 2 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px', gap: '8px' }}>
             <h3
