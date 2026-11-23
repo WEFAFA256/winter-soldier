@@ -43,11 +43,13 @@ function ServiceCard({
   index,
   imgSrc,
   fallbackImg,
+  whatsappLink,
 }: {
   service: Service;
   index: number;
   imgSrc: string;
   fallbackImg: string;
+  whatsappLink: (message?: string) => string;
 }) {
   // These cards only exist after the catalogue fetch, so they can safely
   // animate on mount; offscreen cards wait for the one-shot scroll reveal.
@@ -475,6 +477,7 @@ export default function ServicesPage() {
                       index={index}
                       imgSrc={imgSrc}
                       fallbackImg={fallbackImg}
+                      whatsappLink={whatsappLink}
                     />
                   );
                 })}
