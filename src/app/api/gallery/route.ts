@@ -52,41 +52,33 @@ function migrationKey(image: any, contentType: string): string {
   return `media/image/migrated/${hash}.${EXT_BY_TYPE[contentType] || 'jpg'}`;
 }
 
-async function migrateOneGalleryImage(image: any): Promise<any | null> {
+async function migrateOneGalleryImage(image: any, errors: string[]): Promise<any | null> {
+  const fail = (message: string) => {
+    errors.push(message);
+    console.error('Gallery migration:', message);
+    return null;
+  };
   try {
     const signedUrl = signedCloudinaryImageUrl(image);
-    if (!signedUrl) {
-      console.error('Gallery migration needs signed Cloudinary credentials');
-      return null;
-    }
+    if (!signedUrl) return fail('missing-signed-credentials');
 
     const source = await fetch(signedUrl, {
       cache: 'no-store',
       signal: AbortSignal.timeout(20_000),
     });
-    if (!source.ok) {
-      console.error('Signed Cloudinary image read failed:', source.status);
-      return null;
-    }
+    if (!source.ok) return fail(`signed-read-http-${source.status}`);
 
     const contentType = String(source.headers.get('content-type') || imageType(image?.src))
       .split(';')[0]
       .trim()
       .toLowerCase();
-    if (!ALLOWED_IMAGE_TYPES.has(contentType)) {
-      console.error('Unsupported migrated image type:', contentType);
-      return null;
-    }
+    if (!ALLOWED_IMAGE_TYPES.has(contentType)) return fail(`type-${contentType}`);
 
     const bytes = new Uint8Array(await source.arrayBuffer());
     if (!bytes.byteLength || bytes.byteLength > MAX_UPLOAD_BYTES) {
-      console.error('Migrated image has invalid size:', bytes.byteLength);
-      return null;
+      return fail(`size-${bytes.byteLength}`);
     }
-    if (!looksLikeImage(bytes, contentType)) {
-      console.error('Migrated image bytes do not match:', contentType);
-      return null;
-    }
+    if (!looksLikeImage(bytes, contentType)) return fail('bytes-mismatch');
 
     const key = migrationKey(image, contentType);
     const ticketResult = await workerApi('/api/media/ticket', {
@@ -95,8 +87,7 @@ async function migrateOneGalleryImage(image: any): Promise<any | null> {
     });
     const ticket = ticketResult.data?.ticket;
     if (!ticketResult.response.ok || !ticket) {
-      console.error('Migration upload ticket failed:', ticketResult.response.status);
-      return null;
+      return fail(`ticket-http-${ticketResult.response.status}`);
     }
 
     const uploaded = await workerApi(
@@ -108,35 +99,37 @@ async function migrateOneGalleryImage(image: any): Promise<any | null> {
       },
       { admin: false }
     );
-    if (!uploaded.response.ok) {
-      console.error('Migration upload failed:', uploaded.response.status);
-      return null;
-    }
+    if (!uploaded.response.ok) return fail(`upload-http-${uploaded.response.status}`);
 
     const record: any = { ...image };
     record.src = uploaded.data?.url || uploaded.data?.secure_url || `${workerBase()}/${key}`;
     record.key = uploaded.data?.key || key;
     return record;
   } catch (error: any) {
-    console.error('Gallery migration error:', error?.message || error);
-    return null;
+    return fail(`exception-${error?.name || 'Error'}`);
   }
 }
 
-async function migrateCloudinaryGallery(images: any[]): Promise<any[] | null> {
-  if (!Array.isArray(images) || !images.some((image) => isCloudinaryUrl(image?.src))) return images;
+async function migrateCloudinaryGallery(
+  images: any[]
+): Promise<{ images: any[] | null; detail: string }> {
+  if (!Array.isArray(images) || !images.some((image) => isCloudinaryUrl(image?.src))) {
+    return { images, detail: 'none' };
+  }
 
+  const errors: string[] = [];
   const migratedImages = [...images];
-  let changed = false;
+  let changed = 0;
   for (let index = 0; index < images.length; index += 1) {
     if (!isCloudinaryUrl(images[index]?.src)) continue;
-    const migrated = await migrateOneGalleryImage(images[index]);
+    const migrated = await migrateOneGalleryImage(images[index], errors);
     if (migrated) {
       migratedImages[index] = migrated;
-      changed = true;
+      changed += 1;
     }
   }
-  if (!changed) return null;
+  const detail = `cloud=${images.length - changed} r2=${changed} errors=${errors.join(',') || 'none'}`;
+  if (!changed) return { images: null, detail };
 
   const saved = await workerApi('/api/gallery', {
     method: 'POST',
@@ -144,10 +137,18 @@ async function migrateCloudinaryGallery(images: any[]): Promise<any[] | null> {
   });
   if (!saved.response.ok) {
     console.error('Could not persist migrated gallery:', saved.response.status);
-    return null;
+    return { images: null, detail: `${detail} persist-http-${saved.response.status}` };
   }
-  return Array.isArray(saved.data?.images) ? saved.data.images : migratedImages;
+  return {
+    images: Array.isArray(saved.data?.images) ? saved.data.images : migratedImages,
+    detail,
+  };
 }
+
+const galleryHeaders = (detail: string) => ({
+  'cache-control': 'no-store',
+  'x-gallery-migration': detail.slice(0, 200),
+});
 
 function safeContextValue(value: unknown, fallback = 'Serenity Spa Gallery'): string {
   return String(value || '')
@@ -218,6 +219,8 @@ async function readCloudinaryGallery(): Promise<any[] | null> {
 }
 
 export async function GET() {
+  let detail = 'not-run';
+
   try {
     const { response, data } = await workerApi<{ ok?: boolean; images?: any[] }>(
       '/api/gallery',
@@ -225,11 +228,13 @@ export async function GET() {
       { admin: false }
     );
     if (response.ok && Array.isArray(data?.images) && data.images.length) {
-      const migrated = await migrateCloudinaryGallery(data.images);
-      return NextResponse.json(migrated || data.images, { headers: { 'cache-control': 'no-store' } });
+      const result = await migrateCloudinaryGallery(data.images);
+      detail = `r2:${result.detail}`;
+      return NextResponse.json(result.images || data.images, { headers: galleryHeaders(detail) });
     }
   } catch (error: any) {
     console.error('R2 gallery read failed:', error?.message || error);
+    detail = `r2-read-exception:${error?.name || 'Error'}`;
   }
 
   // One-time migration only. The Cloudinary listing is read with signed
@@ -237,17 +242,20 @@ export async function GET() {
   // written back into the durable gallery index.
   const cloudImages = await readCloudinaryGallery();
   if (cloudImages?.length) {
-    const migrated = await migrateCloudinaryGallery(cloudImages);
-    if (migrated?.length) {
-      return NextResponse.json(migrated, { headers: { 'cache-control': 'no-store' } });
+    const result = await migrateCloudinaryGallery(cloudImages);
+    detail = `listing:${result.detail}`;
+    if (result.images?.length) {
+      return NextResponse.json(result.images, { headers: galleryHeaders(detail) });
     }
+  } else {
+    detail = `${detail};listing-empty`;
   }
 
   return NextResponse.json(
     readLocalData()
       .filter((item: any) => !isCloudinaryUrl(item?.src))
       .map((item) => ({ ...item, availability: item.availability || 'available' })),
-    { headers: { 'cache-control': 'no-store' } }
+    { headers: galleryHeaders(detail) }
   );
 }
 
