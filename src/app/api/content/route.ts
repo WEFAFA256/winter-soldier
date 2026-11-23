@@ -80,13 +80,22 @@ export async function GET() {
     console.error('R2 content read failed:', error?.message || error);
   }
 
+  // R2 is authoritative. When it is empty (for example just after a media
+  // migration), bootstrap it from the deployed snapshot so admin saves become
+  // visible immediately instead of being masked by this fallback forever.
+  const localContent = readLocalContent();
+  if (looksLikeContent(localContent)) {
+    await seedR2Content(localContent);
+    return NextResponse.json(localContent, { headers: { 'cache-control': 'no-store' } });
+  }
+
   const cloudContent = await readCloudContent();
   if (cloudContent) {
     await seedR2Content(cloudContent);
     return NextResponse.json(cloudContent, { headers: { 'cache-control': 'no-store' } });
   }
 
-  return NextResponse.json(readLocalContent(), { headers: { 'cache-control': 'no-store' } });
+  return NextResponse.json(localContent, { headers: { 'cache-control': 'no-store' } });
 }
 
 export async function POST(req: Request) {
