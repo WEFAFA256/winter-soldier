@@ -27,7 +27,7 @@ const CSP = [
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   "font-src 'self' https://fonts.gstatic.com data:",
   "img-src 'self' data: https:",
-  "media-src 'self' https://res.cloudinary.com",
+  `media-src 'self' ${[...connectOrigins].join(" ")}`,
   `connect-src 'self' ${[...connectOrigins].join(" ")}`,
   "frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com https://www.google.com",
   "frame-ancestors 'none'",

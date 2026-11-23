@@ -1,223 +1,10 @@
 import { NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
-import { createHash } from 'node:crypto';
-import { v2 as cloudinary } from 'cloudinary';
 import { isAdmin } from '@/lib/admin-auth';
-import { ALLOWED_IMAGE_TYPES, MAX_UPLOAD_BYTES, looksLikeImage } from '@/lib/image-validation';
-import { workerApi, workerBase } from '@/lib/r2-media';
+import { workerApi } from '@/lib/r2-media';
 
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME || process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-});
-
-const cloudName = process.env.CLOUDINARY_CLOUD_NAME || process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
 const dataFilePath = path.join(process.cwd(), 'public', 'gallery.json');
-
-const CLOUDINARY_URL = /^https?:\/\/res\.cloudinary\.com\//i;
-const EXT_BY_TYPE: Record<string, string> = {
-  'image/jpeg': 'jpg',
-  'image/png': 'png',
-  'image/webp': 'webp',
-  'image/gif': 'gif',
-  'image/avif': 'avif',
-};
-const TYPE_BY_EXT: Record<string, string> = Object.fromEntries(
-  Object.entries(EXT_BY_TYPE).map(([type, ext]) => [ext, type])
-);
-
-const isCloudinaryUrl = (value: unknown) => typeof value === 'string' && CLOUDINARY_URL.test(value);
-
-function imageType(src: unknown, fallback = 'image/jpeg'): string {
-  const match = typeof src === 'string' ? src.match(/\.([a-z0-9]{2,5})(?:[?#].*)?$/i) : null;
-  return (match && TYPE_BY_EXT[match[1].toLowerCase()]) || fallback;
-}
-
-function signedCloudinaryImageUrls(image: any): Array<{ name: string; url: string }> {
-  const publicId = String(image?.id || '').trim();
-  if (!cloudName || !publicId) return [];
-  const format = EXT_BY_TYPE[imageType(image?.src)] || 'jpg';
-  const version = String(image?.src || '').match(/\/v(\d+)\//)?.[1];
-  const candidates: Array<{ name: string; url: string }> = [];
-
-  // Signed CDN delivery is preferred; the Admin API download action is kept as
-  // a fallback for accounts where signed delivery is not enabled.
-  try {
-    candidates.push({
-      name: 'delivery',
-      url: cloudinary.url(publicId, {
-        secure: true,
-        sign_url: true,
-        type: 'upload',
-        resource_type: 'image',
-        format,
-        ...(version ? { version } : {}),
-      }),
-    });
-  } catch (error: any) {
-    console.error('Signed Cloudinary delivery URL failed:', error?.message || error);
-  }
-
-  try {
-    candidates.push({
-      name: 'admin',
-      url: cloudinary.utils.private_download_url(publicId, format, {
-        resource_type: 'image',
-        type: 'upload',
-        attachment: false,
-      }),
-    });
-  } catch (error: any) {
-    console.error('Signed Cloudinary download URL failed:', error?.message || error);
-  }
-
-  return candidates;
-}
-
-function migrationKey(image: any, contentType: string): string {
-  const basis = `${image?.id || ''}|${image?.src || ''}`;
-  const hash = createHash('sha256').update(basis).digest('hex');
-  return `media/image/migrated/${hash}.${EXT_BY_TYPE[contentType] || 'jpg'}`;
-}
-
-async function migrateOneGalleryImage(image: any, errors: string[]): Promise<any | null> {
-  const fail = (message: string) => {
-    errors.push(message);
-    console.error('Gallery migration:', message);
-    return null;
-  };
-  try {
-    const signedUrls = signedCloudinaryImageUrls(image);
-    if (!signedUrls.length) {
-      return fail(
-        `missing-signed-credentials cloud=${Boolean(cloudName)} key=${Boolean(process.env.CLOUDINARY_API_KEY)} secret=${Boolean(process.env.CLOUDINARY_API_SECRET)}`
-      );
-    }
-
-    const readErrors: string[] = [];
-    let source: Response | null = null;
-    for (const candidate of signedUrls) {
-      try {
-        const response = await fetch(candidate.url, {
-          cache: 'no-store',
-          signal: AbortSignal.timeout(20_000),
-        });
-        if (response.ok) {
-          source = response;
-          break;
-        }
-        const snippet = (await response.text().catch(() => ''))
-          .replace(/\s+/g, ' ')
-          .slice(0, 120);
-        readErrors.push(`${candidate.name}-http-${response.status}:${encodeURIComponent(snippet)}`);
-      } catch (error: any) {
-        readErrors.push(`${candidate.name}-${error?.name || 'Error'}`);
-      }
-    }
-    if (!source) return fail(readErrors.join(','));
-
-    const contentType = String(source.headers.get('content-type') || imageType(image?.src))
-      .split(';')[0]
-      .trim()
-      .toLowerCase();
-    if (!ALLOWED_IMAGE_TYPES.has(contentType)) return fail(`type-${contentType}`);
-
-    const bytes = new Uint8Array(await source.arrayBuffer());
-    if (!bytes.byteLength || bytes.byteLength > MAX_UPLOAD_BYTES) {
-      return fail(`size-${bytes.byteLength}`);
-    }
-    if (!looksLikeImage(bytes, contentType)) return fail('bytes-mismatch');
-
-    const key = migrationKey(image, contentType);
-    const ticketResult = await workerApi('/api/media/ticket', {
-      method: 'POST',
-      body: JSON.stringify({ kind: 'image', contentType, size: bytes.byteLength, key }),
-    });
-    const ticket = ticketResult.data?.ticket;
-    if (!ticketResult.response.ok || !ticket) {
-      return fail(`ticket-http-${ticketResult.response.status}`);
-    }
-
-    const uploaded = await workerApi(
-      '/media/upload',
-      {
-        method: 'POST',
-        body: bytes,
-        headers: { 'content-type': contentType, 'x-upload-ticket': String(ticket) },
-      },
-      { admin: false }
-    );
-    if (!uploaded.response.ok) return fail(`upload-http-${uploaded.response.status}`);
-
-    const record: any = { ...image };
-    record.src = uploaded.data?.url || uploaded.data?.secure_url || `${workerBase()}/${key}`;
-    record.key = uploaded.data?.key || key;
-    return record;
-  } catch (error: any) {
-    return fail(`exception-${error?.name || 'Error'}`);
-  }
-}
-
-async function migrateCloudinaryGallery(
-  images: any[]
-): Promise<{ images: any[] | null; detail: string }> {
-  if (!Array.isArray(images) || !images.some((image) => isCloudinaryUrl(image?.src))) {
-    return { images, detail: 'none' };
-  }
-
-  const errors: string[] = [];
-  const migratedImages = [...images];
-  let changed = 0;
-  for (let index = 0; index < images.length; index += 1) {
-    if (!isCloudinaryUrl(images[index]?.src)) continue;
-    const migrated = await migrateOneGalleryImage(images[index], errors);
-    if (migrated) {
-      migratedImages[index] = migrated;
-      changed += 1;
-    }
-  }
-  const detail = `cloud=${images.length - changed} r2=${changed} errors=${errors.join(',') || 'none'}`;
-  if (!changed) return { images: null, detail };
-
-  const saved = await workerApi('/api/gallery', {
-    method: 'POST',
-    body: JSON.stringify({ images: migratedImages }),
-  });
-  if (!saved.response.ok) {
-    console.error('Could not persist migrated gallery:', saved.response.status);
-    return { images: null, detail: `${detail} persist-http-${saved.response.status}` };
-  }
-  return {
-    images: Array.isArray(saved.data?.images) ? saved.data.images : migratedImages,
-    detail,
-  };
-}
-
-const galleryHeaders = (detail: string) => ({
-  'cache-control': 'no-store',
-  'x-gallery-migration': detail.slice(0, 200),
-});
-
-function safeContextValue(value: unknown, fallback = 'Serenity Spa Gallery'): string {
-  return String(value || '')
-    .replace(/[|=]/g, ' ')
-    .replace(/[\r\n]+/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim()
-    .slice(0, 200) || fallback;
-}
-
-function readContextValues(resource: any): Record<string, unknown> {
-  const context = resource?.context;
-  if (!context || typeof context !== 'object') return {};
-  const custom = (context as any).custom;
-  if (custom && typeof custom === 'object') {
-    return { ...(context as Record<string, unknown>), ...(custom as Record<string, unknown>) };
-  }
-  return context as Record<string, unknown>;
-}
 
 const readLocalData = (): any[] => {
   try {
@@ -230,47 +17,7 @@ const readLocalData = (): any[] => {
   }
 };
 
-async function readCloudinaryGallery(): Promise<any[] | null> {
-  try {
-    const result: any = await cloudinary.search
-      .expression('folder:serenity_gallery')
-      .with_field('context')
-      .sort_by('created_at', 'desc')
-      .max_results(100)
-      .execute();
-
-    const localMap = new Map<string, any>();
-    readLocalData().forEach((img: any) => {
-      if (img.id) localMap.set(img.id, img);
-      if (img.src) localMap.set(img.src, img);
-    });
-
-    return (result.resources || []).map((resource: any) => {
-      const id = String(resource.public_id);
-      const src = String(resource.secure_url);
-      const matched = localMap.get(id) || localMap.get(src);
-      const custom = readContextValues(resource);
-      return {
-        id,
-        src,
-        alt: safeContextValue(custom.alt, matched?.alt || 'Serenity Spa Gallery'),
-        delay: 'delay-100',
-        availability: custom.availability === 'in-session'
-          ? 'in-session'
-          : custom.availability === 'available'
-            ? 'available'
-            : matched?.availability || 'available',
-      };
-    });
-  } catch (error: any) {
-    console.error('Cloudinary gallery fallback failed:', error?.message || error);
-    return null;
-  }
-}
-
 export async function GET() {
-  let detail = 'not-run';
-
   try {
     const { response, data } = await workerApi<{ ok?: boolean; images?: any[] }>(
       '/api/gallery',
@@ -278,34 +25,17 @@ export async function GET() {
       { admin: false }
     );
     if (response.ok && Array.isArray(data?.images) && data.images.length) {
-      const result = await migrateCloudinaryGallery(data.images);
-      detail = `r2:${result.detail}`;
-      return NextResponse.json(result.images || data.images, { headers: galleryHeaders(detail) });
+      return NextResponse.json(data.images, {
+        headers: { 'cache-control': 'no-store' },
+      });
     }
   } catch (error: any) {
     console.error('R2 gallery read failed:', error?.message || error);
-    detail = `r2-read-exception:${error?.name || 'Error'}`;
-  }
-
-  // One-time migration only. The Cloudinary listing is read with signed
-  // credentials, each image is copied into R2, and Cloudinary URLs are never
-  // written back into the durable gallery index.
-  const cloudImages = await readCloudinaryGallery();
-  if (cloudImages?.length) {
-    const result = await migrateCloudinaryGallery(cloudImages);
-    detail = `listing:${result.detail}`;
-    if (result.images?.length) {
-      return NextResponse.json(result.images, { headers: galleryHeaders(detail) });
-    }
-  } else {
-    detail = `${detail};listing-empty`;
   }
 
   return NextResponse.json(
-    readLocalData()
-      .filter((item: any) => !isCloudinaryUrl(item?.src))
-      .map((item) => ({ ...item, availability: item.availability || 'available' })),
-    { headers: galleryHeaders(detail) }
+    readLocalData().map((item) => ({ ...item, availability: item.availability || 'available' })),
+    { headers: { 'cache-control': 'no-store' } }
   );
 }
 
@@ -317,15 +47,14 @@ export async function POST(req: Request) {
 
     const body = await req.json().catch(() => null);
     const image = body?.image || body;
-    if (!image || typeof image.id !== 'string' || !image.id.startsWith('serenity_gallery/') ||
-        typeof image.src !== 'string' || !image.src) {
+    if (
+      !image ||
+      typeof image.id !== 'string' ||
+      !image.id.startsWith('serenity_gallery/') ||
+      typeof image.src !== 'string' ||
+      !image.src
+    ) {
       return NextResponse.json({ error: 'A valid gallery image is required' }, { status: 400 });
-    }
-    if (isCloudinaryUrl(image.src)) {
-      return NextResponse.json(
-        { error: 'Cloudinary URLs are no longer accepted; upload the image to R2 first' },
-        { status: 400 }
-      );
     }
 
     const { response, data } = await workerApi('/api/gallery', {
@@ -346,7 +75,10 @@ export async function POST(req: Request) {
       // best-effort local mirror only
     }
 
-    return NextResponse.json({ message: 'Image added to R2 gallery', image: data?.image || image }, { status: 201 });
+    return NextResponse.json(
+      { message: 'Image added to R2 gallery', image: data?.image || image },
+      { status: 201 }
+    );
   } catch (error: any) {
     console.error('Gallery add error:', error?.message || error);
     return NextResponse.json({ error: error?.message || 'Internal Server Error' }, { status: 500 });
@@ -361,9 +93,16 @@ export async function PATCH(req: Request) {
 
     const body = await req.json().catch(() => null);
     const { id, availability, alt } = body || {};
-    if (!id || typeof id !== 'string' || !id.startsWith('serenity_gallery/') ||
-        !['available', 'in-session'].includes(availability)) {
-      return NextResponse.json({ error: 'A valid gallery id and availability are required' }, { status: 400 });
+    if (
+      !id ||
+      typeof id !== 'string' ||
+      !id.startsWith('serenity_gallery/') ||
+      !['available', 'in-session'].includes(availability)
+    ) {
+      return NextResponse.json(
+        { error: 'A valid gallery id and availability are required' },
+        { status: 400 }
+      );
     }
 
     const { response, data } = await workerApi('/api/gallery', {

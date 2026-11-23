@@ -9,7 +9,7 @@ export const ALLOWED_IMAGE_TYPES = new Set([
 export const MAX_UPLOAD_BYTES = 10 * 1024 * 1024;
 
 // File.type comes from the browser and can be omitted or forged. Check the
-// actual bytes before handing anything to Cloudinary.
+// actual bytes before handing anything to R2 media storage.
 export function looksLikeImage(bytes: Uint8Array, declaredType: string): boolean {
   if (bytes.length < 12) return false;
   const b = bytes;

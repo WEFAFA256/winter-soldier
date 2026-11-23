@@ -1,19 +1,10 @@
 import { NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
-import { v2 as cloudinary } from 'cloudinary';
 import { isAdmin } from '@/lib/admin-auth';
 import { workerApi } from '@/lib/r2-media';
 
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME || process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-});
-
-const cloudName = process.env.CLOUDINARY_CLOUD_NAME || process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
 const contentFilePath = path.join(process.cwd(), 'public', 'site-content.json');
-const CLOUD_CONTENT_ID = 'site-content.json';
 
 const readLocalContent = () => {
   try {
@@ -27,30 +18,6 @@ const readLocalContent = () => {
 
 const looksLikeContent = (data: any) =>
   Boolean(data && (data.services || data.spaContent || data.homepage));
-
-/**
- * Temporary migration fallback only. R2 is authoritative; if it is empty, a
- * signed Cloudinary raw read can seed it once. Only the signed server-side URL
- * is used — no unsigned public asset URL is relied upon.
- */
-async function readCloudContent(): Promise<any | null> {
-  if (!cloudName) return null;
-
-  try {
-    const signedUrl = cloudinary.utils.private_download_url(CLOUD_CONTENT_ID, 'json', {
-      resource_type: 'raw',
-    });
-    const res = await fetch(signedUrl, { cache: 'no-store' });
-    if (res.ok) {
-      const data = await res.json();
-      if (looksLikeContent(data)) return data;
-    }
-  } catch (error: any) {
-    console.error('Signed Cloudinary content read failed:', error?.message || error);
-  }
-
-  return null;
-}
 
 async function seedR2Content(content: any): Promise<void> {
   try {
@@ -88,14 +55,6 @@ export async function GET() {
   if (r2ReachableButEmpty && looksLikeContent(localContent)) {
     await seedR2Content(localContent);
     return NextResponse.json(localContent, { headers: { 'cache-control': 'no-store' } });
-  }
-
-  if (r2ReachableButEmpty) {
-    const cloudContent = await readCloudContent();
-    if (cloudContent) {
-      await seedR2Content(cloudContent);
-      return NextResponse.json(cloudContent, { headers: { 'cache-control': 'no-store' } });
-    }
   }
 
   // R2 unavailable or seed sources unavailable: return the best local fallback

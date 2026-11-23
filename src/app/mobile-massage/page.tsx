@@ -148,42 +148,58 @@ function MobileServiceCard({
           borderRadius: "16px",
           overflow: "hidden",
           border: "1px solid rgba(176, 142, 52, 0.45)",
-          boxShadow: "0 16px 34px rgba(72, 50, 16, 0.16)",
-          transition: "all 0.4s cubic-bezier(0.16, 1, 0.3, 1)",
-          height: "100%",
+          boxShadow: "0 12px 30px rgba(120, 90, 30, 0.16), 0 6px 16px rgba(40, 30, 12, 0.1)",
           display: "flex",
           flexDirection: "column",
+          height: "100%",
+          position: "relative",
+          transition: "transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s ease, border-color 0.35s ease",
         }}
         onMouseEnter={(e) => {
-          e.currentTarget.style.borderColor = "rgba(168, 134, 42, 0.55)";
-          e.currentTarget.style.boxShadow = "0 22px 44px rgba(72, 50, 16, 0.22)";
-          e.currentTarget.style.transform = "translateY(-6px)";
+          e.currentTarget.style.transform = "translateY(-10px)";
+          e.currentTarget.style.borderColor = "rgba(176, 142, 52, 0.78)";
+          e.currentTarget.style.boxShadow = "0 22px 44px rgba(120, 90, 30, 0.24), 0 10px 22px rgba(40, 30, 12, 0.14)";
         }}
         onMouseLeave={(e) => {
-          e.currentTarget.style.borderColor = "rgba(176, 142, 52, 0.45)";
-          e.currentTarget.style.boxShadow = "0 16px 34px rgba(72, 50, 16, 0.16)";
           e.currentTarget.style.transform = "translateY(0)";
+          e.currentTarget.style.borderColor = "rgba(176, 142, 52, 0.45)";
+          e.currentTarget.style.boxShadow = "0 12px 30px rgba(120, 90, 30, 0.16), 0 6px 16px rgba(40, 30, 12, 0.1)";
         }}
       >
         <div
           style={{
-            width: "100%",
-            height: "270px",
-            overflow: "hidden",
-            position: "relative",
-            backgroundColor: "#e4d4b0",
-            borderBottom: "1px solid rgba(168, 134, 42, 0.28)",
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            height: "5px",
+            background: "linear-gradient(90deg, #b8922f 0%, #e7cc74 50%, #b8922f 100%)",
+            zIndex: 3,
           }}
+        />
+        {/* Soft palm overlay for light luxury theme */}
+        <div
+          style={{
+            position: "absolute",
+            left: 0,
+            bottom: 0,
+            width: "180px",
+            height: "180px",
+            backgroundImage: "url(/assets/images/shapes/funfact-bg-2-shape.png)",
+            backgroundSize: "contain",
+            backgroundRepeat: "no-repeat",
+            backgroundPosition: "left bottom",
+            pointerEvents: "none",
+            opacity: 0.08,
+            filter: "sepia(1) saturate(1.5) hue-rotate(5deg)",
+            zIndex: 1,
+          }}
+        />
+
+        {/* Card Image — static, fills the entire image area with no empty edges */}
+        <div
+          style={{ height: "220px", overflow: "hidden", position: "relative", backgroundColor: "#e4d4b0", zIndex: 2 }}
         >
-          <div
-            style={{
-              position: "absolute",
-              inset: 0,
-              background: "linear-gradient(to top, rgba(107, 74, 18, 0.18) 0%, transparent 45%)",
-              zIndex: 1,
-              pointerEvents: "none",
-            }}
-          />
           <img
             src={imgSrc}
             alt={service.title}
@@ -194,82 +210,32 @@ function MobileServiceCard({
               objectFit: "cover",
               transition: "transform 0.6s cubic-bezier(0.16, 1, 0.3, 1)",
             }}
+            onMouseEnter={(e) => {
+              (e.target as HTMLElement).style.transform = "scale(1.08)";
+            }}
+            onMouseLeave={(e) => {
+              (e.target as HTMLElement).style.transform = "scale(1)";
+            }}
             onError={(e) => {
               (e.target as HTMLImageElement).src = fallbackImg;
             }}
           />
-
-          <div
-            style={{
-              position: "absolute",
-              top: "14px",
-              right: "14px",
-              zIndex: 2,
-              backgroundColor: "rgba(194, 167, 78, 0.95)",
-              color: "#1a1408",
-              padding: "5px 12px",
-              borderRadius: "4px",
-              fontSize: "11px",
-              fontWeight: 800,
-              letterSpacing: "0.8px",
-              textTransform: "uppercase",
-              boxShadow: "0 4px 10px rgba(0,0,0,0.15)",
-            }}
-          >
-            Premium
-          </div>
-
-          <div
-            style={{
-              position: "absolute",
-              bottom: "12px",
-              left: "14px",
-              zIndex: 2,
-              backgroundColor: "rgba(255, 248, 230, 0.92)",
-              color: "#6b4a12",
-              padding: "4px 12px",
-              borderRadius: "4px",
-              fontSize: "11px",
-              fontWeight: 700,
-              display: "flex",
-              alignItems: "center",
-              gap: "6px",
-              border: "1px solid rgba(168, 134, 42, 0.35)",
-              letterSpacing: "0.5px",
-            }}
-          >
-            <i className="fas fa-clock" style={{ fontSize: "10px" }}></i>
-            {service.duration || "60 Mins"}
-          </div>
         </div>
 
-        <div
-          style={{
-            padding: "28px",
-            flex: 1,
-            display: "flex",
-            flexDirection: "column",
-            background: "transparent",
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "flex-start",
-              gap: "12px",
-              marginBottom: "12px",
-            }}
-          >
+        {/* Card Content */}
+        <div style={{ padding: "24px 22px", display: "flex", flexDirection: "column", flex: 1, position: "relative", zIndex: 2 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "12px", gap: "8px" }}>
             <h3
               style={{
-                fontSize: "22px",
-                fontFamily: "var(--solox-font, 'Cormorant Garamond', serif)",
-                color: "#2b2112",
+                fontFamily: "Cormorant, serif",
+                fontSize: "1.45rem",
+                fontWeight: 800,
+                color: "#2a2115",
                 textShadow: "none",
                 margin: 0,
-                fontWeight: 700,
                 lineHeight: 1.2,
+                letterSpacing: "0.5px",
+                textTransform: "uppercase",
               }}
             >
               {service.title}
@@ -304,47 +270,13 @@ function MobileServiceCard({
               WebkitLineClamp: 3,
               WebkitBoxOrient: "vertical",
               overflow: "hidden",
-            } as React.CSSProperties}
-          >
-            {service.description}
-          </p>
-
-          <ul
-            style={{
-              listStyle: "none",
-              padding: 0,
-              margin: "0 0 20px 0",
-              display: "flex",
-              flexDirection: "column",
-              gap: "8px",
+              minHeight: "4.2em",
             }}
           >
-            {(service.features ?? []).slice(0, 4).map((feature, idx) => (
-              <li
-                key={idx}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "10px",
-                  color: "#5a4e3a",
-                  textShadow: "none",
-                  fontSize: "0.88rem",
-                  fontWeight: 400,
-                }}
-              >
-                <i
-                  className="fas fa-check-circle"
-                  style={{
-                    color: "#a8862a",
-                    fontSize: "0.85rem",
-                    flexShrink: 0,
-                  }}
-                ></i>
-                {feature}
-              </li>
-            ))}
-          </ul>
+            {service.description || "A soothing treatment designed to revitalize mind, body, and senses."}
+          </p>
 
+          {/* Action Buttons */}
           <div
             style={{
               display: "flex",
@@ -363,8 +295,8 @@ function MobileServiceCard({
                 flex: 1,
                 padding: "11px 14px",
                 backgroundColor: "transparent",
-                border: "1.5px solid #60351A",
-                color: "#60351A",
+                border: "1.5px solid rgba(168, 134, 42, 0.55)",
+                color: "#8a6920",
                 borderRadius: "0px",
                 fontSize: "12px",
                 fontWeight: 800,
@@ -379,14 +311,14 @@ function MobileServiceCard({
                 transition: "all 0.25s ease",
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = "#60351A";
-                e.currentTarget.style.color = "#FFFFFF";
-                e.currentTarget.style.borderColor = "#60351A";
+                e.currentTarget.style.backgroundColor = "rgba(194, 167, 78, 0.12)";
+                e.currentTarget.style.color = "#5a4310";
+                e.currentTarget.style.borderColor = "#b8922f";
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.backgroundColor = "transparent";
-                e.currentTarget.style.color = "#60351A";
-                e.currentTarget.style.borderColor = "#60351A";
+                e.currentTarget.style.color = "#8a6920";
+                e.currentTarget.style.borderColor = "rgba(168, 134, 42, 0.55)";
               }}
             >
               <i className="fab fa-whatsapp"></i> WhatsApp
@@ -399,9 +331,9 @@ function MobileServiceCard({
               style={{
                 flex: 1.3,
                 padding: "11px 14px",
-                backgroundColor: "#60351A",
-                border: "1.5px solid #60351A",
-                color: "#FDF3E6",
+                backgroundColor: "#c2a74e",
+                border: "1.5px solid #c2a74e",
+                color: "#0e1317",
                 borderRadius: "0px",
                 fontSize: "12px",
                 fontWeight: 800,
@@ -412,18 +344,18 @@ function MobileServiceCard({
                 alignItems: "center",
                 justifyContent: "center",
                 gap: "8px",
-                boxShadow: "0 4px 14px rgba(96, 53, 26, 0.3)",
+                boxShadow: "0 4px 14px rgba(194, 167, 78, 0.3)",
                 transition: "all 0.25s ease",
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = "#7A4323";
-                e.currentTarget.style.borderColor = "#7A4323";
-                e.currentTarget.style.boxShadow = "0 6px 20px rgba(96, 53, 26, 0.45)";
+                e.currentTarget.style.backgroundColor = "#dfc268";
+                e.currentTarget.style.borderColor = "#dfc268";
+                e.currentTarget.style.boxShadow = "0 6px 20px rgba(194, 167, 78, 0.5)";
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = "#60351A";
-                e.currentTarget.style.borderColor = "#60351A";
-                e.currentTarget.style.boxShadow = "0 4px 14px rgba(96, 53, 26, 0.3)";
+                e.currentTarget.style.backgroundColor = "#c2a74e";
+                e.currentTarget.style.borderColor = "#c2a74e";
+                e.currentTarget.style.boxShadow = "0 4px 14px rgba(194, 167, 78, 0.3)";
               }}
             >
               <i className="fas fa-calendar-check"></i> Book Now

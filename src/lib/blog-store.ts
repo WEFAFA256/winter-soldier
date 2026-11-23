@@ -1,17 +1,6 @@
 import fs from "fs";
 import path from "path";
-import { v2 as cloudinary } from "cloudinary";
-
-const BLOG_PUBLIC_ID = "serenity_data/blog-posts";
-const cloudName =
-  process.env.CLOUDINARY_CLOUD_NAME ||
-  process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
-
-cloudinary.config({
-  cloud_name: cloudName,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-});
+import { workerApi } from "@/lib/r2-media";
 
 function readLocal(): any[] {
   try {
@@ -24,19 +13,21 @@ function readLocal(): any[] {
   }
 }
 
-// Server-side reader shared by the sitemap and article metadata. Cloudinary is
-// the durable store; the local JSON is a development fallback only.
+// Server-side reader shared by the sitemap and article metadata.
+// R2-backed content is the durable store; local blog.json is the development fallback.
 export async function readBlogPosts(): Promise<any[]> {
   try {
-    if (!cloudName) return readLocal();
-    const result = await cloudinary.api.resource(BLOG_PUBLIC_ID, {
-      resource_type: "raw",
-    });
-    const res = await fetch(result.secure_url, { cache: "no-store" });
-    if (!res.ok) return readLocal();
-    const data = await res.json();
-    return Array.isArray(data) ? data : readLocal();
+    const { response, data } = await workerApi<{ ok?: boolean; content?: any }>(
+      "/api/content",
+      {},
+      { admin: false }
+    );
+    if (response.ok && Array.isArray(data?.content?.blogs) && data.content.blogs.length > 0) {
+      return data.content.blogs;
+    }
   } catch {
-    return readLocal();
+    // fallback to local mirror
   }
+
+  return readLocal();
 }

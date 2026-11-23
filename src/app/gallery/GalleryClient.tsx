@@ -1272,7 +1272,7 @@ export default function GalleryPage({ initialHeroSrc }: { initialHeroSrc?: strin
                 ✕
               </button>
 
-              {/* 16:9 Widescreen Responsive Player. Cloudinary uploads play in a
+              {/* 16:9 Widescreen Responsive Player. Direct media uploads play in a
                   native <video>; YouTube records keep the privacy-enhanced embed. */}
               <div style={{ position: "relative", width: "100%", paddingTop: "56.25%", backgroundColor: "#000" }}>
                 {selectedVideo.videoUrl ? (

@@ -30,7 +30,7 @@ function compactKey(value: string): string {
 }
 
 /* Keys are intentionally tolerant of the naming variants already present in
-   the live Cloudinary catalogue (4hands / 4-hands, B2B | Nuru, body-to-body…). */
+   the live services catalogue (4hands / 4-hands, B2B | Nuru, body-to-body…). */
 const SERVICE_PRIORITY = new Map<string, number>([
   ["swedishmassage", 0],
   ["deeptissuemassage", 1],
