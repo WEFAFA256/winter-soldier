@@ -128,8 +128,9 @@ const css = `
     .adm .mobile-panel-grid { grid-template-columns: 1fr !important; }
     .adm .mobile-option-card { flex-direction: column !important; align-items: stretch !important; }
     .adm .settings-grid { grid-template-columns: 1fr !important; }
-    .adm .blog-card { flex-direction: column !important; align-items: flex-start !important; gap: 8px !important; }
-    .adm .blog-card img { width: 100% !important; height: auto !important; max-height: 140px !important; flex-shrink: 0 !important; }
+    .adm .blog-card { flex-direction: column !important; align-items: stretch !important; gap: 10px !important; overflow: hidden !important; }
+    .adm .blog-card img { width: 100% !important; height: auto !important; max-height: 160px !important; flex-shrink: 0 !important; }
+    .adm .blog-card .btn-danger { align-self: flex-start !important; }
     .adm .service-card { flex-direction: column !important; align-items: stretch !important; gap: 10px !important; }
     .adm .service-card .svc-card-actions { width: 100% !important; justify-content: space-between !important; }
     .adm .service-card .svc-card-actions > div { flex: 1 !important; }
@@ -1760,12 +1761,12 @@ export default function AdminGalleryPage() {
                 ) : (
                   <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
                     {blogs.map(post=>(
-                      <div key={post.id} className="card adm blog-card" style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:8, padding:"12px 16px", display:"flex", gap:14, alignItems:"center" }}>
+                      <div key={post.id} className="card adm blog-card" style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:8, padding:"12px 16px", display:"flex", gap:14, alignItems:"center", overflow:"hidden" }}>
                         {post.image && <img src={post.image} alt={post.title} style={{ width:64, height:48, objectFit:"cover", borderRadius:6, border:`1px solid ${C.border}`, flexShrink:0 }} onError={(e:any)=>{e.target.style.display="none";}} />}
-                        <div style={{ flex:1, minWidth:0 }}>
-                          <p style={{ margin:0, fontWeight:700, fontSize:13, color:C.text, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{post.title}</p>
-                          <p style={{ margin:"3px 0 0", fontSize:11, color:C.gold }}>{post.date} · by {post.author}</p>
-                          <p className="line-clamp2" style={{ margin:"4px 0 0", fontSize:11, color:C.muted }}>{post.excerpt||post.content?.substring(0,100)}</p>
+                        <div style={{ flex:1, minWidth:0, width:"100%" }}>
+                          <p style={{ margin:0, fontWeight:700, fontSize:13, color:C.text, lineHeight:1.35, overflowWrap:"anywhere", wordBreak:"break-word" }}>{post.title}</p>
+                          <p style={{ margin:"3px 0 0", fontSize:11, color:C.gold, overflowWrap:"anywhere" }}>{post.date} · by {post.author}</p>
+                          <p className="line-clamp2" style={{ margin:"4px 0 0", fontSize:11, color:C.muted, overflowWrap:"anywhere", wordBreak:"break-word" }}>{post.excerpt||post.content?.substring(0,100)}</p>
                         </div>
                         <button onClick={()=>deleteBlog(post.id)} className="btn-danger" style={{ background:"none", border:`1px solid ${C.border}`, borderRadius:6, color:C.danger, padding:"6px 10px", fontSize:12, cursor:"pointer", flexShrink:0 }}>🗑</button>
                       </div>
