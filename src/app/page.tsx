@@ -403,9 +403,9 @@ export default function Home() {
             </div>
         </section>
         <!-- main-slider-end -->
-        <section class="about-two" style="position: relative; overflow: hidden; background-color: #0e1317; background-image: url(/assets/images/backgrounds/testimonial-bg-1.jpg); background-size: cover; background-position: center center; background-repeat: no-repeat;">
-            <div class="about-two__bg" style="display: none;"></div>
-            <div class="container">
+        <section class="about-two" style="position: relative; overflow: hidden; background-color: #121212;">
+            <div class="about-two__bg" style="position: absolute; inset: 0; left: 0; top: 0; width: 100%; height: 100%; background-image: url(/assets/images/backgrounds/testimonial-bg-1.jpg); background-size: cover; background-position: center center; background-repeat: no-repeat; opacity: 0.35; mix-blend-mode: normal; pointer-events: none;"></div>
+            <div class="container" style="position: relative; z-index: 2;">
                 <div class="row">
                     <div class="col-lg-8 wow fadeInLeft" data-wow-delay="300ms">
                         <div class="about-two__content">
