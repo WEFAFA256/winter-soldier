@@ -1,11 +1,10 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, useRef, memo } from "react";
 import Link from "next/link";
 import CustomCursor from "@/components/CustomCursor";
 import MobileDrawer from "@/components/MobileDrawer";
 import { useSiteContact } from "@/components/ContactProvider";
-import { usePageReveal } from "@/lib/use-page-reveal";
 import {
   SiteVideo,
   VIDEO_CATEGORY_OPTIONS,
@@ -54,8 +53,8 @@ const DEFAULT_VIDEO_POSTER =
     '<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#13181e"/><stop offset="0.55" stop-color="#080b0e"/><stop offset="1" stop-color="#1d1710"/></linearGradient></defs><rect width="960" height="540" fill="url(#g)"/><circle cx="480" cy="270" r="58" fill="none" stroke="#c2a74e" stroke-width="3"/><path d="M463 242 L512 270 L463 298 Z" fill="#c2a74e"/><text x="480" y="378" fill="#8b7355" font-family="Georgia,serif" font-size="24" text-anchor="middle">SERENITY SPA FILM</text></svg>'
   );
 
-// ── Specialist Profile Card with Availability Badge & named Booking Button ──
-function GalleryCard({
+// ── Specialist Profile Card — memoized so parent state changes do not re-render all cards ──
+const GalleryCard = memo(function GalleryCard({
   img,
   index,
   fallbackImg,
@@ -66,234 +65,63 @@ function GalleryCard({
   fallbackImg: string;
   onClick: () => void;
 }) {
-  // Cards are rendered only after the admin /api/gallery response, so they can
-  // animate on mount; offscreen cards wait for the one-shot scroll reveal.
-  const { ref, className: revealClass } = usePageReveal<HTMLDivElement>({
-    animateOnMount: true,
-  });
-
-  // Therapist availability status: controlled by admin / data (shared with the lightbox)
   const isAvailable = isImageAvailable(img, index);
   const customName = getCustomName(img);
   const specialistName = customName || `Specialist #${index + 1}`;
 
+  const handleBooking = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    window.location.href = `/booking?therapist=${encodeURIComponent(specialistName)}`;
+  }, [specialistName]);
+
   return (
-    <div
-      ref={ref}
-      className={`col-xl-3 col-lg-4 col-md-6 col-6 ${revealClass}`.trim()}
-      style={{
-        opacity: 1,
-        transform: "translateY(0px) scale(1)",
-        "--page-motion-duration": "600ms",
-        "--page-motion-delay": `${(index % 4) * 0.075}s`,
-        "--page-motion-offset": "40px",
-        "--page-motion-scale": "0.96",
-        willChange: "opacity, transform",
-      } as React.CSSProperties}
-    >
+    <div className="col-xl-3 col-lg-4 col-md-6 col-6 gallery-card-col">
       <div
-        className="gallery-card-inner"
+        className={`gallery-card-inner gallery-card-available-${isAvailable ? "yes" : "no"}`}
         onClick={onClick}
         role="button"
         tabIndex={0}
         aria-label={`View full-size photos of ${specialistName}`}
         onKeyDown={(e) => {
-          // Ignore keys pressed on the nested booking button so it keeps its own action.
           if (e.target !== e.currentTarget) return;
           if (e.key === "Enter" || e.key === " " || e.key === "Spacebar") {
             e.preventDefault();
             onClick();
           }
         }}
-        style={{
-          height: "330px",
-          borderRadius: "12px",
-          overflow: "hidden",
-          position: "relative",
-          cursor: "pointer",
-          backgroundColor: "#161c22",
-          border: "1px solid rgba(194, 167, 78, 0.22)",
-          boxShadow: "0 6px 20px rgba(0,0,0,0.35)",
-          display: "flex",
-          flexDirection: "column",
-          transition: "transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s ease, box-shadow 0.35s ease",
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.transform = "translateY(-8px)";
-          e.currentTarget.style.borderColor = "rgba(194, 167, 78, 0.65)";
-          e.currentTarget.style.boxShadow = "0 18px 40px rgba(194, 167, 78, 0.2)";
-          const imgEl = e.currentTarget.querySelector(".gallery-img") as HTMLElement;
-          if (imgEl) imgEl.style.transform = "scale(1.08)";
-          const overlay = e.currentTarget.querySelector(".gallery-overlay") as HTMLElement;
-          if (overlay) overlay.style.opacity = "1";
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.transform = "translateY(0)";
-          e.currentTarget.style.borderColor = "rgba(194, 167, 78, 0.22)";
-          e.currentTarget.style.boxShadow = "0 6px 20px rgba(0,0,0,0.35)";
-          const imgEl = e.currentTarget.querySelector(".gallery-img") as HTMLElement;
-          if (imgEl) imgEl.style.transform = "scale(1)";
-          const overlay = e.currentTarget.querySelector(".gallery-overlay") as HTMLElement;
-          if (overlay) overlay.style.opacity = "0";
-        }}
       >
-        {/* Availability Badge in Top Right Corner */}
-        <div
-          style={{
-            position: "absolute",
-            top: "12px",
-            right: "12px",
-            zIndex: 6,
-            display: "inline-flex",
-            alignItems: "center",
-            gap: "6px",
-            padding: "5px 11px",
-            borderRadius: "20px",
-            backgroundColor: "rgba(10, 14, 18, 0.88)",
-            backdropFilter: "blur(6px)",
-            border: isAvailable
-              ? "1px solid rgba(16, 185, 129, 0.55)"
-              : "1px solid rgba(239, 68, 68, 0.45)",
-            boxShadow: "0 4px 12px rgba(0, 0, 0, 0.45)",
-          }}
-        >
-          <span
-            className={isAvailable ? "status-dot-pulse-green" : "status-dot-pulse-red"}
-            style={{
-              width: "8px",
-              height: "8px",
-              borderRadius: "50%",
-              backgroundColor: isAvailable ? "#10b981" : "#ef4444",
-              display: "inline-block",
-            }}
-          />
-          <span
-            style={{
-              fontSize: "10px",
-              fontWeight: 800,
-              letterSpacing: "0.6px",
-              textTransform: "uppercase",
-              color: isAvailable ? "#34d399" : "#f87171",
-              lineHeight: 1,
-            }}
-          >
+        {/* Availability Badge */}
+        <div className={`gallery-badge gallery-badge--${isAvailable ? "available" : "busy"}`}>
+          <span className={isAvailable ? "status-dot-pulse-green" : "gallery-dot-busy"} />
+          <span className="gallery-badge__label">
             {isAvailable ? "Available" : "In Session"}
           </span>
         </div>
 
-        {/* Image Container */}
-        <div style={{ position: "relative", width: "100%", height: "100%", overflow: "hidden" }}>
+        {/* Image */}
+        <div className="gallery-img-wrap">
           <img
             src={img.src}
             alt={img.alt || "The Serenity Spa"}
             loading="lazy"
+            decoding="async"
             className="gallery-img"
-            style={{
-              width: "100%",
-              height: "100%",
-              objectFit: "cover",
-              transition: "transform 0.6s cubic-bezier(0.16,1,0.3,1)",
-              willChange: "transform",
-            }}
-            onError={(e) => {
-              (e.target as HTMLImageElement).src = fallbackImg;
-            }}
+            onError={(e) => { (e.target as HTMLImageElement).src = fallbackImg; }}
           />
-
-          {/* Dark gradient to ensure button and text readability */}
-          <div
-            style={{
-              position: "absolute",
-              inset: 0,
-              background: "linear-gradient(180deg, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0) 40%, rgba(0,0,0,0.85) 100%)",
-              pointerEvents: "none",
-            }}
-          />
-
-          {/* Hover Overlay with search icon */}
-          <div
-            className="gallery-overlay"
-            style={{
-              position: "absolute",
-              inset: 0,
-              background: "linear-gradient(180deg, rgba(14,19,23,0.3) 0%, rgba(14,19,23,0.75) 100%)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              opacity: 0,
-              transition: "opacity 0.3s ease",
-            }}
-          >
-            <div
-              style={{
-                width: "44px",
-                height: "44px",
-                borderRadius: "50%",
-                backgroundColor: "rgba(194, 167, 78, 0.95)",
-                color: "#0e1317",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontSize: "16px",
-                boxShadow: "0 6px 20px rgba(0,0,0,0.5)",
-                transform: "translateY(-16px)",
-              }}
-            >
-              <i className="fas fa-search-plus"></i>
+          <div className="gallery-gradient" />
+          <div className="gallery-overlay">
+            <div className="gallery-zoom-icon">
+              <i className="fas fa-search-plus" />
             </div>
           </div>
 
-          {/* Bottom Action: booking button labelled with the admin-set therapist name */}
-          <div
-            style={{
-              position: "absolute",
-              bottom: "12px",
-              left: "12px",
-              right: "12px",
-              zIndex: 6,
-              display: "flex",
-              justifyContent: "center",
-            }}
-          >
+          {/* Book button */}
+          <div className="gallery-book-wrap">
             <button
-              onClick={(e) => {
-                e.stopPropagation();
-                window.location.href = `/booking?therapist=${encodeURIComponent(specialistName)}`;
-              }}
-              style={{
-                width: "100%",
-                padding: "9px 14px",
-                backgroundColor: isAvailable ? "#c2a74e" : "rgba(24, 30, 36, 0.92)",
-                color: isAvailable ? "#0e1317" : "#ffffff",
-                border: isAvailable ? "1.5px solid #d4af37" : "1px solid rgba(194, 167, 78, 0.4)",
-                borderRadius: "4px",
-                fontSize: "11px",
-                fontWeight: 800,
-                letterSpacing: "0.8px",
-                textTransform: "uppercase",
-                cursor: "pointer",
-                display: "inline-flex",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: "7px",
-                boxShadow: "0 4px 14px rgba(0, 0, 0, 0.6)",
-                transition: "all 0.25s ease",
-                backdropFilter: "blur(4px)",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = "#ffffff";
-                e.currentTarget.style.color = "#0e1317";
-                e.currentTarget.style.borderColor = "#ffffff";
-                e.currentTarget.style.transform = "scale(1.02)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = isAvailable ? "#c2a74e" : "rgba(24, 30, 36, 0.92)";
-                e.currentTarget.style.color = isAvailable ? "#0e1317" : "#ffffff";
-                e.currentTarget.style.borderColor = isAvailable ? "#d4af37" : "rgba(194, 167, 78, 0.4)";
-                e.currentTarget.style.transform = "scale(1)";
-              }}
+              className={`gallery-book-btn gallery-book-btn--${isAvailable ? "available" : "busy"}`}
+              onClick={handleBooking}
             >
-              <i className="fas fa-calendar-check" style={{ fontSize: "11px" }}></i>
+              <i className="fas fa-calendar-check" />
               <span>{getBookingLabel(img)}</span>
             </button>
           </div>
@@ -301,7 +129,7 @@ function GalleryCard({
       </div>
     </div>
   );
-}
+});
 
 export default function GalleryPage({ initialHeroSrc }: { initialHeroSrc?: string } = {}) {
   // Never seed the first paint from a stale local copy. The admin-controlled
@@ -433,89 +261,212 @@ export default function GalleryPage({ initialHeroSrc }: { initialHeroSrc?: strin
 
       <style jsx global>{`
         @keyframes statusPulseGreen {
-          0% {
-            box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
-          }
-          70% {
-            box-shadow: 0 0 0 6px rgba(16, 185, 129, 0);
-          }
-          100% {
-            box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
-          }
+          0%   { box-shadow: 0 0 0 0   rgba(16, 185, 129, 0.7); }
+          70%  { box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+          100% { box-shadow: 0 0 0 0   rgba(16, 185, 129, 0); }
         }
         @keyframes livePulseRed {
-          0%, 100% {
-            opacity: 1;
-            transform: scale(1);
-          }
-          50% {
-            opacity: 0.4;
-            transform: scale(0.85);
-          }
+          0%, 100% { opacity: 1; transform: scale(1); }
+          50%       { opacity: 0.4; transform: scale(0.85); }
         }
         @keyframes playGlowRipple {
-          0% {
-            box-shadow: 0 0 0 0 rgba(194, 167, 78, 0.7), 0 0 20px rgba(194, 167, 78, 0.4);
-          }
-          70% {
-            box-shadow: 0 0 0 14px rgba(194, 167, 78, 0), 0 0 30px rgba(194, 167, 78, 0.2);
-          }
-          100% {
-            box-shadow: 0 0 0 0 rgba(194, 167, 78, 0), 0 0 20px rgba(194, 167, 78, 0);
-          }
+          0%   { box-shadow: 0 0 0 0   rgba(194, 167, 78, 0.7), 0 0 20px rgba(194, 167, 78, 0.4); }
+          70%  { box-shadow: 0 0 0 14px rgba(194, 167, 78, 0),   0 0 30px rgba(194, 167, 78, 0.2); }
+          100% { box-shadow: 0 0 0 0   rgba(194, 167, 78, 0),   0 0 20px rgba(194, 167, 78, 0); }
         }
         @keyframes escortCtaShimmer {
-          0% { background-position: 0% center; }
+          0%   { background-position: 0% center; }
           100% { background-position: 300% center; }
         }
-        .status-dot-pulse-green {
-          animation: statusPulseGreen 2s infinite;
+        @keyframes fadeInUp {
+          from { opacity: 0; transform: translateY(22px); }
+          to   { opacity: 1; transform: translateY(0); }
         }
-        .live-dot-pulse {
+
+        /* ── Gallery cards: pure-CSS hover (zero JS DOM queries on scroll) ── */
+        .gallery-card-col {
+          contain: layout style;
+          animation: fadeInUp 0.5s ease both;
+        }
+        .gallery-card-inner {
+          height: 330px;
+          border-radius: 12px;
+          overflow: hidden;
+          position: relative;
+          cursor: pointer;
+          background-color: #161c22;
+          border: 1px solid rgba(194, 167, 78, 0.22);
+          box-shadow: 0 6px 20px rgba(0,0,0,0.35);
+          display: flex;
+          flex-direction: column;
+          transition: transform 0.32s cubic-bezier(0.16,1,0.3,1),
+                      border-color 0.28s ease,
+                      box-shadow 0.32s ease;
+          will-change: transform;
+        }
+        .gallery-card-inner:hover {
+          transform: translateY(-8px);
+          border-color: rgba(194, 167, 78, 0.65);
+          box-shadow: 0 18px 40px rgba(194, 167, 78, 0.18);
+        }
+        .gallery-img-wrap {
+          position: relative;
+          width: 100%;
+          height: 100%;
+          overflow: hidden;
+        }
+        .gallery-img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          transition: transform 0.55s cubic-bezier(0.16,1,0.3,1);
+          display: block;
+        }
+        .gallery-card-inner:hover .gallery-img {
+          transform: scale(1.08);
+        }
+        .gallery-gradient {
+          position: absolute;
+          inset: 0;
+          background: linear-gradient(180deg, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0) 40%, rgba(0,0,0,0.82) 100%);
+          pointer-events: none;
+        }
+        .gallery-overlay {
+          position: absolute;
+          inset: 0;
+          background: linear-gradient(180deg, rgba(14,19,23,0.25) 0%, rgba(14,19,23,0.7) 100%);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          opacity: 0;
+          transition: opacity 0.28s ease;
+        }
+        .gallery-card-inner:hover .gallery-overlay { opacity: 1; }
+        .gallery-zoom-icon {
+          width: 44px;
+          height: 44px;
+          border-radius: 50%;
+          background: rgba(194,167,78,0.95);
+          color: #0e1317;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 16px;
+          box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+          transform: translateY(-12px);
+          transition: transform 0.32s cubic-bezier(0.16,1,0.3,1);
+        }
+        .gallery-card-inner:hover .gallery-zoom-icon { transform: translateY(0); }
+
+        /* Badge */
+        .gallery-badge {
+          position: absolute;
+          top: 12px; right: 12px;
+          z-index: 6;
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          padding: 5px 11px;
+          border-radius: 20px;
+          background: rgba(10,14,18,0.88);
+          backdrop-filter: blur(6px);
+          box-shadow: 0 4px 12px rgba(0,0,0,0.45);
+        }
+        .gallery-badge--available { border: 1px solid rgba(16,185,129,0.55); }
+        .gallery-badge--busy      { border: 1px solid rgba(239,68,68,0.45); }
+        .gallery-badge__label {
+          font-size: 10px; font-weight: 800;
+          letter-spacing: 0.6px; text-transform: uppercase; line-height: 1;
+        }
+        .gallery-badge--available .gallery-badge__label { color: #34d399; }
+        .gallery-badge--busy      .gallery-badge__label { color: #f87171; }
+        .gallery-dot-busy {
+          width: 8px; height: 8px; border-radius: 50%;
+          background: #ef4444; display: inline-block;
           animation: livePulseRed 1.8s ease-in-out infinite;
         }
-        .video-card-play-btn {
-          animation: playGlowRipple 2.2s infinite;
+
+        /* Book button */
+        .gallery-book-wrap {
+          position: absolute;
+          bottom: 12px; left: 12px; right: 12px;
+          z-index: 6; display: flex; justify-content: center;
         }
+        .gallery-book-btn {
+          width: 100%;
+          padding: 9px 14px;
+          border-radius: 4px;
+          font-size: 11px; font-weight: 800;
+          letter-spacing: 0.8px; text-transform: uppercase;
+          cursor: pointer;
+          display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+          box-shadow: 0 4px 14px rgba(0,0,0,0.6);
+          transition: background-color 0.22s ease, color 0.22s ease,
+                      border-color 0.22s ease, transform 0.22s ease;
+          backdrop-filter: blur(4px);
+        }
+        .gallery-book-btn--available {
+          background: #c2a74e; color: #0e1317; border: 1.5px solid #d4af37;
+        }
+        .gallery-book-btn--busy {
+          background: rgba(24,30,36,0.92); color: #fff;
+          border: 1px solid rgba(194,167,78,0.4);
+        }
+        .gallery-book-btn:hover {
+          background: #fff !important; color: #0e1317 !important;
+          border-color: #fff !important; transform: scale(1.02);
+        }
+
+        /* Stagger animation per card column */
+        .gallery-card-col:nth-child(1)  { animation-delay: 0ms; }
+        .gallery-card-col:nth-child(2)  { animation-delay: 50ms; }
+        .gallery-card-col:nth-child(3)  { animation-delay: 100ms; }
+        .gallery-card-col:nth-child(4)  { animation-delay: 150ms; }
+        .gallery-card-col:nth-child(n+5) { animation-delay: 0ms; }
+
+        .status-dot-pulse-green { animation: statusPulseGreen 2s infinite; }
+        .live-dot-pulse         { animation: livePulseRed 1.8s ease-in-out infinite; }
+        .video-card-play-btn    { animation: playGlowRipple 2.2s infinite; }
         .video-card-box {
-          transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.35s ease, box-shadow 0.35s ease;
+          transition: transform 0.32s cubic-bezier(0.16, 1, 0.3, 1),
+                      border-color 0.32s ease, box-shadow 0.32s ease;
+          will-change: transform;
         }
         .video-card-box:hover {
           transform: translateY(-8px);
           border-color: rgba(194, 167, 78, 0.65) !important;
-          box-shadow: 0 20px 45px rgba(0, 0, 0, 0.75), 0 0 25px rgba(194, 167, 78, 0.25) !important;
+          box-shadow: 0 20px 45px rgba(0,0,0,0.75), 0 0 25px rgba(194,167,78,0.25) !important;
         }
-        .video-card-box:hover .video-card-poster {
-          transform: scale(1.06);
-        }
-        .video-card-poster {
-          transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-        }
+        .video-card-box:hover .video-card-poster { transform: scale(1.06); }
+        .video-card-poster { transition: transform 0.55s cubic-bezier(0.16, 1, 0.3, 1); }
         .gallery-card-inner:focus-visible,
         .video-card-box:focus-visible,
         .mobile-nav__toggler:focus-visible,
-        .gallery-book-session-btn:focus-visible {
-          outline: 2px solid #c2a74e;
-          outline-offset: 3px;
-        }
-        /* Tapping any photo opens a genuine full-viewport image, not a small modal. */
+        .gallery-book-session-btn:focus-visible { outline: 2px solid #c2a74e; outline-offset: 3px; }
         .gallery-lightbox { padding: 0 !important; }
         .gallery-lightbox-stage,
         .gallery-lightbox-img {
-          max-width: 100vw !important;
-          max-height: 100dvh !important;
-          width: 100vw !important;
-          height: 100dvh !important;
-          border-radius: 0 !important;
-          border: none !important;
+          max-width: 100vw !important; max-height: 100dvh !important;
+          width: 100vw !important; height: 100dvh !important;
+          border-radius: 0 !important; border: none !important;
         }
         .gallery-lightbox-img { object-fit: contain !important; }
-        /* The template's .row rule overrides Bootstrap gutter utilities; scope this grid. */
         .gallery-profile-grid { --bs-gutter-x: 8px !important; --bs-gutter-y: 8px !important; }
-        /* Mobile only: two slightly larger profiles per row. */
         @media (max-width: 575px) {
           .gallery-card-inner { height: 250px !important; }
           .gallery-lightbox-nav { width: 40px !important; height: 40px !important; }
+        }
+        /* Reduce animation for users who prefer it */
+        @media (prefers-reduced-motion: reduce) {
+          .gallery-card-col { animation: none; }
+          .gallery-card-inner,
+          .gallery-img,
+          .gallery-overlay,
+          .gallery-zoom-icon { transition: none !important; }
+          .status-dot-pulse-green,
+          .live-dot-pulse,
+          .video-card-play-btn,
+          .gallery-dot-busy { animation: none !important; }
         }
       `}</style>
 
@@ -1625,11 +1576,7 @@ export default function GalleryPage({ initialHeroSrc }: { initialHeroSrc?: strin
 
       <style>{`
         * { -webkit-font-smoothing: antialiased; }
-        .gallery-card-inner {
-          transition: transform 0.4s cubic-bezier(0.16,1,0.3,1), border-color 0.3s ease, box-shadow 0.35s ease;
-        }
         html { scroll-behavior: smooth; }
-        img { transition: opacity 0.4s ease; }
       `}</style>
     </>
   );
