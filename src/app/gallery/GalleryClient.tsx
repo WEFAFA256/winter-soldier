@@ -11,7 +11,7 @@ import {
   normalizeSiteVideos,
 } from "@/lib/site-videos";
 import { fetchSiteContent, getCachedSiteContent } from "@/lib/service-order";
-import { useScrollFloat } from "@/lib/use-scroll-float";
+// useScrollFloat removed — gallery uses a single shared IntersectionObserver (see grid container)
 
 interface GalleryImage {
   id?: string;
@@ -81,10 +81,6 @@ const GalleryCard = memo(function GalleryCard({
   const customName = getCustomName(img);
   const specialistName = customName || `Specialist #${index + 1}`;
 
-  const { ref, floatClass, style: floatStyle } = useScrollFloat<HTMLDivElement>({
-    delay: (index % 4) * 0.07,
-  });
-
   const handleBooking = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
     window.location.href = `/booking?therapist=${encodeURIComponent(specialistName)}`;
@@ -92,9 +88,8 @@ const GalleryCard = memo(function GalleryCard({
 
   return (
     <div
-      ref={ref}
-      className={`col-xl-3 col-lg-4 col-md-6 col-6 gallery-card-col ${floatClass}`}
-      style={floatStyle}
+      className={`col-xl-3 col-lg-4 col-md-6 col-6 gallery-card-col sf-out`}
+      style={{ "--sf-delay": `${(index % 4) * 0.07}s` } as React.CSSProperties}
     >      <div
         className={`gallery-card-inner gallery-card-available-${isAvailable ? "yes" : "no"}`}
         onClick={onClick}
@@ -122,7 +117,8 @@ const GalleryCard = memo(function GalleryCard({
           <img
             src={img.src}
             alt={img.alt || "The Serenity Spa"}
-            loading="lazy"
+            loading={index < 4 ? "eager" : "lazy"}
+            fetchPriority={index < 4 ? "high" : "auto"}
             decoding="async"
             className="gallery-img"
             onError={(e) => { (e.target as HTMLImageElement).src = fallbackImg; }}
@@ -339,7 +335,9 @@ export default function GalleryPage({
 
         /* ── Gallery cards: pure-CSS hover (zero JS DOM queries on scroll) ── */
         .gallery-card-col {
-          contain: layout style;
+          contain: layout style paint;
+          content-visibility: auto;
+          contain-intrinsic-size: 0 330px;
         }
         .gallery-card-inner {
           height: 330px;
@@ -355,12 +353,13 @@ export default function GalleryPage({
           transition: transform 0.32s cubic-bezier(0.16,1,0.3,1),
                       border-color 0.28s ease,
                       box-shadow 0.32s ease;
-          will-change: transform;
+          will-change: auto;
         }
         .gallery-card-inner:hover {
           transform: translateY(-8px);
           border-color: rgba(194, 167, 78, 0.65);
           box-shadow: 0 18px 40px rgba(194, 167, 78, 0.18);
+          will-change: transform;
         }
         .gallery-img-wrap {
           position: relative;
@@ -421,8 +420,7 @@ export default function GalleryPage({
           gap: 6px;
           padding: 5px 11px;
           border-radius: 20px;
-          background: rgba(10,14,18,0.88);
-          backdrop-filter: blur(6px);
+          background: rgba(10,14,18,0.92);
           box-shadow: 0 4px 12px rgba(0,0,0,0.45);
         }
         .gallery-badge--available { border: 1px solid rgba(16,185,129,0.55); }
@@ -456,7 +454,6 @@ export default function GalleryPage({
           box-shadow: 0 4px 14px rgba(0,0,0,0.6);
           transition: background-color 0.22s ease, color 0.22s ease,
                       border-color 0.22s ease, transform 0.22s ease;
-          backdrop-filter: blur(4px);
         }
         .gallery-book-btn--available {
           background: #c2a74e; color: #0e1317; border: 1.5px solid #d4af37;
@@ -497,7 +494,12 @@ export default function GalleryPage({
           border-radius: 0 !important; border: none !important;
         }
         .gallery-lightbox-img { object-fit: contain !important; }
-        .gallery-profile-grid { --bs-gutter-x: 8px !important; --bs-gutter-y: 8px !important; }
+        .gallery-profile-grid {
+          --bs-gutter-x: 8px !important;
+          --bs-gutter-y: 8px !important;
+          transform: translateZ(0);
+          backface-visibility: hidden;
+        }
         @media (max-width: 575px) {
           .gallery-card-inner { height: 250px !important; }
           .gallery-lightbox-nav { width: 40px !important; height: 40px !important; }
@@ -727,7 +729,28 @@ export default function GalleryPage({
                 <p style={{ color: "#9ca3af" }}>Check back soon as we update our luxury suite gallery.</p>
               </div>
             ) : (
-              <div className="row g-2 gallery-profile-grid">
+              <div className="row g-2 gallery-profile-grid" ref={(grid) => {
+                if (!grid) return;
+                // Single shared IntersectionObserver for ALL gallery cards
+                // — far cheaper than one observer per card during scroll.
+                const cols = grid.querySelectorAll<HTMLElement>(".gallery-card-col");
+                if (cols.length === 0) return;
+                const obs = new IntersectionObserver((entries) => {
+                  entries.forEach((entry) => {
+                    const el = entry.target as HTMLElement;
+                    if (entry.isIntersecting) {
+                      el.classList.remove("sf-out");
+                      el.classList.add("sf-in");
+                    } else {
+                      el.classList.remove("sf-in");
+                      el.classList.add("sf-out");
+                    }
+                  });
+                }, { threshold: 0.08, rootMargin: "0px 0px -30px 0px" });
+                cols.forEach((col) => obs.observe(col));
+                // Store cleanup on the grid node so React can't GC it early
+                (grid as any).__galleryObs = obs;
+              }}>
                 {images.map((img, index) => {
                   const fallbackImg = `/assets/images/instagram/instagram-2-${(index % 5) + 1}.jpg`;
                   return (
