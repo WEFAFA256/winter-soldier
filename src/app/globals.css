@@ -582,3 +582,42 @@ img {
   }
 }
 
+/* ─── Video Section Circular Play Button Centering ─── */
+.video-one__btn {
+  width: 204px !important;
+  height: 204px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  position: relative !important;
+}
+.video-one__btn .curved-circle {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+.video-one__btn .curved-circle--item {
+  width: auto !important;
+  margin: 0 auto !important;
+}
+.video-one__btn .video-popup {
+  position: absolute !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  width: 56px !important;
+  height: 56px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  z-index: 10 !important;
+}
+.video-one__btn .video-popup i {
+  margin-left: 3px;
+}
+
+
