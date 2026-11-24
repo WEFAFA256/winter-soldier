@@ -221,74 +221,85 @@ function MobileServiceCard({
             {service.description || "A soothing treatment designed to revitalize mind, body, and senses."}
           </p>
 
-          {/* WhatsApp button — same card width, rounded, gold-outline style */}
-          <a
-            href={whatsappLink(`Hello, I'd like to book an out-call for ${service.title} (${displayPrice}) at my location.`)}
-            target="_blank"
-            rel="noopener noreferrer"
+          {/* Action Buttons Row: WhatsApp (left) + Book Now (right) */}
+          <div
             style={{
               display: "flex",
               alignItems: "center",
-              justifyContent: "center",
-              gap: "8px",
+              gap: "10px",
               width: "100%",
-              marginTop: "14px",
-              padding: "12px 20px",
-              backgroundColor: "transparent",
-              border: "1.5px solid rgba(184, 146, 47, 0.6)",
-              color: "#7a5c14",
-              borderRadius: "6px",
-              fontSize: "12px",
-              fontWeight: 800,
-              letterSpacing: "1.4px",
-              textTransform: "uppercase",
-              textDecoration: "none",
-              transition: "background-color 0.2s ease, border-color 0.2s ease",
-              boxSizing: "border-box",
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = "rgba(184, 146, 47, 0.1)";
-              e.currentTarget.style.borderColor = "#b8922f";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = "transparent";
-              e.currentTarget.style.borderColor = "rgba(184, 146, 47, 0.6)";
+              marginTop: "18px",
             }}
           >
-            <i className="fab fa-whatsapp" style={{ fontSize: "15px" }}></i>
-            WHATSAPP
-          </a>
+            {/* WhatsApp button (left) */}
+            <a
+              href={whatsappLink(`Hello, I'd like to book an out-call for ${service.title} (${displayPrice}) at my location.`)}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                flex: 1,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "7px",
+                padding: "13px 10px",
+                backgroundColor: "transparent",
+                border: "1.5px solid rgba(184, 146, 47, 0.6)",
+                color: "#7a5c14",
+                borderRadius: "6px",
+                fontSize: "12px",
+                fontWeight: 800,
+                letterSpacing: "1px",
+                textTransform: "uppercase",
+                textDecoration: "none",
+                transition: "background-color 0.2s ease, border-color 0.2s ease",
+                boxSizing: "border-box",
+                whiteSpace: "nowrap",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = "rgba(184, 146, 47, 0.1)";
+                e.currentTarget.style.borderColor = "#b8922f";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = "transparent";
+                e.currentTarget.style.borderColor = "rgba(184, 146, 47, 0.6)";
+              }}
+            >
+              <i className="fab fa-whatsapp" style={{ fontSize: "15px" }}></i>
+              WhatsApp
+            </a>
 
-          {/* Book Now button — gold, matches services page exactly */}
-          <Link
-            href={`/booking?service=${encodeURIComponent(service.title)}&price=${encodeURIComponent(
-              Number.isNaN(bookingPrice) ? String(service.price) : String(bookingPrice)
-            )}${imgSrc ? `&image=${encodeURIComponent(imgSrc)}` : ""}`}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: "9px",
-              width: "100%",
-              marginTop: "10px",
-              padding: "14px 20px",
-              backgroundColor: "#c9a93c",
-              color: "#1a1208",
-              textDecoration: "none",
-              fontSize: "13px",
-              fontWeight: 800,
-              letterSpacing: "1.6px",
-              textTransform: "uppercase",
-              borderRadius: "6px",
-              transition: "background-color 0.2s ease",
-              boxSizing: "border-box",
-            }}
-            onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "#d4b447"; }}
-            onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "#c9a93c"; }}
-          >
-            <i className="fas fa-calendar-check" style={{ fontSize: "14px" }}></i>
-            BOOK NOW
-          </Link>
+            {/* Book Now button (right) */}
+            <Link
+              href={`/booking?service=${encodeURIComponent(service.title)}&price=${encodeURIComponent(
+                Number.isNaN(bookingPrice) ? String(service.price) : String(bookingPrice)
+              )}${imgSrc ? `&image=${encodeURIComponent(imgSrc)}` : ""}`}
+              style={{
+                flex: 1.15,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "7px",
+                padding: "13px 10px",
+                backgroundColor: "#c9a93c",
+                color: "#1a1208",
+                textDecoration: "none",
+                fontSize: "12px",
+                fontWeight: 800,
+                letterSpacing: "1px",
+                textTransform: "uppercase",
+                borderRadius: "6px",
+                transition: "background-color 0.2s ease",
+                boxSizing: "border-box",
+                whiteSpace: "nowrap",
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "#d4b447"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "#c9a93c"; }}
+            >
+              <i className="fas fa-calendar-check" style={{ fontSize: "14px" }}></i>
+              Book Now
+            </Link>
+          </div>
         </div>
       </div>
     </div>
