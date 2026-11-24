@@ -551,3 +551,34 @@ img {
   }
 }
 
+/* ─── Scroll Float — repeating float-in animation (re-fires every scroll-in) ─── */
+@keyframes scrollFloatIn {
+  0%   { opacity: 0; transform: translate3d(0, 38px, 0) scale(0.97); }
+  60%  { opacity: 1; }
+  100% { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+}
+@keyframes scrollFloatOut {
+  0%   { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+  100% { opacity: 0; transform: translate3d(0, 20px, 0) scale(0.98); }
+}
+
+/* Default (not yet revealed): invisible, shifted down */
+.sf-out {
+  opacity: 0;
+  transform: translate3d(0, 38px, 0) scale(0.97);
+  animation: scrollFloatOut 220ms cubic-bezier(0.4, 0, 0.6, 1) both;
+}
+
+/* Revealed: float up into place */
+.sf-in {
+  animation: scrollFloatIn 620ms cubic-bezier(0.22, 1, 0.36, 1) var(--sf-delay, 0s) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sf-in, .sf-out {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+

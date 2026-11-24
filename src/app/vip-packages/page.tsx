@@ -10,7 +10,7 @@ import {
   orderServices,
   splitServiceCatalog,
 } from "@/lib/service-order";
-import { usePageReveal } from "@/lib/use-page-reveal";
+import { useScrollFloat } from "@/lib/use-scroll-float";
 
 interface Service {
   title: string;
@@ -53,24 +53,15 @@ function ServiceCard({
   imgSrc: string;
   fallbackImg: string;
 }) {
-  const { ref, className: revealClass } = usePageReveal<HTMLDivElement>({
-    animateOnMount: true,
+  const { ref, floatClass, style: floatStyle } = useScrollFloat<HTMLDivElement>({
+    delay: (index % 3) * 0.1 + 0.05,
   });
-
-  const staggerDelay = (index % 3) * 0.1 + 0.05;
 
   return (
     <div
       ref={ref}
-      className={`col-lg-4 col-md-6 col-12 ${revealClass}`.trim()}
-      style={{
-        opacity: 1,
-        transform: "translate3d(0, 0, 0)",
-        "--page-motion-duration": "1000ms",
-        "--page-motion-delay": `${staggerDelay}s`,
-        "--page-motion-offset": "60px",
-        willChange: "transform, opacity",
-      } as React.CSSProperties}
+      className={`col-lg-4 col-md-6 col-12 ${floatClass}`}
+      style={floatStyle}
     >
       {/* VIP Card Shell: Rich gold luxury theme */}
       <div

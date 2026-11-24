@@ -10,6 +10,7 @@ import {
   VIDEO_CATEGORY_OPTIONS,
   normalizeSiteVideos,
 } from "@/lib/site-videos";
+import { useScrollFloat } from "@/lib/use-scroll-float";
 
 interface GalleryImage {
   id?: string;
@@ -69,14 +70,21 @@ const GalleryCard = memo(function GalleryCard({
   const customName = getCustomName(img);
   const specialistName = customName || `Specialist #${index + 1}`;
 
+  const { ref, floatClass, style: floatStyle } = useScrollFloat<HTMLDivElement>({
+    delay: (index % 4) * 0.07,
+  });
+
   const handleBooking = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
     window.location.href = `/booking?therapist=${encodeURIComponent(specialistName)}`;
   }, [specialistName]);
 
   return (
-    <div className="col-xl-3 col-lg-4 col-md-6 col-6 gallery-card-col">
-      <div
+    <div
+      ref={ref}
+      className={`col-xl-3 col-lg-4 col-md-6 col-6 gallery-card-col ${floatClass}`}
+      style={floatStyle}
+    >      <div
         className={`gallery-card-inner gallery-card-available-${isAvailable ? "yes" : "no"}`}
         onClick={onClick}
         role="button"
@@ -278,15 +286,10 @@ export default function GalleryPage({ initialHeroSrc }: { initialHeroSrc?: strin
           0%   { background-position: 0% center; }
           100% { background-position: 300% center; }
         }
-        @keyframes fadeInUp {
-          from { opacity: 0; transform: translateY(22px); }
-          to   { opacity: 1; transform: translateY(0); }
-        }
 
         /* ── Gallery cards: pure-CSS hover (zero JS DOM queries on scroll) ── */
         .gallery-card-col {
           contain: layout style;
-          animation: fadeInUp 0.5s ease both;
         }
         .gallery-card-inner {
           height: 330px;
@@ -416,13 +419,6 @@ export default function GalleryPage({ initialHeroSrc }: { initialHeroSrc?: strin
           background: #fff !important; color: #0e1317 !important;
           border-color: #fff !important; transform: scale(1.02);
         }
-
-        /* Stagger animation per card column */
-        .gallery-card-col:nth-child(1)  { animation-delay: 0ms; }
-        .gallery-card-col:nth-child(2)  { animation-delay: 50ms; }
-        .gallery-card-col:nth-child(3)  { animation-delay: 100ms; }
-        .gallery-card-col:nth-child(4)  { animation-delay: 150ms; }
-        .gallery-card-col:nth-child(n+5) { animation-delay: 0ms; }
 
         .status-dot-pulse-green { animation: statusPulseGreen 2s infinite; }
         .live-dot-pulse         { animation: livePulseRed 1.8s ease-in-out infinite; }
