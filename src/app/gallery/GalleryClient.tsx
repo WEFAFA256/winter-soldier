@@ -902,19 +902,55 @@ export default function GalleryPage({ initialHeroSrc }: { initialHeroSrc?: strin
                   >
                     {/* 16:9 Thumbnail Reel with Glowing Play Button */}
                     <div style={{ position: "relative", width: "100%", paddingTop: "56.25%", overflow: "hidden", backgroundColor: "#080b0e" }}>
-                      <img
-                        src={video.poster || DEFAULT_VIDEO_POSTER}
-                        alt={video.title}
-                        className="video-card-poster"
-                        style={{
-                          position: "absolute",
-                          top: 0,
-                          left: 0,
-                          width: "100%",
-                          height: "100%",
-                          objectFit: "cover",
-                        }}
-                      />
+                      {video.poster ? (
+                        <img
+                          src={video.poster}
+                          alt={video.title}
+                          className="video-card-poster"
+                          style={{
+                            position: "absolute",
+                            top: 0,
+                            left: 0,
+                            width: "100%",
+                            height: "100%",
+                            objectFit: "cover",
+                          }}
+                          onError={(e) => { (e.target as HTMLImageElement).src = DEFAULT_VIDEO_POSTER; }}
+                        />
+                      ) : video.videoUrl ? (
+                        <video
+                          src={`${getPlayableVideoSrc(video.videoUrl)}#t=0.5`}
+                          preload="metadata"
+                          muted
+                          playsInline
+                          aria-label={video.title}
+                          className="video-card-poster"
+                          style={{
+                            position: "absolute",
+                            top: 0,
+                            left: 0,
+                            width: "100%",
+                            height: "100%",
+                            objectFit: "cover",
+                            pointerEvents: "none",
+                          }}
+                        />
+                      ) : (
+                        <img
+                          src={video.youtubeId ? `https://i.ytimg.com/vi/${video.youtubeId}/hqdefault.jpg` : DEFAULT_VIDEO_POSTER}
+                          alt={video.title}
+                          className="video-card-poster"
+                          style={{
+                            position: "absolute",
+                            top: 0,
+                            left: 0,
+                            width: "100%",
+                            height: "100%",
+                            objectFit: "cover",
+                          }}
+                          onError={(e) => { (e.target as HTMLImageElement).src = DEFAULT_VIDEO_POSTER; }}
+                        />
+                      )}
                       <div
                         style={{
                           position: "absolute",
