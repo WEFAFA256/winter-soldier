@@ -403,8 +403,8 @@ export default function Home() {
             </div>
         </section>
         <!-- main-slider-end -->
-        <section class="about-two">
-            <div class="about-two__bg" style="background-image: url(/assets/images/shapes/about-bg-2.jpg);"></div>
+        <section class="about-two" style="position: relative; overflow: hidden; background-color: #0e1317; background-image: url(/assets/images/backgrounds/testimonial-bg-1.jpg); background-size: cover; background-position: center center; background-repeat: no-repeat;">
+            <div class="about-two__bg" style="display: none;"></div>
             <div class="container">
                 <div class="row">
                     <div class="col-lg-8 wow fadeInLeft" data-wow-delay="300ms">
