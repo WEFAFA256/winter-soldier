@@ -199,33 +199,36 @@ function ServiceCard({
           >
             {service.description || 'A soothing treatment designed to revitalize mind, body, and senses.'}
           </p>
-        </div>
 
-        {/* Full-width BOOK NOW — sibling of content, card overflow:hidden clips corners */}
-        <Link
-          href={'/booking?service=' + encodeURIComponent(service.title) + '&price=' + encodeURIComponent(String(service.price)) + (imgSrc ? '&image=' + encodeURIComponent(imgSrc) : '')}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '9px',
-            padding: '15px 20px',
-            backgroundColor: '#c9a93c',
-            color: '#1a1208',
-            textDecoration: 'none',
-            fontSize: '13px',
-            fontWeight: 800,
-            letterSpacing: '1.6px',
-            textTransform: 'uppercase',
-            flexShrink: 0,
-            transition: 'background-color 0.2s ease',
-          }}
-          onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#d4b447'; }}
-          onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#c9a93c'; }}
-        >
-          <i className="fas fa-calendar-check" style={{ fontSize: '14px' }}></i>
-          BOOK NOW
-        </Link>
+          {/* BOOK NOW — inside content area, padded on all sides like the reference */}
+          <Link
+            href={'/booking?service=' + encodeURIComponent(service.title) + '&price=' + encodeURIComponent(String(service.price)) + (imgSrc ? '&image=' + encodeURIComponent(imgSrc) : '')}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '9px',
+              width: '100%',
+              marginTop: '18px',
+              padding: '14px 20px',
+              backgroundColor: '#c9a93c',
+              color: '#1a1208',
+              textDecoration: 'none',
+              fontSize: '13px',
+              fontWeight: 800,
+              letterSpacing: '1.6px',
+              textTransform: 'uppercase',
+              borderRadius: '6px',
+              transition: 'background-color 0.2s ease',
+              boxSizing: 'border-box',
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#d4b447'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#c9a93c'; }}
+          >
+            <i className="fas fa-calendar-check" style={{ fontSize: '14px' }}></i>
+            BOOK NOW
+          </Link>
+        </div>
       </div>
     </div>
   );
