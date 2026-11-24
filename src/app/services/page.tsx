@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import Link from "next/link";
@@ -37,7 +37,7 @@ function formatPrice(price: number | string): string {
 }
 
 
-// ── New Design: Photo-top luxury card with floral watermark ──
+// ── Exact Old Site Scroll Animation & Gold Theme ──
 function ServiceCard({
   service,
   index,
@@ -49,9 +49,13 @@ function ServiceCard({
   imgSrc: string;
   fallbackImg: string;
 }) {
+  // These cards only exist after the catalogue fetch, so they can safely
+  // animate on mount; offscreen cards wait for the one-shot scroll reveal.
   const { ref, className: revealClass } = usePageReveal<HTMLDivElement>({
     animateOnMount: true,
   });
+
+  // Delay calculation for column stagger: 0.08s per column
   const staggerDelay = (index % 3) * 0.08;
 
   return (
@@ -70,114 +74,126 @@ function ServiceCard({
       <div
         className="service-theme-card"
         style={{
-          borderRadius: '18px',
+          backgroundColor: '#efe3c6',
+          backgroundImage: 'linear-gradient(160deg, #f3e9cf 0%, #e8d7b3 52%, #dcc48f 100%)',
+          borderRadius: '16px',
           overflow: 'hidden',
-          border: '1.5px solid rgba(176, 142, 52, 0.5)',
-          boxShadow: '0 8px 32px rgba(90, 60, 10, 0.18), 0 2px 8px rgba(40, 30, 12, 0.10)',
+          border: '1px solid rgba(176, 142, 52, 0.45)',
+          boxShadow: '0 12px 30px rgba(120, 90, 30, 0.16), 0 6px 16px rgba(40, 30, 12, 0.1)',
           display: 'flex',
           flexDirection: 'column',
           height: '100%',
           position: 'relative',
-          transition: 'transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s ease',
-          background: '#f5ecd7',
+          transition: 'transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s ease, border-color 0.35s ease',
         }}
         onMouseEnter={(e) => {
-          e.currentTarget.style.transform = 'translateY(-8px)';
-          e.currentTarget.style.boxShadow = '0 20px 48px rgba(90, 60, 10, 0.26), 0 6px 18px rgba(40, 30, 12, 0.14)';
+          e.currentTarget.style.transform = 'translateY(-10px)';
+          e.currentTarget.style.borderColor = 'rgba(176, 142, 52, 0.78)';
+          e.currentTarget.style.boxShadow = '0 22px 44px rgba(120, 90, 30, 0.24), 0 10px 22px rgba(40, 30, 12, 0.14)';
         }}
         onMouseLeave={(e) => {
           e.currentTarget.style.transform = 'translateY(0)';
-          e.currentTarget.style.boxShadow = '0 8px 32px rgba(90, 60, 10, 0.18), 0 2px 8px rgba(40, 30, 12, 0.10)';
+          e.currentTarget.style.borderColor = 'rgba(176, 142, 52, 0.45)';
+          e.currentTarget.style.boxShadow = '0 12px 30px rgba(120, 90, 30, 0.16), 0 6px 16px rgba(40, 30, 12, 0.1)';
         }}
       >
-        {/* Full-width image — no top bar, flush with rounded top corners */}
-        <div style={{ position: 'relative', overflow: 'hidden', flexShrink: 0 }}>
+        <div
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            height: '5px',
+            background: 'linear-gradient(90deg, #b8922f 0%, #e7cc74 50%, #b8922f 100%)',
+            zIndex: 3,
+          }}
+        />
+        {/* Soft palm overlay for light luxury theme */}
+        <div
+          style={{
+            position: 'absolute',
+            left: 0,
+            bottom: 0,
+            width: '180px',
+            height: '180px',
+            backgroundImage: 'url(/assets/images/shapes/funfact-bg-2-shape.png)',
+            backgroundSize: 'contain',
+            backgroundRepeat: 'no-repeat',
+            backgroundPosition: 'left bottom',
+            pointerEvents: 'none',
+            opacity: 0.08,
+            filter: 'sepia(1) saturate(1.5) hue-rotate(5deg)',
+            zIndex: 1,
+          }}
+        />
+
+        {/* Card Image — static, fills the entire image area with no empty edges */}
+        <div
+          style={{ height: '220px', overflow: 'hidden', position: 'relative', backgroundColor: '#e4d4b0', zIndex: 2 }}
+        >
           <img
             src={imgSrc}
             alt={service.title}
             loading="lazy"
             style={{
               width: '100%',
-              height: '240px',
+              height: '100%',
               objectFit: 'cover',
-              display: 'block',
               transition: 'transform 0.6s cubic-bezier(0.16, 1, 0.3, 1)',
             }}
-            onMouseEnter={(e) => { (e.target as HTMLElement).style.transform = 'scale(1.07)'; }}
-            onMouseLeave={(e) => { (e.target as HTMLElement).style.transform = 'scale(1)'; }}
-            onError={(e) => { (e.target as HTMLImageElement).src = fallbackImg; }}
+            onMouseEnter={(e) => {
+              (e.target as HTMLElement).style.transform = 'scale(1.08)';
+            }}
+            onMouseLeave={(e) => {
+              (e.target as HTMLElement).style.transform = 'scale(1)';
+            }}
+            onError={(e) => {
+              (e.target as HTMLImageElement).src = fallbackImg;
+            }}
           />
         </div>
 
         {/* Card Content */}
-        <div
-          style={{
-            padding: '20px 20px 0 20px',
-            display: 'flex',
-            flexDirection: 'column',
-            flex: 1,
-            position: 'relative',
-            background: 'linear-gradient(170deg, #f7f0de 0%, #ede0c0 100%)',
-          }}
-        >
-          {/* Floral watermark bottom-right */}
-          <div
-            style={{
-              position: 'absolute',
-              right: 0,
-              bottom: 0,
-              width: '160px',
-              height: '160px',
-              backgroundImage: 'url(/assets/images/shapes/funfact-bg-2-shape.png)',
-              backgroundSize: 'contain',
-              backgroundRepeat: 'no-repeat',
-              backgroundPosition: 'right bottom',
-              opacity: 0.13,
-              pointerEvents: 'none',
-              filter: 'sepia(0.6) saturate(1.2)',
-            }}
-          />
-
-          {/* Title row + price badge */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '10px', marginBottom: '12px' }}>
+        <div style={{ padding: '24px 22px', display: 'flex', flexDirection: 'column', flex: 1, position: 'relative', zIndex: 2 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px', gap: '8px' }}>
             <h3
               style={{
                 fontFamily: 'Cormorant, serif',
-                fontSize: '1.3rem',
+                fontSize: '1.45rem',
                 fontWeight: 800,
-                color: '#1a1208',
+                color: '#2a2115',
+                textShadow: 'none',
                 margin: 0,
                 lineHeight: 1.2,
                 letterSpacing: '0.5px',
                 textTransform: 'uppercase',
-                flex: 1,
               }}
             >
               {service.title}
             </h3>
             <span
               style={{
-                background: 'linear-gradient(135deg, #b8922f 0%, #d4a843 60%, #c2a74e 100%)',
-                color: '#1a1208',
-                padding: '6px 14px',
+                backgroundColor: '#c2a74e',
+                color: '#1a1408',
+                padding: '5px 12px',
                 borderRadius: '999px',
                 fontWeight: 800,
-                fontSize: '0.78rem',
+                fontSize: '0.82rem',
                 whiteSpace: 'nowrap',
-                flexShrink: 0,
-                letterSpacing: '0.3px',
+                boxShadow: '0 4px 12px rgba(194, 167, 78, 0.3)',
+                border: '1px solid rgba(168, 134, 42, 0.35)',
               }}
             >
               {formatPrice(service.price)}
             </span>
           </div>
 
-          {/* Description */}
           <p
             style={{
-              color: '#4a3e28',
-              fontSize: '0.92rem',
-              lineHeight: 1.68,
+              color: '#5a4e3a',
+              textShadow: 'none',
+              fontSize: '0.93rem',
+              lineHeight: 1.65,
               marginBottom: '20px',
               flex: 1,
               fontWeight: 400,
@@ -185,44 +201,58 @@ function ServiceCard({
               WebkitLineClamp: 3,
               WebkitBoxOrient: 'vertical',
               overflow: 'hidden',
-              minHeight: '4.6em',
+              minHeight: '4.2em',
             }}
           >
             {service.description || 'A soothing treatment designed to revitalize mind, body, and senses.'}
           </p>
 
-          {/* Book Now — full-width gold button */}
-          <Link
-            href={'/booking?service=' + encodeURIComponent(service.title) + '&price=' + encodeURIComponent(String(service.price)) + (imgSrc ? '&image=' + encodeURIComponent(imgSrc) : '')}
+          {/* Action Buttons */}
+          <div
             style={{
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'center',
-              gap: '8px',
-              width: 'calc(100% + 40px)',
-              marginLeft: '-20px',
-              marginRight: '-20px',
-              padding: '15px 20px',
-              background: 'linear-gradient(135deg, #b8922f 0%, #c9a63c 50%, #b8922f 100%)',
-              color: '#1a1208',
-              textDecoration: 'none',
-              fontSize: '13px',
-              fontWeight: 800,
-              letterSpacing: '1.5px',
-              textTransform: 'uppercase',
-              transition: 'filter 0.22s ease, transform 0.22s ease',
+              gap: '12px',
               marginTop: 'auto',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.filter = 'brightness(1.12)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.filter = 'brightness(1)';
+              paddingTop: '16px',
+              borderTop: '1px solid rgba(168, 134, 42, 0.22)',
             }}
           >
-            <i className="fas fa-calendar-check" style={{ fontSize: '14px' }}></i>
-            BOOK NOW
-          </Link>
+            <Link
+              href={'/booking?service=' + encodeURIComponent(service.title) + '&price=' + encodeURIComponent(String(service.price)) + (imgSrc ? '&image=' + encodeURIComponent(imgSrc) : '')}
+              style={{
+                flex: 1.3,
+                padding: '11px 14px',
+                backgroundColor: '#c2a74e',
+                border: '1.5px solid #c2a74e',
+                color: '#0e1317',
+                borderRadius: '0px',
+                fontSize: '12px',
+                fontWeight: 800,
+                letterSpacing: '1px',
+                textTransform: 'uppercase',
+                textDecoration: 'none',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                boxShadow: '0 4px 14px rgba(194, 167, 78, 0.3)',
+                transition: 'all 0.25s ease',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = '#dfc268';
+                e.currentTarget.style.borderColor = '#dfc268';
+                e.currentTarget.style.boxShadow = '0 6px 20px rgba(194, 167, 78, 0.5)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = '#c2a74e';
+                e.currentTarget.style.borderColor = '#c2a74e';
+                e.currentTarget.style.boxShadow = '0 4px 14px rgba(194, 167, 78, 0.3)';
+              }}
+            >
+              <i className="fas fa-calendar-check"></i> Book Now
+            </Link>
+          </div>
         </div>
       </div>
     </div>
