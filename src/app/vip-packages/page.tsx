@@ -176,7 +176,7 @@ function ServiceCard({
                 fontFamily: "Cormorant, serif",
                 fontSize: "1.32rem",
                 fontWeight: 800,
-                color: "#140e06",
+                color: "#000000",
                 margin: 0,
                 lineHeight: 1.2,
                 letterSpacing: "0.6px",
@@ -204,14 +204,14 @@ function ServiceCard({
             </span>
           </div>
 
-          {/* Description — 3-line clamp */}
+          {/* Description — 3-line clamp, deeper black for crisp readability */}
           <p
             style={{
-              color: "#241808",
+              color: "#0a0703",
               fontSize: "0.93rem",
               lineHeight: 1.68,
               margin: 0,
-              fontWeight: 450,
+              fontWeight: 500,
               display: "-webkit-box",
               WebkitLineClamp: 3,
               WebkitBoxOrient: "vertical",
@@ -236,16 +236,16 @@ function ServiceCard({
               zIndex: 1,
             }}
           >
-            <div style={{ flex: 1, height: "1px", backgroundColor: "rgba(20, 14, 6, 0.28)" }} />
+            <div style={{ flex: 1, height: "1px", backgroundColor: "rgba(0, 0, 0, 0.35)" }} />
             <div
               style={{
                 width: "6px",
                 height: "6px",
                 transform: "rotate(45deg)",
-                backgroundColor: "rgba(20, 14, 6, 0.55)",
+                backgroundColor: "rgba(0, 0, 0, 0.7)",
               }}
             />
-            <div style={{ flex: 1, height: "1px", backgroundColor: "rgba(20, 14, 6, 0.28)" }} />
+            <div style={{ flex: 1, height: "1px", backgroundColor: "rgba(0, 0, 0, 0.35)" }} />
           </div>
 
           {/* BOOK NOW — black luxury button with gold text & calendar icon */}

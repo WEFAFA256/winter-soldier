@@ -176,7 +176,7 @@ function MobileServiceCard({
                 fontFamily: "Cormorant, serif",
                 fontSize: "1.3rem",
                 fontWeight: 800,
-                color: "#1a1208",
+                color: "#000000",
                 margin: 0,
                 lineHeight: 1.2,
                 letterSpacing: "0.6px",
@@ -206,11 +206,11 @@ function MobileServiceCard({
           {/* Description — 3-line clamp */}
           <p
             style={{
-              color: "#4a3a1a",
+              color: "#110c05",
               fontSize: "0.93rem",
               lineHeight: 1.68,
               margin: 0,
-              fontWeight: 400,
+              fontWeight: 450,
               display: "-webkit-box",
               WebkitLineClamp: 3,
               WebkitBoxOrient: "vertical",
