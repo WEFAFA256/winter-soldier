@@ -584,8 +584,8 @@ img {
 
 /* ─── Video Section Circular Play Button Centering ─── */
 .video-one__btn {
-  width: 204px !important;
-  height: 204px !important;
+  width: 190px !important;
+  height: 190px !important;
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
@@ -599,10 +599,7 @@ img {
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-}
-.video-one__btn .curved-circle--item {
-  width: auto !important;
-  margin: 0 auto !important;
+  pointer-events: none !important;
 }
 .video-one__btn .video-popup {
   position: absolute !important;
@@ -615,6 +612,7 @@ img {
   align-items: center !important;
   justify-content: center !important;
   z-index: 10 !important;
+  line-height: 1 !important;
 }
 .video-one__btn .video-popup i {
   margin-left: 3px;

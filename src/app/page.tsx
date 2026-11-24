@@ -469,15 +469,17 @@ export default function Home() {
                     <a href="https://www.youtube.com/watch?v=h9MbznbxlLc" class="video-popup">
                         <i class="fa fa-play"></i>
                     </a>
-                    <div class="curved-circle">
-                        <!-- curved-circle start-->
-                        <div class="curved-circle--item" data-circle-text-options='{
-					"radius": 92,
-					"forceWidth": true,
-					"forceHeight": true
-				}'>
-                            Watch our massages Video
-                        </div>
+                    <div class="curved-circle" aria-hidden="true">
+                        <svg viewBox="0 0 200 200" width="200" height="200" style="display:block;width:100%;height:100%;overflow:visible;">
+                            <defs>
+                                <path id="videoCirclePath" d="M 100, 100 m -72, 0 a 72,72 0 1,1 144,0 a 72,72 0 1,1 -144,0" />
+                            </defs>
+                            <text fill="#ffffff" font-size="13" font-weight="500" letter-spacing="6.2" style="text-transform:uppercase;">
+                                <textPath href="#videoCirclePath" startOffset="0%">
+                                    Watch our massages Video
+                                </textPath>
+                            </text>
+                        </svg>
                     </div><!-- curved-circle end-->
                 </div><!-- /.video-one__btn -->
                 <h2 class="video-one__title">book & feel our <br>
