@@ -460,7 +460,12 @@ export default function AdminGalleryPage() {
         setEscorts(Array.isArray(c.escorts) ? c.escorts : []);
         setVideos(normalizeSiteVideos(c.videos));
       }
-      if (bRes.ok) setBlogs(await bRes.json());
+      if (bRes.ok) {
+        const blogList = await bRes.json();
+        const validBlogs = Array.isArray(blogList) ? blogList : [];
+        setBlogs(validBlogs);
+        setSiteContent((prev: any) => ({ ...prev, blogs: validBlogs }));
+      }
     } catch {
       // Keep the loaded lists; the R2-backed store is the only escort source.
     }
@@ -915,7 +920,7 @@ export default function AdminGalleryPage() {
 
   const saveAll = async () => {
     setSaving(true);
-    const body = { ...siteContent, services, vipServices, mobileMassage, escorts, videos };
+    const body = { ...siteContent, services, vipServices, mobileMassage, escorts, videos, blogs };
     const res = await fetch("/api/content", { method:"POST", headers:{ "Content-Type":"application/json" }, credentials:"same-origin", body: JSON.stringify(body) });
     if (res.ok) {
       setSiteContent(body);
@@ -935,19 +940,51 @@ export default function AdminGalleryPage() {
   const addBlog = async (e: React.FormEvent) => {
     e.preventDefault(); if (!newBlog.title || !newBlog.content) return alert("Title and content are required");
     setBlogUploading(true);
-    let img = newBlog.image||"";
-    if (blogFile) { const u = await uploadFile(blogFile); if (u) img = u; }
+    let img = newBlog.image || "";
+    if (blogFile) {
+      const u = await uploadFile(blogFile);
+      if (!u) {
+        setBlogUploading(false);
+        return;
+      }
+      img = u;
+    }
     const post: BlogPost = { id: Date.now().toString(), title:newBlog.title||"", excerpt:newBlog.excerpt||"", content:newBlog.content||"", image:img, date:newBlog.date||"", author:newBlog.author||"Admin" };
-    const res = await fetch("/api/blog", { method:"POST", headers:{ "Content-Type":"application/json" }, credentials:"same-origin", body: JSON.stringify(post) });
-    if (res.ok) { setBlogs([post, ...blogs]); setNewBlog({ title:"", excerpt:"", content:"", image:"", date:new Date().toLocaleDateString("en-GB",{day:"2-digit",month:"long",year:"numeric"}), author:"Admin" }); setBlogFile(null); setBlogPreview(null); setShowAddBlog(false); }
-    else alert((await res.json()).error || "Failed to publish");
+    try {
+      const res = await fetch("/api/blog", { method:"POST", headers:{ "Content-Type":"application/json" }, credentials:"same-origin", body: JSON.stringify(post) });
+      if (res.ok) {
+        const nextBlogs = [post, ...blogs];
+        setBlogs(nextBlogs);
+        setSiteContent((prev: any) => ({ ...prev, blogs: nextBlogs }));
+        setNewBlog({ title:"", excerpt:"", content:"", image:"", date:new Date().toLocaleDateString("en-GB",{day:"2-digit",month:"long",year:"numeric"}), author:"Admin" });
+        setBlogFile(null);
+        setBlogPreview(null);
+        setShowAddBlog(false);
+      } else {
+        const errData = await res.json().catch(() => ({}));
+        alert(errData.error || "Failed to publish blog post");
+      }
+    } catch {
+      alert("Network error publishing blog post");
+    }
     setBlogUploading(false);
   };
 
   const deleteBlog = async (id: string) => {
     if (!confirm("Delete this blog post?")) return;
-    const res = await fetch(`/api/blog?id=${encodeURIComponent(id)}`, { method:"DELETE", credentials:"same-origin" });
-    if (res.ok) setBlogs(blogs.filter(p=>p.id!==id));
+    try {
+      const res = await fetch(`/api/blog?id=${encodeURIComponent(id)}`, { method:"DELETE", credentials:"same-origin" });
+      if (res.ok) {
+        const nextBlogs = blogs.filter(p=>p.id!==id);
+        setBlogs(nextBlogs);
+        setSiteContent((prev: any) => ({ ...prev, blogs: nextBlogs }));
+      } else {
+        const errData = await res.json().catch(() => ({}));
+        alert(errData.error || "Failed to delete blog post");
+      }
+    } catch {
+      alert("Network error deleting blog post");
+    }
   };
 
   /* ── LOGIN SCREEN ────────────────────────────────────────────── */

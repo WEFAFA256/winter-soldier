@@ -22,7 +22,7 @@ export async function readBlogPosts(): Promise<any[]> {
       {},
       { admin: false }
     );
-    if (response.ok && Array.isArray(data?.content?.blogs) && data.content.blogs.length > 0) {
+    if (response.ok && Array.isArray(data?.content?.blogs)) {
       return data.content.blogs;
     }
   } catch {

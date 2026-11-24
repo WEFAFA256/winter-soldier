@@ -5,6 +5,7 @@ import { isAdmin } from '@/lib/admin-auth';
 import { workerApi } from '@/lib/r2-media';
 
 const localBlogPath = path.join(process.cwd(), 'public', 'blog.json');
+const localSiteContentPath = path.join(process.cwd(), 'public', 'site-content.json');
 
 const readLocalBlog = (): any[] => {
   try {
@@ -22,7 +23,35 @@ const writeLocalBlog = (posts: any[]) => {
   } catch (error) {
     console.error('Error writing local blog mirror:', error);
   }
+
+  try {
+    if (fs.existsSync(localSiteContentPath)) {
+      const data = JSON.parse(fs.readFileSync(localSiteContentPath, 'utf8'));
+      if (data && typeof data === 'object') {
+        data.blogs = posts;
+        fs.writeFileSync(localSiteContentPath, JSON.stringify(data, null, 2), 'utf8');
+      }
+    }
+  } catch (error) {
+    console.error('Error writing local site-content blogs mirror:', error);
+  }
 };
+
+async function fetchCurrentBlogs(): Promise<any[]> {
+  try {
+    const { response, data } = await workerApi<{ ok?: boolean; content?: any }>(
+      '/api/content',
+      {},
+      { admin: false }
+    );
+    if (response.ok && Array.isArray(data?.content?.blogs)) {
+      return data.content.blogs;
+    }
+  } catch (error) {
+    console.error('Error reading blogs from R2:', error);
+  }
+  return readLocalBlog();
+}
 
 async function syncBlogsToR2(posts: any[]): Promise<boolean> {
   try {
@@ -31,14 +60,14 @@ async function syncBlogsToR2(posts: any[]): Promise<boolean> {
       {},
       { admin: false }
     );
-    if (response.ok && data?.content) {
-      const updatedContent = { ...data.content, blogs: posts };
-      const saveRes = await workerApi('/api/content', {
-        method: 'POST',
-        body: JSON.stringify({ content: updatedContent }),
-      });
-      return saveRes.response.ok;
-    }
+    const existingContent =
+      response.ok && data?.content && typeof data.content === 'object' ? data.content : {};
+    const updatedContent = { ...existingContent, blogs: posts };
+    const saveRes = await workerApi('/api/content', {
+      method: 'POST',
+      body: JSON.stringify({ content: updatedContent }),
+    });
+    return saveRes.response.ok;
   } catch (error) {
     console.error('Error syncing blogs to R2 content:', error);
   }
@@ -53,7 +82,7 @@ export async function GET() {
       {},
       { admin: false }
     );
-    if (response.ok && Array.isArray(data?.content?.blogs) && data.content.blogs.length > 0) {
+    if (response.ok && Array.isArray(data?.content?.blogs)) {
       writeLocalBlog(data.content.blogs);
       return NextResponse.json(data.content.blogs, { headers: { 'cache-control': 'no-store' } });
     }
@@ -76,11 +105,11 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
-    const posts = readLocalBlog();
-    posts.unshift(post);
+    const currentBlogs = await fetchCurrentBlogs();
+    const updatedPosts = [post, ...currentBlogs.filter((p: any) => String(p.id) !== String(post.id))];
 
-    writeLocalBlog(posts);
-    await syncBlogsToR2(posts);
+    writeLocalBlog(updatedPosts);
+    await syncBlogsToR2(updatedPosts);
 
     return NextResponse.json({ message: 'Blog post published', post }, { status: 201 });
   } catch (err: any) {
@@ -100,10 +129,11 @@ export async function DELETE(req: Request) {
     const id = searchParams.get('id');
     if (!id) return NextResponse.json({ error: 'ID required' }, { status: 400 });
 
-    const posts = readLocalBlog().filter((p: any) => String(p.id) !== String(id));
+    const currentBlogs = await fetchCurrentBlogs();
+    const updatedPosts = currentBlogs.filter((p: any) => String(p.id) !== String(id));
 
-    writeLocalBlog(posts);
-    await syncBlogsToR2(posts);
+    writeLocalBlog(updatedPosts);
+    await syncBlogsToR2(updatedPosts);
 
     return NextResponse.json({ message: 'Post deleted' });
   } catch (err: any) {
