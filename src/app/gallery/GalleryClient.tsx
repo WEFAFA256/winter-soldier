@@ -54,6 +54,16 @@ const DEFAULT_VIDEO_POSTER =
     '<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#13181e"/><stop offset="0.55" stop-color="#080b0e"/><stop offset="1" stop-color="#1d1710"/></linearGradient></defs><rect width="960" height="540" fill="url(#g)"/><circle cx="480" cy="270" r="58" fill="none" stroke="#c2a74e" stroke-width="3"/><path d="M463 242 L512 270 L463 298 Z" fill="#c2a74e"/><text x="480" y="378" fill="#8b7355" font-family="Georgia,serif" font-size="24" text-anchor="middle">SERENITY SPA FILM</text></svg>'
   );
 
+// Route Worker-hosted media videos through our Range-supporting proxy so iOS Safari
+// and mobile browsers receive proper 206 Partial Content & Accept-Ranges headers.
+function getPlayableVideoSrc(url: string): string {
+  if (!url) return "";
+  if (url.includes(".workers.dev/media/")) {
+    return `/api/video-stream?url=${encodeURIComponent(url)}`;
+  }
+  return url;
+}
+
 // ── Specialist Profile Card — memoized so parent state changes do not re-render all cards ──
 const GalleryCard = memo(function GalleryCard({
   img,
@@ -154,11 +164,28 @@ export default function GalleryPage({ initialHeroSrc }: { initialHeroSrc?: strin
   const [activeVideoFilter, setActiveVideoFilter] = useState<string>("all");
   // The gallery opens on Images; the Videos tab reveals the demonstration reels.
   const [activeTab, setActiveTab] = useState<"images" | "videos">("images");
+  const [videoError, setVideoError] = useState(false);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
   const { phoneHref, phoneDisplay, whatsappLink } = useSiteContact();
   // Server provides the current first gallery image so the hero paints on
   // first HTML. After the authoritative gallery fetch completes, only its data
   // decides the hero — never a stale default.
   const heroSrc = images[0]?.src || (loading ? initialHeroSrc : undefined);
+
+  useEffect(() => {
+    setVideoError(false);
+    const el = videoRef.current;
+    if (!selectedVideo?.videoUrl || !el) return;
+    el.load();
+    const playPromise = el.play();
+    if (playPromise && typeof playPromise.catch === "function") {
+      playPromise.catch(() => {
+        // Fallback to muted autoplay if browser policy blocks unmuted autoplay
+        el.muted = true;
+        el.play().catch(() => {});
+      });
+    }
+  }, [selectedVideo]);
 
   useEffect(() => {
     let cancelled = false;
@@ -1223,24 +1250,62 @@ export default function GalleryPage({ initialHeroSrc }: { initialHeroSrc?: strin
                   native <video>; YouTube records keep the privacy-enhanced embed. */}
               <div style={{ position: "relative", width: "100%", paddingTop: "56.25%", backgroundColor: "#000" }}>
                 {selectedVideo.videoUrl ? (
-                  <video
-                    src={selectedVideo.videoUrl}
-                    poster={selectedVideo.poster || DEFAULT_VIDEO_POSTER}
-                    title={selectedVideo.title}
-                    controls
-                    autoPlay
-                    playsInline
-                    preload="metadata"
-                    style={{
-                      position: "absolute",
-                      top: 0,
-                      left: 0,
-                      width: "100%",
-                      height: "100%",
-                      backgroundColor: "#000",
-                      objectFit: "contain",
-                    }}
-                  />
+                  videoError ? (
+                    <div
+                      style={{
+                        position: "absolute",
+                        inset: 0,
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: "12px",
+                        padding: "20px",
+                        textAlign: "center",
+                        color: "#c4cfde",
+                      }}
+                    >
+                      <p style={{ margin: 0, fontSize: "14px" }}>Unable to stream video inline on this browser.</p>
+                      <a
+                        href={selectedVideo.videoUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{
+                          padding: "9px 18px",
+                          backgroundColor: "#c2a74e",
+                          color: "#0e1317",
+                          borderRadius: "6px",
+                          fontSize: "12px",
+                          fontWeight: 700,
+                          textDecoration: "none",
+                        }}
+                      >
+                        Open Video Directly ↗
+                      </a>
+                    </div>
+                  ) : (
+                    <video
+                      key={selectedVideo.id}
+                      ref={videoRef}
+                      src={getPlayableVideoSrc(selectedVideo.videoUrl)}
+                      poster={selectedVideo.poster || undefined}
+                      title={selectedVideo.title}
+                      controls
+                      autoPlay
+                      playsInline
+                      preload="auto"
+                      onError={() => setVideoError(true)}
+                      style={{
+                        position: "absolute",
+                        top: 0,
+                        left: 0,
+                        width: "100%",
+                        height: "100%",
+                        backgroundColor: "#000",
+                        objectFit: "contain",
+                      }}
+                    />
+                  )
                 ) : (
                   <iframe
                     src={`https://www.youtube-nocookie.com/embed/${selectedVideo.youtubeId}?autoplay=1&rel=0&modestbranding=1`}
