@@ -33,6 +33,10 @@ async function seedR2Content(content: any): Promise<void> {
   }
 }
 
+const PUBLIC_CACHE_HEADERS = {
+  'cache-control': 'public, s-maxage=30, stale-while-revalidate=300',
+};
+
 export async function GET() {
   let r2ReachableButEmpty = false;
   try {
@@ -42,7 +46,7 @@ export async function GET() {
       { admin: false }
     );
     if (response.ok && looksLikeContent(data?.content)) {
-      return NextResponse.json(data?.content, { headers: { 'cache-control': 'no-store' } });
+      return NextResponse.json(data?.content, { headers: PUBLIC_CACHE_HEADERS });
     }
     // Only seed from local when R2 is reachable and definitively empty.
     // A failed/unreachable read must NOT overwrite R2 with a stale local snapshot.
@@ -54,12 +58,12 @@ export async function GET() {
   const localContent = readLocalContent();
   if (r2ReachableButEmpty && looksLikeContent(localContent)) {
     await seedR2Content(localContent);
-    return NextResponse.json(localContent, { headers: { 'cache-control': 'no-store' } });
+    return NextResponse.json(localContent, { headers: PUBLIC_CACHE_HEADERS });
   }
 
   // R2 unavailable or seed sources unavailable: return the best local fallback
   // without seeding, so a transient R2 failure cannot overwrite admin-set data.
-  return NextResponse.json(localContent, { headers: { 'cache-control': 'no-store' } });
+  return NextResponse.json(localContent, { headers: PUBLIC_CACHE_HEADERS });
 }
 
 export async function POST(req: Request) {

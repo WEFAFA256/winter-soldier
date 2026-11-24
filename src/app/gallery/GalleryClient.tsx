@@ -10,6 +10,7 @@ import {
   VIDEO_CATEGORY_OPTIONS,
   normalizeSiteVideos,
 } from "@/lib/site-videos";
+import { fetchSiteContent, getCachedSiteContent } from "@/lib/service-order";
 import { useScrollFloat } from "@/lib/use-scroll-float";
 
 interface GalleryImage {
@@ -149,18 +150,22 @@ const GalleryCard = memo(function GalleryCard({
   );
 });
 
-export default function GalleryPage({ initialHeroSrc }: { initialHeroSrc?: string } = {}) {
-  // Never seed the first paint from a stale local copy. The admin-controlled
-  // /api/gallery response is the only source for the visible cards.
-  const [images, setImages] = useState<GalleryImage[]>([]);
-  const [loading, setLoading] = useState(true);
+export default function GalleryPage({
+  initialHeroSrc,
+  initialImages,
+  initialVideos,
+}: {
+  initialHeroSrc?: string;
+  initialImages?: GalleryImage[];
+  initialVideos?: SiteVideo[];
+} = {}) {
+  const [images, setImages] = useState<GalleryImage[]>(() => initialImages || []);
+  const [loading, setLoading] = useState(!initialImages);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [selectedVideo, setSelectedVideo] = useState<SiteVideo | null>(null);
-  // Admin-controlled reels only. Never seed this from a local fallback array:
-  // an empty store must render an empty state, not old demonstration cards.
-  const [videos, setVideos] = useState<SiteVideo[]>([]);
-  const [videosLoading, setVideosLoading] = useState(true);
+  const [videos, setVideos] = useState<SiteVideo[]>(() => initialVideos || []);
+  const [videosLoading, setVideosLoading] = useState(!initialVideos);
   const [activeVideoFilter, setActiveVideoFilter] = useState<string>("all");
   // The gallery opens on Images; the Videos tab reveals the demonstration reels.
   const [activeTab, setActiveTab] = useState<"images" | "videos">("images");
@@ -189,12 +194,28 @@ export default function GalleryPage({ initialHeroSrc }: { initialHeroSrc?: strin
 
   useEffect(() => {
     let cancelled = false;
+    if (!initialImages) {
+      try {
+        const cached = sessionStorage.getItem("serenity_gallery_v1");
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            setImages(parsed);
+            setLoading(false);
+          }
+        }
+      } catch {}
+    }
+
     const fetchGallery = async () => {
       try {
-        const res = await fetch("/api/gallery", { cache: "no-store" });
+        const res = await fetch("/api/gallery");
         if (res.ok) {
           const data = await res.json();
           if (Array.isArray(data)) {
+            try {
+              sessionStorage.setItem("serenity_gallery_v1", JSON.stringify(data));
+            } catch {}
             if (!cancelled) {
               setImages(data);
               setLoading(false);
@@ -205,55 +226,57 @@ export default function GalleryPage({ initialHeroSrc }: { initialHeroSrc?: strin
       } catch (err) {
         console.error("Failed to load /api/gallery", err);
       }
-      // A failed or malformed response must not resurrect stale local photos.
-      if (!cancelled) {
-        setImages([]);
+      if (!cancelled && !initialImages) {
         setLoading(false);
       }
     };
 
     fetchGallery();
     return () => { cancelled = true; };
-  }, []);
+  }, [initialImages]);
 
   // Reels come from the same durable store as the admin Videos tab. Refetch on
-  // focus and after an admin save so an already-open gallery converges too.
+  // admin save or visibility return without blocking first paint.
   useEffect(() => {
     let cancelled = false;
     let requestId = 0;
 
-    const loadVideos = async (showLoading = false) => {
+    if (!initialVideos) {
+      const cached = getCachedSiteContent();
+      if (cached) {
+        setVideos(normalizeSiteVideos(cached.videos));
+        setVideosLoading(false);
+      }
+    }
+
+    const loadVideos = async (force = false) => {
       const currentRequest = ++requestId;
-      if (showLoading) setVideosLoading(true);
       try {
-        const res = await fetch(`/api/content?cb=${Date.now()}`, { cache: "no-store" });
-        if (!res.ok) throw new Error(`content status ${res.status}`);
-        const data = await res.json();
-        if (!cancelled && currentRequest === requestId) setVideos(normalizeSiteVideos(data?.videos));
+        const data = await fetchSiteContent({ force });
+        if (data && !cancelled && currentRequest === requestId) {
+          setVideos(normalizeSiteVideos(data.videos));
+        }
       } catch (err) {
         console.error("Failed to load /api/content videos", err);
-        if (!cancelled && currentRequest === requestId) setVideos([]);
       } finally {
         if (!cancelled && currentRequest === requestId) setVideosLoading(false);
       }
     };
 
-    loadVideos(true);
-    const onRefresh = () => loadVideos();
+    loadVideos(false);
+    const onAdminSave = () => loadVideos(true);
     const onVisibility = () => {
-      if (document.visibilityState === "visible") loadVideos();
+      if (document.visibilityState === "visible") loadVideos(false);
     };
-    window.addEventListener("focus", onRefresh);
-    window.addEventListener("serenity-content-updated", onRefresh);
+    window.addEventListener("serenity-content-updated", onAdminSave);
     document.addEventListener("visibilitychange", onVisibility);
 
     return () => {
       cancelled = true;
-      window.removeEventListener("focus", onRefresh);
-      window.removeEventListener("serenity-content-updated", onRefresh);
+      window.removeEventListener("serenity-content-updated", onAdminSave);
       document.removeEventListener("visibilitychange", onVisibility);
     };
-  }, []);
+  }, [initialVideos]);
 
   // Keyboard navigation for lightbox & video modal
   useEffect(() => {

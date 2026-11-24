@@ -49,10 +49,34 @@ export default function BlogPage() {
     if (typeof window !== "undefined" && (window as any).soloxInitLoad) {
       (window as any).soloxInitLoad();
     }
-    fetch("/api/blog", { cache: "no-store" })
+    let hasCached = false;
+    try {
+      const cached = sessionStorage.getItem("serenity_blog_v1");
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (Array.isArray(parsed)) {
+          setPosts(parsed);
+          setLoading(false);
+          hasCached = true;
+        }
+      }
+    } catch {}
+
+    fetch("/api/blog")
       .then((r) => (r.ok ? r.json() : []))
-      .then((data) => setPosts(Array.isArray(data) ? data : []))
-      .catch(() => setPosts([]))
+      .then((data) => {
+        if (Array.isArray(data)) {
+          setPosts(data);
+          try {
+            sessionStorage.setItem("serenity_blog_v1", JSON.stringify(data));
+          } catch {}
+        } else if (!hasCached) {
+          setPosts([]);
+        }
+      })
+      .catch(() => {
+        if (!hasCached) setPosts([]);
+      })
       .finally(() => setLoading(false));
   }, []);
 

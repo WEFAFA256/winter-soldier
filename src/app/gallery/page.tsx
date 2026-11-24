@@ -1,26 +1,46 @@
 import { workerApi } from "@/lib/r2-media";
+import { normalizeSiteVideos, type SiteVideo } from "@/lib/site-videos";
 import GalleryClient from "./GalleryClient";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 30;
 
-async function getInitialHeroSrc(): Promise<string | undefined> {
+async function getInitialGalleryData(): Promise<{
+  initialHeroSrc?: string;
+  initialImages?: any[];
+  initialVideos?: SiteVideo[];
+}> {
   try {
-    const { response, data } = await workerApi<{ ok?: boolean; images?: any[] }>(
-      "/api/gallery",
-      {},
-      { admin: false }
-    );
-    if (response.ok && Array.isArray(data?.images) && data.images.length > 0) {
-      const src = data.images[0]?.src;
-      return typeof src === "string" && src ? src : undefined;
-    }
+    const [galleryRes, contentRes] = await Promise.all([
+      workerApi<{ ok?: boolean; images?: any[] }>("/api/gallery", {}, { admin: false }),
+      workerApi<{ ok?: boolean; content?: any }>("/api/content", {}, { admin: false }),
+    ]);
+
+    const initialImages =
+      galleryRes.response.ok && Array.isArray(galleryRes.data?.images)
+        ? galleryRes.data.images
+        : undefined;
+    const initialHeroSrc =
+      initialImages && initialImages.length > 0 && typeof initialImages[0]?.src === "string"
+        ? initialImages[0].src
+        : undefined;
+    const initialVideos =
+      contentRes.response.ok && contentRes.data?.content
+        ? normalizeSiteVideos(contentRes.data.content.videos)
+        : undefined;
+
+    return { initialHeroSrc, initialImages, initialVideos };
   } catch {
-    // Client will load the authoritative hero after hydration.
+    return {};
   }
-  return undefined;
 }
 
 export default async function GalleryPage() {
-  const initialHeroSrc = await getInitialHeroSrc();
-  return <GalleryClient initialHeroSrc={initialHeroSrc} />;
+  const { initialHeroSrc, initialImages, initialVideos } = await getInitialGalleryData();
+  return (
+    <GalleryClient
+      initialHeroSrc={initialHeroSrc}
+      initialImages={initialImages}
+      initialVideos={initialVideos}
+    />
+  );
 }

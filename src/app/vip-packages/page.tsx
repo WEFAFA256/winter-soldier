@@ -6,6 +6,7 @@ import CustomCursor from "@/components/CustomCursor";
 import MobileDrawer from "@/components/MobileDrawer";
 import {
   fetchSiteContent,
+  getCachedSiteContent,
   isRealServiceTitle,
   orderServices,
   splitServiceCatalog,
@@ -89,6 +90,7 @@ function ServiceCard({
           src={imgSrc}
           alt={service.title}
           loading="lazy"
+          decoding="async"
           style={{
             width: "100%",
             height: "240px",
@@ -290,6 +292,19 @@ export default function VipPackagesPage() {
   const [loading, setLoading] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   useEffect(() => {
+    const cached = getCachedSiteContent();
+    if (cached) {
+      const cachedCatalog = splitServiceCatalog(cached);
+      const cachedVip = orderServices(
+        cachedCatalog.vipServices.filter((s: Service) => isRealServiceTitle(s.title)),
+        "vip"
+      );
+      if (cachedVip.length > 0) {
+        setPackages(cachedVip);
+        setLoading(false);
+      }
+    }
+
     const loadPackages = async () => {
       try {
         try {
@@ -302,12 +317,15 @@ export default function VipPackagesPage() {
             );
             if (vip.length > 0) {
               setPackages(vip);
+              setLoading(false);
               return;
             }
           }
         } catch (err) {
           console.error("Failed to load /api/content, trying local JSON...", err);
         }
+
+        if (cached) return;
 
         try {
           const res = await fetch("/site-content.json");

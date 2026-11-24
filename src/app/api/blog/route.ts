@@ -74,6 +74,10 @@ async function syncBlogsToR2(posts: any[]): Promise<boolean> {
   return false;
 }
 
+const PUBLIC_CACHE_HEADERS = {
+  'cache-control': 'public, s-maxage=30, stale-while-revalidate=300',
+};
+
 // GET — fetch all blog posts
 export async function GET() {
   try {
@@ -84,13 +88,13 @@ export async function GET() {
     );
     if (response.ok && Array.isArray(data?.content?.blogs)) {
       writeLocalBlog(data.content.blogs);
-      return NextResponse.json(data.content.blogs, { headers: { 'cache-control': 'no-store' } });
+      return NextResponse.json(data.content.blogs, { headers: PUBLIC_CACHE_HEADERS });
     }
   } catch (error) {
     console.error('Error reading blogs from R2:', error);
   }
 
-  return NextResponse.json(readLocalBlog(), { headers: { 'cache-control': 'no-store' } });
+  return NextResponse.json(readLocalBlog(), { headers: PUBLIC_CACHE_HEADERS });
 }
 
 // POST — add a new blog post

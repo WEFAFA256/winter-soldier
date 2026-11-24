@@ -7,6 +7,7 @@ import MobileDrawer from "@/components/MobileDrawer";
 import { useSiteContact } from "@/components/ContactProvider";
 import {
   fetchSiteContent,
+  getCachedSiteContent,
   isRealServiceTitle,
   orderServices,
   splitServiceCatalog,
@@ -86,6 +87,7 @@ function ServiceCard({
           src={imgSrc}
           alt={service.title}
           loading="lazy"
+          decoding="async"
           style={{
             width: '100%',
             height: '240px',
@@ -252,6 +254,15 @@ export default function ServicesPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   useEffect(() => {
+    const cached = getCachedSiteContent();
+    if (cached) {
+      const cachedCatalog = splitServiceCatalog(cached);
+      if (cachedCatalog.services.length > 0) {
+        setServices(cachedCatalog.services);
+        setLoading(false);
+      }
+    }
+
     const loadServices = async () => {
       try {
         const data = await fetchSiteContent();
@@ -267,6 +278,7 @@ export default function ServicesPage() {
         console.error("Failed to load /api/content, trying local JSON...", err);
       }
 
+      if (cached) return;
       try {
         const localRes = await fetch("/site-content.json");
         if (localRes.ok) {

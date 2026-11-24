@@ -8,6 +8,7 @@ import { useSiteContact } from "@/components/ContactProvider";
 import {
   fetchSiteContent,
   formatServicePrice,
+  getCachedSiteContent,
   isRealServiceTitle,
   parseServicePrice,
 } from "@/lib/service-order";
@@ -109,6 +110,7 @@ function MobileServiceCard({
           src={imgSrc}
           alt={service.title}
           loading="lazy"
+          decoding="async"
           style={{
             width: "100%",
             height: "240px",
@@ -304,6 +306,15 @@ export default function MobileMassagePage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const cached = getCachedSiteContent();
+    if (cached && Array.isArray(cached.mobileMassage)) {
+      const cards = cached.mobileMassage
+        .map(normaliseMobileCard)
+        .filter((card: MobileService | null): card is MobileService => Boolean(card));
+      setMobileServices(cards);
+      setLoading(false);
+    }
+
     const loadMobileCards = async () => {
       try {
         const data = await fetchSiteContent();
@@ -318,8 +329,10 @@ export default function MobileMassagePage() {
       } catch (err) {
         console.error("Failed to load mobile massage cards, using defaults...", err);
       }
-      setMobileServices(MOBILE_SERVICES);
-      setLoading(false);
+      if (!cached) {
+        setMobileServices(MOBILE_SERVICES);
+        setLoading(false);
+      }
     };
 
     loadMobileCards();

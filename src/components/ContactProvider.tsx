@@ -9,6 +9,7 @@ import React, {
   useState,
 } from "react";
 import { usePathname } from "next/navigation";
+import { fetchSiteContent, getCachedSiteContent } from "@/lib/service-order";
 
 interface SiteContact {
   phone?: string;
@@ -85,35 +86,35 @@ export function ContactProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (pathname?.startsWith("/admin")) return;
 
-    const controller = new AbortController();
-    const loadContact = async () => {
+    let cancelled = false;
+    const cached = getCachedSiteContent();
+    if (cached) {
+      setContact(cached?.contact?.spa || null);
+      setLocation(String(cached?.homepage?.spaContent?.location || ""));
+      setReady(true);
+    }
+
+    const loadContact = async (force = false) => {
       try {
-        const res = await fetch(`/api/content?cb=${Date.now()}`, {
-          cache: "no-store",
-          signal: controller.signal,
-        });
-        if (!res.ok) return;
-        const data = await res.json();
+        const data = await fetchSiteContent({ force });
+        if (!data || cancelled) return;
         const spa = data?.contact?.spa || null;
         setContact(spa);
         setLocation(String(data?.homepage?.spaContent?.location || ""));
         setReady(true);
-      } catch (err) {
-        if ((err as Error)?.name !== "AbortError") {
-          // Keep the empty state rather than painting a stale hardcoded number.
-          setReady(true);
-        }
+      } catch {
+        if (!cancelled) setReady(true);
       }
     };
 
-    loadContact();
+    loadContact(false);
 
     const refresh = () => {
-      if (document.visibilityState === "visible") loadContact();
+      if (document.visibilityState === "visible") loadContact(false);
     };
-    const onContentSaved = () => loadContact();
+    const onContentSaved = () => loadContact(true);
     const onStorage = (event: StorageEvent) => {
-      if (event.key === "serenity-content-version") loadContact();
+      if (event.key === "serenity-content-version") loadContact(true);
     };
 
     window.addEventListener("focus", refresh);
@@ -122,7 +123,7 @@ export function ContactProvider({ children }: { children: React.ReactNode }) {
     window.addEventListener("storage", onStorage);
 
     return () => {
-      controller.abort();
+      cancelled = true;
       window.removeEventListener("focus", refresh);
       document.removeEventListener("visibilitychange", refresh);
       window.removeEventListener("serenity-content-updated", onContentSaved);

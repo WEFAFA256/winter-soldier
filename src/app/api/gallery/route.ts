@@ -17,6 +17,10 @@ const readLocalData = (): any[] => {
   }
 };
 
+const PUBLIC_CACHE_HEADERS = {
+  'cache-control': 'public, s-maxage=30, stale-while-revalidate=300',
+};
+
 export async function GET() {
   try {
     const { response, data } = await workerApi<{ ok?: boolean; images?: any[] }>(
@@ -26,7 +30,7 @@ export async function GET() {
     );
     if (response.ok && Array.isArray(data?.images) && data.images.length) {
       return NextResponse.json(data.images, {
-        headers: { 'cache-control': 'no-store' },
+        headers: PUBLIC_CACHE_HEADERS,
       });
     }
   } catch (error: any) {
@@ -35,7 +39,7 @@ export async function GET() {
 
   return NextResponse.json(
     readLocalData().map((item) => ({ ...item, availability: item.availability || 'available' })),
-    { headers: { 'cache-control': 'no-store' } }
+    { headers: PUBLIC_CACHE_HEADERS }
   );
 }
 

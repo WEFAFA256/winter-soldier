@@ -147,8 +147,66 @@ export function splitServiceCatalog(data: any): {
   };
 }
 
-export async function fetchSiteContent(): Promise<any | null> {
-  const res = await fetch(`/api/content?cb=${Date.now()}`, { cache: "no-store" });
-  if (!res.ok) return null;
-  return res.json();
+const CONTENT_CACHE_KEY = "serenity_site_content_v1";
+let memoryContentCache: any | null = null;
+let inFlightContentFetch: Promise<any | null> | null = null;
+
+export function getCachedSiteContent(): any | null {
+  if (memoryContentCache) return memoryContentCache;
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = sessionStorage.getItem(CONTENT_CACHE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (parsed && typeof parsed === "object") {
+      memoryContentCache = parsed;
+      return parsed;
+    }
+  } catch {
+    // ignore storage errors
+  }
+  return null;
+}
+
+export function clearSiteContentCache(): void {
+  memoryContentCache = null;
+  if (typeof window !== "undefined") {
+    try {
+      sessionStorage.removeItem(CONTENT_CACHE_KEY);
+    } catch {
+      // ignore
+    }
+  }
+}
+
+export async function fetchSiteContent(options?: { force?: boolean }): Promise<any | null> {
+  const force = Boolean(options?.force);
+  if (!force && inFlightContentFetch) {
+    return inFlightContentFetch;
+  }
+
+  const url = force ? `/api/content?cb=${Date.now()}` : "/api/content";
+  const req = fetch(url, force ? { cache: "no-store" } : undefined)
+    .then(async (res) => {
+      if (!res.ok) return null;
+      const data = await res.json();
+      if (data && typeof data === "object") {
+        memoryContentCache = data;
+        if (typeof window !== "undefined") {
+          try {
+            sessionStorage.setItem(CONTENT_CACHE_KEY, JSON.stringify(data));
+          } catch {
+            // ignore quota errors
+          }
+        }
+      }
+      return data;
+    })
+    .catch(() => null)
+    .finally(() => {
+      if (!force) inFlightContentFetch = null;
+    });
+
+  if (!force) inFlightContentFetch = req;
+  return req;
 }
