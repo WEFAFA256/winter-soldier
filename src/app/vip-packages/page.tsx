@@ -53,8 +53,6 @@ function ServiceCard({
   imgSrc: string;
   fallbackImg: string;
 }) {
-  // Catalogue cards appear only after the API resolves, so mount animation is
-  // safe; offscreen cards wait for the one-shot scroll reveal.
   const { ref, className: revealClass } = usePageReveal<HTMLDivElement>({
     animateOnMount: true,
   });
@@ -74,186 +72,221 @@ function ServiceCard({
         willChange: "transform, opacity",
       } as React.CSSProperties}
     >
+      {/* VIP Card Shell: Rich gold luxury theme */}
       <div
-        className="service-theme-card"
         style={{
-          backgroundImage: "linear-gradient(135deg, rgba(255, 236, 170, 0.28) 0%, rgba(255, 255, 255, 0.08) 35%, rgba(194, 167, 78, 0.12) 65%, rgba(255, 244, 200, 0.22) 100%), url(/assets/images/shapes/funfact-bg-2.jpg)",
-          backgroundColor: "#d4b85a",
-          backgroundSize: "cover",
-          backgroundPosition: "center center",
-          backgroundRepeat: "no-repeat",
-          borderRadius: "12px",
+          borderRadius: "16px",
           overflow: "hidden",
-          border: "1px solid rgba(255, 230, 150, 0.72)",
-          boxShadow: "0 14px 36px rgba(194, 167, 78, 0.35), 0 0 0 1px rgba(255, 244, 200, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.35)",
+          border: "1.5px solid rgba(140, 95, 20, 0.42)",
+          boxShadow: "0 8px 30px rgba(70, 45, 10, 0.22), 0 2px 8px rgba(40, 25, 5, 0.12)",
           display: "flex",
           flexDirection: "column",
           height: "100%",
-          position: "relative",
-          transition: "transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s ease, border-color 0.35s ease",
+          transition: "transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s ease",
         }}
         onMouseEnter={(e) => {
-          e.currentTarget.style.transform = "translateY(-10px)";
-          e.currentTarget.style.borderColor = "rgba(255, 236, 170, 0.95)";
-          e.currentTarget.style.boxShadow = "0 24px 56px rgba(194, 167, 78, 0.5), 0 0 24px rgba(255, 230, 150, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.45)";
+          e.currentTarget.style.transform = "translateY(-8px)";
+          e.currentTarget.style.boxShadow = "0 20px 48px rgba(70, 45, 10, 0.32), 0 6px 18px rgba(40, 25, 5, 0.18)";
         }}
         onMouseLeave={(e) => {
           e.currentTarget.style.transform = "translateY(0)";
-          e.currentTarget.style.borderColor = "rgba(255, 230, 150, 0.72)";
-          e.currentTarget.style.boxShadow = "0 14px 36px rgba(194, 167, 78, 0.35), 0 0 0 1px rgba(255, 244, 200, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.35)";
+          e.currentTarget.style.boxShadow = "0 8px 30px rgba(70, 45, 10, 0.22), 0 2px 8px rgba(40, 25, 5, 0.12)";
         }}
       >
-        <div
+        {/* Full-bleed Photo Header */}
+        <img
+          src={imgSrc}
+          alt={service.title}
+          loading="lazy"
           style={{
-            position: "absolute",
-            left: 0,
-            bottom: 0,
-            width: "180px",
-            height: "180px",
-            backgroundImage: "url(/assets/images/shapes/funfact-bg-2-shape.png)",
-            backgroundSize: "contain",
-            backgroundRepeat: "no-repeat",
-            backgroundPosition: "left bottom",
-            pointerEvents: "none",
-            opacity: 0.85,
-            zIndex: 1,
+            width: "100%",
+            height: "240px",
+            objectFit: "cover",
+            display: "block",
+            flexShrink: 0,
+            transition: "transform 0.6s cubic-bezier(0.16, 1, 0.3, 1)",
           }}
-        />
-        <div
-          style={{
-            position: "absolute",
-            inset: 0,
-            background: "linear-gradient(120deg, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0.06) 28%, rgba(255,255,255,0) 45%, rgba(255,248,214,0.14) 72%, rgba(255,255,255,0.18) 100%)",
-            pointerEvents: "none",
-            zIndex: 1,
-          }}
+          onMouseEnter={(e) => { (e.target as HTMLElement).style.transform = "scale(1.07)"; }}
+          onMouseLeave={(e) => { (e.target as HTMLElement).style.transform = "scale(1)"; }}
+          onError={(e) => { (e.target as HTMLImageElement).src = fallbackImg; }}
         />
 
-        {/* Card Image — static, fills the entire image area with no empty edges */}
+        {/* Content area: Rich metallic gold background */}
         <div
-          style={{ height: "220px", width: "100%", overflow: "hidden", position: "relative", backgroundColor: "#0e1317", zIndex: 2 }}
+          style={{
+            padding: "20px 20px 22px",
+            flex: 1,
+            display: "flex",
+            flexDirection: "column",
+            background: "linear-gradient(165deg, #d3a43c 0%, #c49432 45%, #b18122 100%)",
+            position: "relative",
+            overflow: "hidden",
+          }}
         >
-          <img
-            src={imgSrc}
-            alt={service.title}
-            loading="lazy"
+          {/* Bottom-left corner botanical line-art */}
+          <svg
+            viewBox="0 0 100 100"
+            xmlns="http://www.w3.org/2000/svg"
             style={{
-              width: "100%",
-              height: "100%",
-              objectFit: "cover",
-              transition: "transform 0.6s cubic-bezier(0.16, 1, 0.3, 1)",
+              position: "absolute",
+              left: "-12px",
+              bottom: "-12px",
+              width: "90px",
+              height: "90px",
+              pointerEvents: "none",
+              opacity: 0.22,
             }}
-            onMouseEnter={(e) => {
-              (e.target as HTMLElement).style.transform = "scale(1.08)";
-            }}
-            onMouseLeave={(e) => {
-              (e.target as HTMLElement).style.transform = "scale(1)";
-            }}
-            onError={(e) => {
-              (e.target as HTMLImageElement).src = fallbackImg;
-            }}
-          />
-        </div>
+            aria-hidden="true"
+          >
+            <g transform="translate(10,90)">
+              {([15, 35, 55, 75] as number[]).map((deg) => (
+                <ellipse key={deg} cx="28" cy="-28" rx="8" ry="22" fill="none" stroke="#1a1208" strokeWidth="1.2" transform={`rotate(${deg})`} />
+              ))}
+              <circle cx="0" cy="0" r="10" fill="none" stroke="#1a1208" strokeWidth="1.2" />
+            </g>
+          </svg>
 
-        {/* Card Content */}
-        <div style={{ padding: "24px 22px", display: "flex", flexDirection: "column", flex: 1, position: "relative", zIndex: 2 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "12px", gap: "8px" }}>
+          {/* Bottom-right corner botanical line-art */}
+          <svg
+            viewBox="0 0 100 100"
+            xmlns="http://www.w3.org/2000/svg"
+            style={{
+              position: "absolute",
+              right: "-12px",
+              bottom: "-12px",
+              width: "90px",
+              height: "90px",
+              pointerEvents: "none",
+              opacity: 0.22,
+            }}
+            aria-hidden="true"
+          >
+            <g transform="translate(90,90)">
+              {([-15, -35, -55, -75] as number[]).map((deg) => (
+                <ellipse key={deg} cx="-28" cy="-28" rx="8" ry="22" fill="none" stroke="#1a1208" strokeWidth="1.2" transform={`rotate(${deg})`} />
+              ))}
+              <circle cx="0" cy="0" r="10" fill="none" stroke="#1a1208" strokeWidth="1.2" />
+            </g>
+          </svg>
+
+          {/* Title + black price pill */}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "10px", marginBottom: "12px", position: "relative", zIndex: 1 }}>
             <h3
               style={{
                 fontFamily: "Cormorant, serif",
-                fontSize: "1.45rem",
+                fontSize: "1.32rem",
                 fontWeight: 800,
-                color: "#ffffff",
-                textShadow: "0 1px 3px rgba(0,0,0,0.5)",
+                color: "#140e06",
                 margin: 0,
                 lineHeight: 1.2,
-                letterSpacing: "0.5px",
+                letterSpacing: "0.6px",
                 textTransform: "uppercase",
+                flex: 1,
               }}
             >
               {service.title}
             </h3>
             <span
               style={{
-                backgroundColor: "#1c1a1d",
-                color: "#ffffff",
-                padding: "4px 12px",
-                borderRadius: "16px",
+                backgroundColor: "#141210",
+                color: "#f5ede0",
+                padding: "5px 16px",
+                borderRadius: "999px",
                 fontWeight: 800,
-                fontSize: "0.85rem",
+                fontSize: "0.78rem",
                 whiteSpace: "nowrap",
-                boxShadow: "0 4px 12px rgba(0,0,0,0.4)",
-                border: "1px solid rgba(255,255,255,0.15)",
+                flexShrink: 0,
+                letterSpacing: "0.3px",
+                boxShadow: "0 2px 8px rgba(0, 0, 0, 0.25)",
               }}
             >
               {formatPrice(service.price)}
             </span>
           </div>
 
+          {/* Description — 3-line clamp */}
           <p
             style={{
-              color: "rgba(255, 255, 255, 0.95)",
-              textShadow: "0 1px 2px rgba(0,0,0,0.3)",
-              fontSize: "0.92rem",
-              lineHeight: 1.6,
-              marginBottom: "20px",
-              flex: 1,
-              fontWeight: 500,
+              color: "#241808",
+              fontSize: "0.93rem",
+              lineHeight: 1.68,
+              margin: 0,
+              fontWeight: 450,
               display: "-webkit-box",
               WebkitLineClamp: 3,
               WebkitBoxOrient: "vertical",
               overflow: "hidden",
-              minHeight: "4.2em",
+              minHeight: "4.6em",
+              position: "relative",
+              zIndex: 1,
             }}
           >
             {cleanDescription(service.description)}
           </p>
 
+          {/* Luxury Diamond Divider */}
           <div
             style={{
               display: "flex",
               alignItems: "center",
-              gap: "12px",
-              marginTop: "auto",
-              paddingTop: "16px",
-              borderTop: "1px solid rgba(255, 255, 255, 0.25)",
+              justifyContent: "center",
+              gap: "8px",
+              margin: "18px 0 16px",
+              position: "relative",
+              zIndex: 1,
             }}
           >
-            <Link
-              href={"/booking?service=" + encodeURIComponent(service.title) + "&price=" + encodeURIComponent(String(service.price)) + (imgSrc ? "&image=" + encodeURIComponent(imgSrc) : "")}
+            <div style={{ flex: 1, height: "1px", backgroundColor: "rgba(20, 14, 6, 0.28)" }} />
+            <div
               style={{
-                flex: 1.3,
-                padding: "11px 14px",
-                backgroundColor: "#1c1a1d",
-                border: "2px solid #1c1a1d",
-                color: "#ffffff",
-                borderRadius: "0px",
-                fontSize: "12px",
-                fontWeight: 800,
-                letterSpacing: "1px",
-                textTransform: "uppercase",
-                textDecoration: "none",
-                display: "inline-flex",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: "8px",
-                boxShadow: "0 4px 14px rgba(0, 0, 0, 0.4)",
-                transition: "all 0.25s ease",
+                width: "6px",
+                height: "6px",
+                transform: "rotate(45deg)",
+                backgroundColor: "rgba(20, 14, 6, 0.55)",
               }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = "#ffffff";
-                e.currentTarget.style.color = "#1c1a1d";
-                e.currentTarget.style.borderColor = "#ffffff";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = "#1c1a1d";
-                e.currentTarget.style.color = "#ffffff";
-                e.currentTarget.style.borderColor = "#1c1a1d";
-              }}
-            >
-              <i className="fas fa-calendar-check"></i> Book Now
-            </Link>
+            />
+            <div style={{ flex: 1, height: "1px", backgroundColor: "rgba(20, 14, 6, 0.28)" }} />
           </div>
+
+          {/* BOOK NOW — black luxury button with gold text & calendar icon */}
+          <Link
+            href={"/booking?service=" + encodeURIComponent(service.title) + "&price=" + encodeURIComponent(String(service.price)) + (imgSrc ? "&image=" + encodeURIComponent(imgSrc) : "")}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "9px",
+              width: "100%",
+              padding: "14px 20px",
+              backgroundColor: "#141210",
+              color: "#deb853",
+              border: "1px solid rgba(222, 184, 83, 0.25)",
+              textDecoration: "none",
+              fontSize: "13px",
+              fontWeight: 800,
+              letterSpacing: "1.6px",
+              textTransform: "uppercase",
+              borderRadius: "6px",
+              transition: "all 0.22s ease",
+              boxSizing: "border-box",
+              boxShadow: "0 4px 14px rgba(0, 0, 0, 0.3)",
+              position: "relative",
+              zIndex: 1,
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = "#241f1a";
+              e.currentTarget.style.borderColor = "rgba(222, 184, 83, 0.6)";
+              e.currentTarget.style.color = "#edd07c";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = "#141210";
+              e.currentTarget.style.borderColor = "rgba(222, 184, 83, 0.25)";
+              e.currentTarget.style.color = "#deb853";
+            }}
+          >
+            <i className="fas fa-calendar-check" style={{ fontSize: "14px", color: "#deb853" }}></i>
+            BOOK NOW
+          </Link>
         </div>
       </div>
     </div>
