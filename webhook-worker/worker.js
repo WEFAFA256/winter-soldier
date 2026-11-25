@@ -640,6 +640,73 @@ async function handleCallback(request, env, ctx, path) {
   });
 }
 
+function compactServiceKey(value) {
+  return String(value || "")
+    .toLowerCase()
+    .replace(/&/g, " and ")
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim()
+    .replace(/\s+/g, "");
+}
+
+function parseR2Price(price) {
+  if (typeof price === "number") return Number.isFinite(price) ? Math.round(price) : NaN;
+  const match = String(price ?? "").match(/\d[\d,]*/);
+  if (!match) return NaN;
+  return Math.round(Number(match[0].replace(/,/g, "")));
+}
+
+async function resolveServiceForBooking(env, { serviceId, serviceTitle, serviceCategory }) {
+  const dbService = serviceId
+    ? await env.SERENITY_DB.prepare(
+        "SELECT id, title, price_ugx, duration_minutes FROM services WHERE id = ? AND active = 1"
+      ).bind(serviceId).first()
+    : null;
+
+  const targetTitle = serviceTitle || dbService?.title || "";
+  const targetKey = compactServiceKey(targetTitle);
+
+  if (targetKey) {
+    const content = await readR2Json(env, CONTENT_KEY).catch(() => null);
+    if (content && typeof content === "object") {
+      const cat = String(serviceCategory || "").toLowerCase().trim();
+      const allServices = Array.isArray(content.services) ? content.services : [];
+      const vipServices = Array.isArray(content.vipServices)
+        ? content.vipServices
+        : allServices.filter((s) => parseR2Price(s?.price) >= 300000);
+      const regularServices = Array.isArray(content.vipServices)
+        ? allServices
+        : allServices.filter((s) => parseR2Price(s?.price) < 300000);
+      const mobileMassage = Array.isArray(content.mobileMassage) ? content.mobileMassage : [];
+
+      const searchOrder =
+        cat === "mobile" || cat === "mobile massage"
+          ? [mobileMassage, regularServices, vipServices]
+          : cat === "vip" || cat === "vip packages"
+            ? [vipServices, regularServices, mobileMassage]
+            : [regularServices, vipServices, mobileMassage];
+
+      for (const list of searchOrder) {
+        for (const item of list) {
+          if (compactServiceKey(item?.title) === targetKey) {
+            const priceUgx = parseR2Price(item?.price);
+            if (Number.isFinite(priceUgx) && priceUgx > 0) {
+              return {
+                id: dbService?.id || `r2-${cat || "svc"}-${targetKey}`.slice(0, 64),
+                title: String(item.title).trim(),
+                price_ugx: priceUgx,
+                duration_minutes: dbService?.duration_minutes || 60,
+              };
+            }
+          }
+        }
+      }
+    }
+  }
+
+  return dbService;
+}
+
 async function createBooking(request, env) {
   const guard = rejectPublicMutation(request, env);
   if (guard) return guard;
@@ -651,6 +718,8 @@ async function createBooking(request, env) {
   }
 
   const serviceId = String(input.serviceId || "").trim();
+  const serviceTitle = String(input.serviceTitle || "").trim();
+  const serviceCategory = String(input.serviceCategory || "").trim();
   const name = String(input.name || "").trim();
   const email = String(input.email || "").trim();
   const phone = normalizePhone(input.phone);
@@ -658,15 +727,13 @@ async function createBooking(request, env) {
   const time = String(input.time || "").trim();
   const notes = String(input.notes || "").trim().slice(0, 1000);
 
-  if (!serviceId || name.length < 2) return fail("serviceId and name are required");
+  if ((!serviceId && !serviceTitle) || name.length < 2) return fail("service and name are required");
   if (!phone) return fail("Enter a valid Uganda phone number (e.g. 0755123456)");
   if (!validDate(date)) return fail("Choose a valid date within the next 90 days (YYYY-MM-DD)");
   if (!validTime(time)) return fail("Choose a valid time (HH:mm)");
   if (!slotIsFuture(date, time)) return fail("That time has already passed today. Choose a later slot.");
 
-  const service = await env.SERENITY_DB.prepare(
-    "SELECT id, title, price_ugx, duration_minutes FROM services WHERE id = ? AND active = 1"
-  ).bind(serviceId).first();
+  const service = await resolveServiceForBooking(env, { serviceId, serviceTitle, serviceCategory });
 
   if (!service) return fail("Unknown service", 404);
   if (await rateLimited(request, env)) {

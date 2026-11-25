@@ -449,6 +449,7 @@ function BookingFormInner() {
   const groupedTreatments = {
     services: (siteCatalog?.services || []).map((s) => ({
       value: `services::${s.name}`,
+      categoryKey: "services" as const,
       category: "Services" as const,
       name: s.name,
       price: s.price,
@@ -456,6 +457,7 @@ function BookingFormInner() {
     })),
     vip: (siteCatalog?.vip || []).map((s) => ({
       value: `vip::${s.name}`,
+      categoryKey: "vip" as const,
       category: "VIP Packages" as const,
       name: s.name,
       price: s.price,
@@ -463,6 +465,7 @@ function BookingFormInner() {
     })),
     mobile: (siteCatalog?.mobile || []).map((s) => ({
       value: `mobile::${s.name}`,
+      categoryKey: "mobile" as const,
       category: "Mobile Massage" as const,
       name: s.name,
       price: s.price,
@@ -522,10 +525,6 @@ function BookingFormInner() {
       setPayError("Choose a treatment from the list.");
       return;
     }
-    if (!selectedService.id) {
-      setPayError(servicesError || "Prices are still loading. Refresh the page and try again.");
-      return;
-    }
     const hhmm = to24Hour(form.time);
     if (form.date === getTodayString() && slotMinutes(hhmm) < kampalaNow().minutes + MIN_LEAD_MINUTES) {
       setPayError("That time has already passed today. Choose a later slot.");
@@ -559,20 +558,22 @@ function BookingFormInner() {
       setPayError(`That number is ${PROVIDER_LABEL[detected]}. Tap the ${PROVIDER_LABEL[detected]} button above, then Confirm & Pay.`);
       return;
     }
-    if (!selectedService?.id) {
-      setPayError("Prices are still loading. Refresh the page and try again.");
+    if (!selectedService) {
+      setPayError("Choose a treatment from the list.");
       return;
     }
 
     setPaying(true);
     let createdBookingId: string | null = null;
     try {
-      // Amount is taken from D1 by serviceId on the server — never from here.
+      // Amount is resolved authoritatively on the Worker from R2 site-content (or D1 fallback).
       const createdRes = await fetch(`${PAY_API}/api/bookings`, {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
           serviceId: selectedService.id,
+          serviceTitle: selectedService.name,
+          serviceCategory: selectedService.categoryKey,
           name: form.name.trim(),
           phone: form.phone.trim(),
           email: form.email.trim(),
