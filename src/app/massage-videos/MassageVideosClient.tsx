@@ -197,7 +197,7 @@ export default function MassageVideosClient({
         {/* Page Hero */}
         <section
           style={{
-            padding: "60px 20px 48px",
+            padding: "120px 20px 60px",
             textAlign: "center",
             background: "radial-gradient(circle at top, rgba(194, 167, 78, 0.10), #0a0e12 60%)",
             borderBottom: "1px solid rgba(194, 167, 78, 0.15)",
