@@ -654,7 +654,7 @@ export default function ServicesPage() {
               const embedSrc =
                 rawUrl.includes("/maps/embed") || rawUrl.includes("output=embed")
                   ? rawUrl
-                  : `https://maps.google.com/maps?q=${encodeURIComponent(activeLoc.name)}&t=&z=15&ie=UTF8&iwloc=&output=embed`;
+                  : `https://www.google.com/maps?q=${encodeURIComponent(activeLoc.name)}&t=&z=15&ie=UTF8&iwloc=&output=embed`;
               return (
                 <div style={{ marginTop: "40px" }}>
                   {locations.length > 1 && (

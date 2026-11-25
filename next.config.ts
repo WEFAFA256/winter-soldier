@@ -29,7 +29,7 @@ const CSP = [
   "img-src 'self' data: https:",
   `media-src 'self' ${[...connectOrigins].join(" ")}`,
   `connect-src 'self' ${[...connectOrigins].join(" ")}`,
-  "frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com https://www.google.com",
+  "frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com https://www.google.com https://maps.google.com",
   "frame-ancestors 'none'",
   "form-action 'self'",
   "base-uri 'self'",
