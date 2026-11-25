@@ -197,26 +197,13 @@ export default function MassageVideosClient({
         {/* Page Hero */}
         <section
           style={{
-            padding: "70px 20px 44px",
+            padding: "50px 20px 36px",
             textAlign: "center",
-            background: "radial-gradient(circle at top, rgba(194, 167, 78, 0.14), #0a0e12 68%)",
+            background: "radial-gradient(circle at top, rgba(194, 167, 78, 0.10), #0a0e12 60%)",
             borderBottom: "1px solid rgba(194, 167, 78, 0.15)",
           }}
         >
           <div className="container" style={{ maxWidth: "780px" }}>
-            <span
-              style={{
-                display: "inline-block",
-                fontSize: "11px",
-                fontWeight: 800,
-                letterSpacing: "2.4px",
-                textTransform: "uppercase",
-                color: "#c2a74e",
-                marginBottom: "10px",
-              }}
-            >
-              The Serenity Spa • Mengo, Kampala
-            </span>
             <h1
               style={{
                 fontFamily: "Cormorant, Georgia, serif",
