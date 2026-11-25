@@ -11,6 +11,11 @@ import React, {
 import { usePathname } from "next/navigation";
 import { fetchSiteContent, getCachedSiteContent } from "@/lib/service-order";
 
+export interface SpaLocationItem {
+  name: string;
+  mapUrl: string;
+}
+
 interface SiteContact {
   phone?: string;
   whatsapp?: string;
@@ -18,6 +23,10 @@ interface SiteContact {
   address?: string;
   location?: string;
   mapQuery?: string;
+  location1Name?: string;
+  location1MapUrl?: string;
+  location2Name?: string;
+  location2MapUrl?: string;
   [key: string]: unknown;
 }
 
@@ -32,7 +41,13 @@ interface ContactContextValue {
   emailDisplay: string;
   emailHref: string;
   locationDisplay: string;
+  locations: SpaLocationItem[];
 }
+
+const DEFAULT_LOCATIONS: SpaLocationItem[] = [
+  { name: "Sir Apollo Kaggwa Road, Kampala", mapUrl: "" },
+  { name: "Mengo Branch, Kampala", mapUrl: "" },
+];
 
 const EMPTY_CONTACT: ContactContextValue = {
   contact: null,
@@ -45,6 +60,7 @@ const EMPTY_CONTACT: ContactContextValue = {
   emailDisplay: "",
   emailHref: "#",
   locationDisplay: "",
+  locations: DEFAULT_LOCATIONS,
 };
 
 const ContactContext = createContext<ContactContextValue>(EMPTY_CONTACT);
@@ -140,6 +156,19 @@ export function ContactProvider({ children }: { children: React.ReactNode }) {
     );
     const whatsappNumber = toMsisdn(whatsappRaw);
 
+    const loc1Name = String(contact?.location1Name || "").trim();
+    const loc1MapUrl = String(contact?.location1MapUrl || "").trim();
+    const loc2Name = String(contact?.location2Name || "").trim();
+    const loc2MapUrl = String(contact?.location2MapUrl || "").trim();
+
+    const hasCustomLocations = Boolean(loc1Name || loc1MapUrl || loc2Name || loc2MapUrl);
+    const locations: SpaLocationItem[] = hasCustomLocations
+      ? [
+          ...(loc1Name || loc1MapUrl ? [{ name: loc1Name || "Location 1", mapUrl: loc1MapUrl }] : []),
+          ...(loc2Name || loc2MapUrl ? [{ name: loc2Name || "Location 2", mapUrl: loc2MapUrl }] : []),
+        ]
+      : DEFAULT_LOCATIONS;
+
     return {
       contact,
       ready,
@@ -155,6 +184,7 @@ export function ContactProvider({ children }: { children: React.ReactNode }) {
       emailDisplay: emailRaw,
       emailHref: emailRaw ? `mailto:${emailRaw}` : "#",
       locationDisplay: locationRaw,
+      locations,
     };
   }, [contact, location, ready]);
 

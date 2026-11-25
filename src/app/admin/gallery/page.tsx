@@ -1894,26 +1894,58 @@ export default function AdminGalleryPage() {
             )}
 
             {/* ══ SETTINGS TAB ══ */}
-            {tab === "info" && siteContent && (
+            {tab === "info" && siteContent && (() => {
+              const updateSpaContact = (field: string, value: string) => {
+                setSiteContent((prev: any) => ({
+                  ...prev,
+                  contact: {
+                    ...(prev?.contact || {}),
+                    spa: { ...(prev?.contact?.spa || {}), [field]: value },
+                  },
+                }));
+              };
+              const spaContact = siteContent.contact?.spa || {};
+              return (
               <div className="admin-pane">
-                <SectionHead title="Spa Settings" sub="Update contact details, phone numbers and location across the entire website." />
-                <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:10, padding:24, maxWidth:600 }}>
+                <SectionHead title="Spa Settings" sub="Update contact details, phone numbers and locations across the entire website." />
+                <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:10, padding:24, maxWidth:720 }}>
                   <div className="adm settings-grid" style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16, marginBottom:4 }}>
-                    <Input label="WhatsApp Number" placeholder="+256781945510" value={siteContent.contact?.spa?.whatsapp||""}
-                      onChange={(e:any)=>{ const c={...siteContent}; if(!c.contact)c.contact={}; if(!c.contact.spa)c.contact.spa={}; c.contact.spa.whatsapp=e.target.value; setSiteContent(c); }} />
-                    <Input label="Phone Line" placeholder="+256764001922" value={siteContent.contact?.spa?.phone||""}
-                      onChange={(e:any)=>{ const c={...siteContent}; if(!c.contact)c.contact={}; if(!c.contact.spa)c.contact.spa={}; c.contact.spa.phone=e.target.value; setSiteContent(c); }} />
+                    <Input label="WhatsApp Number" placeholder="+256781945510" value={spaContact.whatsapp||""}
+                      onChange={(e:any)=>updateSpaContact("whatsapp", e.target.value)} />
+                    <Input label="Phone Line" placeholder="+256764001922" value={spaContact.phone||""}
+                      onChange={(e:any)=>updateSpaContact("phone", e.target.value)} />
                   </div>
-                  <Input label="Location / Address" placeholder="Sir Apollo Kaggwa Rd & Mengo, Kampala" value={siteContent.homepage?.spaContent?.location||""}
+                  <Input label="Primary Header / Footer Address" placeholder="Sir Apollo Kaggwa Rd & Mengo, Kampala" value={siteContent.homepage?.spaContent?.location||""}
                     onChange={(e:any)=>{ const c={...siteContent}; if(!c.homepage)c.homepage={}; if(!c.homepage.spaContent)c.homepage.spaContent={}; c.homepage.spaContent.location=e.target.value; setSiteContent(c); }} />
                   <Input label="Spa Tagline" placeholder="Oasis of Relaxation in Kampala" value={siteContent.homepage?.spaContent?.tagline||""}
                     onChange={(e:any)=>{ const c={...siteContent}; if(!c.homepage)c.homepage={}; if(!c.homepage.spaContent)c.homepage.spaContent={}; c.homepage.spaContent.tagline=e.target.value; setSiteContent(c); }} />
+
+                  {/* Location 1 & Location 2 (reflected on /services Locations & Map section) */}
+                  <div style={{ marginTop:18, paddingTop:18, borderTop:`1px solid ${C.border}` }}>
+                    <p style={{ margin:"0 0 12px", fontSize:12, fontWeight:700, color:C.gold, textTransform:"uppercase", letterSpacing:"0.6px" }}>
+                      Spa Locations (Services Page)
+                    </p>
+                    <div className="adm settings-grid" style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16 }}>
+                      <Input label="Location 1 — Name / Address" placeholder="Sir Apollo Kaggwa Road, Kampala" value={spaContact.location1Name||""}
+                        onChange={(e:any)=>updateSpaContact("location1Name", e.target.value)} />
+                      <Input label="Location 1 — Google Maps Link" placeholder="https://maps.google.com/?q=..." value={spaContact.location1MapUrl||""}
+                        onChange={(e:any)=>updateSpaContact("location1MapUrl", e.target.value)} />
+                    </div>
+                    <div className="adm settings-grid" style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16 }}>
+                      <Input label="Location 2 — Name / Address" placeholder="Mengo Branch, Kampala" value={spaContact.location2Name||""}
+                        onChange={(e:any)=>updateSpaContact("location2Name", e.target.value)} />
+                      <Input label="Location 2 — Google Maps Link" placeholder="https://maps.google.com/?q=..." value={spaContact.location2MapUrl||""}
+                        onChange={(e:any)=>updateSpaContact("location2MapUrl", e.target.value)} />
+                    </div>
+                  </div>
+
                   <div style={{ marginTop:8, paddingTop:16, borderTop:`1px solid ${C.border}` }}>
                     <BtnGold onClick={saveAll} disabled={saving}>{saving ? "Saving…" : "Save Settings"}</BtnGold>
                   </div>
                 </div>
               </div>
-            )}
+              );
+            })()}
           </>
         )}
       </main>

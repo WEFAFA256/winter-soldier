@@ -248,7 +248,8 @@ function useScrollReveal() {
 export default function ServicesPage() {
   // Catalogue starts empty and paints only admin-managed R2-backed records.
   const [services, setServices] = useState<Service[]>([]);
-  const { phoneHref, phoneDisplay, whatsappDisplay, whatsappLink } = useSiteContact();
+  const { phoneHref, phoneDisplay, whatsappDisplay, whatsappLink, locations } = useSiteContact();
+  const [activeMapIndex, setActiveMapIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
@@ -584,10 +585,27 @@ export default function ServicesPage() {
                       <p style={{ color: "#c2a74e", margin: 0, fontSize: "12px" }}>Kampala, Uganda</p>
                     </div>
                   </div>
-                  <p style={{ color: "#c4cfde", fontSize: "14px", lineHeight: 1.6 }}>
-                    • Sir Apollo Kaggwa Road, Kampala<br />
-                    • Mengo Branch, Kampala
-                  </p>
+                  <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                    {locations.map((loc, idx) => {
+                      const mapHref =
+                        loc.mapUrl && /^https?:\/\//i.test(loc.mapUrl)
+                          ? loc.mapUrl
+                          : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(loc.name)}`;
+                      return (
+                        <div key={idx} style={{ fontSize: "14px", lineHeight: 1.5, color: "#c4cfde" }}>
+                          <div>• {loc.name}</div>
+                          <a
+                            href={mapHref}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{ color: "#c2a74e", fontSize: "12px", textDecoration: "none", marginLeft: "10px", fontWeight: 600 }}
+                          >
+                            Open in Google Maps ↗
+                          </a>
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
 
@@ -629,18 +647,55 @@ export default function ServicesPage() {
             </div>
 
             {/* Embedded Google Map */}
-            <div style={{ marginTop: "40px", borderRadius: "12px", overflow: "hidden", border: "1px solid rgba(194, 167, 78,0.2)", height: "320px" }}>
-              <iframe
-                title="The Serenity Spa Kampala"
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d15959.043537096646!2d32.55836855!3d0.33748235!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x177dbb0e8fa7f763%3A0x6b30f295bc1cc14c!2sSir%20Apollo%20Kaggwa%20Rd%2C%20Kampala!5e0!3m2!1sen!2sug!4v1700000000000!5m2!1sen!2sug"
-                width="100%"
-                height="100%"
-                style={{ border: 0, filter: "grayscale(70%) invert(90%) contrast(90%)" }}
-                allowFullScreen={false}
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
-              ></iframe>
-            </div>
+            {(() => {
+              const safeIdx = activeMapIndex < locations.length ? activeMapIndex : 0;
+              const activeLoc = locations[safeIdx] || { name: "Sir Apollo Kaggwa Rd, Kampala", mapUrl: "" };
+              const rawUrl = activeLoc.mapUrl || "";
+              const embedSrc =
+                rawUrl.includes("/maps/embed") || rawUrl.includes("output=embed")
+                  ? rawUrl
+                  : `https://maps.google.com/maps?q=${encodeURIComponent(activeLoc.name)}&t=&z=15&ie=UTF8&iwloc=&output=embed`;
+              return (
+                <div style={{ marginTop: "40px" }}>
+                  {locations.length > 1 && (
+                    <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", marginBottom: "14px" }}>
+                      {locations.map((loc, idx) => (
+                        <button
+                          key={idx}
+                          type="button"
+                          onClick={() => setActiveMapIndex(idx)}
+                          style={{
+                            padding: "8px 16px",
+                            borderRadius: "6px",
+                            fontSize: "12px",
+                            fontWeight: 700,
+                            cursor: "pointer",
+                            border: safeIdx === idx ? "1.5px solid #c2a74e" : "1px solid rgba(255,255,255,0.14)",
+                            backgroundColor: safeIdx === idx ? "#c2a74e" : "#161c22",
+                            color: safeIdx === idx ? "#0e1317" : "#c4cfde",
+                          }}
+                        >
+                          Location {idx + 1}: {loc.name}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                  <div style={{ borderRadius: "12px", overflow: "hidden", border: "1px solid rgba(194, 167, 78,0.2)", height: "320px" }}>
+                    <iframe
+                      key={embedSrc}
+                      title={activeLoc.name || "The Serenity Spa Location"}
+                      src={embedSrc}
+                      width="100%"
+                      height="100%"
+                      style={{ border: 0, filter: "grayscale(70%) invert(90%) contrast(90%)" }}
+                      allowFullScreen={false}
+                      loading="lazy"
+                      referrerPolicy="no-referrer-when-downgrade"
+                    ></iframe>
+                  </div>
+                </div>
+              );
+            })()}
           </div>
         </section>
 
