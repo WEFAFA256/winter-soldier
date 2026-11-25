@@ -197,7 +197,7 @@ export default function MassageVideosClient({
         {/* Page Hero */}
         <section
           style={{
-            padding: "120px 20px 60px",
+            padding: "180px 20px 72px",
             textAlign: "center",
             position: "relative",
             overflow: "hidden",
