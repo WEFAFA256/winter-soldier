@@ -427,10 +427,10 @@ export default function Home() {
                                 </div>
                                 <div class="col-md-7">
                                     <div class="about-two__content__inner">
-                                        <p class="about-two__content__text">
+                                        <p class="about-two__content__text" style="color:#ffffff; opacity:1;">
                                             Welcome to The Serenity Spa — Kampala's premier luxury wellness destination, nestled in the heart of Mengo. We are a haven of calm where skilled therapists blend expert technique with the warmth of Ugandan hospitality to deliver an experience that renews your body, mind and spirit. Whether you are escaping the bustle of the city for an hour or treating yourself to a full-day retreat, every visit is designed around you.
                                         </p>
-                                        <ul class="about-two__content__list">
+                                        <ul class="about-two__content__list" style="color:#ffffff;">
                                             <li><span class="fa fa-check-circle"></span>Expert full-body massages — Swedish, deep tissue, hot stone & more</li>
                                             <li><span class="fa fa-check-circle"></span>Premium skincare & body treatments using quality therapeutic oils</li>
                                             <li><span class="fa fa-check-circle"></span>Luxury VIP packages & exclusive couples experiences</li>
