@@ -56,8 +56,15 @@ export default function MassageVideosClient({
 
   useEffect(() => {
     const loadVideos = (fresh = false) => {
-      const loader = fresh ? fetchSiteContent() : getCachedSiteContent();
-      loader
+      if (!fresh) {
+        const cached = getCachedSiteContent();
+        if (cached) {
+          setVideos(normalizeSiteVideos((cached as any).massageVideos));
+        }
+        setLoading(false);
+        return;
+      }
+      fetchSiteContent()
         .then((content: any) => {
           if (content) {
             setVideos(normalizeSiteVideos(content.massageVideos));
