@@ -476,7 +476,7 @@ export default function Home() {
                             <defs>
                                 <path id="videoCirclePath" d="M 100, 100 m -72, 0 a 72,72 0 1,1 144,0 a 72,72 0 1,1 -144,0" />
                             </defs>
-                            <text fill="#ffffff" font-size="13" font-weight="500" letter-spacing="6.2" style="text-transform:uppercase;">
+                            <text fill="#ffffff" font-size="13.5" font-weight="800" letter-spacing="5.6" style="text-transform:uppercase; filter: drop-shadow(0 1px 3px rgba(0,0,0,0.65));">
                                 <textPath href="#videoCirclePath" startOffset="0%">
                                     Watch our massages Video
                                 </textPath>
