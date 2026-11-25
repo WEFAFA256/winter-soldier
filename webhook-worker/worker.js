@@ -1209,6 +1209,66 @@ const handler = {
       return json({ ok: true, content });
     }
 
+async function syncServicesToD1(env, content) {
+  if (!content || typeof content !== "object") return;
+  const allServices = Array.isArray(content.services) ? content.services : [];
+  const vipServices = Array.isArray(content.vipServices)
+    ? content.vipServices
+    : allServices.filter((s) => parseR2Price(s?.price) >= 300000);
+  const regularServices = Array.isArray(content.vipServices)
+    ? allServices
+    : allServices.filter((s) => parseR2Price(s?.price) < 300000);
+  const mobileMassage = Array.isArray(content.mobileMassage) ? content.mobileMassage : [];
+
+  const existing = await env.SERENITY_DB.prepare("SELECT id, title FROM services").all();
+  const existingByKey = new Map();
+  for (const row of existing.results || []) {
+    const k = compactServiceKey(row?.title);
+    if (k && !existingByKey.has(k)) existingByKey.set(k, row.id);
+  }
+
+  const activeIds = new Set();
+  const stmts = [];
+
+  const upsertList = (items, cat, preferExisting) => {
+    for (const item of items) {
+      const title = String(item?.title || "").trim();
+      const key = compactServiceKey(title);
+      const priceUgx = parseR2Price(item?.price);
+      if (!key || key === "newspatreatment" || !Number.isFinite(priceUgx) || priceUgx <= 0) continue;
+
+      let id = preferExisting ? existingByKey.get(key) : null;
+      if (!id || activeIds.has(id)) {
+        id = `r2-${cat}-${key}`.slice(0, 64);
+      }
+      activeIds.add(id);
+      stmts.push(
+        env.SERENITY_DB.prepare(
+          `INSERT INTO services (id, title, price_ugx, duration_minutes, active)
+           VALUES (?, ?, ?, 60, 1)
+           ON CONFLICT(id) DO UPDATE SET
+             title = excluded.title,
+             price_ugx = excluded.price_ugx,
+             active = 1`
+        ).bind(id, title, priceUgx)
+      );
+    }
+  };
+
+  upsertList(regularServices, "services", true);
+  upsertList(vipServices, "vip", true);
+  upsertList(mobileMassage, "mobile", false);
+
+  if (activeIds.size > 0) {
+    for (const row of existing.results || []) {
+      if (row?.id && !activeIds.has(row.id)) {
+        stmts.push(env.SERENITY_DB.prepare("UPDATE services SET active = 0 WHERE id = ?").bind(row.id));
+      }
+    }
+    await env.SERENITY_DB.batch(stmts);
+  }
+}
+
     if (method === "POST" && path === "/api/content") {
       if (!isAdmin(request, env)) return fail("Unauthorized", 401);
       const body = await request.json().catch(() => null);
@@ -1217,6 +1277,11 @@ const handler = {
         return fail("A content object is required", 400);
       }
       await writeR2Json(env, CONTENT_KEY, content);
+      try {
+        await syncServicesToD1(env, content);
+      } catch (e) {
+        console.error("D1 services sync failed", e);
+      }
       return json({ ok: true, content });
     }
 
