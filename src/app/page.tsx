@@ -484,9 +484,9 @@ export default function Home() {
                         </svg>
                     </div><!-- curved-circle end-->
                 </div><!-- /.video-one__btn -->
-                <h2 class="video-one__title">book & feel our <br>
-                    Incredible Spa Experience</h2><!-- /.video-one__title -->
-                <a href="/services" class="solox-btn video-one__link"><span>Discover more</span></a>
+                <h2 class="video-one__title">watch our <br>
+                    massages video</h2><!-- /.video-one__title -->
+                <a href="/services" class="solox-btn video-one__link"><span>Tap to Watch</span></a>
             </div><!-- /.container -->
         </section><!-- /.video-one -->
         <section class="contact-one contact-one--home-two">
