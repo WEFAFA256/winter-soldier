@@ -421,19 +421,21 @@ export default function Home() {
                             <div class="row">
                                 <div class="col-md-5">
                                     <div class="about-two__content__thumb">
-                                        <img src="/assets/images/resources/about-2-1.jpg" alt="solox">
+                                        <img src="/assets/images/about/about-massage.jpg" alt="Serenity Spa therapist performing a massage">
                                         <div class="about-two__content__thumb__icon"><img src="/assets/images/shapes/why-choose-2-s-2.png" alt="solox"></div>
                                     </div>
                                 </div>
                                 <div class="col-md-7">
                                     <div class="about-two__content__inner">
                                         <p class="about-two__content__text">
-                                            At The Serenity Spa in Mengo, we blend skilled massage techniques with warm Ugandan hospitality. Step away from the bustle of Kampala and let our therapists restore your calm.
+                                            Welcome to The Serenity Spa — Kampala's premier luxury wellness destination, nestled in the heart of Mengo. We are a haven of calm where skilled therapists blend expert technique with the warmth of Ugandan hospitality to deliver an experience that renews your body, mind and spirit. Whether you are escaping the bustle of the city for an hour or treating yourself to a full-day retreat, every visit is designed around you.
                                         </p>
                                         <ul class="about-two__content__list">
-                                            <li><span class="fa fa-check-circle"></span>Tailored massage and body treatments</li>
-                                            <li><span class="fa fa-check-circle"></span>Premium skincare with quality oils</li>
-                                            <li><span class="fa fa-check-circle"></span>Massages & therapies</li>
+                                            <li><span class="fa fa-check-circle"></span>Expert full-body massages — Swedish, deep tissue, hot stone & more</li>
+                                            <li><span class="fa fa-check-circle"></span>Premium skincare & body treatments using quality therapeutic oils</li>
+                                            <li><span class="fa fa-check-circle"></span>Luxury VIP packages & exclusive couples experiences</li>
+                                            <li><span class="fa fa-check-circle"></span>Mobile massage — our therapists come to you, anywhere in Kampala</li>
+                                            <li><span class="fa fa-check-circle"></span>Open 24 hours, every day — walk-ins welcome, bookings preferred</li>
                                         </ul>
                                     </div>
                                 </div>
