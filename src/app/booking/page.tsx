@@ -6,7 +6,14 @@ import { useSearchParams } from "next/navigation";
 import CustomCursor from "@/components/CustomCursor";
 import MobileDrawer from "@/components/MobileDrawer";
 import { useSiteContact } from "@/components/ContactProvider";
-import { fetchSiteContent } from "@/lib/service-order";
+import {
+  fetchSiteContent,
+  getCachedSiteContent,
+  splitServiceCatalog,
+  orderServices,
+  parseServicePrice,
+  isRealServiceTitle,
+} from "@/lib/service-order";
 import QRCode from "qrcode";
 
 /* ─── Real Services Catalog (Mirrored from active R2 catalog) ───────────── */
@@ -286,9 +293,14 @@ function BookingFormInner() {
     id: string; title: string; price_ugx: number; duration_minutes: number;
   }[]>([]);
   const [servicesError, setServicesError] = useState("");
-  // Admin-edited card images from /api/content drive the booking backdrop.
-  // Pre-seeded with DEFAULT_SERVICE_IMAGES so the page never flashes an old generic fallback.
+  // Admin-edited card images & treatments from /api/content drive the booking
+  // selector and backdrop, matching Services, VIP Packages, and Mobile Massage.
   const [serviceImages, setServiceImages] = useState<Record<string, string>>(DEFAULT_SERVICE_IMAGES);
+  const [siteCatalog, setSiteCatalog] = useState<{
+    services: { name: string; price: number }[];
+    vip: { name: string; price: number }[];
+    mobile: { name: string; price: number }[];
+  } | null>(null);
   const [takenSlots, setTakenSlots] = useState<string[]>([]);
   const [paying, setPaying] = useState(false);
   const [payError, setPayError] = useState("");
@@ -339,29 +351,66 @@ function BookingFormInner() {
 
   useEffect(() => { loadServices(); }, []);
 
-  // The same admin-edited card images used on Services/VIP become this page's
-  // backdrop. Refresh on focus/visibility so an open booking tab follows an
-  // admin save without a reload.
+  // The same admin-edited card catalog & images used on Services, VIP Packages,
+  // and Mobile Massage drive this page's selector and backdrop. Refresh on focus,
+  // visibility, and admin save events so edits/new cards appear immediately.
   useEffect(() => {
     let active = true;
-    const loadImages = async () => {
+    const applySiteData = (data: any) => {
+      if (!active || !data) return;
+      setServiceImages(buildServiceImageMap(data));
+      const { services: rawServices, vipServices: rawVip } = splitServiceCatalog(data);
+      const toOptionList = (items: any[]) =>
+        items
+          .filter((item) => isRealServiceTitle(item?.title))
+          .map((item) => {
+            const parsed = parseServicePrice(item?.price);
+            return {
+              name: String(item.title).trim(),
+              price: Number.isFinite(parsed) && parsed > 0 ? parsed : 0,
+            };
+          });
+      const services = toOptionList(orderServices(rawServices, "services"));
+      const vip = toOptionList(orderServices(rawVip, "vip"));
+      const mobile = toOptionList(Array.isArray(data?.mobileMassage) ? data.mobileMassage : []);
+      setSiteCatalog({ services, vip, mobile });
+    };
+
+    const cached = getCachedSiteContent();
+    if (cached) applySiteData(cached);
+
+    const loadCatalog = async (force = false) => {
       try {
-        const data = await fetchSiteContent();
-        if (active && data) setServiceImages(buildServiceImageMap(data));
+        const data = await fetchSiteContent(force ? { force: true } : undefined);
+        applySiteData(data);
       } catch {
-        // Keep the previous image map if the catalogue is temporarily offline.
+        // Keep the previous catalog if temporarily offline.
       }
     };
-    loadImages();
+    loadCatalog(false);
+
     const refresh = () => {
-      if (document.visibilityState === "visible") loadImages();
+      if (document.visibilityState === "visible") loadCatalog(true);
     };
     window.addEventListener("focus", refresh);
     document.addEventListener("visibilitychange", refresh);
+
+    let channel: BroadcastChannel | null = null;
+    try {
+      channel = new BroadcastChannel("serenity-content");
+      channel.onmessage = () => loadCatalog(true);
+    } catch {}
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === "serenity:content-updated") loadCatalog(true);
+    };
+    window.addEventListener("storage", onStorage);
+
     return () => {
       active = false;
       window.removeEventListener("focus", refresh);
       document.removeEventListener("visibilitychange", refresh);
+      try { channel?.close(); } catch {}
+      window.removeEventListener("storage", onStorage);
     };
   }, []);
 
@@ -387,13 +436,50 @@ function BookingFormInner() {
     }
   }, [initialService, initialImage]);
 
-  const serviceOptions = apiServices.length
-    ? apiServices.map((s) => ({ name: s.title, price: s.price_ugx, id: s.id }))
-    : SERVICES.map((s) => ({ ...s, id: "" }));
+  const resolveApiServiceId = (title: string): string => {
+    const key = serviceImageKey(title);
+    const aliasKey = SERVICE_IMAGE_ALIASES[key] || key;
+    const match = apiServices.find((a) => {
+      const aKey = serviceImageKey(a.title);
+      return aKey === key || aKey === aliasKey;
+    });
+    return match?.id || "";
+  };
 
-  const selectedService = serviceOptions.find(
-    (s) => s.name.toLowerCase() === form.service.toLowerCase()
-  );
+  const groupedTreatments = {
+    services: (siteCatalog?.services || []).map((s) => ({
+      value: `services::${s.name}`,
+      category: "Services" as const,
+      name: s.name,
+      price: s.price,
+      id: resolveApiServiceId(s.name),
+    })),
+    vip: (siteCatalog?.vip || []).map((s) => ({
+      value: `vip::${s.name}`,
+      category: "VIP Packages" as const,
+      name: s.name,
+      price: s.price,
+      id: resolveApiServiceId(s.name),
+    })),
+    mobile: (siteCatalog?.mobile || []).map((s) => ({
+      value: `mobile::${s.name}`,
+      category: "Mobile Massage" as const,
+      name: s.name,
+      price: s.price,
+      id: resolveApiServiceId(s.name),
+    })),
+  };
+
+  const serviceOptions = [
+    ...groupedTreatments.services,
+    ...groupedTreatments.vip,
+    ...groupedTreatments.mobile,
+  ];
+
+  const selectedService =
+    serviceOptions.find((s) => s.value === form.service) ||
+    serviceOptions.find((s) => s.name.toLowerCase() === form.service.toLowerCase()) ||
+    serviceOptions.find((s) => serviceImageKey(s.name) === serviceImageKey(form.service));
   const bookingBackgroundImage = resolveServiceImage(
     selectedService?.name || form.service,
     serviceImages,
@@ -929,16 +1015,40 @@ function BookingFormInner() {
                       id="booking-service"
                       style={{ ...inputStyle, cursor: "pointer" }}
                       name="service"
-                      value={form.service}
+                      value={selectedService?.value || ""}
                       onChange={handleChange}
                       required
                     >
-                      <option value="">— Select a Treatment —</option>
-                      {serviceOptions.map((s) => (
-                        <option key={s.name} value={s.name}>
-                          {s.name} — {formatPrice(s.price)}
-                        </option>
-                      ))}
+                      <option value="">
+                        {siteCatalog === null ? "— Loading Treatments… —" : "— Select a Treatment —"}
+                      </option>
+                      {groupedTreatments.services.length > 0 && (
+                        <optgroup label="Services" style={{ backgroundColor: "#161c22", color: "#c2a74e", fontWeight: 700 }}>
+                          {groupedTreatments.services.map((s) => (
+                            <option key={s.value} value={s.value} style={{ backgroundColor: "#161c22", color: "#ffffff" }}>
+                              {s.name} — {formatPrice(s.price)}
+                            </option>
+                          ))}
+                        </optgroup>
+                      )}
+                      {groupedTreatments.vip.length > 0 && (
+                        <optgroup label="VIP Packages" style={{ backgroundColor: "#161c22", color: "#c2a74e", fontWeight: 700 }}>
+                          {groupedTreatments.vip.map((s) => (
+                            <option key={s.value} value={s.value} style={{ backgroundColor: "#161c22", color: "#ffffff" }}>
+                              {s.name} — {formatPrice(s.price)}
+                            </option>
+                          ))}
+                        </optgroup>
+                      )}
+                      {groupedTreatments.mobile.length > 0 && (
+                        <optgroup label="Mobile Massage" style={{ backgroundColor: "#161c22", color: "#c2a74e", fontWeight: 700 }}>
+                          {groupedTreatments.mobile.map((s) => (
+                            <option key={s.value} value={s.value} style={{ backgroundColor: "#161c22", color: "#ffffff" }}>
+                              {s.name} — {formatPrice(s.price)}
+                            </option>
+                          ))}
+                        </optgroup>
+                      )}
                     </select>
 
                     {selectedService && (
