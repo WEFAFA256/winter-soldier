@@ -199,11 +199,33 @@ export default function MassageVideosClient({
           style={{
             padding: "120px 20px 60px",
             textAlign: "center",
-            background: "radial-gradient(circle at top, rgba(194, 167, 78, 0.10), #0a0e12 60%)",
+            position: "relative",
+            overflow: "hidden",
             borderBottom: "1px solid rgba(194, 167, 78, 0.15)",
           }}
         >
-          <div className="container" style={{ maxWidth: "780px" }}>
+          {/* Background image */}
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              backgroundImage: "url(/assets/images/backgrounds/video-bg-1-1.jpg)",
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+              backgroundRepeat: "no-repeat",
+              zIndex: 0,
+            }}
+          />
+          {/* Dark overlay */}
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              background: "linear-gradient(180deg, rgba(5,8,12,0.78) 0%, rgba(10,14,18,0.88) 100%)",
+              zIndex: 1,
+            }}
+          />
+          <div className="container" style={{ maxWidth: "780px", position: "relative", zIndex: 2 }}>
             <h1
               style={{
                 fontFamily: "Cormorant, Georgia, serif",
