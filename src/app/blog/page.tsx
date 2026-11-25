@@ -126,9 +126,9 @@ export default function BlogPage() {
           .serenity-blog__card:hover { transform: translateY(-5px); border-color: rgba(194,167,78,.55);
             box-shadow: 0 18px 40px rgba(0,0,0,.45); }
           .serenity-blog__media { position: relative; height: 250px; background: #0b0f14;
-            display: flex; align-items: center; justify-content: center; overflow: hidden; }
-          .serenity-blog__media img { max-width: 100%; max-height: 100%; width: auto; height: auto;
-            object-fit: contain; display: block; }
+            overflow: hidden; }
+          .serenity-blog__media img { position: absolute; inset: 0; width: 100%; height: 100%;
+            object-fit: cover; object-position: center; display: block; }
           .serenity-blog__date { position: absolute; top: 14px; left: 14px; background: #c2a74e;
             color: #0e1317; border-radius: 6px; padding: 6px 12px; text-align: center; line-height: 1.1;
             box-shadow: 0 4px 14px rgba(0,0,0,.4); }
