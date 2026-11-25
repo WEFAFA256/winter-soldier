@@ -271,7 +271,7 @@ function VideoFields({
 
 /* ─── Main Component ─────────────────────────────────────────── */
 export default function AdminGalleryPage() {
-  const [tab, setTab] = useState<"gallery"|"videos"|"services"|"vip"|"mobile"|"escorts"|"blog"|"bookings"|"info">("gallery");
+  const [tab, setTab] = useState<"gallery"|"videos"|"massage-videos"|"services"|"vip"|"mobile"|"escorts"|"blog"|"bookings"|"info">("gallery");
   const [auth, setAuth] = useState(false);
   const [pw, setPw] = useState("");
   const [pwErr, setPwErr] = useState("");
@@ -320,8 +320,9 @@ export default function AdminGalleryPage() {
   const [escortUploadIdx, setEscortUploadIdx] = useState<number | null>(null);
   const [escortNewUploading, setEscortNewUploading] = useState(false);
 
-  /* Admin-managed gallery videos */
+  /* Admin-managed gallery videos & massage videos */
   const [videos, setVideos] = useState<SiteVideo[]>([]);
+  const [massageVideos, setMassageVideos] = useState<SiteVideo[]>([]);
   const [showAddVideo, setShowAddVideo] = useState(false);
   const [newVideo, setNewVideo] = useState<SiteVideo>(blankSiteVideo());
   const [videoFormKey, setVideoFormKey] = useState(0);
@@ -460,6 +461,7 @@ export default function AdminGalleryPage() {
         setMobileMassage(Array.isArray(c.mobileMassage) ? c.mobileMassage : []);
         setEscorts(Array.isArray(c.escorts) ? c.escorts : []);
         setVideos(normalizeSiteVideos(c.videos));
+        setMassageVideos(normalizeSiteVideos(c.massageVideos));
       }
       if (bRes.ok) {
         const blogList = await bRes.json();
@@ -785,6 +787,9 @@ export default function AdminGalleryPage() {
     setVideoFormKey((key) => key + 1);
   };
 
+  const activeVideoSetter = tab === "massage-videos" ? setMassageVideos : setVideos;
+  const activeVideoList = tab === "massage-videos" ? massageVideos : videos;
+
   const addVideo = () => {
     if (!newVideo.title.trim()) return alert("Enter a video title");
     if (!newVideo.videoUrl && !newVideo.youtubeId) return alert("Upload a video or enter a YouTube ID");
@@ -798,18 +803,18 @@ export default function AdminGalleryPage() {
       title: newVideo.title.trim(),
       categoryLabel,
     };
-    setVideos([record, ...videos]);
+    activeVideoSetter([record, ...activeVideoList]);
     resetVideoForm();
     setShowAddVideo(false);
   };
 
   const updateVideo = (index: number, patch: Partial<SiteVideo>) => {
-    setVideos((current) => current.map((video, i) => (i === index ? { ...video, ...patch } : video)));
+    activeVideoSetter((current) => current.map((video, i) => (i === index ? { ...video, ...patch } : video)));
   };
 
   const deleteVideo = (index: number) => {
-    if (!confirm(`Delete "${videos[index].title}" from the gallery reels?`)) return;
-    setVideos((current) => current.filter((_, i) => i !== index));
+    if (!confirm(`Delete "${activeVideoList[index].title}"?`)) return;
+    activeVideoSetter((current) => current.filter((_, i) => i !== index));
   };
 
   const changeVideoFile = async (index: number, file: File | undefined) => {
@@ -820,7 +825,7 @@ export default function AdminGalleryPage() {
       if (result?.secure_url) {
         updateVideo(index, {
           videoUrl: result.secure_url,
-          duration: videos[index].duration || formatVideoDuration(result.duration),
+          duration: activeVideoList[index].duration || formatVideoDuration(result.duration),
         });
       }
     } catch {
@@ -921,7 +926,7 @@ export default function AdminGalleryPage() {
 
   const saveAll = async () => {
     setSaving(true);
-    const body = { ...siteContent, services, vipServices, mobileMassage, escorts, videos, blogs };
+    const body = { ...siteContent, services, vipServices, mobileMassage, escorts, videos, massageVideos, blogs };
     const res = await fetch("/api/content", { method:"POST", headers:{ "Content-Type":"application/json" }, credentials:"same-origin", body: JSON.stringify(body) });
     if (res.ok) {
       setSiteContent(body);
@@ -1029,6 +1034,7 @@ export default function AdminGalleryPage() {
   const tabs = [
     { id:"gallery", label:"Gallery", icon:"📸", count:gallery.length },
     { id:"videos", label:"Videos", icon:"🎬", count:videos.length },
+    { id:"massage-videos", label:"Massage Videos", icon:"💆", count:massageVideos.length },
     { id:"services", label:"Services", icon:"💅", count:services.length },
     { id:"vip", label:"VIP", icon:"👑", count:vipServices.length },
     { id:"mobile", label:"Mobile Massage", icon:"🚗", count:mobileMassage.length },
@@ -1059,7 +1065,7 @@ export default function AdminGalleryPage() {
       {/* ── TAB BAR ── */}
       <div className="adm tab-wrap" style={{ background:C.surface, borderBottom:`1px solid ${C.border}`, padding:"0 20px", display:"flex", gap:4 }}>
         {tabs.map(t => (
-          <button key={t.id} onClick={()=>setTab(t.id as any)} className="tab-btn"
+          <button key={t.id} onClick={()=>{ setTab(t.id as any); setShowAddVideo(false); }} className="tab-btn"
             style={{ background:"transparent", border:"none", borderBottom: tab===t.id ? `2px solid ${C.gold}` : "2px solid transparent", color: tab===t.id ? C.gold : C.muted, padding:"10px 14px", fontSize:12, fontWeight:600, cursor:"pointer", display:"flex", alignItems:"center", gap:6, marginBottom:-1 }}>
             <span>{t.icon}</span> {t.label}
             {t.count !== undefined && <span style={{ background: tab===t.id ? C.goldDim : "#21262d", color: tab===t.id ? C.gold : C.muted, borderRadius:20, padding:"1px 8px", fontSize:10, fontWeight:700 }}>{t.count}</span>}
@@ -1327,18 +1333,27 @@ export default function AdminGalleryPage() {
             )}
 
             {/* ══ VIDEOS TAB ══ */}
-            {tab === "videos" && (
+            {(tab === "videos" || tab === "massage-videos") && (
               <div className="admin-pane">
-                <SectionHead title="Gallery Videos" sub="Upload reels or link YouTube films here. These records are the only source of the Videos tab on /gallery — click Save Changes to publish." />
+                <SectionHead
+                  title={tab === "massage-videos" ? "Massage Videos" : "Gallery Videos"}
+                  sub={
+                    tab === "massage-videos"
+                      ? "Upload massage demonstration videos or link YouTube films here. These appear on /massage-videos (opened by the homepage play icon and Tap to Watch button) — click Save Changes to publish."
+                      : "Upload reels or link YouTube films here. These records are the only source of the Videos tab on /gallery — click Save Changes to publish."
+                  }
+                />
 
                 <div className="video-toolbar" style={{ marginBottom: 16 }}>
-                  <BtnGold onClick={()=>setShowAddVideo(!showAddVideo)}>{showAddVideo ? "✕ Cancel" : "+ Add Video"}</BtnGold>
-                  <span style={{ fontSize: 11, color: C.muted }}>{videos.length} reel{videos.length === 1 ? "" : "s"} in the gallery</span>
+                  <BtnGold onClick={()=>setShowAddVideo(!showAddVideo)}>{showAddVideo ? "✕ Cancel" : tab === "massage-videos" ? "+ Add Massage Video" : "+ Add Video"}</BtnGold>
+                  <span style={{ fontSize: 11, color: C.muted }}>{activeVideoList.length} {tab === "massage-videos" ? "massage video" : "reel"}{activeVideoList.length === 1 ? "" : "s"}</span>
                 </div>
 
                 {showAddVideo && (
                   <div className="admin-pane" style={{ background:C.surface, border:`1px solid ${C.gold}44`, borderRadius:10, padding:20, marginBottom:16 }}>
-                    <p style={{ margin:"0 0 14px", fontSize:12, fontWeight:700, color:C.gold, textTransform:"uppercase" }}>New Video Reel</p>
+                    <p style={{ margin:"0 0 14px", fontSize:12, fontWeight:700, color:C.gold, textTransform:"uppercase" }}>
+                      {tab === "massage-videos" ? "New Massage Video" : "New Video Reel"}
+                    </p>
                     <VideoFields
                       value={newVideo}
                       onChange={(patch)=>setNewVideo((current)=>({ ...current, ...patch }))}
@@ -1347,22 +1362,26 @@ export default function AdminGalleryPage() {
                       videoBusy={newVideoUploading}
                       posterBusy={newPosterUploading}
                       resetKey={String(videoFormKey)}
-                      idPrefix="new reel"
+                      idPrefix={tab === "massage-videos" ? "new massage video" : "new reel"}
                     />
                     <BtnGold onClick={addVideo} disabled={newVideoUploading || newPosterUploading}>
-                      {newVideoUploading || newPosterUploading ? "Uploading…" : "Save Reel"}
+                      {newVideoUploading || newPosterUploading ? "Uploading…" : tab === "massage-videos" ? "Save Massage Video" : "Save Reel"}
                     </BtnGold>
                   </div>
                 )}
 
-                {videos.length === 0 ? (
+                {activeVideoList.length === 0 ? (
                   <div style={{ textAlign:"center", padding:"60px 20px", color:C.muted }}>
-                    <p style={{ fontSize:32, margin:"0 0 8px" }}>🎬</p>
-                    <p style={{ fontSize:13 }}>No videos yet. Click “+ Add Video” to upload the first reel.</p>
+                    <p style={{ fontSize:32, margin:"0 0 8px" }}>{tab === "massage-videos" ? "💆" : "🎬"}</p>
+                    <p style={{ fontSize:13 }}>
+                      {tab === "massage-videos"
+                        ? "No massage videos yet. Click “+ Add Massage Video” to upload the first video."
+                        : "No videos yet. Click “+ Add Video” to upload the first reel."}
+                    </p>
                   </div>
                 ) : (
                   <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
-                    {videos.map((video, i) => (
+                    {activeVideoList.map((video, i) => (
                       <div key={video.id} className="card adm video-card" style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:8, padding:16 }}>
                         <div className="video-toolbar">
                           <div style={{ display:"flex", alignItems:"center", gap:12, minWidth:0 }}>
@@ -1371,7 +1390,7 @@ export default function AdminGalleryPage() {
                                 onError={(e:any)=>{ e.target.style.display="none"; }} />
                             )}
                             <div style={{ minWidth:0 }}>
-                              <p style={{ margin:0, color:C.text, fontSize:13, fontWeight:700, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{video.title || "Untitled reel"}</p>
+                              <p style={{ margin:0, color:C.text, fontSize:13, fontWeight:700, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{video.title || "Untitled video"}</p>
                               <p style={{ margin:"3px 0 0", color:C.muted, fontSize:11 }}>{video.videoUrl ? "Hosted video" : video.youtubeId ? "YouTube film" : "No playable source"}</p>
                             </div>
                           </div>
@@ -1385,7 +1404,7 @@ export default function AdminGalleryPage() {
                           videoBusy={videoUploadIdx === i}
                           posterBusy={posterUploadIdx === i}
                           resetKey={`${video.id}-${videoUploadIdx === i ? "busy" : "idle"}`}
-                          idPrefix={video.title || `reel ${i + 1}`}
+                          idPrefix={video.title || `video ${i + 1}`}
                         />
                       </div>
                     ))}

@@ -468,7 +468,7 @@ export default function Home() {
             <!-- /.video-one__bg -->
             <div class="container">
                 <div class="video-one__btn">
-                    <a href="https://www.youtube.com/watch?v=h9MbznbxlLc" class="video-popup">
+                    <a href="/massage-videos" class="video-one__play-link" aria-label="Watch our massages video">
                         <i class="fa fa-play"></i>
                     </a>
                     <div class="curved-circle" aria-hidden="true">
@@ -486,7 +486,7 @@ export default function Home() {
                 </div><!-- /.video-one__btn -->
                 <h2 class="video-one__title">watch our <br>
                     massages video</h2><!-- /.video-one__title -->
-                <a href="/services" class="solox-btn video-one__link"><span>Tap to Watch</span></a>
+                <a href="/massage-videos" class="solox-btn video-one__link"><span>Tap to Watch</span></a>
             </div><!-- /.container -->
         </section><!-- /.video-one -->
         <section class="contact-one contact-one--home-two">
