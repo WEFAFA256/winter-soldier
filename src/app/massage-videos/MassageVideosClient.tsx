@@ -197,7 +197,7 @@ export default function MassageVideosClient({
         {/* Page Hero */}
         <section
           style={{
-            padding: "50px 20px 36px",
+            padding: "60px 20px 48px",
             textAlign: "center",
             background: "radial-gradient(circle at top, rgba(194, 167, 78, 0.10), #0a0e12 60%)",
             borderBottom: "1px solid rgba(194, 167, 78, 0.15)",
@@ -207,16 +207,17 @@ export default function MassageVideosClient({
             <h1
               style={{
                 fontFamily: "Cormorant, Georgia, serif",
-                fontSize: "clamp(2.2rem, 5vw, 3.6rem)",
+                fontSize: "clamp(2rem, 4.5vw, 3.2rem)",
                 fontWeight: 700,
                 color: "#ffffff",
-                margin: "0 0 12px",
-                lineHeight: 1.1,
+                margin: "0 0 16px",
+                lineHeight: 1.3,
+                letterSpacing: "0.01em",
               }}
             >
               Watch Our Massages Video
             </h1>
-            <p style={{ color: "#9ca3af", fontSize: "15px", lineHeight: 1.7, margin: 0 }}>
+            <p style={{ color: "#9ca3af", fontSize: "15px", lineHeight: 1.75, margin: 0, maxWidth: "560px", marginLeft: "auto", marginRight: "auto" }}>
               Explore real massage sessions, soothing spa techniques, and treatments from our therapists at The Serenity Spa.
             </p>
           </div>
