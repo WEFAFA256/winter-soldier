@@ -779,24 +779,23 @@ async function createBooking(request, env) {
 
 // Shared, provider-agnostic wording used for BOTH the immediate /pay rejection
 // and the async FAILED callback — MTN and Airtel get exactly the same message.
-const INSUFFICIENT_FUNDS_MESSAGE =
-  "Insufficient funds: that MTN/Airtel wallet does not have enough balance or has reached its transaction limit. Top up or use another number.";
+const INSUFFICIENT_FUNDS_MESSAGE = "Insufficient balance on your mobile money account.";
 
 function friendlyPayError(code) {
   switch (code) {
     case "INSUFFICIENT_BALANCE":
-    case "INSUFFICIENT_FUNDS":
+    case "INSUFFICIENT_FUNDS": return INSUFFICIENT_FUNDS_MESSAGE;
     case "LIMIT_EXCEEDED":
     case "DAILY_LIMIT_EXCEEDED":
-    case "MONTHLY_LIMIT_EXCEEDED": return INSUFFICIENT_FUNDS_MESSAGE;
-    case "INVALID_PHONE_NUMBER": return "PawaPay says that number is not registered for mobile money. Use the MTN/Airtel number that receives your MoMo prompts.";
-    case "AMOUNT_OUT_OF_BOUNDS": return "This amount is outside the mobile money limit. Please contact us.";
+    case "MONTHLY_LIMIT_EXCEEDED": return "Wallet transaction limit reached.";
+    case "INVALID_PHONE_NUMBER": return "Number is not registered for mobile money.";
+    case "AMOUNT_OUT_OF_BOUNDS": return "Amount is outside mobile money limits.";
     case "DEPOSITS_NOT_ALLOWED":
     case "AUTHORISATION_ERROR":
-    case "AUTHENTICATION_ERROR": return "Mobile money payments are temporarily unavailable. Please contact us.";
-    case "PROVIDER_TEMPORARILY_UNAVAILABLE": return "That network is temporarily unavailable. Try the other provider.";
+    case "AUTHENTICATION_ERROR": return "Mobile money payments are temporarily unavailable.";
+    case "PROVIDER_TEMPORARILY_UNAVAILABLE": return "Network temporarily unavailable. Try the other provider.";
     case "INVALID_PROVIDER": return "Choose MTN MoMo or Airtel Money.";
-    default: return "Payment could not be started. Please try again or contact us.";
+    default: return "Payment could not be started. Please try again.";
   }
 }
 
@@ -808,18 +807,21 @@ function friendlyFailureMessage(code) {
   switch (code) {
     case "INSUFFICIENT_BALANCE":
     case "INSUFFICIENT_FUNDS":
+      return INSUFFICIENT_FUNDS_MESSAGE;
     case "LIMIT_EXCEEDED":
     case "DAILY_LIMIT_EXCEEDED":
     case "MONTHLY_LIMIT_EXCEEDED":
-      return INSUFFICIENT_FUNDS_MESSAGE;
+      return "Wallet transaction limit reached.";
     case "INVALID_PHONE_NUMBER":
-      return "Payment was declined: that number is not registered for mobile money on the selected network.";
+      return "Number is not registered for mobile money.";
     case "AMOUNT_OUT_OF_BOUNDS":
-      return "Payment was declined: the amount is outside that wallet's transaction limit.";
+      return "Amount is outside mobile money limits.";
     case "DEPOSITS_NOT_ALLOWED":
-      return "Payment was declined: that wallet does not allow incoming payments.";
+      return "Wallet cannot receive incoming payments.";
+    case "PROVIDER_TEMPORARILY_UNAVAILABLE":
+      return "Network temporarily unavailable. Try the other provider.";
     default:
-      return "Payment was declined by the mobile-money provider. Please try again or use another wallet.";
+      return "Transaction was declined or cancelled.";
   }
 }
 

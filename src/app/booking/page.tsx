@@ -320,8 +320,17 @@ function BookingFormInner() {
   // payment (insufficient funds, limit reached, etc.). Style those messages as
   // errors for BOTH MTN and Airtel so the customer cannot miss them.
   const isDecline = (text: string) =>
-    /insufficient|declin|not enough|transaction limit|reached its limit/i.test(text);
+    /insufficient|declin|not enough|transaction limit|limit reached|not registered|outside|cannot receive|unavailable|cancelled|timed out/i.test(text);
   const declined = isDecline(paymentNotice) || isDecline(payError);
+
+  const getFailureHeading = (text: string) => {
+    if (/insufficient|not enough/i.test(text)) return "Insufficient Balance";
+    if (/limit/i.test(text)) return "Transaction Limit Reached";
+    if (/not registered/i.test(text)) return "Number Not Registered for MoMo";
+    if (/unavailable/i.test(text)) return "Network Unavailable";
+    if (/cancel|timed out/i.test(text)) return "Payment Cancelled";
+    return "Payment Failed";
+  };
 
   // A declined payment must not look like a dead button. Bring the in-panel
   // alert into view as soon as the Worker reports a terminal decline.
@@ -1185,20 +1194,15 @@ function BookingFormInner() {
                         >
                           <strong style={{ display: "block", marginBottom: "6px", fontSize: "14px" }}>
                             {declined
-                              ? "Insufficient balance / payment limit reached"
+                              ? getFailureHeading(payError || paymentNotice)
                               : payError
-                                ? "Payment could not be started"
+                                ? "Payment Could Not Be Started"
                                 : pollStopped && paymentStatus !== "CONFIRMED"
-                                  ? "Payment not completed"
-                                  : "Waiting for payment confirmation"}
+                                  ? "Payment Not Completed"
+                                  : "Waiting for Confirmation"}
                           </strong>
-                          <span style={{ display: "block", fontSize: "13px", lineHeight: 1.6 }}>
-                            {payError || paymentNotice || "Check your phone for the payment prompt and approve it."}
-                          </span>
-                          <span style={{ display: "block", marginTop: "6px", fontSize: "12px", opacity: 0.9 }}>
-                            {declined
-                              ? "Top up that wallet or use another MTN/Airtel number, then tap Confirm & Pay again."
-                              : "Your QR pass will appear here only after payment is confirmed."}
+                          <span style={{ display: "block", fontSize: "13px", lineHeight: 1.55 }}>
+                            {payError || paymentNotice || "Approve the prompt on your phone."}
                           </span>
                           {pollStopped && paymentStatus !== "CONFIRMED" && (
                             <div style={{ display: "flex", justifyContent: "center", gap: "10px", flexWrap: "wrap", marginTop: "12px" }}>
@@ -1373,17 +1377,12 @@ function BookingFormInner() {
                     >
                       <strong style={{ display: "block", marginBottom: "4px", fontSize: "14px" }}>
                         {declined
-                          ? "Payment declined — insufficient funds"
+                          ? getFailureHeading(paymentNotice || payError)
                           : pollStopped && paymentStatus !== "CONFIRMED"
-                            ? "Payment not completed"
-                            : "Waiting for payment confirmation"}
+                            ? "Payment Not Completed"
+                            : "Waiting for Confirmation"}
                       </strong>
-                      {paymentNotice || "Check your phone for the payment prompt and approve it."}
-                      <span style={{ display: "block", marginTop: "6px", opacity: 0.85 }}>
-                        {declined
-                          ? "Top up that wallet or choose the other network, then start a new booking."
-                          : "Your QR pass will appear here only after payment is confirmed."}
-                      </span>
+                      {paymentNotice || "Approve the prompt on your phone."}
                       <div style={{ display: "flex", justifyContent: "center", gap: "10px", flexWrap: "wrap", marginTop: "12px" }}>
                         {pollStopped && paymentStatus !== "CONFIRMED" && (
                           <button
